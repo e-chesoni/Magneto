@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "hTYQ59TDLXHKYarHX1Y9b0k6aDcBUFhSo4T7ALOOU/EMA2UlBUHmhli2Gqe/axs/CHJ9rHC7fDh+oDwnFTOZkQ==",
+  "dgSpecHash": "SCMNNRuqZSFpccZ1V8BRzTJdLrJGKXlqJ/dXlbQYw4ykjTcT/yk1AtayxJV1ToMPurtaB/pACy12pYpTMN9aEA==",
   "success": true,
-  "projectFilePath": "C:\\Users\\TLab_PC_00\\Dev\\Metal_AM\\Magneto\\source\\Magneto\\MagnetoLibrary\\MagnetoLibrary.csproj",
+  "projectFilePath": "C:\\Users\\TLab_PC_00\\Dev\\Metal_AM\\Magneto\\source\\MagnetoLibrary\\MagnetoLibrary.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\TLab_PC_00\\.nuget\\packages\\dna.framework\\1.0.7.19\\dna.framework.1.0.7.19.nupkg.sha512",
     "C:\\Users\\TLab_PC_00\\.nuget\\packages\\microsoft.extensions.configuration\\2.0.0\\microsoft.extensions.configuration.2.0.0.nupkg.sha512",
