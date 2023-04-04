@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MagnetoLibrary
+namespace MagnetoLibrary.Interfaces
 {
     /// <summary>
     /// 
     /// </summary>
-    public class IController
+    public interface IMonitor
     {
     }
 }

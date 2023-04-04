@@ -4,12 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MagnetoLibrary
+namespace MagnetoLibrary.Interfaces
 {
     /// <summary>
     /// 
     /// </summary>
-    public class IMediator
+    public interface IMediator
     {
+        int Notify(object sender, string ev);
     }
 }
