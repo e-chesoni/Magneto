@@ -6,10 +6,7 @@ using System.Threading.Tasks;
 
 namespace MagnetoLibrary
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    public class IMonitor
+    internal class Image
     {
     }
 }
