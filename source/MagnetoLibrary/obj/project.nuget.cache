@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "SCMNNRuqZSFpccZ1V8BRzTJdLrJGKXlqJ/dXlbQYw4ykjTcT/yk1AtayxJV1ToMPurtaB/pACy12pYpTMN9aEA==",
+  "dgSpecHash": "RYJPOL1TtwF77FiqC2AmNbvudZrTLq65Hv1XCgX4iZkfpfgYlvjBhQX2tev9FLabwenV9AISA5EdJ/159vp2xQ==",
   "success": true,
   "projectFilePath": "C:\\Users\\TLab_PC_00\\Dev\\Metal_AM\\Magneto\\source\\MagnetoLibrary\\MagnetoLibrary.csproj",
   "expectedPackageFiles": [
@@ -25,6 +25,13 @@
     "C:\\Users\\TLab_PC_00\\.nuget\\packages\\microsoft.extensions.options.configurationextensions\\2.0.0\\microsoft.extensions.options.configurationextensions.2.0.0.nupkg.sha512",
     "C:\\Users\\TLab_PC_00\\.nuget\\packages\\microsoft.extensions.primitives\\2.0.0\\microsoft.extensions.primitives.2.0.0.nupkg.sha512",
     "C:\\Users\\TLab_PC_00\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512",
+    "C:\\Users\\TLab_PC_00\\.nuget\\packages\\runtime.linux-arm.runtime.native.system.io.ports\\7.0.0\\runtime.linux-arm.runtime.native.system.io.ports.7.0.0.nupkg.sha512",
+    "C:\\Users\\TLab_PC_00\\.nuget\\packages\\runtime.linux-arm64.runtime.native.system.io.ports\\7.0.0\\runtime.linux-arm64.runtime.native.system.io.ports.7.0.0.nupkg.sha512",
+    "C:\\Users\\TLab_PC_00\\.nuget\\packages\\runtime.linux-x64.runtime.native.system.io.ports\\7.0.0\\runtime.linux-x64.runtime.native.system.io.ports.7.0.0.nupkg.sha512",
+    "C:\\Users\\TLab_PC_00\\.nuget\\packages\\runtime.native.system.io.ports\\7.0.0\\runtime.native.system.io.ports.7.0.0.nupkg.sha512",
+    "C:\\Users\\TLab_PC_00\\.nuget\\packages\\runtime.osx-arm64.runtime.native.system.io.ports\\7.0.0\\runtime.osx-arm64.runtime.native.system.io.ports.7.0.0.nupkg.sha512",
+    "C:\\Users\\TLab_PC_00\\.nuget\\packages\\runtime.osx-x64.runtime.native.system.io.ports\\7.0.0\\runtime.osx-x64.runtime.native.system.io.ports.7.0.0.nupkg.sha512",
+    "C:\\Users\\TLab_PC_00\\.nuget\\packages\\system.io.ports\\7.0.0\\system.io.ports.7.0.0.nupkg.sha512",
     "C:\\Users\\TLab_PC_00\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\4.4.0\\system.runtime.compilerservices.unsafe.4.4.0.nupkg.sha512"
   ],
   "logs": []

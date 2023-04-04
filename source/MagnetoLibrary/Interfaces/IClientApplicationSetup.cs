@@ -3,7 +3,7 @@ using System;
 /// <summary>
 /// Core functionality shared across application
 /// </summary>
-namespace MagnetoLibrary
+namespace MagnetoLibrary.Interfaces
 {
     /// <summary>
     /// Entry point into Magneto application
