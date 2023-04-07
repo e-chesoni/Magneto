@@ -12,7 +12,14 @@ namespace MagnetoLibrary
         private static SerialPort _serialPort;
         static bool _success;
 
-        public static void SetupSerialPort()
+        public SerialConsole()
+        {
+            // Create a new SerialPort object with default settings.
+            _serialPort = new SerialPort();
+            _success = true;
+        }
+
+        public void SetupSerialPort()
         {
             Console.WriteLine("Initializing serial port...");
 
@@ -25,7 +32,7 @@ namespace MagnetoLibrary
             _serialPort.Handshake = Handshake.None;
         }
 
-        public static bool OpenSerialPort()
+        public bool OpenSerialPort()
         {
             Console.WriteLine("Opening serial port...");
 
@@ -40,7 +47,7 @@ namespace MagnetoLibrary
             return _success;
         }
 
-        private static void SerialWrite(string msg)
+        public void SerialWrite(string msg)
         {
             Console.WriteLine("Sending move command...");
 

@@ -13,6 +13,11 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
+// Import Magneto Lib Classes
+using MagnetoLibrary;
+using MagnetoLibrary.Interfaces;
+using MagnetoLibrary.Motor;
+
 namespace Magneto.Desktop.WindowsApp
 {
     /// <summary>
@@ -20,9 +25,48 @@ namespace Magneto.Desktop.WindowsApp
     /// </summary>
     public partial class MainWindow : Window
     {
+        private static SerialConsole _serialConsole = new SerialConsole();
+
         public MainWindow()
         {
             InitializeComponent();
+            InitializeMagneto();
+        }
+
+        private void InitializeMagneto()
+        {
+            _serialConsole = new SerialConsole();
+            _serialConsole.SetupSerialPort();
+        }
+
+        private void MoveMotorButton_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show($"Moving Motor!");
+
+            if (_serialConsole.OpenSerialPort())
+            {
+                // Write hard-coded move command
+                _serialConsole.SerialWrite("1MVA20"); // success!
+            }
+            else
+            {
+                MessageBox.Show("Cannot complete the mission. Try again later.");
+            }
+        }
+
+        private void HomeMotorButton_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show($"Homing Motor.");
+
+            if (_serialConsole.OpenSerialPort())
+            {
+                // Write hard-coded move command
+                _serialConsole.SerialWrite("1MVA1"); // success!
+            }
+            else
+            {
+                MessageBox.Show("Cannot complete the mission. Try again later.");
+            }
         }
     }
 }
