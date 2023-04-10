@@ -5,10 +5,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+// Magneto Libraries
+using MagnetoLibrary;
+
 namespace MagnetoLibrary.Motor
 {
     public class BuildMotorRight : IMotor
     {
+
+
         public int GetPos()
         {
             throw new NotImplementedException();
@@ -25,6 +30,16 @@ namespace MagnetoLibrary.Motor
         }
 
         public int MoveMotor(int steps)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int MoveMotorAbs(int steps)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int MoveMotorRel(int steps)
         {
             throw new NotImplementedException();
         }
