@@ -112,6 +112,13 @@ ipch/
 *.VC.db
 *.VC.VC.opendb
 
+# cache files
+*.project.nuget.cache
+*.asset.cache
+*MagenetoLibrary.assets.cache
+/obj
+
+
 # Visual Studio profiler
 *.psess
 *.vsp
@@ -396,3 +403,10 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+*.cache
+
+source/MagnetoLibrary/obj/MagnetoLibrary.csproj.nuget.g.props
+
+source/MagnetoLibrary/obj/MagnetoLibrary.csproj.nuget.dgspec.json
+
+source/MagnetoLibrary/obj/project.assets.json

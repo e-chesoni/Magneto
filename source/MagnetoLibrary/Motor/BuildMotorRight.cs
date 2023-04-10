@@ -29,6 +29,16 @@ namespace MagnetoLibrary.Motor
             throw new NotImplementedException();
         }
 
+        public int MoveMotorAbs(int steps)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int MoveMotorRel(int steps)
+        {
+            throw new NotImplementedException();
+        }
+
         public int SendError(string message)
         {
             throw new NotImplementedException();

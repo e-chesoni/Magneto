@@ -14,8 +14,11 @@ namespace MagnetoLibrary.Interfaces
         // Move motor one step
         int StepMotor(int dir); // TODO: Make private in concrete implementation
 
-        // Move motor multiple steps
-        int MoveMotor(int steps);
+        // Move motor motor to an absolute position
+        int MoveMotorAbs(int steps);
+
+        // Move motor relative to current position
+        int MoveMotorRel(int steps);
 
         // Stop motor
         int StopMotor();
