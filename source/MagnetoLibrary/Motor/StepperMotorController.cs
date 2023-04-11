@@ -9,8 +9,7 @@ namespace MagnetoLibrary.Motor
 {
     public class StepperMotorController : IController
     {
-        private BuildMotorLeft _buildMotorLeft;
-        private BuildMotorRight _buildMotorRight;
+        private Motor _buildMotorLeft;
 
         public int AttachLeftMotor()
         {

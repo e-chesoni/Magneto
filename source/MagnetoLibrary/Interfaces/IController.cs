@@ -24,6 +24,7 @@ namespace MagnetoLibrary.Interfaces
         int DetachRightMotor();
 
         // Perform sequenced motor movement
+        // Syntax to move both motors to absolute position: 0MVA5.5
         int MoveMotors();
 
         // Stop all motors attached to this controller

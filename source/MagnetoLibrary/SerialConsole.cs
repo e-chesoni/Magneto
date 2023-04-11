@@ -14,7 +14,7 @@ namespace MagnetoLibrary
         static bool _success;
         private static string _defaultPortName = "COM4";
         private static int _defaultBaudRate = 38400;
-        private static Parity _defaultParity = Parity.None;
+        private static string _defaultParity = "None";
         private static int _defaultDataBits = 8;
         private static string _defaultStopBits = "One";
         private static string _defaultHandshake = "None";
@@ -87,12 +87,12 @@ namespace MagnetoLibrary
 
         public static void SetDefaultSerialPort()
         {
-            _serialPort.PortName = SetPortName("COM4");
-            _serialPort.BaudRate = SetBaudRate(38400);
-            _serialPort.Parity = SetParity("None");
-            _serialPort.DataBits = SetDataBits(8);
-            _serialPort.StopBits = SetStopBits("One");
-            _serialPort.Handshake = SetHandshake("None");
+            _serialPort.PortName = SetPortName(_defaultPortName);
+            _serialPort.BaudRate = SetBaudRate(_defaultBaudRate);
+            _serialPort.Parity = SetParity(_defaultParity);
+            _serialPort.DataBits = SetDataBits(_defaultDataBits);
+            _serialPort.StopBits = SetStopBits(_defaultStopBits);
+            _serialPort.Handshake = SetHandshake(_defaultHandshake);
         }
 
         public static bool OpenSerialPort()
