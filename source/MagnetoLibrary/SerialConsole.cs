@@ -40,11 +40,12 @@ namespace MagnetoLibrary
 
         private static int SetBaudRate(int baudRate)
         {
+
             if (baudRate == 0)
             {
                 baudRate = _defaultBaudRate;
             }
-
+            Console.WriteLine("Setting baud rate to {0}", baudRate);
             return baudRate;
         }
 
@@ -54,21 +55,25 @@ namespace MagnetoLibrary
             {
                 parity = _defaultParity.ToString();
             }
+            Console.WriteLine("Setting parity to {0}", parity);
             return (Parity)Enum.Parse(typeof(Parity), parity, true);
         }
 
         private static int SetDataBits(int dataBits)
         {
+            Console.WriteLine("Setting Databits to {0}", dataBits);
             return dataBits;
         }
 
         private static StopBits SetStopBits(string stopBits)
         {
+            Console.WriteLine("Setting StopBits to {0}", stopBits);
             return (StopBits)Enum.Parse(typeof(StopBits), stopBits, true);
         }
 
         private static Handshake SetHandshake(string handshake)
         {
+            Console.WriteLine("Setting handshake to {0}", handshake);
             return (Handshake)Enum.Parse(typeof(Handshake), handshake, true);
         }
 
@@ -110,6 +115,21 @@ namespace MagnetoLibrary
             return _success;
         }
 
+        public static bool CloseSerialPort()
+        {
+            Console.WriteLine("Closing serial port...");
+
+            // Try opening the serial port
+            try { _serialPort.Close(); }
+            catch
+            {
+                Console.WriteLine("Cannot close serial port!");
+                _success = false;
+            }
+
+            return _success;
+        }
+
         public static void SerialWrite(string msg)
         {
             Console.WriteLine("Sending move command...");
@@ -133,5 +153,31 @@ namespace MagnetoLibrary
                 }
             }
         }
+
+        public static string SerialRead(object sender, SerialDataReceivedEventArgs e)
+        {
+            string s = "";
+
+            if (_serialPort.IsOpen) 
+            {
+                if (_serialPort.BytesToWrite <= 0)
+                {
+                    while (_serialPort.BytesToRead > 0)
+                    {
+                        try 
+                        {
+                            s = _serialPort.ReadLine();
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex.ToString());
+                        }
+                    }
+                }
+            }
+
+            return s;
+        }
+
     }
 }
