@@ -16,9 +16,19 @@ namespace MagnetoLibrary.Motor
             
         }
 
-        public int GetPos()
+        public double GetPos()
         {
-            throw new NotImplementedException();
+            string s = string.Format("{0}POS?", motorName);
+            SerialConsole.SerialWrite(s);
+
+            //TODO: Read serial console to get position value
+            // TOOD: Figure out how to actually read serial console (safely)
+            // see: Micronix note https://www.dropbox.com/scl/fo/2ls4fr6ffx0nswuno2n4x/h/System.IO.Ports%20Example%20Program%20and%20Guide?dl=0&preview=System.IO.Ports+C%23+Guide.pdf&subfolder_nav_tracking=1
+            // see: Microsoft SerialPort.ReadLine Method https://learn.microsoft.com/en-us/dotnet/api/system.io.ports.serialport.readline?source=recommendations&view=dotnet-plat-ext-7.0
+
+            // string s =  SerialConsole.SerialRead(); 
+
+            return 0;
         }
 
         public int GetStatus()
@@ -37,23 +47,42 @@ namespace MagnetoLibrary.Motor
         }
 
         // Motor CMDs look like nMVAx
-        public int MoveMotorAbs(int pos)
+        public int MoveMotorAbs(double pos)
         {
-            // TODO: Error checking
+            // Invalid position
+            if (pos < 0 || pos > 35)
+            {
+                // TODO: Log error
+                return 1;
+            }
+
             string s = string.Format("{0}MVA{1}", motorName, pos);
-            SerialConsole.SerialWrite(s); 
-            return 1; // return 1 for success
+            SerialConsole.SerialWrite(s);
+
+            return 0; // return 0 for success
         }
 
         // Motor CMDs look like nMVRx
-        public int MoveMotorRel(int steps)
+        public int MoveMotorRel(double steps)
         {
+            // get the current position
+            double currPos = GetPos();
+            double pos = currPos + steps;
+
+            // if the current positon + steps is greater than 35, fail
+            if (pos < 0 || pos > 35)
+            {
+                // TODO: Log error
+                return 1;
+            }
+
             string s = string.Format("{0}MVR{1}", motorName, steps);
             SerialConsole.SerialWrite(s);
-            return 1; // return 1 for success
+
+            return 0; // return 0 for success
         }
 
-        public int SendError(string message)
+            public int SendError(string message)
         {
             throw new NotImplementedException();
         }

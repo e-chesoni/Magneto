@@ -11,23 +11,24 @@ namespace MagnetoLibrary.Interfaces
     /// </summary>
     public interface IMotor
     {
+
+        // Get current motor position
+        double GetPos();
+
         // Move motor one step
         int StepMotor(int dir); // TODO: Make private in concrete implementation
 
         // Move motor motor to an absolute position
-        int MoveMotorAbs(int steps);
+        int MoveMotorAbs(double pos);
 
         // Move motor relative to current position
-        int MoveMotorRel(int steps);
+        int MoveMotorRel(double steps);
 
         // Stop motor
         int StopMotor();
 
         // Get motor status
         int GetStatus();
-
-        // Get current motor position
-        int GetPos();
 
         // Move motor to position0
         void Home();

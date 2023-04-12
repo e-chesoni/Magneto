@@ -11,17 +11,11 @@ namespace MagnetoLibrary.Interfaces
     /// </summary>
     public interface IController
     {
-        // Attach left motor to controller (orientation: facing front of machine)
-        int AttachLeftMotor();
+        // Attach motor to controller (orientation: facing front of machine)
+        int AttachMotor();
 
-        // Attach right motor to controller (orientation: facing front of machine)
-        int AttachRightMotor();
-
-        // Detach left motor to controller (orientation: facing front of machine)
-        int DetachLeftMotor();
-
-        // Detach right motor to controller (orientation: facing front of machine)
-        int DetachRightMotor();
+        // Detach motor to controller (orientation: facing front of machine)
+        int DetachMotor();
 
         // Perform sequenced motor movement
         // Syntax to move both motors to absolute position: 0MVA5.5
