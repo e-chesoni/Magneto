@@ -35,7 +35,6 @@ namespace Magneto.Desktop.WindowsApp
 
         private void InitializeMagneto()
         {
-            //_serialConsole = new SerialConsole();
             SerialConsole.SetDefaultSerialPort();
         }
 

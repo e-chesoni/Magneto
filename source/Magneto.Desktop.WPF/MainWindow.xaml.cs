@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO.Ports;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -25,6 +26,8 @@ namespace Magneto.Desktop.WPF
     /// </summary>
     public partial class MainWindow : Window
     {
+        //private static SerialConsole _serialConsole = new SerialConsole();
+
         public MainWindow()
         {
             InitializeComponent();
@@ -38,7 +41,8 @@ namespace Magneto.Desktop.WPF
 
         private void MoveMotorButton_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show($"Moving Motor!");
+            
+            SerialConsole.SerialWrite($"Moving Motor!");
 
             if (SerialConsole.OpenSerialPort())
             {
@@ -47,13 +51,13 @@ namespace Magneto.Desktop.WPF
             }
             else
             {
-                MessageBox.Show("Cannot complete the mission. Try again later.");
+                SerialConsole.SerialWrite("Serial port not open; cannot complete the mission. Try again later.");
             }
         }
 
         private void HomeMotorButton_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show($"Homing Motor.");
+            SerialConsole.SerialWrite($"Homing Motor.");
 
             if (SerialConsole.OpenSerialPort())
             {
@@ -62,7 +66,7 @@ namespace Magneto.Desktop.WPF
             }
             else
             {
-                MessageBox.Show("Cannot complete the mission. Try again later.");
+                SerialConsole.SerialWrite("Serial port not open; cannot complete the mission. Try again later.");
             }
         }
     }

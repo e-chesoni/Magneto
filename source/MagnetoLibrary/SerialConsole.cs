@@ -34,7 +34,7 @@ namespace MagnetoLibrary
             {
                 portName = _defaultPortName;
             }
-            Console.WriteLine("Setting portname to {0}", portName);
+            Console.WriteLine("Setting port name to {0}", portName);
             return portName;
         }
 
@@ -61,7 +61,7 @@ namespace MagnetoLibrary
 
         private static int SetDataBits(int dataBits)
         {
-            Console.WriteLine("Setting Databits to {0}", dataBits);
+            Console.WriteLine("Setting DataBits to {0}", dataBits);
             return dataBits;
         }
 
@@ -112,6 +112,8 @@ namespace MagnetoLibrary
                 _success = false;
             }
 
+            if (_serialPort.IsOpen ) { _success = true; }
+
             return _success;
         }
 
@@ -126,6 +128,8 @@ namespace MagnetoLibrary
                 Console.WriteLine("Cannot close serial port!");
                 _success = false;
             }
+
+            if (!_serialPort.IsOpen) { _success = true; }
 
             return _success;
         }
@@ -143,14 +147,20 @@ namespace MagnetoLibrary
 
                     try
                     {
+                        Console.WriteLine("Trying to send data...");
                         _serialPort.Write(data, 0, data.Length);
                         _serialPort.Write("\n\r");
+                        Console.WriteLine("Data sent.");
                     }
                     catch
                     {
                         Console.WriteLine("Cannot write to serial port.");
                     }
                 }
+            }
+            else
+            {
+                Console.WriteLine("Serial port not open.");
             }
         }
 
