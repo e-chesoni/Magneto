@@ -410,3 +410,5 @@ source/MagnetoLibrary/obj/MagnetoLibrary.csproj.nuget.g.props
 source/MagnetoLibrary/obj/MagnetoLibrary.csproj.nuget.dgspec.json
 
 source/MagnetoLibrary/obj/project.assets.json
+
+source/MagnetoLibrary/obj/Debug/net6.0-windows/MagnetoLibrary.GeneratedMSBuildEditorConfig.editorconfig
