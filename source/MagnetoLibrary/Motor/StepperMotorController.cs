@@ -7,26 +7,16 @@ using System.Threading.Tasks;
 
 namespace MagnetoLibrary.Motor
 {
-    public class StepperMotorController : IController
+    public class StepperMotorController : IMotorController
     {
-        private Motor _buildMotorLeft;
+        private List<Motor> motors;
 
-        public int AttachLeftMotor()
+        public int AttachMotor()
         {
             throw new NotImplementedException();
         }
 
-        public int AttachRightMotor()
-        {
-            throw new NotImplementedException();
-        }
-
-        public int DetachLeftMotor()
-        {
-            throw new NotImplementedException();
-        }
-
-        public int DetachRightMotor()
+        public int DetachMotor()
         {
             throw new NotImplementedException();
         }

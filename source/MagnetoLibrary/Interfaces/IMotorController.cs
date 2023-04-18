@@ -9,7 +9,7 @@ namespace MagnetoLibrary.Interfaces
     /// <summary>
     /// 
     /// </summary>
-    public interface IController
+    public interface IMotorController
     {
         // Attach motor to controller (orientation: facing front of machine)
         int AttachMotor();
