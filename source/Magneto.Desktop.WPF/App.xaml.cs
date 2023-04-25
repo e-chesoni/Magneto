@@ -23,7 +23,7 @@ namespace Magneto.Desktop.WPF
             // Your code here
             // This will be executed during the app's teardown
             Console.WriteLine("Doing teardown stuff...");
-            SerialConsole.CloseSerialPort();
+            MagnetoSerialConsole.CloseSerialPort();
         }
     }
 }

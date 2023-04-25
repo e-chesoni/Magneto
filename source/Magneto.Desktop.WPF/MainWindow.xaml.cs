@@ -27,6 +27,7 @@ namespace Magneto.Desktop.WPF
     public partial class MainWindow : Window
     {
         //private static SerialConsole _serialConsole = new SerialConsole();
+        MagnetoLogger magnetoLogger = new MagnetoLogger();
 
         public MainWindow()
         {
@@ -36,37 +37,41 @@ namespace Magneto.Desktop.WPF
 
         private void InitializeMagneto()
         {
-            SerialConsole.SetDefaultSerialPort();
+            MagnetoSerialConsole.SetDefaultSerialPort();
         }
 
         private void MoveMotorButton_Click(object sender, RoutedEventArgs e)
         {
             
-            SerialConsole.SerialWrite($"Moving Motor!");
+            //MagnetoSerialConsole.SerialWrite($"Moving Motor!");
+            magnetoLogger.LogToConsole(MagnetoLogger.logLevels.DEBUG, "Moving Motor!");
 
-            if (SerialConsole.OpenSerialPort())
+            if (MagnetoSerialConsole.OpenSerialPort())
             {
                 // Write hard-coded move command
-                SerialConsole.SerialWrite("1MVA20"); // success!
+                MagnetoSerialConsole.SerialWrite("1MVA20"); // success!
             }
             else
             {
-                SerialConsole.SerialWrite("Serial port not open; cannot complete the mission. Try again later.");
+                //MagnetoSerialConsole.SerialWrite("Serial port not open; cannot complete the mission. Try again later.");
+                magnetoLogger.LogToConsole(MagnetoLogger.logLevels.ERROR, "Serial port not open; cannot complete the mission. Try again later.");
             }
         }
 
         private void HomeMotorButton_Click(object sender, RoutedEventArgs e)
         {
-            SerialConsole.SerialWrite($"Homing Motor.");
+            //MagnetoSerialConsole.SerialWrite($"Homing Motor.");
+            magnetoLogger.LogToConsole(MagnetoLogger.logLevels.DEBUG, "Homing Motor.");
 
-            if (SerialConsole.OpenSerialPort())
+            if (MagnetoSerialConsole.OpenSerialPort())
             {
                 // Write hard-coded move command
-                SerialConsole.SerialWrite("1MVA1"); // success!
+                MagnetoSerialConsole.SerialWrite("1MVA1"); // success!
             }
             else
             {
-                SerialConsole.SerialWrite("Serial port not open; cannot complete the mission. Try again later.");
+                //MagnetoSerialConsole.SerialWrite("Serial port not open; cannot complete the mission. Try again later.");
+                magnetoLogger.LogToConsole(MagnetoLogger.logLevels.ERROR, "Serial port not open; cannot complete the mission. Try again later.");
             }
         }
     }

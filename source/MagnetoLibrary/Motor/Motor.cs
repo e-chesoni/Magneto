@@ -19,7 +19,7 @@ namespace MagnetoLibrary.Motor
         public double GetPos()
         {
             string s = string.Format("{0}POS?", motorName);
-            SerialConsole.SerialWrite(s);
+            MagnetoSerialConsole.SerialWrite(s);
 
             //TODO: Read serial console to get position value
             // TOOD: Figure out how to actually read serial console (safely)
@@ -57,7 +57,7 @@ namespace MagnetoLibrary.Motor
             }
 
             string s = string.Format("{0}MVA{1}", motorName, pos);
-            SerialConsole.SerialWrite(s);
+            MagnetoSerialConsole.SerialWrite(s);
 
             return 0; // return 0 for success
         }
@@ -69,7 +69,7 @@ namespace MagnetoLibrary.Motor
             double currPos = GetPos();
             double pos = currPos + steps;
 
-            // if the current positon + steps is greater than 35, fail
+            // if the current position + steps is greater than 35, fail
             if (pos < 0 || pos > 35)
             {
                 // TODO: Log error
@@ -77,7 +77,7 @@ namespace MagnetoLibrary.Motor
             }
 
             string s = string.Format("{0}MVR{1}", motorName, steps);
-            SerialConsole.SerialWrite(s);
+            MagnetoSerialConsole.SerialWrite(s);
 
             return 0; // return 0 for success
         }

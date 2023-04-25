@@ -35,17 +35,17 @@ namespace Magneto.Desktop.WindowsApp
 
         private void InitializeMagneto()
         {
-            SerialConsole.SetDefaultSerialPort();
+            MagnetoSerialConsole.SetDefaultSerialPort();
         }
 
         private void MoveMotorButton_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show($"Moving Motor!");
 
-            if (SerialConsole.OpenSerialPort())
+            if (MagnetoSerialConsole.OpenSerialPort())
             {
                 // Write hard-coded move command
-                SerialConsole.SerialWrite("1MVA20"); // success!
+                MagnetoSerialConsole.SerialWrite("1MVA20"); // success!
             }
             else
             {
@@ -57,10 +57,10 @@ namespace Magneto.Desktop.WindowsApp
         {
             MessageBox.Show($"Homing Motor.");
 
-            if (SerialConsole.OpenSerialPort())
+            if (MagnetoSerialConsole.OpenSerialPort())
             {
                 // Write hard-coded move command
-                SerialConsole.SerialWrite("1MVA1"); // success!
+                MagnetoSerialConsole.SerialWrite("1MVA1"); // success!
             }
             else
             {
