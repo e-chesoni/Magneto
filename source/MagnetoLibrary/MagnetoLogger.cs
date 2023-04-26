@@ -52,7 +52,7 @@ namespace MagnetoLibrary
         public void LogToConsole(logLevels level, string msg) 
         {
             // Get time stamp
-            string currentTime = DateTime.Now.ToString("HH:mm:ss tt");
+            string currentTime = DateTime.Now.ToString("HH:mm:ss tt ");
 
             // Set the foreground color to white to print the time stamp
             MagnetoSerialConsole.SetForegroundColor("WHITE");
