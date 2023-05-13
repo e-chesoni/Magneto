@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO.Ports;
-using Microsoft.Extensions.Logging.Console.Internal;
+//using Microsoft.Extensions.Logging.Console.Internal;
 
 namespace MagnetoLibrary
 {
