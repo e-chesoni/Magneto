@@ -1,0 +1,10 @@
+﻿{
+    "profiles": {
+      "Magneto.Desktop.WinUI (Package)": {
+        "commandName": "MsixPackage"
+      },
+      "Magneto.Desktop.WinUI (Unpackaged)": {
+        "commandName": "Project"
+      }
+    }
+}
