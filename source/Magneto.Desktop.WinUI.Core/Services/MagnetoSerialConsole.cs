@@ -267,7 +267,7 @@ public static class MagnetoSerialConsole
     /****************************************************************/
     public static void Write(string msg)
     {
-        Console.Write(msg);
+        System.Diagnostics.Debug.WriteLine(msg);
     }
 
     public static void SerialWrite(string msg)
