@@ -7,8 +7,6 @@ namespace Magneto.Desktop.WinUI.ViewModels;
 public class TestPrintViewModel : ObservableRecipient
 {
 
-    MagnetoLogger magnetoLogger = new MagnetoLogger();
-
     public TestPrintViewModel()
     {
     }
