@@ -35,6 +35,6 @@ public class LogFactoryLogLevel
         /// <summary>
         /// A success
         /// </summary>
-        SUCCES = 5,
+        SUCCESS = 5,
     }
 }

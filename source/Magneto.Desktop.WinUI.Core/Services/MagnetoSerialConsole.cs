@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO.Ports;
+using Magneto.Desktop.WinUI.Core.Contracts.Services;
 //using Microsoft.Extensions.Logging.Console.Internal;
 
 namespace Magneto.Desktop.WinUI.Core.Services;
@@ -20,56 +21,6 @@ public static class MagnetoSerialConsole
     private static string _defaultHandshake = "None";
 
     /****************************************************************/
-    /*                  COLOR CODING FOR LOGGING                    */
-    /****************************************************************/
-    // Color setup for console logging
-
-
-    public static void SetForegroundColor(string color)
-    {
-        string formattedColor = color.ToUpper();
-
-        switch (formattedColor)
-        {
-            case "GRAY":
-                Console.ForegroundColor = ConsoleColor.Gray;
-                break;
-            case "GREEN":
-                Console.ForegroundColor = ConsoleColor.Green;
-                break;
-            case "YELLOW":
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                break;
-            case "DARKYELLOW":
-                Console.ForegroundColor = ConsoleColor.DarkYellow;
-                break;
-            case "RED":
-                Console.ForegroundColor = ConsoleColor.Red;
-                break;
-            default:
-                Console.ForegroundColor = ConsoleColor.White;
-                break;
-        }
-    }
-
-    /****************************************************************/
-    /*                   MAGNETO CONSOLE LOGGER                     */
-    /****************************************************************/
-    // Special Logger Methods for Magneto Console
-    // (does not have access to logger b/c logger uses it)
-
-    private static void LogCurrentTime()
-    {
-        SetForegroundColor("WHITE");
-        Console.Write(DateTime.Now.ToString("HH:mm:ss tt "));
-    }
-
-    private static void MagnetoLogMessage(string format, string msg)
-    {
-        Console.WriteLine(format, msg);
-    }
-
-    /****************************************************************/
     /*                         PORT SETUP                           */
     /****************************************************************/
 
@@ -79,11 +30,11 @@ public static class MagnetoSerialConsole
     public static void GetAvailablePorts()
     {
         var msg = "";
-        MagnetoLogger.Log("Available Ports:", MagnetoLogger.logLevels.DEBUG);
+        MagnetoLogger.Log("Available Ports:", LogFactoryLogLevel.LogLevel.DEBUG);
         foreach (string s in SerialPort.GetPortNames())
         {
             msg = $"   {s}";
-            MagnetoLogger.Log(msg, MagnetoLogger.logLevels.VERBOSE);
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
         }
     }
 
@@ -95,7 +46,7 @@ public static class MagnetoSerialConsole
         }
         
         var msg = $"Setting port name to {portName}";
-        MagnetoLogger.Log(msg, MagnetoLogger.logLevels.DEBUG);
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
         
         return portName;
     }
@@ -108,7 +59,7 @@ public static class MagnetoSerialConsole
         }
         
         var msg = $"Setting baud rate to {baudRate}";
-        MagnetoLogger.Log(msg, MagnetoLogger.logLevels.DEBUG);
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
         
         return baudRate;
     }
@@ -121,7 +72,7 @@ public static class MagnetoSerialConsole
         }
 
         var msg = $"Setting parity to {parity}";
-        MagnetoLogger.Log(msg, MagnetoLogger.logLevels.DEBUG);
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
 
         return (Parity)Enum.Parse(typeof(Parity), parity, true);
     }
@@ -129,7 +80,7 @@ public static class MagnetoSerialConsole
     private static int SetDataBits(int dataBits)
     {
         var msg = $"Setting DataBits to {dataBits}";
-        MagnetoLogger.Log(msg, MagnetoLogger.logLevels.DEBUG);
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
         
         return dataBits;
     }
@@ -137,7 +88,7 @@ public static class MagnetoSerialConsole
     private static StopBits SetStopBits(string stopBits)
     {
         var msg = $"Setting stopBits to {stopBits}";
-        MagnetoLogger.Log(msg, MagnetoLogger.logLevels.DEBUG);
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
 
         return (StopBits)Enum.Parse(typeof(StopBits), stopBits, true);
     }
@@ -145,7 +96,7 @@ public static class MagnetoSerialConsole
     private static Handshake SetHandshake(string handshake)
     {
         var msg = $"Setting handshake to {handshake}";
-        MagnetoLogger.Log(msg, MagnetoLogger.logLevels.DEBUG);
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
 
         return (Handshake)Enum.Parse(typeof(Handshake), handshake, true);
     }
@@ -153,7 +104,7 @@ public static class MagnetoSerialConsole
     public static void SetSerialPort(string port, int baud, string parity, int dataBits, string stopBits, string handshake)
     {
         var msg = "Initializing user defined serial port...";
-        MagnetoLogger.Log(msg, MagnetoLogger.logLevels.WARN);
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
 
         // Allow the user to set the appropriate properties.
         _serialPort.PortName = SetPortName(port);
@@ -167,7 +118,7 @@ public static class MagnetoSerialConsole
     public static void SetDefaultSerialPort()
     {
         var msg = "Initializing default serial port...";
-        MagnetoLogger.Log(msg, MagnetoLogger.logLevels.DEBUG);
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
 
         _serialPort.PortName = SetPortName(_defaultPortName);
         _serialPort.BaudRate = SetBaudRate(_defaultBaudRate);
@@ -183,18 +134,18 @@ public static class MagnetoSerialConsole
     public static bool OpenSerialPort()
     {
         var msg = "Opening serial port...";
-        MagnetoLogger.Log(msg, MagnetoLogger.logLevels.DEBUG);
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
 
         // Try opening the serial port
         try { _serialPort.Open(); }
         catch (InvalidOperationException)
         {
             msg = "The port is already open.";
-            MagnetoLogger.Log(msg, MagnetoLogger.logLevels.SUCCESS);
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
         }
         catch (Exception e)
         {
-            MagnetoLogger.Log(e.ToString(), MagnetoLogger.logLevels.ERROR);
+            MagnetoLogger.Log(e.ToString(), LogFactoryLogLevel.LogLevel.ERROR);
             _success = false;
         }
 
@@ -206,14 +157,14 @@ public static class MagnetoSerialConsole
     public static bool CloseSerialPort()
     {
         var msg = "Closing serial port...";
-        MagnetoLogger.Log(msg, MagnetoLogger.logLevels.DEBUG);
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
 
         // Try opening the serial port
         try { _serialPort.Close(); }
         catch
         {
             msg = "Cannot close serial port!";
-            MagnetoLogger.Log(msg, MagnetoLogger.logLevels.ERROR);
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             _success = false;
         }
 
@@ -233,7 +184,7 @@ public static class MagnetoSerialConsole
     public static void SerialWrite(string serial_msg)
     {
         var msg = "Sending move command...";
-        MagnetoLogger.Log(msg, MagnetoLogger.logLevels.DEBUG);
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
 
         if (_serialPort.IsOpen)
         {
@@ -245,23 +196,23 @@ public static class MagnetoSerialConsole
                 try
                 {
                     msg = "Trying to send data...";
-                    MagnetoLogger.Log(msg, MagnetoLogger.logLevels.WARN);
+                    MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
                     _serialPort.Write(data, 0, data.Length);
                     _serialPort.Write("\n\r");
                     msg = "Data sent.";
-                    MagnetoLogger.Log(msg, MagnetoLogger.logLevels.SUCCESS);
+                    MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
                 }
                 catch
                 {
                     msg = "Cannot write to serial port.";
-                    MagnetoLogger.Log(msg, MagnetoLogger.logLevels.ERROR);
+                    MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
                 }
             }
         }
         else
         {
             msg = "Serial port not open.";
-            MagnetoLogger.Log(msg, MagnetoLogger.logLevels.ERROR);
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
         }
     }
 
@@ -281,7 +232,7 @@ public static class MagnetoSerialConsole
                     }
                     catch (Exception ex)
                     {
-                        MagnetoLogger.Log(ex.ToString(), MagnetoLogger.logLevels.ERROR);
+                        MagnetoLogger.Log(ex.ToString(), LogFactoryLogLevel.LogLevel.ERROR);
                     }
                 }
             }

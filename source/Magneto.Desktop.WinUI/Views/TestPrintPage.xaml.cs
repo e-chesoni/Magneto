@@ -1,4 +1,5 @@
-﻿using Magneto.Desktop.WinUI.Core.Services;
+﻿using Magneto.Desktop.WinUI.Core.Contracts.Services;
+using Magneto.Desktop.WinUI.Core.Services;
 using Magneto.Desktop.WinUI.ViewModels;
 
 using Microsoft.UI.Xaml.Controls;
@@ -7,8 +8,6 @@ namespace Magneto.Desktop.WinUI.Views;
 
 public sealed partial class TestPrintPage : Page
 {
-    //MagnetoLogger magnetoLogger = new MagnetoLogger();
-
     public TestPrintViewModel ViewModel
     {
         get;
@@ -18,7 +17,8 @@ public sealed partial class TestPrintPage : Page
     {
         ViewModel = App.GetService<TestPrintViewModel>();
         InitializeComponent();
-        MagnetoLogger.Log("Landed on Test Print Page", MagnetoLogger.logLevels.DEBUG);
+        
+        MagnetoLogger.Log("Landed on Test Print Page", LogFactoryLogLevel.LogLevel.DEBUG);
     }
 
     private void SetMotorAxis1Button_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -43,18 +43,17 @@ public sealed partial class TestPrintPage : Page
     private void MoveMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
         // TODO: MOVE THIS TO MISSION CONTROL
-        //magnetoLogger.LogToConsole(MagnetoLogger.logLevels.CRITICAL, "Moving Motor!");
-        MagnetoLogger.Log("Moving Motor!",MagnetoLogger.logLevels.DEBUG);
+        MagnetoLogger.Log("Moving Motor!", LogFactoryLogLevel.LogLevel.DEBUG);
 
         if (MagnetoSerialConsole.OpenSerialPort())
         {
-            MagnetoLogger.Log("Port Open!", MagnetoLogger.logLevels.SUCCESS);
+            MagnetoLogger.Log("Port Open!", LogFactoryLogLevel.LogLevel.SUCCESS);
             // Write hard-coded move command
             MagnetoSerialConsole.SerialWrite("1MVA20"); // success!
         }
         else
         {
-            MagnetoLogger.Log("Port Closed.", MagnetoLogger.logLevels.ERROR);
+            MagnetoLogger.Log("Port Closed.", LogFactoryLogLevel.LogLevel.ERROR);
         }
     }
 }
