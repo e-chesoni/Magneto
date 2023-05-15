@@ -38,7 +38,18 @@ public sealed partial class TestPrintPage : Page
 
     private void HomeMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
+        // TODO: MISSION CONTROL HANDLES THIS
+        MagnetoLogger.Log("Homing Motor.", LogFactoryLogLevel.LogLevel.DEBUG);
 
+        if (MagnetoSerialConsole.OpenSerialPort())
+        {
+            // Write hard-coded move command
+            MagnetoSerialConsole.SerialWrite("1MVA0"); // success!
+        }
+        else
+        {
+            MagnetoLogger.Log("Serial port not open; cannot complete the mission. Try again later.", LogFactoryLogLevel.LogLevel.ERROR);
+        }
     }
     private void MoveMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
