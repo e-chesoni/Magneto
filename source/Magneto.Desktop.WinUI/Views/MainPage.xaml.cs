@@ -3,6 +3,7 @@ using Magneto.Desktop.WinUI.Core.Services;
 using Magneto.Desktop.WinUI.ViewModels;
 
 using Microsoft.UI.Xaml.Controls;
+using Windows.Devices.Enumeration;
 using WinUIEx.Messaging;
 
 namespace Magneto.Desktop.WinUI.Views;
@@ -40,4 +41,32 @@ public sealed partial class MainPage : Page
         MagnetoLogger.Log("This is a success message", LogFactoryLogLevel.LogLevel.SUCCESS);
 
     }
+
+    #region Page Navigation
+    private void NavigateToPrintPage_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        Frame.Navigate(typeof(PrintPage));
+    }
+
+    private void NavigateToMonitorPage_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        Frame.Navigate(typeof(MonitorPage));
+    }
+
+    private void NavigateToSettingsPage_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        Frame.Navigate(typeof(SettingsPage));
+    }
+
+    private void NavigateToPrintQueuePage_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        Frame.Navigate(typeof(PrintQueuePage));
+    }
+
+    private void NavigateToUtilitiesPage_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        Frame.Navigate(typeof(UtilitiesPage));
+    }
+
+    #endregion
 }
