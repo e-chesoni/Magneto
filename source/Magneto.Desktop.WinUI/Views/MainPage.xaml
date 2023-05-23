@@ -27,7 +27,7 @@
                 <Button Margin="10" Height="200" Width="200" Content="Settings" Click="NavigateToSettingsPage_Click"/>
             </StackPanel>
             <StackPanel Margin="20" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <Button Margin="10" Height="200" Width="200" Content="PrintQueue"  Click="NavigateToPrintQueuePage_Click"/>
+                <Button Margin="10" Height="200" Width="200" Content="Print Queue"  Click="NavigateToPrintQueuePage_Click"/>
                 <Button Margin="10" Height="200" Width="200" Content="Utilities"  Click="NavigateToUtilitiesPage_Click"/>
                 <Button Margin="10" Height="200" Width="200"/>
             </StackPanel>
