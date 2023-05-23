@@ -13,29 +13,41 @@ public class PrintQueueViewModel : ObservableRecipient, INavigationAware
     private readonly ISampleDataService _sampleDataService;
     private SampleOrder? _selected;
 
+    private readonly ISamplePrintService _samplePrintService;
+    private SamplePrint? _printSelected;
+
     public SampleOrder? Selected
     {
         get => _selected;
         set => SetProperty(ref _selected, value);
     }
 
-    public ObservableCollection<SampleOrder> SampleItems { get; private set; } = new ObservableCollection<SampleOrder>();
-
-    public PrintQueueViewModel(ISampleDataService sampleDataService)
+    public SamplePrint? PrintSelected
     {
-        _sampleDataService = sampleDataService;
+        get => _printSelected;
+        set => SetProperty(ref _printSelected, value);
+    }
+
+    public ObservableCollection<SampleOrder> SampleItems { get; private set; } = new ObservableCollection<SampleOrder>();
+    public ObservableCollection<SamplePrint> SamplePrints { get; private set; } = new ObservableCollection<SamplePrint>();
+
+    public PrintQueueViewModel(ISamplePrintService samplePrintService)
+    {
+        //_sampleDataService = sampleDataService;
+        _samplePrintService = samplePrintService;
     }
 
     public async void OnNavigatedTo(object parameter)
     {
-        SampleItems.Clear();
+        SamplePrints.Clear();
 
         // TODO: Replace with real data.
-        var data = await _sampleDataService.GetListDetailsDataAsync();
+        //var data = await _sampleDataService.GetListDetailsDataAsync();
+        var printData = await _samplePrintService.GetListDetailsDataAsync();
 
-        foreach (var item in data)
+        foreach (var item in printData)
         {
-            SampleItems.Add(item);
+            SamplePrints.Add(item);
         }
     }
 
@@ -45,9 +57,9 @@ public class PrintQueueViewModel : ObservableRecipient, INavigationAware
 
     public void EnsureItemSelected()
     {
-        if (Selected == null)
+        if (PrintSelected == null)
         {
-            Selected = SampleItems.First();
+            PrintSelected = SamplePrints.First();
         }
     }
 }

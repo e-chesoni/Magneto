@@ -7,13 +7,13 @@ namespace Magneto.Desktop.WinUI.Views;
 
 public sealed partial class PrintQueueDetailControl : UserControl
 {
-    public SampleOrder? ListDetailsMenuItem
+    public SamplePrint? ListDetailsMenuItem
     {
-        get => GetValue(ListDetailsMenuItemProperty) as SampleOrder;
+        get => GetValue(ListDetailsMenuItemProperty) as SamplePrint;
         set => SetValue(ListDetailsMenuItemProperty, value);
     }
 
-    public static readonly DependencyProperty ListDetailsMenuItemProperty = DependencyProperty.Register("ListDetailsMenuItem", typeof(SampleOrder), typeof(PrintQueueDetailControl), new PropertyMetadata(null, OnListDetailsMenuItemPropertyChanged));
+    public static readonly DependencyProperty ListDetailsMenuItemProperty = DependencyProperty.Register("ListDetailsMenuItem", typeof(SamplePrint), typeof(PrintQueueDetailControl), new PropertyMetadata(null, OnListDetailsMenuItemPropertyChanged));
 
     public PrintQueueDetailControl()
     {
