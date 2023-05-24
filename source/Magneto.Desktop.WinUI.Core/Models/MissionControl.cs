@@ -10,7 +10,9 @@ using Magneto.Desktop.WinUI.Core.Models.Image;
 namespace Magneto.Desktop.WinUI.Core.Models;
 public class MissionControl : IMediator, IPublisher, ISubsciber
 {
-    private MotorController _motorController;
+    private BuildManager _buildManager;
+
+    private List<ISubsciber> _subscibers;
 
     #region Mediator Methods
     public int Mediate(object sender, string ev) => throw new NotImplementedException();
@@ -19,10 +21,28 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
 
     #region Publisher Methods
 
-    public int Attach() => throw new NotImplementedException();
-    public int Detach() => throw new NotImplementedException();
-    public int Notify(ISubsciber subsciber) => throw new NotImplementedException();
-    public int NotifyAll() => throw new NotImplementedException();
+    public int Attach(ISubsciber subscriber)
+    {
+        _subscibers.Add(subscriber);
+        return 0;
+    }
+
+    public int Detach(ISubsciber subscriber)
+    {
+        _subscibers.Remove(subscriber);
+        return 0;
+    }
+    public int Notify(ISubsciber subsciber)
+    {
+        subsciber.HandleUpdate(this);
+        return 0;
+    }
+
+    public int NotifyAll()
+    {
+        foreach (var s in _subscibers) { s.HandleUpdate(this); }
+        return 0;
+    }
 
     #endregion
 

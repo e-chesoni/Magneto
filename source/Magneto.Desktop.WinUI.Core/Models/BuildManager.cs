@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.Controllers;
+using Magneto.Desktop.WinUI.Core.Contracts.Services.StateMachineServices;
 using Magneto.Desktop.WinUI.Core.Models.Controllers;
 using Magneto.Desktop.WinUI.Core.Models.Image;
 using Magneto.Desktop.WinUI.Core.Models.Monitor;
+using Magneto.Desktop.WinUI.Core.Models.State.BuildManagerStates;
 using Magneto.Desktop.WinUI.Core.Services;
 using static Magneto.Desktop.WinUI.Core.Models.Motor.StepperMotor;
 
@@ -15,9 +18,9 @@ namespace Magneto.Desktop.WinUI.Core.Models;
 /// <summary>
 /// Coordinates printing tasks across components
 /// </summary>
-public class BuildManager
+public class BuildManager : ISubsciber, IStateMachine
 {
-    #region Private Variables
+    #region Public Variables
 
     /// NOTE: Currently, Magneto has two motor controllers; 
     /// One for the build motors (on the base of the housing)
@@ -26,17 +29,19 @@ public class BuildManager
     /// <summary>
     /// Controller for build motors
     /// </summary>
-    private MotorController _buildController;
+    public MotorController buildController;
 
     /// <summary>
     /// Controller for sweep motor
     /// </summary>
-    private MotorController _sweepController;
+    public MotorController sweepController;
 
     /// <summary>
     /// Controller for laser and scan head
     /// </summary>
-    private LaserController _laserController;
+    public LaserController laserController;
+
+    private IBuildManagerState _state = null;
 
     #endregion
 
@@ -48,11 +53,13 @@ public class BuildManager
     /// <param name="buildController"></param>
     /// <param name="sweepController"></param>
     /// <param name="laserController"></param>
-    public BuildManager(MotorController buildController, MotorController sweepController, LaserController laserController)
+    public BuildManager(MotorController bc, MotorController sc, LaserController lc)
     {
-        _buildController = buildController;
-        _sweepController = sweepController;
-        _laserController = laserController;
+        buildController = bc;
+        sweepController = sc;
+        laserController = lc;
+
+        TransitionTo(new IdleBuildManagerState()) ;
     }
 
     #endregion
@@ -62,19 +69,22 @@ public class BuildManager
         throw new NotImplementedException();
     }
 
-    public void Idle()
+    #region State Machine Methods
+
+    public void TransitionTo(IBuildManagerState state)
     {
-        throw new NotImplementedException(); 
+        _state = state;
+        _state.SetStateMachine(this);
     }
 
-    public void BuildShape()
+    public void Start(ImageModel im)
     {
-        throw new NotImplementedException(); 
+        _state.Start();
     }
 
     public void Pause()
     {
-        throw new NotImplementedException(); 
+        throw new NotImplementedException();
     }
 
     public void Cancel()
@@ -82,4 +92,13 @@ public class BuildManager
         throw new NotImplementedException();
     }
 
+    #endregion
+
+    #region Subscriber Methods
+
+    public void ReceiveUpdate(IPublisher publisher) => throw new NotImplementedException();
+
+    public void HandleUpdate(IPublisher publisher) => throw new NotImplementedException();
+
+    #endregion
 }

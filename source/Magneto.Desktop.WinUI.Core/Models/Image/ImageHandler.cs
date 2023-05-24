@@ -15,9 +15,9 @@ public static class ImageHandler
     /// Slices image
     /// </summary>
     /// <returns></returns> Returns a list of sliced images
-    public static List<Image> SliceImage(Image img)
+    public static List<ImageModel> SliceImage(ImageModel im)
     {
-        List<Image> image_slices = new List<Image>();
+        List<ImageModel> image_slices = new List<ImageModel>();
 
         // TODO: Slice image and add slices to image_slices
 
