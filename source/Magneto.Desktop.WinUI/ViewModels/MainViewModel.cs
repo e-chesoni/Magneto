@@ -15,6 +15,7 @@ public class MainViewModel : ObservableRecipient, INavigationAware
 {
     private readonly INavigationService _navigationService;
     private readonly ISampleDataService _sampleDataService;
+    private readonly ISamplePrintService _samplePrintService;
 
     public ICommand ItemClickCommand
     {
@@ -23,10 +24,11 @@ public class MainViewModel : ObservableRecipient, INavigationAware
 
     public ObservableCollection<SampleOrder> Source { get; } = new ObservableCollection<SampleOrder>();
 
-    public MainViewModel(INavigationService navigationService, ISampleDataService sampleDataService)
+    public MainViewModel(INavigationService navigationService, ISampleDataService sampleDataService, ISamplePrintService samplePrintService)
     {
         _navigationService = navigationService;
         _sampleDataService = sampleDataService;
+        _samplePrintService = samplePrintService;
 
         ItemClickCommand = new RelayCommand<SampleOrder>(OnItemClick);
     }
