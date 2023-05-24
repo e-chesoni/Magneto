@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Magneto.Desktop.WinUI.Core.Contracts.Services.Controllers;
 
 /// <summary>
-/// Wrapper for synchronized motor control
+/// Interface for wrapper used to synchronized motors attached to the same controller
 /// </summary>
 public interface IMotorController
 {

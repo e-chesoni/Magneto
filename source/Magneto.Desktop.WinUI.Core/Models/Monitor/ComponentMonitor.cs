@@ -6,6 +6,11 @@ using System.Threading.Tasks;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.Monitor;
 
 namespace Magneto.Desktop.WinUI.Core.Models.Monitor;
+
+/// <summary>
+/// Implementation to monitor a Magneto sub-system
+/// </summary>
 public class ComponentMonitor : IComponentMonitor
 {
+
 }

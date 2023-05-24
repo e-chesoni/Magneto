@@ -11,4 +11,5 @@ namespace Magneto.Desktop.WinUI.Core.Contracts.Services.Monitor;
 /// </summary>
 public interface IComponentMonitor
 {
+
 }

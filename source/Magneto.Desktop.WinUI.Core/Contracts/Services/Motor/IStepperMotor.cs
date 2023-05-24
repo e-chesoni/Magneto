@@ -12,29 +12,47 @@ public interface IStepperMotor
 {
     #region Movement Methods
 
-    // Move motor to position0
-    void Home();
+    /// <summary>
+    /// Move motor to position 0
+    /// </summary>
+    /// <returns></returns> Returns -1 if home command fails, 0 if home command is successful
+    int Home();
 
-    // Move motor one step
-    int StepMotor(int dir); // TODO: Make private in concrete implementation
-
-    // Move motor to an absolute position
+    /// <summary>
+    /// Move motor to an absolute position
+    /// </summary>
+    /// <param name="pos"></param>
+    /// <returns></returns> Returns -1 if move command fails, 0 if move command is successful
     int MoveMotorAbs(double pos);
 
-    // Move motor relative to current position
+    /// <summary>
+    /// Move motor relative to current position
+    /// </summary>
+    /// <param name="steps"></param>
+    /// <returns></returns> Returns -1 if move command fails, 0 if move command is successful
     int MoveMotorRel(double steps);
 
-    // Stop motor
+    /// <summary>
+    /// EMERGENCY STOP: Stop motor
+    /// </summary>
+    /// <returns></returns> Returns -1 if stop command fails, 0 if move command is successful
     int StopMotor();
 
     #endregion
 
     #region Status Methods
 
-    // Get current motor position
+    /// <summary>
+    /// Get current motor position
+    /// </summary>
+    /// <returns></returns> Returns -1 if request for position fails, otherwise returns motor position
     double GetPos();
 
-    // Send error message about motor
+    /// <summary>
+    /// Send error message about motor
+    /// </summary>
+    /// <param name="message"></param>
+    /// <returns></returns> Returns error associated with implementation error coding
     int SendError(string message);
 
     #endregion

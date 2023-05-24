@@ -10,8 +10,7 @@ using Magneto.Desktop.WinUI.Core.Models.Image;
 namespace Magneto.Desktop.WinUI.Core.Models;
 public class MissionControl : IMediator, IPublisher, ISubsciber
 {
-    private ImageHandler _imageHandler;
-    private MotorController _motorControler;
+    private MotorController _motorController;
 
     #region Mediator Methods
     public int Mediate(object sender, string ev) => throw new NotImplementedException();

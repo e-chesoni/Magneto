@@ -11,55 +11,100 @@ public class StepperMotor : IStepperMotor
 {
     #region Private Variables
 
+    /// <summary>
+    /// Motor status
+    /// </summary>
     private MotorStatus _status;
 
+    /// <summary>
+    /// Possible motor statuses
+    /// </summary>
     public enum MotorStatus : short
     {
-        bad = -1,
-        good = 0
+        Bad = -1,
+        Good = 0
+    }
+
+    /// <summary>
+    /// Directions in which  the motor can move
+    /// </summary>
+    public enum MotorDirection : short
+    {
+        Down = -1,
+        Up = 1
+    }
+
+    // TODO: Define error codes for stepper motor
+    /// <summary>
+    /// Motor error codes
+    /// </summary>
+    public enum MotorError : short
+    {
+    
     }
 
     #endregion
 
     #region Public Variables
 
+    /// <summary>
+    ///  The axis that the motor is attached to
+    /// </summary>
     public int motorAxis;
 
     #endregion
 
     #region Constructor
 
-    public StepperMotor(int motorName)
+    /// <summary>
+    /// StepperMotor constructor
+    /// </summary>
+    /// <param name="motorName"></param> The axis that the motor is attached to
+    public StepperMotor(int ma)
     {
-
+        motorAxis = ma;
     }
 
     #endregion
 
     #region Movement Methods
-    public void Home()
+    
+    /// <summary>
+    /// Move motor to position 0
+    /// </summary>
+    public int Home()
+    {
+       return MoveMotorAbs(0);
+    }
+
+    /// <summary>
+    /// Move motor one step
+    /// </summary>
+    /// <param name="dir"></param> Direction to move motor
+    /// <returns></returns>
+    public int StepMotor(MotorDirection dir)
     {
         throw new NotImplementedException();
     }
 
-    public int StepMotor(int dir)
-    {
-        throw new NotImplementedException();
-    }
+    /// NOTE: The syntax to move a motor in an absolute direction is:
+    /// nMVAx
+    /// Where n is the axis
+    /// And x is the number of mm to move
 
-    public int MoveMotor(int steps)
-    {
-        throw new NotImplementedException();
-    }
-
-    // Motor CMDs look like nMVAx
+    /// <summary>
+    /// Move motor to an absolute position
+    /// </summary>
+    /// <param name="pos"></param>
+    /// <returns></returns> Returns -1 if move command fails, 0 if move command is successful
     public int MoveMotorAbs(double pos)
     {
         // Invalid position
         if (pos < 0 || pos > 35)
         {
-            // TODO: Log error
-            return 1;
+            MagnetoLogger.Log("Invalid position. Aborting motor move operation.", 
+                Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
+            return -1;
         }
 
         var s = string.Format("{0}MVA{1}", motorAxis, pos);
@@ -68,7 +113,16 @@ public class StepperMotor : IStepperMotor
         return 0; // return 0 for success
     }
 
-    // Motor CMDs look like nMVRx
+    /// NOTE: The syntax to move a motor in relative to a position is:
+    /// nMVRx
+    /// Where n is the axis
+    /// And x is the number of mm to move
+
+    /// <summary>
+    /// Move motor relative to current position
+    /// </summary>
+    /// <param name="steps"></param>
+    /// <returns></returns> Returns -1 if move command fails, 0 if move command is successful
     public int MoveMotorRel(double steps)
     {
         // get the current position
@@ -88,6 +142,10 @@ public class StepperMotor : IStepperMotor
         return 0; // return 0 for success
     }
 
+    /// <summary>
+    /// EMERGENCY STOP: Stop motor
+    /// </summary>
+    /// <returns></returns> Returns -1 if stop command fails, 0 if move command is successful
     public int StopMotor()
     {
         throw new NotImplementedException();
@@ -97,6 +155,10 @@ public class StepperMotor : IStepperMotor
 
     #region Status Methods
 
+    /// <summary>
+    /// Get current motor position
+    /// </summary>
+    /// <returns></returns> Returns -1 if request for position fails, otherwise returns motor position
     public double GetPos()
     {
         var s = string.Format("{0}POS?", motorAxis);
@@ -112,17 +174,32 @@ public class StepperMotor : IStepperMotor
         return 0;
     }
 
+    /// <summary>
+    /// Update the motor status
+    /// </summary>
+    /// <param name="newStatus"></param> New status of motor
+    /// <returns></returns> Returns the updated status of the motor
     private MotorStatus UpdateStatus(MotorStatus newStatus)
     {
         _status = newStatus;
         return GetStatus();
     }
 
+    /// <summary>
+    /// Get current status of motor
+    /// </summary>
+    /// <param name="newStatus"></param>
+    /// <returns></returns> Returns the status of the motor
     public MotorStatus GetStatus()
     {
         return _status;
     }
 
+    /// <summary>
+    /// Send error message about motor
+    /// </summary>
+    /// <param name="message"></param>
+    /// <returns></returns> Returns error associated with implementation error coding
     public int SendError(string message)
     {
         throw new NotImplementedException();
