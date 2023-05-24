@@ -12,10 +12,10 @@ namespace Magneto.Desktop.WinUI.Core.Contracts.Services;
 public interface IPublisher
 {
     // Attach subscriber to publisher
-    int Attach();
+    int Attach(ISubsciber subscriber);
 
     // Detach subscriber from publisher
-    int Detach();
+    int Detach(ISubsciber subscriber);
 
     // Notify all subscribers
     int NotifyAll();
