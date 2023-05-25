@@ -110,7 +110,7 @@ public class StepperMotor : IStepperMotor
             return Task.CompletedTask;
         }
         // Log message
-        var msg = string.Format("StepperMotor::MoveMotorAbs -- Moving motor on axis {0} to position{1}mm", 
+        var msg = string.Format("StepperMotor::MoveMotorAbs -- Moving motor on axis {0} to position {1}mm", 
             motorAxis, pos);
         MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
 

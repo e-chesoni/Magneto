@@ -79,6 +79,9 @@ public class BuildManager : ISubsciber, IStateMachine
         sweepController = sc;
         laserController = lc;
 
+        // Create a dance model
+        danceModel= new DanceModel();
+
         TransitionTo(new IdleBuildManagerState(this));
     }
 

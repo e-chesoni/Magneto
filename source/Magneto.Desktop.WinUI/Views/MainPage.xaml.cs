@@ -22,10 +22,7 @@ public sealed partial class MainPage : Page
         MagnetoSerialConsole.SetDefaultSerialPort();
     }
 
-    public MainViewModel ViewModel
-    {
-        get;
-    }
+    public MainViewModel ViewModel { get; }
 
     public MainPage()
     {
@@ -51,22 +48,22 @@ public sealed partial class MainPage : Page
 
     private void NavigateToMonitorPage_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        Frame.Navigate(typeof(MonitorPage));
+        Frame.Navigate(typeof(MonitorPage), ViewModel.missionControl);
     }
 
     private void NavigateToSettingsPage_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        Frame.Navigate(typeof(SettingsPage));
+        Frame.Navigate(typeof(SettingsPage), ViewModel.missionControl);
     }
 
     private void NavigateToPrintQueuePage_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        Frame.Navigate(typeof(PrintQueuePage));
+        Frame.Navigate(typeof(PrintQueuePage), ViewModel.missionControl);
     }
 
     private void NavigateToUtilitiesPage_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        Frame.Navigate(typeof(UtilitiesPage));
+        Frame.Navigate(typeof(UtilitiesPage), ViewModel.missionControl);
     }
 
     #endregion

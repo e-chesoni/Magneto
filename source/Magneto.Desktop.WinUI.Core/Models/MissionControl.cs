@@ -44,6 +44,9 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
 
     public void StartPrint(ImageModel im)
     {
+        // Slice image
+        SliceImage(im);
+
         if (im.sliceStack.Count == 0) // TODO: FIX: Slice stack is null
         {
             MagnetoLogger.Log("BuildManager::StartPrint -- There are no slices on this image model. Are you sure you sliced it?",
@@ -51,9 +54,6 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
         }
         else
         {
-            // Slice image
-            SliceImage(im);
-
             // Pass image model with sliced image to build manager to handle print
             _buildManager.StartPrint(im);
         }
