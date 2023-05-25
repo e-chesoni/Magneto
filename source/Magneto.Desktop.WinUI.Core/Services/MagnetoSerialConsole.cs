@@ -190,7 +190,7 @@ public static class MagnetoSerialConsole
         {
             if (_serialPort.BytesToRead <= 0)
             {
-                System.Text.ASCIIEncoding encoding = new System.Text.ASCIIEncoding();
+                ASCIIEncoding encoding = new ASCIIEncoding();
                 byte[] data = encoding.GetBytes(serial_msg);
 
                 try

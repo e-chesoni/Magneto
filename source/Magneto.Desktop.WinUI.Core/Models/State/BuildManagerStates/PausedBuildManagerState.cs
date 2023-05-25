@@ -11,19 +11,20 @@ using Magneto.Desktop.WinUI.Core.Services;
 namespace Magneto.Desktop.WinUI.Core.Models.State.BuildManagerStates;
 public class PausedBuildManagerState : IBuildManagerState
 {
-    private BuildManager BuildManagerSM { get; set; }
+    private BuildManager _BuildManagerSM { get; set; }
 
     public ImageModel ImageModel { get; set; }
 
     public PausedBuildManagerState(BuildManager bm)
     {
-        MagnetoLogger.Log("PausedBuildManagerState", Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
-        BuildManagerSM = bm;
+        MagnetoLogger.Log("PausedBuildManagerState::PausedBuildManagerState", 
+            Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
+        _BuildManagerSM = bm;
     }
 
     public void Cancel()
     {
-        BuildManagerSM.TransitionTo(new CancelledBuildManagerState(BuildManagerSM));
+        _BuildManagerSM.TransitionTo(new CancelledBuildManagerState(_BuildManagerSM));
     }
 
     public void Pause()
@@ -31,7 +32,7 @@ public class PausedBuildManagerState : IBuildManagerState
         MagnetoLogger.Log("Already Paused; Stay here.", Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
     }
 
-    public void Start()
+    public void Start(ImageModel im)
     {
         MagnetoLogger.Log("Can't start paused print; try resuming!", Contracts.Services.LogFactoryLogLevel.LogLevel.WARN);
     }
@@ -43,6 +44,8 @@ public class PausedBuildManagerState : IBuildManagerState
 
     public void Resume()
     {
-        BuildManagerSM.TransitionTo(new PrintingBuildManagerState(BuildManagerSM));
+        _BuildManagerSM.TransitionTo(new PrintingBuildManagerState(_BuildManagerSM));
     }
+
+    public void Done() => throw new NotImplementedException();
 }

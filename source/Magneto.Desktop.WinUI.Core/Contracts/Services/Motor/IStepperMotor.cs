@@ -13,24 +13,23 @@ public interface IStepperMotor
     #region Movement Methods
 
     /// <summary>
-    /// Move motor to position 0
+    /// Move motor to position zero
     /// </summary>
-    /// <returns></returns> Returns -1 if home command fails, 0 if home command is successful
-    int Home();
+    int HomeMotor();
 
     /// <summary>
     /// Move motor to an absolute position
     /// </summary>
     /// <param name="pos"></param>
-    /// <returns></returns> Returns -1 if move command fails, 0 if move command is successful
-    int MoveMotorAbs(double pos);
+    /// <returns></returns> Returns Task complete when done
+    Task MoveMotorAbs(double pos);
 
     /// <summary>
     /// Move motor relative to current position
     /// </summary>
     /// <param name="steps"></param>
-    /// <returns></returns> Returns -1 if move command fails, 0 if move command is successful
-    int MoveMotorRel(double steps);
+    /// <returns></returns> Returns Task complete when done
+    Task MoveMotorRel(double steps);
 
     /// <summary>
     /// EMERGENCY STOP: Stop motor

@@ -29,20 +29,20 @@ public class BuildManager : ISubsciber, IStateMachine
     /// <summary>
     /// Controller for build motors
     /// </summary>
-    public MotorController buildController;
+    public MotorController buildController { get; set; }
 
     /// <summary>
     /// Controller for sweep motor
     /// </summary>
-    public MotorController sweepController;
+    public MotorController sweepController { get; set; }
 
     /// <summary>
     /// Controller for laser and scan head
     /// </summary>
-    public LaserController laserController;
+    public LaserController laserController { get; set; }
 
     //public Stack<Slice> workingSlices;
-    public DanceModel danceModel;
+    public DanceModel danceModel { get; set; }
 
     /// <summary>
     /// Stack of lists coordinating image slices with motor positions
@@ -72,6 +72,9 @@ public class BuildManager : ISubsciber, IStateMachine
     /// <param name="laserController"></param>
     public BuildManager(MotorController bc, MotorController sc, LaserController lc)
     {
+        MagnetoLogger.Log("BuildManager::BuildManager",
+            LogFactoryLogLevel.LogLevel.VERBOSE);
+
         buildController = bc;
         sweepController = sc;
         laserController = lc;
@@ -93,14 +96,19 @@ public class BuildManager : ISubsciber, IStateMachine
         _state = state;
     }
 
-    public void Start(ImageModel im)
+    public void StartPrint(ImageModel im)
     {
-        _state.Start();
+        _state.Start(im);
     }
 
     public void Pause()
     {
         _state.Pause();
+    }
+
+    public void Resume()
+    {
+        _state.Resume();
     }
 
     public void Cancel()

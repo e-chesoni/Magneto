@@ -9,13 +9,15 @@ using Magneto.Desktop.WinUI.Core.Models.Image;
 namespace Magneto.Desktop.WinUI.Core.Contracts.Services.StateMachineServices;
 public interface IBuildManagerState
 {
-    void Start();
+    void Start(ImageModel im);
 
     void Draw();
 
     void Pause();
 
     void Resume();
+
+    void Done();
 
     void Cancel();
 }

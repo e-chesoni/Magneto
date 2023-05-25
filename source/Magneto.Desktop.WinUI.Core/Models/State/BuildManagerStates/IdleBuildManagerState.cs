@@ -16,7 +16,8 @@ public class IdleBuildManagerState : IBuildManagerState
 
     public IdleBuildManagerState(BuildManager bm)
     {
-        MagnetoLogger.Log("IdleBuildManagerState", Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
+        MagnetoLogger.Log("IdleBuildManagerState::IdleBuildManagerState", 
+            Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
         BuildManagerSM = bm;
     }
 
@@ -27,8 +28,8 @@ public class IdleBuildManagerState : IBuildManagerState
     public void Start(ImageModel im)
     {
         MagnetoLogger.Log("Starting...", Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
-        // copy image model slice list into working slices
-        //BuildManagerSM.workingSlices = im.sliceStack;
+
+        // Get poses for print
         BuildManagerSM.danceModel.GetPoseStack(im.sliceStack);
 
         BuildManagerSM.TransitionTo(new PrintingBuildManagerState(BuildManagerSM));
@@ -40,4 +41,5 @@ public class IdleBuildManagerState : IBuildManagerState
     }
 
     public void Resume() => throw new NotImplementedException();
+    public void Done() => throw new NotImplementedException();
 }

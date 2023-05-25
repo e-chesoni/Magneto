@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.Controllers;
 using Magneto.Desktop.WinUI.Core.Models.Motor;
+using Magneto.Desktop.WinUI.Core.Services;
 
 namespace Magneto.Desktop.WinUI.Core.Models.Controllers;
 
@@ -13,21 +14,16 @@ namespace Magneto.Desktop.WinUI.Core.Models.Controllers;
 /// </summary>
 public class MotorController : IMotorController
 {
-    public List<StepperMotor> _motors;
+    //ublic List<StepperMotor> _motors = new List<StepperMotor>();
 
-    /// <summary>
-    /// Adds motor to controller's list of motors
-    /// </summary>
-    /// <param name="axis"></param> Motors are uniquely attached to axis 1, 2, or 3
-    /// <returns></returns> returns 0 on success, -1 on failure
-    public int AttachMotor(int axis) => throw new NotImplementedException();
-
-    /// <summary>
-    /// Removes motor from controller's list of motors
-    /// </summary>
-    /// <param name="axis"></param> Motors are uniquely attached to axis 1, 2, or 3
-    /// <returns></returns> returns 0 on success, -1 on failure
-    public int DetachMotor(int axis) => throw new NotImplementedException();
+    private StepperMotor _motor1 { get; set; }
+    private StepperMotor _motor2 { get; set; }
+    
+    public MotorController(StepperMotor motor1, StepperMotor motor2)
+    {
+        _motor1 = motor1;
+        _motor2 = motor2;
+    }
 
     /// <summary>
     /// Perform sequenced motor movement
@@ -36,7 +32,23 @@ public class MotorController : IMotorController
     /// <returns></returns> returns 0 on success, -1 on failure
     public void MoveMotors(double motor1Pos, double motor2Pos)
     {
-        throw new NotImplementedException();
+        MagnetoLogger.Log("MotorController::MoveMotors -- Moving Motors...",
+            Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
+        _motor1.MoveMotorAbs(motor1Pos);
+        _motor2.MoveMotorAbs(motor2Pos);
+    }
+
+    /// <summary>
+    /// Home all attached motors
+    /// (Return all attached motors to zero position)
+    /// </summary>
+    public void HomeMotors()
+    {
+        MagnetoLogger.Log("MotorController::HomeMotors -- Homing motors (PLURAL!)...",
+            Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        _motor1.HomeMotor();
+        _motor2.HomeMotor();
     }
 
     /// <summary>
@@ -45,6 +57,8 @@ public class MotorController : IMotorController
     /// <returns></returns> returns 0 on success, -1 on failure
     public int StopMotors()
     {
-        throw new NotImplementedException();
+        _motor1.StopMotor();
+        _motor2.StopMotor();
+        return 0;
     }
 }

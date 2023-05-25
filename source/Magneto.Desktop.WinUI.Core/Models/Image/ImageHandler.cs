@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Magneto.Desktop.WinUI.Core.Services;
 
 namespace Magneto.Desktop.WinUI.Core.Models.Image;
 
@@ -17,6 +18,9 @@ public static class ImageHandler
     /// <returns></returns> Returns a list of sliced images
     public static List<ImageModel> SliceImage(ImageModel im)
     {
+        MagnetoLogger.Log("ImageHander::SliceImage -- I don't really know how to handle this image model yet...",
+            Contracts.Services.LogFactoryLogLevel.LogLevel.WARN);
+
         List<ImageModel> image_slices = new List<ImageModel>();
 
         // TODO: Slice image and add slices to image_slices

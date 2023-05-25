@@ -68,13 +68,16 @@ public class StepperMotor : IStepperMotor
     #endregion
 
     #region Movement Methods
-    
+
     /// <summary>
-    /// Move motor to position 0
+    /// Move motor to position zero
     /// </summary>
-    public int Home()
+    /// <returns></returns> Returns -1 if home command fails, 0 if home command is successful
+    public async Task HomeMotor()
     {
-       return MoveMotorAbs(0);
+        MagnetoLogger.Log("StepperMotor::HomeMotor -- Homing motor...",
+            Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
+        await MoveMotorAbs(0);
     }
 
     /// <summary>
@@ -96,21 +99,21 @@ public class StepperMotor : IStepperMotor
     /// Move motor to an absolute position
     /// </summary>
     /// <param name="pos"></param>
-    /// <returns></returns> Returns -1 if move command fails, 0 if move command is successful
-    public int MoveMotorAbs(double pos)
+    /// <returns></returns> Returns completed task when finished
+    public Task MoveMotorAbs(double pos)
     {
         // Invalid position
         if (pos < 0 || pos > 35)
         {
             MagnetoLogger.Log("Invalid position. Aborting motor move operation.", 
                 Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
-            return -1;
+            return Task.CompletedTask;
         }
 
         var s = string.Format("{0}MVA{1}", motorAxis, pos);
         MagnetoSerialConsole.SerialWrite(s);
 
-        return 0; // return 0 for success
+        return Task.CompletedTask;
     }
 
     /// NOTE: The syntax to move a motor in relative to a position is:
@@ -123,7 +126,7 @@ public class StepperMotor : IStepperMotor
     /// </summary>
     /// <param name="steps"></param>
     /// <returns></returns> Returns -1 if move command fails, 0 if move command is successful
-    public int MoveMotorRel(double steps)
+    public Task MoveMotorRel(double steps)
     {
         // get the current position
         var currPos = GetPos();
@@ -132,14 +135,15 @@ public class StepperMotor : IStepperMotor
         // if the current position + steps is greater than 35, fail
         if (pos < 0 || pos > 35)
         {
-            // TODO: Log error
-            return 1;
+            MagnetoLogger.Log("Invalid position. Aborting motor move operation.",
+                Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
+            return Task.CompletedTask;
         }
 
         var s = string.Format("{0}MVR{1}", motorAxis, steps);
         MagnetoSerialConsole.SerialWrite(s);
 
-        return 0; // return 0 for success
+        return Task.CompletedTask;
     }
 
     /// <summary>

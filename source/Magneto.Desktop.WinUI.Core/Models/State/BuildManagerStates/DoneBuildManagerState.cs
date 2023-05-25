@@ -11,37 +11,29 @@ using Magneto.Desktop.WinUI.Core.Services;
 namespace Magneto.Desktop.WinUI.Core.Models.State.BuildManagerStates;
 
 /// <summary>
-/// Pass-through state; you should not be able to call anything in this state
-/// This class exist to process the cancel request
+/// Processing state; user should not be able to invoke any functionality from this state
 /// </summary>
-public class CancelledBuildManagerState : IBuildManagerState
+public class DoneBuildManagerState : IBuildManagerState
 {
-    private BuildManager _BuildManagerSM { get; set; }
-
-    public CancelledBuildManagerState(BuildManager bm)
+    private BuildManager _BuildManagerSM;
+    public DoneBuildManagerState(BuildManager _bm)
     {
-        MagnetoLogger.Log("CancelledBuildManagerState::CancelledBuildManagerState",
+        MagnetoLogger.Log("DoneBuildManagerState::DoneBuildManagerState",
             Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
 
-        _BuildManagerSM = bm;
-
-        // TODO: Process cancelled build
-        MagnetoLogger.Log("Handling cancelled build...", Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
+        _BuildManagerSM = _bm;
 
         // Home motors
         _BuildManagerSM.buildController.HomeMotors();
 
+        // Return to idle state
         _BuildManagerSM.TransitionTo(new IdleBuildManagerState(_BuildManagerSM));
     }
 
     public void Cancel() => throw new NotImplementedException();
-
-    public void Pause() => throw new NotImplementedException();
-
-    public void Start(ImageModel im) => throw new NotImplementedException();
-
-    public void Draw() => throw new NotImplementedException();
-
-    public void Resume() => throw new NotImplementedException();
     public void Done() => throw new NotImplementedException();
+    public void Draw() => throw new NotImplementedException();
+    public void Pause() => throw new NotImplementedException();
+    public void Resume() => throw new NotImplementedException();
+    public void Start(ImageModel im) => throw new NotImplementedException();
 }

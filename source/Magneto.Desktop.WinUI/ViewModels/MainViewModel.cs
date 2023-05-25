@@ -8,6 +8,8 @@ using Magneto.Desktop.WinUI.Contracts.Services;
 using Magneto.Desktop.WinUI.Contracts.ViewModels;
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Models;
+using Magneto.Desktop.WinUI.Core.Models.BuildModels;
+using Magneto.Desktop.WinUI.Core.Models.Controllers;
 
 namespace Magneto.Desktop.WinUI.ViewModels;
 
@@ -16,6 +18,31 @@ public class MainViewModel : ObservableRecipient, INavigationAware
     private readonly INavigationService _navigationService;
     private readonly ISampleDataService _sampleDataService;
     private readonly ISamplePrintService _samplePrintService;
+
+    private static MotorController _buildController = new();
+    private static MotorController _sweepController = new();
+    private static LaserController _laserController = new();
+
+    private BuildManager bm = new BuildManager
+    {
+        buildController = _buildController,
+        sweepController = _sweepController,
+        laserController = _laserController
+    };
+
+    private void InitBuildController(MotorController buildController)
+    {
+        _buildManager.SetBuildController(buildController);
+    }
+
+    private void InitLaserController()
+    {
+    
+    }
+
+    private BuildManager _buildManager = new BuildManager(new MotorController(), new MotorController(), new LaserController());
+
+    public MissionControl missionControl = new MissionControl();
 
     public ICommand ItemClickCommand
     {
