@@ -30,7 +30,7 @@ public interface IMotorController
     /// Syntax to move both motors to absolute position: 0MVA5.5
     /// </summary>
     /// <returns></returns> returns 0 on success, -1 on failure
-    int MoveMotors();
+    void MoveMotors(double motor1Pos, double motor2Pos);
 
     /// <summary>
     /// EMERGENCY STOP: Stop all motors attached to controller

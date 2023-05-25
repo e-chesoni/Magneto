@@ -34,7 +34,7 @@ public class MotorController : IMotorController
     /// Syntax to move both motors to absolute position: 0MVA5.5
     /// </summary>
     /// <returns></returns> returns 0 on success, -1 on failure
-    public int MoveMotors()
+    public void MoveMotors(double motor1Pos, double motor2Pos)
     {
         throw new NotImplementedException();
     }

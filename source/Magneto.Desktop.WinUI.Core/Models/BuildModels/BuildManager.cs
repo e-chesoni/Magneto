@@ -13,7 +13,7 @@ using Magneto.Desktop.WinUI.Core.Models.State.BuildManagerStates;
 using Magneto.Desktop.WinUI.Core.Services;
 using static Magneto.Desktop.WinUI.Core.Models.Motor.StepperMotor;
 
-namespace Magneto.Desktop.WinUI.Core.Models;
+namespace Magneto.Desktop.WinUI.Core.Models.BuildModels;
 
 /// <summary>
 /// Coordinates printing tasks across components
@@ -41,7 +41,24 @@ public class BuildManager : ISubsciber, IStateMachine
     /// </summary>
     public LaserController laserController;
 
+    //public Stack<Slice> workingSlices;
+    public DanceModel danceModel;
+
+    /// <summary>
+    /// Stack of lists coordinating image slices with motor positions
+    /// </summary>
+    //public Stack<PoseModel> printPoses;
+
     private IBuildManagerState _state = null;
+
+    public BuildFlag build_flag;
+
+    public enum BuildFlag : ushort
+    {
+        RESUME,
+        PAUSE,
+        CANCEL
+    }
 
     #endregion
 
@@ -59,7 +76,7 @@ public class BuildManager : ISubsciber, IStateMachine
         sweepController = sc;
         laserController = lc;
 
-        TransitionTo(new IdleBuildManagerState()) ;
+        TransitionTo(new IdleBuildManagerState(this));
     }
 
     #endregion
@@ -74,7 +91,6 @@ public class BuildManager : ISubsciber, IStateMachine
     public void TransitionTo(IBuildManagerState state)
     {
         _state = state;
-        _state.SetStateMachine(this);
     }
 
     public void Start(ImageModel im)
@@ -84,12 +100,12 @@ public class BuildManager : ISubsciber, IStateMachine
 
     public void Pause()
     {
-        throw new NotImplementedException();
+        _state.Pause();
     }
 
     public void Cancel()
     {
-        throw new NotImplementedException();
+        _state.Cancel();
     }
 
     #endregion

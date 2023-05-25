@@ -11,7 +11,7 @@ namespace Magneto.Desktop.WinUI.Core.Models.Image;
 /// </summary>
 public class ImageModel
 {
-    public List<Slice> sliced_image;
+    public Stack<Slice> sliceStack;
 
     public ImageModel(string path_to_image)
     {
