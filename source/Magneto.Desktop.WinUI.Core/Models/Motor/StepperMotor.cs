@@ -50,7 +50,10 @@ public class StepperMotor : IStepperMotor
     /// <summary>
     ///  The axis that the motor is attached to
     /// </summary>
-    public int motorAxis;
+    public int motorAxis
+    {
+        get; set;
+    }
 
     #endregion
 
@@ -60,9 +63,9 @@ public class StepperMotor : IStepperMotor
     /// StepperMotor constructor
     /// </summary>
     /// <param name="motorName"></param> The axis that the motor is attached to
-    public StepperMotor(int ma)
+    public StepperMotor(int axis)
     {
-        motorAxis = ma;
+        motorAxis = axis;
     }
 
     #endregion
