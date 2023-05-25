@@ -15,7 +15,7 @@ public interface IStepperMotor
     /// <summary>
     /// Move motor to position zero
     /// </summary>
-    int HomeMotor();
+    Task HomeMotor();
 
     /// <summary>
     /// Move motor to an absolute position
@@ -35,7 +35,7 @@ public interface IStepperMotor
     /// EMERGENCY STOP: Stop motor
     /// </summary>
     /// <returns></returns> Returns -1 if stop command fails, 0 if move command is successful
-    int StopMotor();
+    Task StopMotor();
 
     #endregion
 

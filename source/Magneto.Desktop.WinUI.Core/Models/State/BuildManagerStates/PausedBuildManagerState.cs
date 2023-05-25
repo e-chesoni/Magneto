@@ -37,9 +37,10 @@ public class PausedBuildManagerState : IBuildManagerState
         MagnetoLogger.Log("Can't start paused print; try resuming!", Contracts.Services.LogFactoryLogLevel.LogLevel.WARN);
     }
 
-    public void Draw()
+    public Task Draw()
     {
         MagnetoLogger.Log("Print is paused; try resuming to draw!...", Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
+        return Task.CompletedTask;
     }
 
     public void Resume()

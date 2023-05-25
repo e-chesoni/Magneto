@@ -109,7 +109,12 @@ public class StepperMotor : IStepperMotor
                 Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
             return Task.CompletedTask;
         }
+        // Log message
+        var msg = string.Format("StepperMotor::MoveMotorAbs -- Moving motor on axis {0} to position{1}mm", 
+            motorAxis, pos);
+        MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
 
+        // Move motor
         var s = string.Format("{0}MVA{1}", motorAxis, pos);
         MagnetoSerialConsole.SerialWrite(s);
 
@@ -140,6 +145,11 @@ public class StepperMotor : IStepperMotor
             return Task.CompletedTask;
         }
 
+        // Log message
+        var msg = string.Format("StepperMotor::MoveMotorRel -- Moving motor on axis {0} {1}mm relative to current position",
+            motorAxis, pos);
+        MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
+
         var s = string.Format("{0}MVR{1}", motorAxis, steps);
         MagnetoSerialConsole.SerialWrite(s);
 
@@ -150,7 +160,7 @@ public class StepperMotor : IStepperMotor
     /// EMERGENCY STOP: Stop motor
     /// </summary>
     /// <returns></returns> Returns -1 if stop command fails, 0 if move command is successful
-    public int StopMotor()
+    public Task StopMotor()
     {
         throw new NotImplementedException();
     }

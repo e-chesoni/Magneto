@@ -16,6 +16,9 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
 
     private List<ISubsciber> _subscibers;
 
+    // TODO: Remove later; testing that we can reach mission control from all pages
+    public string FriendlyMessage = "Hello from Mission Control!";
+
     #region Constructor
 
     public MissionControl(BuildManager bm)
@@ -32,7 +35,7 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
 
     public void SliceImage(ImageModel im)
     {
-        ImageHandler.SliceImage(im);
+        im.sliceStack = ImageHandler.SliceImage(im);
     }
 
     #endregion
@@ -48,6 +51,10 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
         }
         else
         {
+            // Slice image
+            SliceImage(im);
+
+            // Pass image model with sliced image to build manager to handle print
             _buildManager.StartPrint(im);
         }
     }

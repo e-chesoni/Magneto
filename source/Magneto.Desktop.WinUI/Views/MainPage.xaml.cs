@@ -45,7 +45,7 @@ public sealed partial class MainPage : Page
     #region Page Navigation
     private void NavigateToPrintPage_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        Frame.Navigate(typeof(PrintPage));
+        Frame.Navigate(typeof(PrintPage), ViewModel.missionControl);
     }
 
     private void NavigateToMonitorPage_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)

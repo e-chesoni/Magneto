@@ -12,17 +12,25 @@ using Magneto.Desktop.WinUI.Core.Services;
 namespace Magneto.Desktop.WinUI.Core.Models.State.BuildManagerStates;
 public class IdleBuildManagerState : IBuildManagerState
 {
-    private BuildManager BuildManagerSM;
+    private BuildManager _BuildManagerSM;
 
     public IdleBuildManagerState(BuildManager bm)
     {
         MagnetoLogger.Log("IdleBuildManagerState::IdleBuildManagerState", 
             Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
-        BuildManagerSM = bm;
+        _BuildManagerSM = bm;
     }
 
-    public void Cancel() => throw new NotImplementedException();
-    public void Pause() => throw new NotImplementedException();
+    public void Cancel()
+    {
+        MagnetoLogger.Log("IdleBuildManagerState::Cancel -- Cannot cancel haven't started!",
+            Contracts.Services.LogFactoryLogLevel.LogLevel.WARN);
+    }
+    public void Pause()
+    {
+        MagnetoLogger.Log("IdleBuildManagerState::Pause -- Cannot pause haven't started!",
+            Contracts.Services.LogFactoryLogLevel.LogLevel.WARN);
+    }
     public void Start() => throw new NotImplementedException();
 
     public void Start(ImageModel im)
@@ -30,16 +38,27 @@ public class IdleBuildManagerState : IBuildManagerState
         MagnetoLogger.Log("Starting...", Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
 
         // Get poses for print
-        BuildManagerSM.danceModel.GetPoseStack(im.sliceStack);
+        _BuildManagerSM.danceModel.GetPoseStack(im.sliceStack);
 
-        BuildManagerSM.TransitionTo(new PrintingBuildManagerState(BuildManagerSM));
+        // Transition to print state
+        _BuildManagerSM.TransitionTo(new PrintingBuildManagerState(_BuildManagerSM));
     }
 
-    public void Draw()
+    public Task Draw()
     {
-        MagnetoLogger.Log("Drawing should not be called from this state!", Contracts.Services.LogFactoryLogLevel.LogLevel.WARN);
+        MagnetoLogger.Log("IdleBuildManagerState::Draw --Drawing should not be called from this state!",
+            Contracts.Services.LogFactoryLogLevel.LogLevel.WARN);
+        return Task.CompletedTask;
     }
 
-    public void Resume() => throw new NotImplementedException();
-    public void Done() => throw new NotImplementedException();
+    public void Resume()
+    {
+        MagnetoLogger.Log("IdleBuildManagerState::Resume -- Cannot resume what we haven't started!",
+            Contracts.Services.LogFactoryLogLevel.LogLevel.WARN);
+    }
+    public void Done()
+    {
+        MagnetoLogger.Log("IdleBuildManagerState::Done -- Cannot finish haven't started!",
+            Contracts.Services.LogFactoryLogLevel.LogLevel.WARN);
+    }
 }

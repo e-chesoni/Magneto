@@ -15,7 +15,8 @@ namespace Magneto.Desktop.WinUI.Core.Models.State.BuildManagerStates;
 /// </summary>
 public class DoneBuildManagerState : IBuildManagerState
 {
-    private BuildManager _BuildManagerSM;
+    private BuildManager _BuildManagerSM { get; set; }
+
     public DoneBuildManagerState(BuildManager _bm)
     {
         MagnetoLogger.Log("DoneBuildManagerState::DoneBuildManagerState",
@@ -24,7 +25,7 @@ public class DoneBuildManagerState : IBuildManagerState
         _BuildManagerSM = _bm;
 
         // Home motors
-        _BuildManagerSM.buildController.HomeMotors();
+        _ = _BuildManagerSM.buildController.HomeMotors();
 
         // Return to idle state
         _BuildManagerSM.TransitionTo(new IdleBuildManagerState(_BuildManagerSM));
@@ -32,7 +33,7 @@ public class DoneBuildManagerState : IBuildManagerState
 
     public void Cancel() => throw new NotImplementedException();
     public void Done() => throw new NotImplementedException();
-    public void Draw() => throw new NotImplementedException();
+    public Task Draw() => throw new NotImplementedException();
     public void Pause() => throw new NotImplementedException();
     public void Resume() => throw new NotImplementedException();
     public void Start(ImageModel im) => throw new NotImplementedException();

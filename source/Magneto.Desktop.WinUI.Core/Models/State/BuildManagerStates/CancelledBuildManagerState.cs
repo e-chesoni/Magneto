@@ -29,7 +29,7 @@ public class CancelledBuildManagerState : IBuildManagerState
         MagnetoLogger.Log("Handling cancelled build...", Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
 
         // Home motors
-        _BuildManagerSM.buildController.HomeMotors();
+        _ = _BuildManagerSM.buildController.HomeMotors();
 
         _BuildManagerSM.TransitionTo(new IdleBuildManagerState(_BuildManagerSM));
     }
@@ -40,7 +40,7 @@ public class CancelledBuildManagerState : IBuildManagerState
 
     public void Start(ImageModel im) => throw new NotImplementedException();
 
-    public void Draw() => throw new NotImplementedException();
+    public Task Draw() => throw new NotImplementedException();
 
     public void Resume() => throw new NotImplementedException();
     public void Done() => throw new NotImplementedException();

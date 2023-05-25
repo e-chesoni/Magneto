@@ -10,6 +10,7 @@ using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Models;
 using Magneto.Desktop.WinUI.Core.Models.BuildModels;
 using Magneto.Desktop.WinUI.Core.Models.Controllers;
+using Magneto.Desktop.WinUI.Core.Models.Motor;
 
 namespace Magneto.Desktop.WinUI.ViewModels;
 
@@ -19,30 +20,17 @@ public class MainViewModel : ObservableRecipient, INavigationAware
     private readonly ISampleDataService _sampleDataService;
     private readonly ISamplePrintService _samplePrintService;
 
-    private static MotorController _buildController = new();
-    private static MotorController _sweepController = new();
+    private static StepperMotor _motor1 = new StepperMotor(1);
+    private static StepperMotor _motor2 = new StepperMotor(2);
+    private static StepperMotor _powderDistMotor = new StepperMotor(1);
+
+    private static MotorController _buildController = new(_motor1, _motor2);
+    private static MotorController _sweepController = new(_powderDistMotor);
     private static LaserController _laserController = new();
 
-    private BuildManager bm = new BuildManager
-    {
-        buildController = _buildController,
-        sweepController = _sweepController,
-        laserController = _laserController
-    };
+    private static BuildManager bm = new BuildManager(_buildController, _sweepController, _laserController);
 
-    private void InitBuildController(MotorController buildController)
-    {
-        _buildManager.SetBuildController(buildController);
-    }
-
-    private void InitLaserController()
-    {
-    
-    }
-
-    private BuildManager _buildManager = new BuildManager(new MotorController(), new MotorController(), new LaserController());
-
-    public MissionControl missionControl = new MissionControl();
+    public MissionControl missionControl = new MissionControl(bm);
 
     public ICommand ItemClickCommand
     {

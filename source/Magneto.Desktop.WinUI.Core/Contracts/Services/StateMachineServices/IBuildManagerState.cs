@@ -11,7 +11,7 @@ public interface IBuildManagerState
 {
     void Start(ImageModel im);
 
-    void Draw();
+    Task Draw();
 
     void Pause();
 

@@ -7,26 +7,16 @@
     xmlns:models="using:Magneto.Desktop.WinUI.Core.Models"
     mc:Ignorable="d">
     <Page.Resources>
-        <DataTemplate x:Key="ItemTemplate" x:DataType="models:SamplePrint">
+        <DataTemplate x:Key="ItemTemplate" x:DataType="models:MissionControl">
             <Grid Height="100">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <FontIcon
-                    Grid.Column="0"
-                    VerticalAlignment="Center"
-                    FontSize="32"
-                    Glyph="{x:Bind Symbol}"
-                    AutomationProperties.Name="{x:Bind SymbolName}" />
                 <StackPanel
-                    Grid.Column="1"
+                    Grid.Column="0"
                     Margin="{StaticResource SmallLeftMargin}"
                     VerticalAlignment="Center">
-                    <TextBlock Text="{x:Bind FileName}" Style="{StaticResource ListTitleStyle}" />
-                    <TextBlock Text="{x:Bind FileLocation}" Style="{StaticResource ListTitleStyle}" />
-                    <TextBlock Text="{x:Bind Status}" Style="{StaticResource ListSubTitleStyle}" />
-                    <TextBlock Text="{x:Bind CreatedAt}" Style="{StaticResource ListTitleStyle}" />
+                    <TextBlock Text="{x:Bind FriendlyMessage}" Style="{StaticResource ListTitleStyle}" />
                 </StackPanel>
             </Grid>
         </DataTemplate>
@@ -56,11 +46,13 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <TextBlock Grid.Row="0" HorizontalAlignment="Center" Text="Manage Print"></TextBlock>
-            <TextBox Grid.Row="1" HorizontalAlignment="Center" Height="50" Width="500" Name="FileName" TextWrapping="Wrap" AcceptsReturn="True" Text="Please select a file..."></TextBox>
-            <Button Grid.Row="2" HorizontalAlignment="Center" Margin="10" Height="50" Width="100" Content="Find Print"></Button>
+            <TextBox Grid.Row="1" x:Name="SelectedPrint" HorizontalAlignment="Center" Height="50" Width="500" TextWrapping="Wrap" AcceptsReturn="True" Text="Please select a file..."></TextBox>
+            <Button Grid.Row="2" HorizontalAlignment="Center" Margin="10" Height="50" Width="100" Content="Find Print"
+                    Click="FindPrint_Click"></Button>
             <Button Grid.Row="3" HorizontalAlignment="Center" Margin="10" Height="50" Width="100" Content="Add Print"></Button>
-            <Button Grid.Row="4" HorizontalAlignment="Center" Margin="10" Height="50" Width="100" Content="Cancel Print"></Button>
-            <Button Grid.Row="5" HorizontalAlignment="Center" Margin="10" Height="50" Width="100" Content="Start Print"></Button>
+            <Button Grid.Row="4" HorizontalAlignment="Center" Margin="10" Height="50" Width="100" Content="Start Print" 
+                    Click="StartPrint_Click"></Button>
+            <Button Grid.Row="5" HorizontalAlignment="Center" Margin="10" Height="50" Width="100" Content="Cancel Print"></Button>
         </Grid>
     </Grid>
 </Page>

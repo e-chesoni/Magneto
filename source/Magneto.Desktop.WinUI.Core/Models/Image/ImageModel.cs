@@ -13,7 +13,9 @@ public class ImageModel
 {
     public Stack<Slice> sliceStack;
 
-    public ImageModel(string path_to_image)
+    public string path_to_image { get; set; }
+
+    public ImageModel()
     {
         // TODO: Get image from file path
         // TODO: Store image (not sure what file format to use)

@@ -20,24 +20,33 @@ public class PrintingBuildManagerState : IBuildManagerState
             Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
 
         _BuildManagerSM = bm;
+
+        // Start drawing
+        _ = Draw();
     }
 
     public void Cancel()
     {
+        MagnetoLogger.Log("PrintingBuildManagerState::Cancel -- Cancel flag triggered!",
+            Contracts.Services.LogFactoryLogLevel.LogLevel.WARN);
         _BuildManagerSM.build_flag = BuildManager.BuildFlag.CANCEL;
         _BuildManagerSM.TransitionTo(new CancelledBuildManagerState(_BuildManagerSM));
     }
 
     public void Pause()
     {
+        MagnetoLogger.Log("PrintingBuildManagerState::pause -- Pause flag triggered!",
+            Contracts.Services.LogFactoryLogLevel.LogLevel.WARN);
         _BuildManagerSM.build_flag = BuildManager.BuildFlag.PAUSE;
         _BuildManagerSM.TransitionTo(new PausedBuildManagerState(_BuildManagerSM));
     }
 
     public void Start(ImageModel im) => throw new NotImplementedException();
 
-    public void Draw()
+    public async Task Draw()
     {
+        // TODO: Find a way to set flag using interrupts (if user wants to pause/cancel print)
+
         while (_BuildManagerSM.danceModel.dance.Count > 0)
         {
             // Bust a move (pop a pose of the list)
@@ -52,7 +61,7 @@ public class PrintingBuildManagerState : IBuildManagerState
             {
                 case BuildManager.BuildFlag.RESUME:
                     _BuildManagerSM.laserController.Draw(slice);
-                    _BuildManagerSM.buildController.MoveMotors(motor1Pos, motor2Pos);
+                    await _BuildManagerSM.buildController.MoveMotorsRel(motor1Pos, motor2Pos);
                     break;
 
                 case BuildManager.BuildFlag.PAUSE:
@@ -68,6 +77,7 @@ public class PrintingBuildManagerState : IBuildManagerState
                     break;
             }
         }
+        _BuildManagerSM.TransitionTo(new DoneBuildManagerState(_BuildManagerSM));
     }
 
     public void Resume() => throw new NotImplementedException();
