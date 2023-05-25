@@ -16,7 +16,7 @@ namespace Magneto.Desktop.WinUI.ViewModels;
 
 public class MainViewModel : ObservableRecipient, INavigationAware
 {
-    private readonly INavigationService _navigationService;
+    public INavigationService _navigationService;
     private readonly ISampleDataService _sampleDataService;
     private readonly ISamplePrintService _samplePrintService;
 

@@ -1,13 +1,20 @@
-﻿using Magneto.Desktop.WinUI.Core.Models.Image;
+﻿using System.Xml.Linq;
+using Magneto.Desktop.WinUI.Core.Contracts.Services;
+using Magneto.Desktop.WinUI.Core.Models;
+using Magneto.Desktop.WinUI.Core.Models.Image;
+using Magneto.Desktop.WinUI.Core.Services;
 using Magneto.Desktop.WinUI.ViewModels;
 
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Navigation;
 
 namespace Magneto.Desktop.WinUI.Views;
 
 public sealed partial class PrintPage : Page
 {
     public ImageModel _currentImage = new ImageModel();
+
+    public MissionControl MissionControl;
 
     public PrintViewModel ViewModel
     {
@@ -20,19 +27,27 @@ public sealed partial class PrintPage : Page
         InitializeComponent();
     }
 
+    protected override void OnNavigatedTo(NavigationEventArgs e)
+    {
+        base.OnNavigatedTo(e);
+        MissionControl = (MissionControl)e.Parameter; // get parameter
+        var msg = string.Format("PrintPage::OnNavigatedTo -- {0}", MissionControl.FriendlyMessage);
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
+    }
+
     private void FindPrint_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
         string path_to_image = "c:/path/to/image";
 
-        // Add dummy string to textbox
+        // Add dummy string to text box
         SelectedPrint.Text = path_to_image;
 
-        // Generate fake im to get things going
+        // Generate fake image manager to get things going
         _currentImage.path_to_image = path_to_image;
     }
 
     private void StartPrint_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        ViewModel.missionControl.StartPrint(_currentImage);
+        MissionControl.StartPrint(_currentImage); // TODO: FIX missionControl is null
     }
 }
