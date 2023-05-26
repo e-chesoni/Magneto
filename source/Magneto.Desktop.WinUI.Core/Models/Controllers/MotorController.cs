@@ -57,6 +57,9 @@ public class MotorController : IMotorController
     {
         MagnetoLogger.Log("MotorController::MoveMotorsAbs -- Moving Motors (PLURAL)...",
             Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        // TODO: Thread blocking is not a great idea...
+        // Find a more elegant way to handle running one motor at a time in the future
         await _motor1.MoveMotorRel(motor1Pos);
         Thread.Sleep(2000);
         await _motor2.MoveMotorRel(motor2Pos);
