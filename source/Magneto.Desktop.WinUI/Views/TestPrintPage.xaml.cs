@@ -1,5 +1,7 @@
-﻿using CommunityToolkit.WinUI.UI.Animations;
+﻿using System.Reflection;
+using CommunityToolkit.WinUI.UI.Animations;
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
+using Magneto.Desktop.WinUI.Core.Helpers;
 using Magneto.Desktop.WinUI.Core.Models;
 using Magneto.Desktop.WinUI.Core.Models.Motor;
 using Magneto.Desktop.WinUI.Core.Services;
@@ -12,6 +14,7 @@ namespace Magneto.Desktop.WinUI.Views;
 
 public sealed partial class TestPrintPage : Page
 {
+    private readonly string _header = "TestPrintPage::";
     public MissionControl MissionControl { get; set; }
 
     public TestPrintViewModel ViewModel { get; }
@@ -22,8 +25,11 @@ public sealed partial class TestPrintPage : Page
     {
         ViewModel = App.GetService<TestPrintViewModel>();
         InitializeComponent();
+
+        var method = "TestPrintPage";
+        var msg = MagnetoLogger.Concat(_header, method, "Landed on Test Print Page");
         
-        MagnetoLogger.Log("Landed on Test Print Page", LogFactoryLogLevel.LogLevel.DEBUG);
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -63,10 +69,15 @@ public sealed partial class TestPrintPage : Page
         }
         else
         {
-            MagnetoLogger.Log("Serial port not open; cannot complete the mission. Try again later.", LogFactoryLogLevel.LogLevel.ERROR);
+            MagnetoLogger.Log("TestPrintPage::HomeMotorButton_Click -- Serial port not open.",
+                LogFactoryLogLevel.LogLevel.ERROR);
         }
     }
 
+    /// <summary>
+    /// Helper that calls the MoveMotorRel method on the motor attached to selected axis
+    /// </summary>
+    /// <param name="axis"></param>
     private void MoveMotorHelper(int axis)
     {
         MagnetoLogger.Log("TestPrintPage::MoveMotorHelper", LogFactoryLogLevel.LogLevel.VERBOSE);
@@ -77,6 +88,12 @@ public sealed partial class TestPrintPage : Page
         testMotor.motorAxis = axis;
         testMotor.MoveMotorRel(10);
     }
+
+    /// <summary>
+    /// Moves motor attached to selected access (default axis is 0, which no motor is attached to)
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void MoveMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
 
