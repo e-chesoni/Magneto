@@ -11,6 +11,9 @@ namespace Magneto.Desktop.WinUI.Core.Services;
 
 public static class MagnetoSerialConsole
 {
+
+    private static readonly string _header = "MagnetoSerialConsole";
+
     private static SerialPort _serialPort = new SerialPort();
     static bool _success;
     private static string _defaultPortName = "COM4";
@@ -119,7 +122,7 @@ public static class MagnetoSerialConsole
     {
         var msg = "Initializing default serial port...";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
-
+        
         _serialPort.PortName = SetPortName(_defaultPortName);
         _serialPort.BaudRate = SetBaudRate(_defaultBaudRate);
         _serialPort.Parity = SetParity(_defaultParity);

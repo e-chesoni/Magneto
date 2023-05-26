@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.Motor;
 using Magneto.Desktop.WinUI.Core.Services;
 
@@ -108,18 +109,26 @@ public class StepperMotor : IStepperMotor
         // Invalid position
         if (pos < 0 || pos > 35)
         {
-            MagnetoLogger.Log("Invalid position. Aborting motor move operation.", 
-                Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
+            MagnetoLogger.Log("Invalid position. Aborting motor move operation.",
+                LogFactoryLogLevel.LogLevel.ERROR);
             return Task.CompletedTask;
         }
         // Log message
         var msg = string.Format("StepperMotor::MoveMotorAbs -- Moving motor on axis {0} to position {1}mm", 
             motorAxis, pos);
-        MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
         // Move motor
         var s = string.Format("{0}MVA{1}", motorAxis, pos);
-        MagnetoSerialConsole.SerialWrite(s);
+
+        if (MagnetoSerialConsole.OpenSerialPort())
+        {
+            MagnetoSerialConsole.SerialWrite(s);
+        }
+        else
+        {
+            MagnetoLogger.Log("Port Closed.", LogFactoryLogLevel.LogLevel.ERROR);
+        }
 
         return Task.CompletedTask;
     }
@@ -134,11 +143,11 @@ public class StepperMotor : IStepperMotor
     /// </summary>
     /// <param name="steps"></param>
     /// <returns></returns> Returns -1 if move command fails, 0 if move command is successful
-    public Task MoveMotorRel(double steps)
+    public Task MoveMotorRel(double pos)
     {
         // get the current position
-        var currPos = GetPos();
-        var pos = currPos + steps;
+        var currPos = GetPos(); // WARNING: Calling GetPos causes this method to fail
+        var newPos = 0 + pos;
 
         // if the current position + steps is greater than 35, fail
         if (pos < 0 || pos > 35)
@@ -153,8 +162,16 @@ public class StepperMotor : IStepperMotor
             motorAxis, pos);
         MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
 
-        var s = string.Format("{0}MVR{1}", motorAxis, steps);
-        MagnetoSerialConsole.SerialWrite(s);
+        var s = string.Format("{0}MVR{1}", motorAxis, pos);
+
+        if (MagnetoSerialConsole.OpenSerialPort())
+        {
+            MagnetoSerialConsole.SerialWrite(s);
+        }
+        else
+        {
+            MagnetoLogger.Log("Port Closed.", LogFactoryLogLevel.LogLevel.ERROR);
+        }
 
         return Task.CompletedTask;
     }
@@ -179,14 +196,25 @@ public class StepperMotor : IStepperMotor
     public double GetPos()
     {
         var s = string.Format("{0}POS?", motorAxis);
-        MagnetoSerialConsole.SerialWrite(s);
 
-        //TODO: Read serial console to get position value
-        // TOOD: Figure out how to actually read serial console (safely)
-        // see: Micronix note https://www.dropbox.com/scl/fo/2ls4fr6ffx0nswuno2n4x/h/System.IO.Ports%20Example%20Program%20and%20Guide?dl=0&preview=System.IO.Ports+C%23+Guide.pdf&subfolder_nav_tracking=1
-        // see: Microsoft SerialPort.ReadLine Method https://learn.microsoft.com/en-us/dotnet/api/system.io.ports.serialport.readline?source=recommendations&view=dotnet-plat-ext-7.0
+        // TODO: Needs testing; if uncommented causes MoveMotorRel to fail
+        bool tested = false;
 
-        // string s =  SerialConsole.SerialRead(); 
+        if (tested)
+        {
+            MagnetoSerialConsole.SerialWrite(s);
+            // TODO: Read serial console to get position value
+            // TOOD: Figure out how to actually read serial console (safely)
+            // see: Micronix note https://www.dropbox.com/scl/fo/2ls4fr6ffx0nswuno2n4x/h/System.IO.Ports%20Example%20Program%20and%20Guide?dl=0&preview=System.IO.Ports+C%23+Guide.pdf&subfolder_nav_tracking=1
+            // see: Microsoft SerialPort.ReadLine Method https://learn.microsoft.com/en-us/dotnet/api/system.io.ports.serialport.readline?source=recommendations&view=dotnet-plat-ext-7.0
+
+            // TODO: This probably won't work
+            // see: https://stackoverflow.com/questions/13754694/what-is-the-correct-way-to-read-a-serial-port-using-net-framework
+            // test: In WPF app or simple console log app
+            // string s = MagnetoSerialConsole.SerialRead(sender, e);
+
+            // Remember to check if the port is open!
+        }
 
         return 0;
     }

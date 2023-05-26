@@ -20,4 +20,6 @@ public interface IBuildManagerState
     void Done();
 
     void Cancel();
+
+    void Homing();
 }

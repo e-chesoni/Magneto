@@ -74,6 +74,11 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
         _buildManager.Cancel();
     }
 
+    public void HomeMotors()
+    {
+        _buildManager.HomeMotors();
+    }
+
     #endregion
 
     #region Mediator Methods

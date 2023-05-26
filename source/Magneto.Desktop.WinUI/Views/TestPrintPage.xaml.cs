@@ -65,7 +65,8 @@ public sealed partial class TestPrintPage : Page
         if (MagnetoSerialConsole.OpenSerialPort())
         {
             // Write hard-coded move command
-            MagnetoSerialConsole.SerialWrite("1MVA0"); // success!
+            //MagnetoSerialConsole.SerialWrite("1MVA0"); // success!
+            testMotor.HomeMotor();
         }
         else
         {

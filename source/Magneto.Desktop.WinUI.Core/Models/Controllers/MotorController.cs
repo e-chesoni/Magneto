@@ -58,14 +58,28 @@ public class MotorController : IMotorController
         MagnetoLogger.Log("MotorController::MoveMotorsAbs -- Moving Motors (PLURAL)...",
             Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
         await _motor1.MoveMotorRel(motor1Pos);
+        Thread.Sleep(2000);
         await _motor2.MoveMotorRel(motor2Pos);
+        Thread.Sleep(2000);
     }
 
-    public async Task MoveMotorRel(double motorPos)
+    public async Task MoveMotorRel(int axis, double motorPos)
     {
         MagnetoLogger.Log("MotorController::MoveMotorAbs -- Moving Motors...",
             Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
-        await _motor1.MoveMotorRel(motorPos);
+
+        switch (axis)
+        {
+            case 1:
+                await _motor1.MoveMotorRel(motorPos);
+                break; 
+            case 2:
+                await _motor2.MoveMotorRel(motorPos);
+                break;
+            default: 
+                // TODO: Handle gracefully...
+                throw new ArgumentOutOfRangeException();
+        }
     }
 
     /// <summary>

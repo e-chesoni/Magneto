@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.StateMachineServices;
 using Magneto.Desktop.WinUI.Core.Models.BuildModels;
 using Magneto.Desktop.WinUI.Core.Models.Image;
+using Magneto.Desktop.WinUI.Core.Models.Motor;
 using Magneto.Desktop.WinUI.Core.Services;
 
 namespace Magneto.Desktop.WinUI.Core.Models.State.BuildManagerStates;
@@ -14,12 +15,17 @@ public class PrintingBuildManagerState : IBuildManagerState
 {
     private BuildManager _BuildManagerSM { get; set; }
 
+    StepperMotor testMotor = new StepperMotor(1);
+
     public PrintingBuildManagerState(BuildManager bm)
     {
         MagnetoLogger.Log("PrintingBuildManagerState::PrintingBuildManagerState", 
             Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
 
         _BuildManagerSM = bm;
+
+        // Set the build flag to resume
+        _BuildManagerSM.build_flag = BuildManager.BuildFlag.RESUME;
 
         // Start drawing
         _ = Draw();
@@ -61,7 +67,7 @@ public class PrintingBuildManagerState : IBuildManagerState
             {
                 case BuildManager.BuildFlag.RESUME:
                     _BuildManagerSM.laserController.Draw(slice);
-                    await _BuildManagerSM.buildController.MoveMotorsRel(motor1Pos, motor2Pos);
+                    _BuildManagerSM.buildController.MoveMotorsRel(motor1Pos, motor2Pos);
                     break;
 
                 case BuildManager.BuildFlag.PAUSE:
@@ -82,4 +88,12 @@ public class PrintingBuildManagerState : IBuildManagerState
 
     public void Resume() => throw new NotImplementedException();
     public void Done() => throw new NotImplementedException();
+    public void Homing()
+    {
+        // Home motors
+        _BuildManagerSM.buildController.HomeMotors();
+
+        // Return to idle state
+        _BuildManagerSM.TransitionTo(new IdleBuildManagerState(_BuildManagerSM));
+    }
 }

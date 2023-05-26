@@ -23,12 +23,6 @@ public class DoneBuildManagerState : IBuildManagerState
             Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
 
         _BuildManagerSM = _bm;
-
-        // Home motors
-        _ = _BuildManagerSM.buildController.HomeMotors();
-
-        // Return to idle state
-        _BuildManagerSM.TransitionTo(new IdleBuildManagerState(_BuildManagerSM));
     }
 
     public void Cancel() => throw new NotImplementedException();
@@ -37,4 +31,12 @@ public class DoneBuildManagerState : IBuildManagerState
     public void Pause() => throw new NotImplementedException();
     public void Resume() => throw new NotImplementedException();
     public void Start(ImageModel im) => throw new NotImplementedException();
+    public void Homing()
+    {
+        // Home motors
+        _BuildManagerSM.buildController.HomeMotors();
+
+        // Return to idle state
+        _BuildManagerSM.TransitionTo(new IdleBuildManagerState(_BuildManagerSM));
+    }
 }

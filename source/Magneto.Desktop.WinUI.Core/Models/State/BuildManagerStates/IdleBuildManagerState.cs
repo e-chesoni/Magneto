@@ -61,4 +61,13 @@ public class IdleBuildManagerState : IBuildManagerState
         MagnetoLogger.Log("IdleBuildManagerState::Done -- Cannot finish haven't started!",
             Contracts.Services.LogFactoryLogLevel.LogLevel.WARN);
     }
+
+    public void Homing()
+    {
+        // Home motors
+        _BuildManagerSM.buildController.HomeMotors();
+
+        // Return to idle state
+        _BuildManagerSM.TransitionTo(new IdleBuildManagerState(_BuildManagerSM));
+    }
 }

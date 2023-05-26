@@ -119,6 +119,12 @@ public class BuildManager : ISubsciber, IStateMachine
         _state.Cancel();
     }
 
+    public void HomeMotors()
+    {
+        _state.Homing();
+    }
+
+
     #endregion
 
     #region Subscriber Methods

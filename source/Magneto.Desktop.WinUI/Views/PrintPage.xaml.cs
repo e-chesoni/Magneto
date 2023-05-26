@@ -2,6 +2,7 @@
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Models;
 using Magneto.Desktop.WinUI.Core.Models.Image;
+using Magneto.Desktop.WinUI.Core.Models.Motor;
 using Magneto.Desktop.WinUI.Core.Services;
 using Magneto.Desktop.WinUI.ViewModels;
 
@@ -15,6 +16,8 @@ public sealed partial class PrintPage : Page
     public ImageModel _currentImage = new ImageModel();
 
     public MissionControl MissionControl;
+
+    StepperMotor testMotor = new StepperMotor(1);
 
     public PrintViewModel ViewModel
     {
@@ -48,6 +51,11 @@ public sealed partial class PrintPage : Page
 
     private void StartPrint_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        MissionControl.StartPrint(_currentImage); // TODO: FIX missionControl is null
+        MissionControl.StartPrint(_currentImage);
+    }
+
+    private void HomeMotors_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        MissionControl.HomeMotors();
     }
 }

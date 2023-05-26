@@ -49,4 +49,5 @@ public class PausedBuildManagerState : IBuildManagerState
     }
 
     public void Done() => throw new NotImplementedException();
+    public void Homing() => throw new NotImplementedException();
 }

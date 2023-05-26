@@ -11,7 +11,7 @@ namespace Magneto.Desktop.WinUI.Views;
 
 public sealed partial class MainPage : Page
 {
-    //MagnetoLogger _magnetoLogger = new MagnetoLogger();
+    private bool _initialPageLoaded = false;
 
     private void InitializeMagneto()
     {
@@ -20,6 +20,9 @@ public sealed partial class MainPage : Page
 
         // Set up serial console
         MagnetoSerialConsole.SetDefaultSerialPort();
+
+        // Set initial page loaded to true
+        _initialPageLoaded = true;
     }
 
     public MainViewModel ViewModel { get; }
@@ -28,8 +31,8 @@ public sealed partial class MainPage : Page
     {
         ViewModel = App.GetService<MainViewModel>();
         InitializeComponent();
-        InitializeMagneto();
-
+        if (!_initialPageLoaded) { InitializeMagneto(); }
+        
         // Print some log messages for testing
         MagnetoLogger.Log("PRINTING SAMPLE LOG MESSAGES", LogFactoryLogLevel.LogLevel.VERBOSE);
         MagnetoLogger.Log("This is a debug message", LogFactoryLogLevel.LogLevel.DEBUG);

@@ -30,7 +30,7 @@ public interface IMotorController
     /// <returns></returns> returns 0 on success, -1 on failure
     Task MoveMotorsRel(double motor1Pos, double motor2Pos);
 
-    Task MoveMotorRel(double motorPos);
+    Task MoveMotorRel(int axis, double motorPos);
 
     /// <summary>
     /// Home all attached motors
