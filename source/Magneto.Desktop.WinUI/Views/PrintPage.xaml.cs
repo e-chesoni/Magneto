@@ -13,7 +13,7 @@ namespace Magneto.Desktop.WinUI.Views;
 
 public sealed partial class PrintPage : Page
 {
-    public ImageModel _currentImage = new();
+    //public ImageModel _currentImage = new();
 
     public MissionControl MissionControl;
 
@@ -45,28 +45,43 @@ public sealed partial class PrintPage : Page
         // SelectedPrint is the name of the TextBox in PrintPage.xaml
         SelectedPrint.Text = path_to_image; // This is fine...not sure why there are red lines sometimes
 
-        // Generate fake image manager to get things going
-        _currentImage.path_to_image = path_to_image;
+        // Put a new image on the build manager
+        MissionControl.CreateImageModel(path_to_image);
 
         // TODO: Initialize Print
         if (string.IsNullOrEmpty(LayerThickness_TextBox.Text))
         {
             // TODO: Toast Message: Using default thickness of 5mm
             MagnetoLogger.Log("Using default thickness", LogFactoryLogLevel.LogLevel.DEBUG);
-            _currentImage.thickness = 5;
+            MissionControl.SetImageThickness(5);
         }
         else
         {
-            _currentImage.thickness = Convert.ToDouble(LayerThickness_TextBox.Text);
+            // Check that text box entry is a number
+            var textBoxValue = LayerThickness_TextBox.Text;
+            double value;
+            if (double.TryParse(textBoxValue, out value))
+            {
+                // Conversion succeeded, do something with 'value'
+                MissionControl.SetImageThickness(value);
+            }
+            else
+            {
+                // Conversion failed, handle the error
+                MagnetoLogger.Log("Conversion failed. Are you sure you entered a number?", 
+                    LogFactoryLogLevel.LogLevel.ERROR);
+            }
         }
-
         // Slice image
-        MissionControl.SliceImage(_currentImage);
+        MissionControl.SliceImage();
     }
 
     private void StartPrint_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        MissionControl.StartPrint(_currentImage);
+        // Calls build manager in method to handle print
+        // Build manager should have an image at this point!
+        // TODO: Clear images from build manager after print (in done and cancel states)
+        MissionControl.StartPrint();
     }
 
     private void HomeMotors_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -76,11 +91,15 @@ public sealed partial class PrintPage : Page
 
     private void IncrementThickness_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        _currentImage.thickness += 1;
+        var newThickness = MissionControl.GetImageThickness();
+        newThickness += 1;
+        MissionControl.SetImageThickness(newThickness);
     }
 
     private void DecrementThickness_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        _currentImage.thickness -= 1;
+        var newThickness = MissionControl.GetImageThickness();
+        newThickness -= 1;
+        MissionControl.SetImageThickness(newThickness);
     }
 }

@@ -11,7 +11,7 @@ public interface IStateMachine
     /// That accepts their respective state
 
     /// <summary>
-    ///  
+    ///  Cancel state machine process that is currently running 
     /// </summary>
     void Cancel();
 }

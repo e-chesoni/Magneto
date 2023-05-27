@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.Controllers;
 using Magneto.Desktop.WinUI.Core.Models.Motor;
 using Magneto.Desktop.WinUI.Core.Services;
+using static Magneto.Desktop.WinUI.Core.Models.Motor.StepperMotor;
 
 namespace Magneto.Desktop.WinUI.Core.Models.Controllers;
 
@@ -14,19 +11,44 @@ namespace Magneto.Desktop.WinUI.Core.Models.Controllers;
 /// </summary>
 public class MotorController : IMotorController
 {
+    #region Private Variables
+    /// <summary>
+    /// Motor on axis 1
+    /// </summary>
     private StepperMotor _motor1 { get; set; }
+
+    /// <summary>
+    /// Motor on axis 2
+    /// </summary>
     private StepperMotor _motor2 { get; set; }
 
+    #endregion
+
+    #region Constructors
+
+    /// <summary>
+    /// Constructor that accepts one stepper motor
+    /// </summary>
+    /// <param name="motor1"></param> Motor to set on axis 1
     public MotorController(StepperMotor motor1)
     {
         _motor1 = motor1;
     }
 
+    /// <summary>
+    /// Constructor that accepts two stepper motors
+    /// </summary>
+    /// <param name="motor1"></param>
+    /// <param name="motor2"></param>
     public MotorController(StepperMotor motor1, StepperMotor motor2)
     {
         _motor1 = motor1;
         _motor2 = motor2;
     }
+
+    #endregion
+
+    #region Movement Methods
 
     /// <summary>
     /// Perform sequenced motor movement
@@ -107,4 +129,29 @@ public class MotorController : IMotorController
             await _motor2.StopMotor();
         }
     }
+
+    #endregion
+
+    #region Status Methods
+
+    /// <summary>
+    /// Get the status of a motor on the requested axis
+    /// </summary>
+    /// <param name="axis"></param>
+    public MotorStatus GetMotorStatus(int axis)
+    {
+        switch(axis)
+        {
+            case 1:
+                return _motor1.GetStatus();
+            case 2:
+                return _motor2.GetStatus();
+            default:
+                MagnetoLogger.Log("Invalid motor axis.",
+                LogFactoryLogLevel.LogLevel.ERROR);
+                return MotorStatus.Error;
+        }
+    }
+
+    #endregion
 }

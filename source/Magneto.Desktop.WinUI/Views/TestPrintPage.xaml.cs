@@ -25,11 +25,8 @@ public sealed partial class TestPrintPage : Page
     {
         ViewModel = App.GetService<TestPrintViewModel>();
         InitializeComponent();
-
-        var method = "TestPrintPage";
-        var msg = MagnetoLogger.Concat(_header, method, "Landed on Test Print Page");
         
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
+        MagnetoLogger.Log("Landed on Test Print Page", LogFactoryLogLevel.LogLevel.DEBUG);
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)

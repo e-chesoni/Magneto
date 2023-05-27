@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Magneto.Desktop.WinUI.Core.Contracts.Services;
+﻿using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.Motor;
 using Magneto.Desktop.WinUI.Core.Services;
 
@@ -17,11 +12,15 @@ public class StepperMotor : IStepperMotor
     /// </summary>
     private MotorStatus _status;
 
+    #endregion
+
+    #region Public Variables
     /// <summary>
     /// Possible motor statuses
     /// </summary>
     public enum MotorStatus : short
     {
+        Error = -2,
         Bad = -1,
         Good = 0
     }
@@ -80,7 +79,7 @@ public class StepperMotor : IStepperMotor
     public async Task HomeMotor()
     {
         MagnetoLogger.Log("StepperMotor::HomeMotor -- Homing motor...",
-            Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
+            LogFactoryLogLevel.LogLevel.VERBOSE);
         await MoveMotorAbs(0);
     }
 

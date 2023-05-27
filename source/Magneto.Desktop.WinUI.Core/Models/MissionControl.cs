@@ -12,15 +12,36 @@ using Magneto.Desktop.WinUI.Core.Services;
 namespace Magneto.Desktop.WinUI.Core.Models;
 public class MissionControl : IMediator, IPublisher, ISubsciber
 {
+    #region Private Variables
+
+    /// <summary>
+    /// Build manager to handle printing tasks
+    /// </summary>
     private BuildManager _buildManager { get; set; }
 
+    /// <summary>
+    /// A list of subscribers that want to receive notifications from Mission Control
+    /// </summary>
     private List<ISubsciber> _subscibers;
 
-    // TODO: Remove later; testing that we can reach mission control from all pages
+    #endregion
+
+    #region Public Variables
+
+    /// <summary>
+    /// Message for testing
+    /// TODO: Remove later; testing that we can reach mission control from all pages
+    /// </summary>
     public string FriendlyMessage = "Hello from Mission Control!";
+
+    #endregion
 
     #region Constructor
 
+    /// <summary>
+    /// Mission control constructor
+    /// </summary>
+    /// <param name="bm"></param> Build manager
     public MissionControl(BuildManager bm)
     {
         MagnetoLogger.Log("MissionControl::MissionControl",
@@ -31,46 +52,105 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
 
     #endregion
 
+    #region Initialization Methods
+
+    /// <summary>
+    /// Generate an image model from a path to an image
+    /// </summary>
+    /// <param name="path_to_image"></param>
+    public void CreateImageModel(string path_to_image)
+    {
+        _buildManager.imageModel = new ImageModel();
+        _buildManager.SetImagePath(path_to_image);
+
+    }
+
+    #endregion
+
+    #region Getters
+
+    /// <summary>
+    /// Get the layer thickness for the print from the build manager
+    /// </summary>
+    /// <returns></returns>
+    public double GetImageThickness()
+    {
+        return _buildManager.GetImageThickness();
+    }
+
+    #endregion
+
+    #region Setters
+
+    /// <summary>
+    /// Set the layer thickness for the print on the build manager
+    /// </summary>
+    /// <param name="thickness"></param> Desired thickness
+    public void SetImageThickness(double thickness)
+    {
+        _buildManager.SetImageThickness(thickness);
+    }
+
+    #endregion
+
     #region Operations Delegated to ImageManager
 
-    public void SliceImage(ImageModel im)
+    /// <summary>
+    /// Slice an image on the build manager
+    /// </summary>
+    public void SliceImage()
     {
-        im.sliceStack = ImageHandler.SliceImage(im);
+        _buildManager.SliceImage();
     }
 
     #endregion
 
     #region Operations Delegated to BuildManager
 
-    public void StartPrint(ImageModel im)
+    /// <summary>
+    /// Use the build manager to start a print
+    /// </summary>
+    public void StartPrint()
     {
-        if (im.sliceStack.Count == 0) // TODO: FIX: Slice stack is null
+        if (_buildManager.imageModel.sliceStack.Count == 0)
         {
-            MagnetoLogger.Log("BuildManager::StartPrint -- There are no slices on this image model. Are you sure you sliced it?",
+            MagnetoLogger.Log("There are no slices on this image model. Are you sure you sliced it?",
             LogFactoryLogLevel.LogLevel.ERROR);
         }
         else
         {
-            // Pass image model with sliced image to build manager to handle print
-            _buildManager.StartPrint(im);
+            // Call build manager to handle print
+            _buildManager.StartPrint(_buildManager.imageModel);
         }
     }
 
+    /// <summary>
+    /// Pause a print that the build manager is handling
+    /// </summary>
     public void PausePrint()
     {
         _buildManager.Pause();
     }
 
+    /// <summary>
+    /// Resume a print using the build manager
+    /// </summary>
     public void Resume()
     {
         _buildManager.Resume();
     }
 
+    /// <summary>
+    /// Cancel the print the build manager is currently executing
+    /// </summary>
     public void CancelPrint()
     {
         _buildManager.Cancel();
     }
 
+    /// <summary>
+    /// Home motors using the build manager
+    /// </summary>
     public void HomeMotors()
     {
         _buildManager.HomeMotors();

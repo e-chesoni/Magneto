@@ -32,21 +32,6 @@ public static class MagnetoLogger
 
     #endregion
 
-    public static string Concat(string header, string method, string message)
-    {
-        return string.Format("{0}{1} -- {2}", header, method, message);
-    }
-
-    public static void LogWithHeader(string header, string method, string message, 
-        LogLevel level = LogLevel.VERBOSE,
-        [CallerMemberName] string origin = "",
-        [CallerFilePath] string filePath = "",
-        [CallerLineNumber] int lineNumber = 0)
-    {
-        var msg = Concat(header, method, message);
-        Log(msg, level, origin, filePath, lineNumber);
-    }
-
     public static void LogToFile(int level, string msg)
     {
         throw new NotImplementedException();
