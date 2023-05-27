@@ -58,4 +58,14 @@ public sealed partial class PrintPage : Page
     {
         MissionControl.HomeMotors();
     }
+
+    private void IncrementThickness_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+
+    }
+
+    private void DecrementThickness_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+
+    }
 }

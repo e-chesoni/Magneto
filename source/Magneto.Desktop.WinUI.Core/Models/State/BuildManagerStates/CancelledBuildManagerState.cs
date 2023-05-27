@@ -44,5 +44,5 @@ public class CancelledBuildManagerState : IBuildManagerState
 
     public void Resume() => throw new NotImplementedException();
     public void Done() => throw new NotImplementedException();
-    public void Homing() => throw new NotImplementedException();
+    public async Task Homing() => throw new NotImplementedException();
 }

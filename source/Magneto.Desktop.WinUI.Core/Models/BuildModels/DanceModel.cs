@@ -23,8 +23,8 @@ public class DanceModel
         foreach (Slice s in slice) 
         {
             // TODO: Calculate motor heights
-            (double, double) t = CalculateMotorHeight(s);
-            (double, double, Slice) pose = (t.Item1, t.Item2, s);
+            double height = CalculateMotorHeight(s);
+            (double, Slice) pose = (height, s);
 
             PoseModel poseModel = new PoseModel(pose);
             dance.Push(poseModel);
@@ -33,11 +33,12 @@ public class DanceModel
         return dance;
     }
 
-    private (double, double) CalculateMotorHeight(Slice s)
+    private double CalculateMotorHeight(Slice s)
     {
         MagnetoLogger.Log("DanceModel::CalculateMotorHeight -- Hard-coded values used to generate motor heights...", 
             Contracts.Services.LogFactoryLogLevel.LogLevel.WARN);
-        (double, double) t = (5, 5);
-        return t;
+
+        double height = 5;
+        return height;
     }
 }

@@ -59,15 +59,14 @@ public class PrintingBuildManagerState : IBuildManagerState
             var move = _BuildManagerSM.danceModel.dance.Pop();
             
             // Get motor positions and slice from pose
-            var motor1Pos = move.motor1Position;
-            var motor2Pos = move.motor2Position;
+            var thickness = move.thickness;
             var slice = move.slice;
 
             switch (_BuildManagerSM.build_flag)
             {
                 case BuildManager.BuildFlag.RESUME:
                     _BuildManagerSM.laserController.Draw(slice);
-                    _BuildManagerSM.buildController.MoveMotorsRel(motor1Pos, motor2Pos);
+                    _BuildManagerSM.buildController.MoveMotorsRel(thickness);
                     break;
 
                 case BuildManager.BuildFlag.PAUSE:
@@ -88,10 +87,10 @@ public class PrintingBuildManagerState : IBuildManagerState
 
     public void Resume() => throw new NotImplementedException();
     public void Done() => throw new NotImplementedException();
-    public void Homing()
+    public async Task Homing()
     {
         // Home motors
-        _BuildManagerSM.buildController.HomeMotors();
+        await _BuildManagerSM.buildController.HomeMotors();
 
         // Return to idle state
         _BuildManagerSM.TransitionTo(new IdleBuildManagerState(_BuildManagerSM));

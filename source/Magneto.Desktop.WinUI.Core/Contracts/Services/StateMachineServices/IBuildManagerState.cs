@@ -21,5 +21,5 @@ public interface IBuildManagerState
 
     void Cancel();
 
-    void Homing();
+    Task Homing();
 }

@@ -45,16 +45,44 @@
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <TextBlock Grid.Row="0" HorizontalAlignment="Center" Text="Manage Print"></TextBlock>
             <TextBox Grid.Row="1" x:Name="SelectedPrint" HorizontalAlignment="Center" Height="50" Width="500" TextWrapping="Wrap" AcceptsReturn="True" Text="Please select a file..."></TextBox>
-            <Button Grid.Row="2" HorizontalAlignment="Center" Margin="10" Height="50" Width="150" Content="Find Print"
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="300"/>
+                    <ColumnDefinition Width="100"/>
+                    <ColumnDefinition Width="75"/>
+                    <ColumnDefinition Width="75"/>
+                    <ColumnDefinition Width="75"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10"  
+                           Text="Please enter the desired thickness:"></TextBlock>
+                <TextBox Grid.Column="1" x:Name="LayerThickness_TextBox" HorizontalAlignment="Center" Height="50" Width="60" 
+                         TextWrapping="Wrap" AcceptsReturn="True"></TextBox>
+                <TextBlock Grid.Column="2" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10"
+                           Text="mm"></TextBlock>
+                <Button Grid.Column="3" HorizontalAlignment="Center" Margin="10" Height="50" Width="50"
+                    Click="IncrementThickness_Click">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="../Assets/caret-up.png" />
+                    </StackPanel>
+                </Button>
+                <Button Grid.Column="4" HorizontalAlignment="Center" Margin="10" Height="50" Width="50"
+                    Click="DecrementThickness_Click">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="../Assets/caret-down.png" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+            <Button Grid.Row="3" HorizontalAlignment="Center" Margin="10" Height="50" Width="150" Content="Find Print"
                     Click="FindPrint_Click"></Button>
-            <Button Grid.Row="3" HorizontalAlignment="Center" Margin="10" Height="50" Width="150" Content="Add Print"></Button>
-            <Button Grid.Row="4" HorizontalAlignment="Center" Margin="10" Height="50" Width="150" Content="Start Print" 
+            <Button Grid.Row="4" HorizontalAlignment="Center" Margin="10" Height="50" Width="150" Content="Add Print"></Button>
+            <Button Grid.Row="5" HorizontalAlignment="Center" Margin="10" Height="50" Width="150" Content="Start Print" 
                     Click="StartPrint_Click"></Button>
-            <Button Grid.Row="5" HorizontalAlignment="Center" Margin="10" Height="50" Width="150" Content="Cancel Print"></Button>
-            <Button Grid.Row="6" HorizontalAlignment="Center" Margin="10" Height="50" Width="150" Content="Home Motors"
+            <Button Grid.Row="6" HorizontalAlignment="Center" Margin="10" Height="50" Width="150" Content="Cancel Print"></Button>
+            <Button Grid.Row="7" HorizontalAlignment="Center" Margin="10" Height="50" Width="150" Content="Home Motors"
                     Click="HomeMotors_Click"></Button>
         </Grid>
     </Grid>

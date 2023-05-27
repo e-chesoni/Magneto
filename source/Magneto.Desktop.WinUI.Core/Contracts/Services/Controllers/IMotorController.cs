@@ -16,29 +16,23 @@ public interface IMotorController
 
     /// <summary>
     /// Perform sequenced motor movement
-    /// Syntax to move both motors to absolute position
     /// </summary>
-    /// <returns></returns> returns 0 on success, -1 on failure
-    Task MoveMotorsAbs(double motor1Pos, double motor2Pos);
-
-    Task MoveMotorAbs(double motorPos);
+    /// <param name="thickness"></param> Layer thickness for print
+    /// <returns></returns>
+    Task MoveMotorsAbs(double thickness);
 
     /// <summary>
     /// Perform sequenced motor movement
     /// Syntax to move both motors to relative position
     /// </summary>
     /// <returns></returns> returns 0 on success, -1 on failure
-    Task MoveMotorsRel(double motor1Pos, double motor2Pos);
-
-    Task MoveMotorRel(int axis, double motorPos);
+    Task MoveMotorsRel(double thickness);
 
     /// <summary>
     /// Home all attached motors
     /// (Return all attached motors to zero position)
     /// </summary>
     Task HomeMotors();
-
-    Task HomeMotor();
 
     /// <summary>
     /// EMERGENCY STOP: Stop all motors attached to controller

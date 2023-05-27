@@ -31,10 +31,10 @@ public class DoneBuildManagerState : IBuildManagerState
     public void Pause() => throw new NotImplementedException();
     public void Resume() => throw new NotImplementedException();
     public void Start(ImageModel im) => throw new NotImplementedException();
-    public void Homing()
+    public async Task Homing()
     {
         // Home motors
-        _BuildManagerSM.buildController.HomeMotors();
+        await _BuildManagerSM.buildController.HomeMotors();
 
         // Return to idle state
         _BuildManagerSM.TransitionTo(new IdleBuildManagerState(_BuildManagerSM));

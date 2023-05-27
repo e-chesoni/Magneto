@@ -62,10 +62,10 @@ public class IdleBuildManagerState : IBuildManagerState
             Contracts.Services.LogFactoryLogLevel.LogLevel.WARN);
     }
 
-    public void Homing()
+    public async Task Homing()
     {
         // Home motors
-        _BuildManagerSM.buildController.HomeMotors();
+        await _BuildManagerSM.buildController.HomeMotors();
 
         // Return to idle state
         _BuildManagerSM.TransitionTo(new IdleBuildManagerState(_BuildManagerSM));

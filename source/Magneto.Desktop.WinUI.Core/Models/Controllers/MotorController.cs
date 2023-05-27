@@ -33,19 +33,24 @@ public class MotorController : IMotorController
     /// Syntax to move both motors to absolute position
     /// </summary>
     /// <returns></returns> returns 0 on success, -1 on failure
-    public async Task MoveMotorsAbs(double motor1Pos, double motor2Pos)
+    public async Task MoveMotorsAbs(double thickness)
     {
         MagnetoLogger.Log("MotorController::MoveMotorsAbs -- Moving Motors (PLURAL)...",
             Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
-        await _motor1.MoveMotorAbs(motor1Pos);
-        await _motor2.MoveMotorAbs(motor2Pos);
-    }
 
-    public async Task MoveMotorAbs(double motorPos)
-    {
-        MagnetoLogger.Log("MotorController::MoveMotorAbs -- Moving Motors...",
-            Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
-        await _motor1.MoveMotorAbs(motorPos);
+        // TODO: Thread blocking is not a great idea...
+        // Find a more elegant way to handle running one motor at a time in the future
+        if (_motor1 != null)
+        {
+            await _motor1.MoveMotorAbs(thickness);
+            Thread.Sleep(2000);
+        }
+
+        if (_motor2 != null)
+        {
+            await _motor2.MoveMotorAbs(thickness);
+            Thread.Sleep(2000);
+        }
     }
 
     /// <summary>
@@ -53,35 +58,23 @@ public class MotorController : IMotorController
     /// Syntax to move both motors to relative position
     /// </summary>
     /// <returns></returns> returns 0 on success, -1 on failure
-    public async Task MoveMotorsRel(double motor1Pos, double motor2Pos)
+    public async Task MoveMotorsRel(double thickness)
     {
         MagnetoLogger.Log("MotorController::MoveMotorsAbs -- Moving Motors (PLURAL)...",
             Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
 
         // TODO: Thread blocking is not a great idea...
         // Find a more elegant way to handle running one motor at a time in the future
-        await _motor1.MoveMotorRel(motor1Pos);
-        Thread.Sleep(2000);
-        await _motor2.MoveMotorRel(motor2Pos);
-        Thread.Sleep(2000);
-    }
-
-    public async Task MoveMotorRel(int axis, double motorPos)
-    {
-        MagnetoLogger.Log("MotorController::MoveMotorAbs -- Moving Motors...",
-            Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
-
-        switch (axis)
+        if(_motor1 != null)
         {
-            case 1:
-                await _motor1.MoveMotorRel(motorPos);
-                break; 
-            case 2:
-                await _motor2.MoveMotorRel(motorPos);
-                break;
-            default: 
-                // TODO: Handle gracefully...
-                throw new ArgumentOutOfRangeException();
+            await _motor1.MoveMotorRel(thickness);
+            Thread.Sleep(2000);
+        }
+
+        if (_motor2 != null)
+        {
+            await _motor2.MoveMotorRel(thickness);
+            Thread.Sleep(2000);
         }
     }
 
@@ -98,21 +91,20 @@ public class MotorController : IMotorController
         await _motor2.HomeMotor();
     }
 
-    public async Task HomeMotor()
-    {
-        MagnetoLogger.Log("MotorController::HomeMotors -- Homing motor...",
-            Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
-
-        await _motor1.HomeMotor();
-    }
-
     /// <summary>
     /// EMERGENCY STOP: Stop all motors attached to controller
     /// </summary>
     /// <returns></returns> returns 0 on success, -1 on failure
     public async Task StopMotors()
     {
-        await _motor1.StopMotor();
-        await _motor2.StopMotor();
+        if (_motor1 != null)
+        {
+            await _motor1.StopMotor();
+        }
+
+        if (_motor2 != null)
+        {
+            await _motor2.StopMotor();
+        }
     }
 }
