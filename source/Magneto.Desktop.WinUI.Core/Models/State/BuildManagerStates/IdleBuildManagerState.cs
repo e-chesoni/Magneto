@@ -38,7 +38,7 @@ public class IdleBuildManagerState : IBuildManagerState
         MagnetoLogger.Log("Starting...", Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
 
         // Get poses for print
-        _BuildManagerSM.danceModel.GetPoseStack(im.sliceStack);
+        _BuildManagerSM.danceModel.GetPoseStack(im.sliceStack, im.thickness);
 
         // Transition to print state
         _BuildManagerSM.TransitionTo(new PrintingBuildManagerState(_BuildManagerSM));

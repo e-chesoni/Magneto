@@ -13,11 +13,11 @@ namespace Magneto.Desktop.WinUI.Views;
 
 public sealed partial class PrintPage : Page
 {
-    public ImageModel _currentImage = new ImageModel();
+    public ImageModel _currentImage = new();
 
     public MissionControl MissionControl;
 
-    StepperMotor testMotor = new StepperMotor(1);
+
 
     public PrintViewModel ViewModel
     {
@@ -27,15 +27,14 @@ public sealed partial class PrintPage : Page
     public PrintPage()
     {
         ViewModel = App.GetService<PrintViewModel>();
-        InitializeComponent();
+        InitializeComponent(); // This is fine...not sure why there are red lines sometimes
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
         MissionControl = (MissionControl)e.Parameter; // get parameter
-        var msg = string.Format("PrintPage::OnNavigatedTo -- {0}", MissionControl.FriendlyMessage);
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
+        MagnetoLogger.Log(MissionControl.FriendlyMessage, LogFactoryLogLevel.LogLevel.DEBUG);
     }
 
     private void FindPrint_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -43,10 +42,26 @@ public sealed partial class PrintPage : Page
         string path_to_image = "c:/path/to/image";
 
         // Add dummy string to text box
-        SelectedPrint.Text = path_to_image;
+        // SelectedPrint is the name of the TextBox in PrintPage.xaml
+        SelectedPrint.Text = path_to_image; // This is fine...not sure why there are red lines sometimes
 
         // Generate fake image manager to get things going
         _currentImage.path_to_image = path_to_image;
+
+        // TODO: Initialize Print
+        if (string.IsNullOrEmpty(LayerThickness_TextBox.Text))
+        {
+            // TODO: Toast Message: Using default thickness of 5mm
+            MagnetoLogger.Log("Using default thickness", LogFactoryLogLevel.LogLevel.DEBUG);
+            _currentImage.thickness = 5;
+        }
+        else
+        {
+            _currentImage.thickness = Convert.ToDouble(LayerThickness_TextBox.Text);
+        }
+
+        // Slice image
+        MissionControl.SliceImage(_currentImage);
     }
 
     private void StartPrint_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -61,11 +76,11 @@ public sealed partial class PrintPage : Page
 
     private void IncrementThickness_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-
+        _currentImage.thickness += 1;
     }
 
     private void DecrementThickness_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-
+        _currentImage.thickness -= 1;
     }
 }

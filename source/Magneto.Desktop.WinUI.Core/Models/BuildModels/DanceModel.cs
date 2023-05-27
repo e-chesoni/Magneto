@@ -16,29 +16,17 @@ public class DanceModel
 
     }
 
-    public Stack<PoseModel> GetPoseStack(Stack<Slice> slice)
+    public Stack<PoseModel> GetPoseStack(Stack<Slice> slice, double thickness)
     {
         MagnetoLogger.Log("DanceModel::GetPoseStack -- Getting pose stack...", Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
 
         foreach (Slice s in slice) 
         {
-            // TODO: Calculate motor heights
-            double height = CalculateMotorHeight(s);
-            (double, Slice) pose = (height, s);
-
+            (double, Slice) pose = (thickness, s);
             PoseModel poseModel = new PoseModel(pose);
             dance.Push(poseModel);
         }
 
         return dance;
-    }
-
-    private double CalculateMotorHeight(Slice s)
-    {
-        MagnetoLogger.Log("DanceModel::CalculateMotorHeight -- Hard-coded values used to generate motor heights...", 
-            Contracts.Services.LogFactoryLogLevel.LogLevel.WARN);
-
-        double height = 5;
-        return height;
     }
 }

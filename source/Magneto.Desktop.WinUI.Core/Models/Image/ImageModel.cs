@@ -13,6 +13,8 @@ public class ImageModel
 {
     public Stack<Slice> sliceStack;
 
+    public double thickness = 0;
+
     public string path_to_image { get; set; }
 
     public ImageModel()

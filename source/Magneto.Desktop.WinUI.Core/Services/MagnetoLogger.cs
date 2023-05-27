@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 using static Magneto.Desktop.WinUI.Core.Contracts.Services.LogFactoryLogLevel;
 using static Magneto.Desktop.WinUI.Core.Contracts.Services.LogFactoryOutputLevel;
 using static Magneto.Desktop.WinUI.Core.Services.MagnetoLogger;
@@ -103,12 +104,14 @@ public static class MagnetoLogger
         // If we should not log the message as the level is too low...
         if ((int)level < (int)LogFactoryOutputLevel)
             return;
-        
-        var msg = $"[{currentTime}] : " + message;
+
+        var fileName = Path.GetFileName(filePath);
+        var header = fileName.Substring(0, fileName.IndexOf("."));
+        var msg = $"[{currentTime}] : {header}::{origin} -- {message}";
 
         // If the user wants to know where the log originated from...
         if (IncludeLogOriginDetails)
-            msg = $"{msg} [{Path.GetFileName(filePath)} > {origin}() > Line {lineNumber}]" ;
+            msg = $"{msg} [{fileName} > {origin}() > Line {lineNumber}]" ;
 
         System.Diagnostics.Debug.WriteLine(msg, category);
 
