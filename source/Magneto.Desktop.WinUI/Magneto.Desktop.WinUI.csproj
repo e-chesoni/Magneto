@@ -16,7 +16,23 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Remove="Assets\caret-down.png" />
-    <Content Remove="Assets\caret-up.png" />
+    <Content Remove="Assets\caret-up.svg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Assets\caret-down.svg" />
+    <None Remove="Views\caret-down.png" />
+    <None Remove="Views\caret-up.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\caret-down.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Views\caret-down.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Views\caret-up.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -28,6 +44,7 @@
     <PackageReference Include="CommunityToolkit.WinUI.UI.Animations" Version="7.1.2" />
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.DataGrid" Version="7.1.2" />
+    <PackageReference Include="FontAwesome.Sharp" Version="6.3.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.2.230118.102" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />

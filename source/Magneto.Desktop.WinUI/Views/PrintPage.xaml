@@ -4,7 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:models="using:Magneto.Desktop.WinUI.Core.Models"
+    xmlns:models="using:Magneto.Desktop.WinUI.Core.Models" xmlns:sharp="using:FontAwesome.Sharp"
     mc:Ignorable="d">
     <Page.Resources>
         <DataTemplate x:Key="ItemTemplate" x:DataType="models:MissionControl">
@@ -66,13 +66,13 @@
                 <Button Grid.Column="3" HorizontalAlignment="Center" Margin="10" Height="50" Width="50"
                     Click="IncrementThickness_Click">
                     <StackPanel Orientation="Horizontal">
-                        <Image Source="../Assets/caret-up.png" />
+                        <Image Source="../Assets/caret-up.svg" />
                     </StackPanel>
                 </Button>
                 <Button Grid.Column="4" HorizontalAlignment="Center" Margin="10" Height="50" Width="50"
                     Click="DecrementThickness_Click">
                     <StackPanel Orientation="Horizontal">
-                        <Image Source="../Assets/caret-down.png" />
+                        <Image Height="512" Width="512" Source="caret-down.png" />
                     </StackPanel>
                 </Button>
             </Grid>
