@@ -13,16 +13,38 @@ namespace Magneto.Desktop.WinUI.Views;
 
 public sealed partial class UtilitiesDetailPage : Page
 {
+    #region Public Methods
+    /// <summary>
+    /// Store "global" mission control on this page
+    /// </summary>
     public MissionControl MissionControl { get; set; }
-    
+
+    /// <summary>
+    /// Page view model
+    /// </summary>
     public UtilitiesDetailViewModel ViewModel { get; }
 
+    #endregion
+
+    #region Constructor
+
+    /// <summary>
+    /// Utilities Detail Page constructor 
+    /// </summary>
     public UtilitiesDetailPage()
     {
         ViewModel = App.GetService<UtilitiesDetailViewModel>();
         InitializeComponent();
     }
 
+    #endregion
+
+    #region Navigation Methods
+
+    /// <summary>
+    /// Handle page startup tasks
+    /// </summary>
+    /// <param name="e"></param>
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
@@ -36,6 +58,10 @@ public sealed partial class UtilitiesDetailPage : Page
 
     }
 
+    /// <summary>
+    /// Handle tasks when page is left
+    /// </summary>
+    /// <param name="e"></param>
     protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
     {
         base.OnNavigatingFrom(e);
@@ -49,4 +75,6 @@ public sealed partial class UtilitiesDetailPage : Page
             }
         }
     }
+
+    #endregion
 }

@@ -13,23 +13,42 @@ namespace Magneto.Desktop.WinUI.Views;
 
 public sealed partial class PrintPage : Page
 {
-    //public ImageModel _currentImage = new();
+    #region Public Variables
 
+    /// <summary>
+    /// Store "global" mission control on this page
+    /// </summary>
     public MissionControl MissionControl;
 
-
-
+    /// <summary>
+    /// Page view model
+    /// </summary>
     public PrintViewModel ViewModel
     {
         get;
     }
 
+    #endregion
+
+    #region Constructor
+
+    /// <summary>
+    /// Print Page constructor
+    /// </summary>
     public PrintPage()
     {
         ViewModel = App.GetService<PrintViewModel>();
         InitializeComponent(); // This is fine...not sure why there are red lines sometimes
     }
 
+    #endregion
+
+    #region Navigation Methods
+
+    /// <summary>
+    /// Handle page startup tasks
+    /// </summary>
+    /// <param name="e"></param>
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
@@ -76,6 +95,10 @@ public sealed partial class PrintPage : Page
         MissionControl.SliceImage();
     }
 
+    #endregion
+
+    #region Button Methods
+
     private void StartPrint_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
         // Calls build manager in method to handle print
@@ -102,4 +125,6 @@ public sealed partial class PrintPage : Page
         newThickness -= 1;
         MissionControl.SetImageThickness(newThickness);
     }
+
+    #endregion
 }

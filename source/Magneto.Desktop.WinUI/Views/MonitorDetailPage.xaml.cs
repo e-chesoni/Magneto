@@ -13,16 +13,39 @@ namespace Magneto.Desktop.WinUI.Views;
 
 public sealed partial class MonitorDetailPage : Page
 {
+    #region Public Variable
+
+    /// <summary>
+    /// Store "global" mission control on this page
+    /// </summary>
     public MissionControl MissionControl { get; set; }
 
+    /// <summary>
+    /// Page view model
+    /// </summary>
     public MonitorDetailViewModel ViewModel { get; }
 
+    #endregion
+
+    #region Constructor
+
+    /// <summary>
+    /// Monitor Details Page constructor
+    /// </summary>
     public MonitorDetailPage()
     {
         ViewModel = App.GetService<MonitorDetailViewModel>();
         InitializeComponent();
     }
 
+    #endregion
+
+    #region Navigation Methods
+
+    /// <summary>
+    /// Handle page startup tasks
+    /// </summary>
+    /// <param name="e"></param>
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
@@ -35,6 +58,10 @@ public sealed partial class MonitorDetailPage : Page
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
     }
 
+    /// <summary>
+    /// Handle page tasks when page is navigated from
+    /// </summary>
+    /// <param name="e"></param>
     protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
     {
         base.OnNavigatingFrom(e);
@@ -48,4 +75,6 @@ public sealed partial class MonitorDetailPage : Page
             }
         }
     }
+
+    #endregion
 }

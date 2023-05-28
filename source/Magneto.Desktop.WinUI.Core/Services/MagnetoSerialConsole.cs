@@ -11,21 +11,51 @@ namespace Magneto.Desktop.WinUI.Core.Services;
 
 public static class MagnetoSerialConsole
 {
+    #region Private Variables
 
-    private static readonly string _header = "MagnetoSerialConsole";
-
+    /// <summary>
+    /// Serial port
+    /// </summary>
     private static SerialPort _serialPort = new SerialPort();
-    static bool _success;
-    private static string _defaultPortName = "COM4";
-    private static int _defaultBaudRate = 38400;
-    private static string _defaultParity = "None";
-    private static int _defaultDataBits = 8;
-    private static string _defaultStopBits = "One";
-    private static string _defaultHandshake = "None";
 
-    /****************************************************************/
-    /*                         PORT SETUP                           */
-    /****************************************************************/
+    /// <summary>
+    /// Success boolean for methods
+    /// </summary>
+    private static bool _success;
+
+    /// <summary>
+    /// Default port name for port setup
+    /// </summary>
+    private static readonly string _defaultPortName = "COM4";
+
+    /// <summary>
+    /// Default baud rate for port setup
+    /// </summary>
+    private static readonly int _defaultBaudRate = 38400;
+
+    /// <summary>
+    /// Default parity for port setup
+    /// </summary>
+    private static readonly string _defaultParity = "None";
+
+    /// <summary>
+    /// Default data bits for port setup
+    /// </summary>
+    private static readonly int _defaultDataBits = 8;
+
+    /// <summary>
+    /// Default stop bits for port setup
+    /// </summary>
+    private static readonly string _defaultStopBits = "One";
+
+    /// <summary>
+    /// Default handshake for port setup
+    /// </summary>
+    private static readonly string _defaultHandshake = "None";
+
+    #endregion
+
+    #region Port Setup Methods
 
     /// <summary>
     /// Print list of available ports
@@ -34,13 +64,18 @@ public static class MagnetoSerialConsole
     {
         var msg = "";
         MagnetoLogger.Log("Available Ports:", LogFactoryLogLevel.LogLevel.DEBUG);
-        foreach (string s in SerialPort.GetPortNames())
+        foreach (var s in SerialPort.GetPortNames())
         {
             msg = $"   {s}";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
         }
     }
 
+    /// <summary>
+    /// Set which port to use (ex. COM3)
+    /// </summary>
+    /// <param name="portName"></param> Port to use
+    /// <returns></returns>
     private static string SetPortName(string portName)
     {
         if (portName == "" || !(portName.ToLower()).StartsWith("com"))
@@ -54,6 +89,11 @@ public static class MagnetoSerialConsole
         return portName;
     }
 
+    /// <summary>
+    /// Set the port baud rate
+    /// </summary>
+    /// <param name="baudRate"></param> Baud rate
+    /// <returns></returns>
     private static int SetBaudRate(int baudRate)
     {
         if (baudRate == 0)
@@ -67,6 +107,11 @@ public static class MagnetoSerialConsole
         return baudRate;
     }
 
+    /// <summary>
+    /// Set the port parity
+    /// </summary>
+    /// <param name="parity"></param> Parity
+    /// <returns></returns>
     private static Parity SetParity(string parity)
     {
         if (parity == "")
@@ -80,6 +125,11 @@ public static class MagnetoSerialConsole
         return (Parity)Enum.Parse(typeof(Parity), parity, true);
     }
 
+    /// <summary>
+    /// Set the port data bits
+    /// </summary>
+    /// <param name="dataBits"></param> Data bits
+    /// <returns></returns>
     private static int SetDataBits(int dataBits)
     {
         var msg = $"Setting DataBits to {dataBits}";
@@ -88,6 +138,11 @@ public static class MagnetoSerialConsole
         return dataBits;
     }
 
+    /// <summary>
+    /// Set the port stop bits
+    /// </summary>
+    /// <param name="stopBits"></param> Stop bits
+    /// <returns></returns>
     private static StopBits SetStopBits(string stopBits)
     {
         var msg = $"Setting stopBits to {stopBits}";
@@ -96,6 +151,11 @@ public static class MagnetoSerialConsole
         return (StopBits)Enum.Parse(typeof(StopBits), stopBits, true);
     }
 
+    /// <summary>
+    /// Set the port handshake
+    /// </summary>
+    /// <param name="handshake"></param> Handshake
+    /// <returns></returns>
     private static Handshake SetHandshake(string handshake)
     {
         var msg = $"Setting handshake to {handshake}";
@@ -104,6 +164,15 @@ public static class MagnetoSerialConsole
         return (Handshake)Enum.Parse(typeof(Handshake), handshake, true);
     }
 
+    /// <summary>
+    /// Manually set port characteristics
+    /// </summary>
+    /// <param name="port"></param> Desired port to use (ex. COM3)
+    /// <param name="baud"></param> Desired port baud rate
+    /// <param name="parity"></param> Desired port parity
+    /// <param name="dataBits"></param> Desired port data bits
+    /// <param name="stopBits"></param> Desired port stop bits
+    /// <param name="handshake"></param> Desired port handshake
     public static void SetSerialPort(string port, int baud, string parity, int dataBits, string stopBits, string handshake)
     {
         var msg = "Initializing user defined serial port...";
@@ -118,6 +187,9 @@ public static class MagnetoSerialConsole
         _serialPort.Handshake = SetHandshake(handshake);
     }
 
+    /// <summary>
+    /// Use preset/default settings to set up port
+    /// </summary>
     public static void SetDefaultSerialPort()
     {
         var msg = "Initializing default serial port...";
@@ -131,9 +203,14 @@ public static class MagnetoSerialConsole
         _serialPort.Handshake = SetHandshake(_defaultHandshake);
     }
 
-    /****************************************************************/
-    /*                     OPEN & CLOSE METHODS                     */
-    /****************************************************************/
+    #endregion
+
+    #region Open and Close Methods
+
+    /// <summary>
+    /// Open the serial port
+    /// </summary>
+    /// <returns></returns>
     public static bool OpenSerialPort()
     {
         var msg = "Opening serial port...";
@@ -157,6 +234,10 @@ public static class MagnetoSerialConsole
         return _success;
     }
 
+    /// <summary>
+    /// Close the serial port
+    /// </summary>
+    /// <returns></returns>
     public static bool CloseSerialPort()
     {
         var msg = "Closing serial port...";
@@ -176,14 +257,24 @@ public static class MagnetoSerialConsole
         return _success;
     }
 
-    /****************************************************************/
-    /*                     READ/WRITE METHODS                       */
-    /****************************************************************/
+    #endregion
+
+    #region Read and Write Methods
+
+    /// <summary>
+    /// Write a message to output
+    /// </summary>
+    /// <param name="msg"></param> Message to write to output
     public static void Write(string msg)
     {
         System.Diagnostics.Debug.WriteLine(msg);
     }
 
+    /// <summary>
+    /// Write a message to the serial console
+    /// ( Used to send motor commands )
+    /// </summary>
+    /// <param name="serial_msg"></param> Message to write to the serial console
     public static void SerialWrite(string serial_msg)
     {
         var msg = "Sending move command...";
@@ -219,9 +310,16 @@ public static class MagnetoSerialConsole
         }
     }
 
+    /// <summary>
+    /// Read a message from the serial console
+    /// TODO: This method is untested
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    /// <returns></returns>
     public static string SerialRead(object sender, SerialDataReceivedEventArgs e)
     {
-        string s = "";
+        var s = "";
 
         if (_serialPort.IsOpen)
         {
@@ -244,4 +342,5 @@ public static class MagnetoSerialConsole
         return s;
     }
 
+    #endregion
 }

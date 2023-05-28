@@ -2,14 +2,36 @@
 using Magneto.Desktop.WinUI.Core.Models;
 
 namespace Magneto.Desktop.WinUI.Core.Services;
+
+/// <summary>
+/// Generates sample print data
+/// </summary>
 public class SamplePrintService : ISamplePrintService
 {
+    #region Private Variables
+
+    /// <summary>
+    /// A list of sample print data
+    /// </summary>
     private List<SamplePrint> _allPrints;
 
-    public SamplePrintService()
-    {
-    }
+    #endregion
 
+    #region Constructor
+
+    /// <summary>
+    ///  Constructor
+    /// </summary>
+    public SamplePrintService() { }
+
+    #endregion
+
+    #region Generators
+
+    /// <summary>
+    /// Generate sample prints
+    /// </summary>
+    /// <returns></returns>
     public static IEnumerable<SamplePrint> GetPrints()
     {
         return new List<SamplePrint>()
@@ -69,4 +91,6 @@ public class SamplePrintService : ISamplePrintService
         await Task.CompletedTask;
         return _allPrints;
     }
+
+    #endregion
 }

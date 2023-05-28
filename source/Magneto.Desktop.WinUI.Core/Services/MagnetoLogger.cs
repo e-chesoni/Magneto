@@ -1,17 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.PortableExecutable;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using Magneto.Desktop.WinUI.Core.Contracts.Services;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+﻿using System.Runtime.CompilerServices;
 using static Magneto.Desktop.WinUI.Core.Contracts.Services.LogFactoryLogLevel;
 using static Magneto.Desktop.WinUI.Core.Contracts.Services.LogFactoryOutputLevel;
-using static Magneto.Desktop.WinUI.Core.Services.MagnetoLogger;
 
 namespace Magneto.Desktop.WinUI.Core.Services;
+
+/// <summary>
+/// Logger for Magneto app
+/// </summary>
 public static class MagnetoLogger
 {
     #region Public Properties
@@ -32,6 +27,14 @@ public static class MagnetoLogger
 
     #endregion
 
+    #region Logging Methods
+
+    /// <summary>
+    /// Store log message in a file
+    /// </summary>
+    /// <param name="level"></param> Log level
+    /// <param name="msg"></param> Log message
+    /// <exception cref="NotImplementedException"></exception>
     public static void LogToFile(int level, string msg)
     {
         throw new NotImplementedException();
@@ -52,11 +55,11 @@ public static class MagnetoLogger
         [CallerFilePath] string filePath = "",
         [CallerLineNumber] int lineNumber = 0)
     {
-        // Init category for log
+        // Initialize category for log
         var category = "";
 
         // Get time stamp
-        string currentTime = DateTime.Now.ToString("HH:mm:ss tt");
+        var currentTime = DateTime.Now.ToString("HH:mm:ss tt");
 
         // Color console based on level
         switch (level)
@@ -90,15 +93,18 @@ public static class MagnetoLogger
         if ((int)level < (int)LogFactoryOutputLevel)
             return;
 
+        // Create a header with the class and method name
         var fileName = Path.GetFileName(filePath);
-        var header = fileName.Substring(0, fileName.IndexOf("."));
-        var msg = $"[{currentTime}] : {header}::{origin} -- {message}";
+        var className = fileName.Substring(0, fileName.IndexOf("."));
+        var msg = $"[{currentTime}] : {className}::{origin} -- {message}";
 
         // If the user wants to know where the log originated from...
         if (IncludeLogOriginDetails)
             msg = $"{msg} [{fileName} > {origin}() > Line {lineNumber}]" ;
 
+        // Print message in output
         System.Diagnostics.Debug.WriteLine(msg, category);
-
     }
+
+    #endregion
 }
