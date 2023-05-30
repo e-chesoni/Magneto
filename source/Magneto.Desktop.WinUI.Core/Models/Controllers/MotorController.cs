@@ -57,8 +57,8 @@ public class MotorController : IMotorController
     /// <returns></returns> returns 0 on success, -1 on failure
     public async Task MoveMotorsAbs(double thickness)
     {
-        MagnetoLogger.Log("MotorController::MoveMotorsAbs -- Moving Motors (PLURAL)...",
-            Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
+        MagnetoLogger.Log("Moving Motors (PLURAL)",
+            LogFactoryLogLevel.LogLevel.VERBOSE);
 
         // TODO: Thread blocking is not a great idea...
         // Find a more elegant way to handle running one motor at a time in the future
@@ -67,11 +67,63 @@ public class MotorController : IMotorController
             await _motor1.MoveMotorAbs(thickness);
             Thread.Sleep(2000);
         }
+        else
+        {
+            MagnetoLogger.Log("Motor 1 is null.",
+                LogFactoryLogLevel.LogLevel.ERROR);
+        }
 
         if (_motor2 != null)
         {
             await _motor2.MoveMotorAbs(thickness);
             Thread.Sleep(2000);
+        }
+        else
+        {
+            MagnetoLogger.Log("Motor 2 is null.",
+                LogFactoryLogLevel.LogLevel.ERROR);
+        }
+    }
+
+    /// <summary>
+    /// Move one motor relative to an absolute position
+    /// </summary>
+    /// <param name="axis"></param> The axis of the motor to move
+    /// <param name="step"></param> Distance to move motor
+    /// <returns></returns>
+    public async Task MoveMotorAbs(int axis, double step)
+    {
+        MagnetoLogger.Log("Moving Motor Absolute",
+            LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        switch(axis)
+        {
+            case 1:
+                if (_motor1 != null)
+                {
+                    await _motor1.MoveMotorAbs(step);
+                }
+                else
+                {
+                    MagnetoLogger.Log("Motor 1 is null.",
+                        LogFactoryLogLevel.LogLevel.ERROR);
+                }
+                break;
+            case 2:
+                if (_motor2 != null)
+                {
+                    await _motor2.MoveMotorAbs(step);
+                }
+                else
+                {
+                    MagnetoLogger.Log("Motor 2 is null.",
+                        LogFactoryLogLevel.LogLevel.ERROR);
+                }
+                break;
+            default:
+                MagnetoLogger.Log("Invalid motor axis received.",
+                    LogFactoryLogLevel.LogLevel.ERROR);
+                break;
         }
     }
 
@@ -99,6 +151,49 @@ public class MotorController : IMotorController
             Thread.Sleep(2000);
         }
     }
+
+    /// <summary>
+    /// Move one motor relative to its current position
+    /// </summary>
+    /// <param name="axis"></param> The axis of the motor to move
+    /// <param name="step"></param> Distance to move motor
+    /// <returns></returns>
+    public async Task MoveMotorRel(int axis, double step)
+    {
+        MagnetoLogger.Log("Moving Motor Relative",
+            LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        switch (axis)
+        {
+            case 1:
+                if (_motor1 != null)
+                {
+                    await _motor1.MoveMotorRel(step);
+                }
+                else
+                {
+                    MagnetoLogger.Log("Motor 1 is null.",
+                        LogFactoryLogLevel.LogLevel.ERROR);
+                }
+                break;
+            case 2:
+                if (_motor2 != null)
+                {
+                    await _motor2.MoveMotorRel(step);
+                }
+                else
+                {
+                    MagnetoLogger.Log("Motor 2 is null.",
+                        LogFactoryLogLevel.LogLevel.ERROR);
+                }
+                break;
+            default:
+                MagnetoLogger.Log("Invalid motor axis received.",
+                    LogFactoryLogLevel.LogLevel.ERROR);
+                break;
+        }
+    }
+
 
     /// <summary>
     /// Home all attached motors

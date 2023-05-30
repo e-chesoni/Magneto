@@ -99,6 +99,26 @@ public sealed partial class PrintPage : Page
 
     #region Button Methods
 
+    private void MoveMotor1Up_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        MissionControl.LevelUpMotor1();
+    }
+
+    private void MoveMotor1Down_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        MissionControl.LevelDownMotor1();
+    }
+
+    private void MoveMotor2Up_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        MissionControl.LevelUpMotor2();
+    }
+
+    private void MoveMotor2Down_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        MissionControl.LevelDownMotor2();
+    }
+
     private void StartPrint_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
         // Calls build manager in method to handle print

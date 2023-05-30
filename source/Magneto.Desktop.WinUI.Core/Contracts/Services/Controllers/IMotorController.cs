@@ -22,11 +22,27 @@ public interface IMotorController
     Task MoveMotorsAbs(double thickness);
 
     /// <summary>
+    /// Move one motor relative to an absolute position
+    /// </summary>
+    /// <param name="axis"></param> The axis of the motor to move
+    /// <param name="step"></param> Distance to move motor
+    /// <returns></returns>
+    Task MoveMotorAbs(int axis, double step);
+
+    /// <summary>
     /// Perform sequenced motor movement
     /// Syntax to move both motors to relative position
     /// </summary>
     /// <returns></returns> returns 0 on success, -1 on failure
     Task MoveMotorsRel(double thickness);
+
+    /// <summary>
+    /// Move one motor relative to its current position
+    /// </summary>
+    /// <param name="axis"></param> The axis of the motor to move
+    /// <param name="step"></param> Distance to move motor
+    /// <returns></returns>
+    Task MoveMotorRel(int axis, double step);
 
     /// <summary>
     /// Home all attached motors

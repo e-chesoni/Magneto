@@ -39,6 +39,9 @@
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
+                <RowDefinition Height="170"/>
+                <RowDefinition Height="75"/>
+                <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
@@ -47,9 +50,52 @@
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <TextBlock Grid.Row="0" HorizontalAlignment="Center" Text="Manage Print"></TextBlock>
-            <TextBox Grid.Row="1" x:Name="SelectedPrint" HorizontalAlignment="Center" Height="50" Width="500" TextWrapping="Wrap" AcceptsReturn="True" Text="Please select a file..."></TextBox>
-            <Grid Grid.Row="2">
+            <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Level Bed:"></TextBlock>
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="75"/>
+                    <ColumnDefinition Width="75"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="100"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="75"/>
+                    <ColumnDefinition Width="75"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Column="0" Grid.Row="0" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10"
+                           Text="Motor 1:"></TextBlock>
+                <TextBox Grid.Column="1" Grid.Row="0" HorizontalAlignment="Center" Height="50" Width="60"></TextBox>
+                <TextBlock Grid.Column="2" Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10"
+                           Text="mm"></TextBlock>
+                <Button Grid.Column="3" Grid.Row="0" HorizontalAlignment="Center" Margin="10" Height="50" Width="50"
+                        Click="MoveMotor1Up_Click"></Button>
+                <Button Grid.Column="4" Grid.Row="0" HorizontalAlignment="Center" Margin="10" Height="50" Width="50"
+                        Click="MoveMotor1Down_Click"></Button>
+
+                <TextBlock Grid.Column="6" Grid.Row="0" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10"
+                           Text="Motor 2:"></TextBlock>
+                <TextBox Grid.Column="7" Grid.Row="0" HorizontalAlignment="Center" Height="50" Width="60"></TextBox>
+                <TextBlock Grid.Column="8" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10"
+                           Text="mm"></TextBlock>
+                <Button Grid.Column="9" Grid.Row="0" HorizontalAlignment="Center" Margin="10" Height="50" Width="50"
+                        Click="MoveMotor2Up_Click"></Button>
+                <Button Grid.Column="10" Grid.Row="0" HorizontalAlignment="Center" Margin="10" Height="50" Width="50"
+                        Click="MoveMotor2Down_Click"></Button>
+            </Grid>
+            
+            <Button Grid.Row="2" HorizontalAlignment="Center" Margin="10" Height="50"
+                        Content="Done"></Button>
+            
+            <TextBlock Grid.Row="3" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Manage Print"></TextBlock>
+            <TextBox Grid.Row="4" x:Name="SelectedPrint" HorizontalAlignment="Center" Height="50" Width="500" TextWrapping="Wrap" AcceptsReturn="True" Text="Please select a file..."></TextBox>
+            <Grid Grid.Row="5">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="300"/>
                     <ColumnDefinition Width="100"/>
@@ -77,13 +123,13 @@
                     </StackPanel>
                 </Button>
             </Grid>
-            <Button Grid.Row="3" HorizontalAlignment="Center" Margin="10" Height="50" Width="150" Content="Find Print"
+            <Button Grid.Row="6" HorizontalAlignment="Center" Margin="10" Height="50" Width="150" Content="Find Print"
                     Click="FindPrint_Click"></Button>
-            <Button Grid.Row="4" HorizontalAlignment="Center" Margin="10" Height="50" Width="150" Content="Add Print"></Button>
-            <Button Grid.Row="5" HorizontalAlignment="Center" Margin="10" Height="50" Width="150" Content="Start Print" 
+            <Button Grid.Row="7" HorizontalAlignment="Center" Margin="10" Height="50" Width="150" Content="Add Print"></Button>
+            <Button Grid.Row="8" HorizontalAlignment="Center" Margin="10" Height="50" Width="150" Content="Start Print" 
                     Click="StartPrint_Click"></Button>
-            <Button Grid.Row="6" HorizontalAlignment="Center" Margin="10" Height="50" Width="150" Content="Cancel Print"></Button>
-            <Button Grid.Row="7" HorizontalAlignment="Center" Margin="10" Height="50" Width="150" Content="Home Motors"
+            <Button Grid.Row="9" HorizontalAlignment="Center" Margin="10" Height="50" Width="150" Content="Cancel Print"></Button>
+            <Button Grid.Row="10" HorizontalAlignment="Center" Margin="10" Height="50" Width="150" Content="Home Motors"
                     Click="HomeMotors_Click"></Button>
         </Grid>
     </Grid>

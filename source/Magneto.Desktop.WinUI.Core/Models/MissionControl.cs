@@ -24,6 +24,12 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     /// </summary>
     private List<ISubsciber> _subscibers;
 
+    /// <summary>
+    /// Amount motor steps when bed level button is pushed up or down
+    /// Value is in mm
+    /// </summary>
+    private double _bedLevelStep { get; set; }
+
     #endregion
 
     #region Public Variables
@@ -48,6 +54,7 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
             LogFactoryLogLevel.LogLevel.VERBOSE);
 
         _buildManager = bm;
+        _bedLevelStep = 1; // in mm
     }
 
     #endregion
@@ -89,6 +96,35 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     public void SetImageThickness(double thickness)
     {
         _buildManager.SetImageThickness(thickness);
+    }
+
+    #endregion
+
+    #region Bed Leveling
+
+    public void LevelUpMotor1()
+    {
+        var axis = 1;
+        _ = _buildManager.buildController.MoveMotorRel(axis, _bedLevelStep);
+        
+    }
+    public void LevelDownMotor1()
+    {
+        var axis = 1;
+        var step = -_bedLevelStep;
+        _ = _buildManager.buildController.MoveMotorRel(axis, step);
+    }
+    public void LevelUpMotor2()
+    {
+        var axis = 2;
+        _ = _buildManager.buildController.MoveMotorRel(axis, _bedLevelStep);
+    }
+
+    public void LevelDownMotor2()
+    {
+        var axis = 2;
+        var step = -_bedLevelStep;
+        _ = _buildManager.buildController.MoveMotorRel(axis, step);
     }
 
     #endregion
