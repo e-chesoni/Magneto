@@ -148,7 +148,7 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     /// </summary>
     public void StartPrint()
     {
-        if (_buildManager.imageModel.sliceStack.Count == 0)
+        if (_buildManager.imageModel.sliceStack.Count == 0) // TODO: FIX bm.imageModel is null error
         {
             MagnetoLogger.Log("There are no slices on this image model. Are you sure you sliced it?",
             LogFactoryLogLevel.LogLevel.ERROR);

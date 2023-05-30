@@ -99,6 +99,11 @@ public sealed partial class PrintPage : Page
 
     #region Button Methods
 
+    private void LevelBed_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        MissionControl.HomeMotors();
+    }
+
     private void MoveMotor1Up_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
         MissionControl.LevelUpMotor1();

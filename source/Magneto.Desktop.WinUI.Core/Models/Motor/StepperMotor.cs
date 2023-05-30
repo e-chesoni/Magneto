@@ -8,6 +8,11 @@ public class StepperMotor : IStepperMotor
     #region Private Variables
 
     /// <summary>
+    /// Calculated motor position
+    /// </summary>
+    double _calculatedPos;
+
+    /// <summary>
     /// Motor status
     /// </summary>
     private MotorStatus _status;
@@ -81,6 +86,7 @@ public class StepperMotor : IStepperMotor
         MagnetoLogger.Log("StepperMotor::HomeMotor -- Homing motor...",
             LogFactoryLogLevel.LogLevel.VERBOSE);
         await MoveMotorAbs(0);
+        _calculatedPos = 0;
     }
 
     /// <summary>
@@ -112,17 +118,22 @@ public class StepperMotor : IStepperMotor
                 LogFactoryLogLevel.LogLevel.ERROR);
             return Task.CompletedTask;
         }
-        // Log message
-        var msg = string.Format("StepperMotor::MoveMotorAbs -- Moving motor on axis {0} to position {1}mm", 
-            motorAxis, pos);
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
         // Move motor
         var s = string.Format("{0}MVA{1}", motorAxis, pos);
-
         if (MagnetoSerialConsole.OpenSerialPort())
         {
             MagnetoSerialConsole.SerialWrite(s);
+
+            // Log message
+            var msg = string.Format("Moving motor on axis {0} to position {1}mm",
+                motorAxis, pos);
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+            // Update calculated position
+            _calculatedPos = pos;
+            msg = $"New calculated position: {_calculatedPos}";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
         }
         else
         {
@@ -145,27 +156,34 @@ public class StepperMotor : IStepperMotor
     public Task MoveMotorRel(double pos)
     {
         // get the current position
-        var currPos = GetPos(); // WARNING: Calling GetPos causes this method to fail
-        var newPos = 0 + pos;
+        // TODO: In the future use GetPos to get desiredPos
+        //var currPos = GetPos();
+        var desiredPos = _calculatedPos + pos;
 
         // if the current position + steps is greater than 35, fail
-        if (pos < 0 || pos > 35)
+        if (desiredPos < 0 || desiredPos > 35)
         {
             MagnetoLogger.Log("Invalid position. Aborting motor move operation.",
-                Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
+                LogFactoryLogLevel.LogLevel.ERROR);
             return Task.CompletedTask;
         }
 
-        // Log message
-        var msg = string.Format("StepperMotor::MoveMotorRel -- Moving motor on axis {0} {1}mm relative to current position",
-            motorAxis, pos);
-        MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
+        
 
         var s = string.Format("{0}MVR{1}", motorAxis, pos);
-
         if (MagnetoSerialConsole.OpenSerialPort())
         {
             MagnetoSerialConsole.SerialWrite(s);
+
+            // Log message
+            var msg = string.Format("Moving motor on axis {0} {1}mm relative to current position",
+                motorAxis, pos);
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+            // Update calculated position
+            _calculatedPos = desiredPos;
+            msg = $"New calculated position: {_calculatedPos}";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
         }
         else
         {
