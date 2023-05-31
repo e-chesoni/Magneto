@@ -65,10 +65,10 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <Button x:Name="HomeMotorButton" Content="Home Motor" Grid.Column="0"
-                        Grid.Row="4" Margin="10" Click="HomeMotorButton_Click"></Button>
-                    <Button x:Name="MoveMotorButton" Content="Move Motor" Grid.Column="1"
+                    <Button x:Name="MoveMotorButton" Content="Move Motor" Grid.Column="0"
                         Grid.Row="4" Margin="10" Click="MoveMotorButton_Click"></Button>
+                    <Button x:Name="HomeMotorButton" Content="Home Motor" Grid.Column="1"
+                        Grid.Row="4" Margin="10" Click="HomeMotorButton_Click"></Button>
                 </Grid>
             </Grid>
             
