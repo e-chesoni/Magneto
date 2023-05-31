@@ -72,7 +72,8 @@
                 </Grid.RowDefinitions>
                 <TextBlock Grid.Column="0" Grid.Row="0" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10"
                            Text="Motor 1:"></TextBlock>
-                <TextBox Grid.Column="1" Grid.Row="0" HorizontalAlignment="Center" Height="50" Width="60"></TextBox>
+                <TextBox Grid.Column="1" Grid.Row="0" x:Name="Motor1StepTextBox" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                         TextAlignment="Center" Height="50" Width="60"></TextBox>
                 <TextBlock Grid.Column="2" Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10"
                            Text="mm"></TextBlock>
                 <Button Grid.Column="3" Grid.Row="0" HorizontalAlignment="Center" Margin="10" Height="50" Width="50"
@@ -82,7 +83,8 @@
 
                 <TextBlock Grid.Column="6" Grid.Row="0" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10"
                            Text="Motor 2:"></TextBlock>
-                <TextBox Grid.Column="7" Grid.Row="0" HorizontalAlignment="Center" Height="50" Width="60"></TextBox>
+                <TextBox Grid.Column="7" Grid.Row="0" x:Name="Motor2StepTextBox" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                         TextAlignment="Center" Height="50" Width="60"></TextBox>
                 <TextBlock Grid.Column="8" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10"
                            Text="mm"></TextBlock>
                 <Button Grid.Column="9" Grid.Row="0" HorizontalAlignment="Center" Margin="10" Height="50" Width="50"
@@ -114,7 +116,7 @@
                 <Button Grid.Column="3" HorizontalAlignment="Center" Margin="10" Height="50" Width="50"
                     Click="IncrementThickness_Click">
                     <StackPanel Orientation="Horizontal">
-                        <Image Source="../Assets/caret-up.svg" />
+                        <Image Source="../Assets/caret-up.png" />
                     </StackPanel>
                 </Button>
                 <Button Grid.Column="4" HorizontalAlignment="Center" Margin="10" Height="50" Width="50"

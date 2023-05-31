@@ -8,6 +8,7 @@ using Magneto.Desktop.WinUI.Core.Models.BuildModels;
 using Magneto.Desktop.WinUI.Core.Models.Controllers;
 using Magneto.Desktop.WinUI.Core.Models.Image;
 using Magneto.Desktop.WinUI.Core.Services;
+using static Magneto.Desktop.WinUI.Core.Models.Motor.StepperMotor;
 
 namespace Magneto.Desktop.WinUI.Core.Models;
 public class MissionControl : IMediator, IPublisher, ISubsciber
@@ -50,8 +51,7 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     /// <param name="bm"></param> Build manager
     public MissionControl(BuildManager bm)
     {
-        MagnetoLogger.Log("MissionControl::MissionControl",
-            LogFactoryLogLevel.LogLevel.VERBOSE);
+        MagnetoLogger.Log("", LogFactoryLogLevel.LogLevel.VERBOSE);
 
         _buildManager = bm;
         _bedLevelStep = 1; // in mm
@@ -85,6 +85,11 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
         return _buildManager.GetImageThickness();
     }
 
+    public double GedBedLevelStep()
+    {
+        return _bedLevelStep;
+    } 
+
     #endregion
 
     #region Setters
@@ -98,33 +103,38 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
         _buildManager.SetImageThickness(thickness);
     }
 
+    public void SetBedLevelStep(double step)
+    {
+        _bedLevelStep = step;
+    }
+
     #endregion
 
     #region Bed Leveling
 
-    public void LevelUpMotor1()
+    private void LevelHelper(int axis, MotorDirection dir)
     {
-        var axis = 1;
-        _ = _buildManager.buildController.MoveMotorRel(axis, _bedLevelStep);
-        
+        if (dir == MotorDirection.Up)
+        {
+            _ = _buildManager.buildController.MoveMotorRel(axis, _bedLevelStep);
+        }
+        else
+        {
+            var step = -_bedLevelStep;
+            _ = _buildManager.buildController.MoveMotorRel(axis, step);
+        }
     }
-    public void LevelDownMotor1()
+    public void LevelMotor(int axis, MotorDirection dir)
     {
-        var axis = 1;
-        var step = -_bedLevelStep;
-        _ = _buildManager.buildController.MoveMotorRel(axis, step);
-    }
-    public void LevelUpMotor2()
-    {
-        var axis = 2;
-        _ = _buildManager.buildController.MoveMotorRel(axis, _bedLevelStep);
-    }
-
-    public void LevelDownMotor2()
-    {
-        var axis = 2;
-        var step = -_bedLevelStep;
-        _ = _buildManager.buildController.MoveMotorRel(axis, step);
+        if (axis > 0 && axis < 3)
+        {
+            LevelHelper(axis, dir);
+        }
+        else
+        {
+            MagnetoLogger.Log("Received invalid axis.",
+                    LogFactoryLogLevel.LogLevel.ERROR);
+        }
     }
 
     #endregion

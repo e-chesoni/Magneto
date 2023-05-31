@@ -8,6 +8,7 @@ using Magneto.Desktop.WinUI.ViewModels;
 
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+using static Magneto.Desktop.WinUI.Core.Models.Motor.StepperMotor;
 
 namespace Magneto.Desktop.WinUI.Views;
 
@@ -99,6 +100,53 @@ public sealed partial class PrintPage : Page
 
     #region Button Methods
 
+    private void ConvertLevelText(string textBoxVal)
+    {
+        // Convert text box value
+        var val = Convert.ToDouble(textBoxVal);
+
+        if (val < 0)
+        {
+            val = (-1) * val;
+        }
+
+        MissionControl.SetBedLevelStep(val);
+    }
+
+    private void UpdateBedLevel(TextBox textbox)
+    {
+        if (string.IsNullOrEmpty(textbox.Text) || string.IsNullOrWhiteSpace(textbox.Text))
+        {
+            textbox.Text = MissionControl.GedBedLevelStep().ToString();
+        }
+        else
+        {
+            ConvertLevelText(textbox.Text);
+        }
+    }
+
+    private void HandleLevelMotor(int axis, MotorDirection dir, TextBox textBox)
+    {
+        UpdateBedLevel(textBox);
+
+        string? msg;
+        switch (dir)
+        {
+            case MotorDirection.Up:
+                msg = $"Incrementing Bed Level By: {MissionControl.GedBedLevelStep()}";
+                break;
+            case MotorDirection.Down:
+                msg = $"Decrementing Bed Level By: {MissionControl.GedBedLevelStep()}";
+                break;
+            default:
+                msg = "Invalid direction.";
+                break;
+        }
+
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+        MissionControl.LevelMotor(axis, dir);
+    }
+
     private void LevelBed_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
         MissionControl.HomeMotors();
@@ -106,22 +154,23 @@ public sealed partial class PrintPage : Page
 
     private void MoveMotor1Up_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        MissionControl.LevelUpMotor1();
+
+        HandleLevelMotor(1, MotorDirection.Up, Motor1StepTextBox);
     }
 
     private void MoveMotor1Down_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        MissionControl.LevelDownMotor1();
+        HandleLevelMotor(1, MotorDirection.Down, Motor1StepTextBox);
     }
 
     private void MoveMotor2Up_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        MissionControl.LevelUpMotor2();
+        HandleLevelMotor(2, MotorDirection.Up, Motor2StepTextBox);
     }
 
     private void MoveMotor2Down_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        MissionControl.LevelDownMotor2();
+        HandleLevelMotor(2, MotorDirection.Down, Motor2StepTextBox);
     }
 
     private void StartPrint_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
