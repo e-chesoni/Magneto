@@ -4,7 +4,7 @@
 
 <h2 align="left">Demo:</h2>
 
-![2023-5-31_App_Tour_AdobeExpress_Large](https://github.com/e-chesoni/Magneto/assets/57457528/6fd9b809-fbca-4634-ae3e-e99463b2f757)
+![App_Tour](https://github.com/e-chesoni/Magneto/assets/57457528/e9cbd48a-1dcc-4c30-8323-057cb9715aee)
 
 🔭 This project is currently in progress: [Magneto](https://github.com/e-chesoni/Magneto)
 
