@@ -62,6 +62,10 @@ namespace MoveMotorsPOC
                     }
                 }
             }
+            else
+            {
+                Console.WriteLine("Serial Port is closed.");
+            }
         }
 
         static void Main(string[] args)
