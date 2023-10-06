@@ -54,7 +54,7 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
         MagnetoLogger.Log("", LogFactoryLogLevel.LogLevel.VERBOSE);
 
         _buildManager = bm;
-        _bedLevelStep = 1; // in mm
+        _bedLevelStep = 1; // mm
     }
 
     #endregion
@@ -64,12 +64,11 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     /// <summary>
     /// Generate an image model from a path to an image
     /// </summary>
-    /// <param name="path_to_image"></param>
+    /// <param name="path_to_image"> File path to image </param>
     public void CreateImageModel(string path_to_image)
     {
         _buildManager.imageModel = new ImageModel();
         _buildManager.SetImagePath(path_to_image);
-
     }
 
     #endregion
@@ -79,7 +78,7 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     /// <summary>
     /// Get the layer thickness for the print from the build manager
     /// </summary>
-    /// <returns></returns>
+    /// <returns> double image layer thickness </returns>
     public double GetImageThickness()
     {
         return _buildManager.GetImageThickness();
@@ -88,7 +87,7 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     public double GedBedLevelStep()
     {
         return _bedLevelStep;
-    } 
+    }
 
     #endregion
 
@@ -97,7 +96,7 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     /// <summary>
     /// Set the layer thickness for the print on the build manager
     /// </summary>
-    /// <param name="thickness"></param> Desired thickness
+    /// <param name="thickness"> Desired thickness </param>
     public void SetImageThickness(double thickness)
     {
         _buildManager.SetImageThickness(thickness);

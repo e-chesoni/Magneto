@@ -26,6 +26,7 @@ public class CancelledBuildManagerState : IBuildManagerState
         _BuildManagerSM = bm;
 
         // TODO: Process cancelled build
+        // This is the British spelling. Get over it spell checker.
         MagnetoLogger.Log("Handling cancelled build...", Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
 
         // Home motors
