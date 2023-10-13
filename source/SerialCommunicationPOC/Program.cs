@@ -10,6 +10,9 @@ namespace SerialCommunicationPOC;
 internal class Program
 {
     static SerialPort _serialPort;
+    /* COM 1 -- 
+     */
+
     static bool _success;
     static bool _continue;
 
