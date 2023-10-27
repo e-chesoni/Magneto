@@ -20,9 +20,9 @@ public class MainViewModel : ObservableRecipient, INavigationAware
     private readonly ISampleDataService _sampleDataService;
     private readonly ISamplePrintService _samplePrintService;
 
-    private static StepperMotor _motor1 = new StepperMotor(1);
-    private static StepperMotor _motor2 = new StepperMotor(2);
-    private static StepperMotor _powderDistMotor = new StepperMotor(1);
+    private static StepperMotor _motor1 = new StepperMotor("COM4", 1);
+    private static StepperMotor _motor2 = new StepperMotor("COM4", 2);
+    private static StepperMotor _powderDistMotor = new StepperMotor("COM7", 1);
 
     private static MotorController _buildController = new(_motor1, _motor2);
     private static MotorController _sweepController = new(_powderDistMotor);

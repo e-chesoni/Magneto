@@ -83,7 +83,16 @@ public class BuildManager : ISubsciber, IStateMachine
     {
         MOTOR1 = 1,
         MOTOR2 = 2,
-        SWEEP = 3, // NOTE: Colloquially refereed to as powder motor on occasion
+        SWEEP = 3, // NOTE: Colloquially refereed to as powder motor or linear motor on occasion
+    }
+
+    private string _buildMotorPort
+    {
+        get; set;
+    }
+    private string _sweepMotorPort
+    {
+        get; set;
     }
 
     #endregion
@@ -105,8 +114,11 @@ public class BuildManager : ISubsciber, IStateMachine
         sweepController = sc;
         laserController = lc;
 
+        _buildMotorPort = bc.GetPortName();
+        _sweepMotorPort = sc.GetPortName();
+
         // Create a dance model
-        danceModel= new DanceModel();
+        danceModel = new DanceModel();
 
         // Start in the idle state
         TransitionTo(new IdleBuildManagerState(this));
@@ -115,6 +127,17 @@ public class BuildManager : ISubsciber, IStateMachine
     #endregion
 
     #region Getters
+
+    public string GetBuildMotorPort()
+    {
+        return _buildMotorPort; 
+    }
+
+    public string GetSweepMotorPort()
+    {
+        return _sweepMotorPort;
+
+    }
 
     /// <summary>
     /// Get the status of a given motor

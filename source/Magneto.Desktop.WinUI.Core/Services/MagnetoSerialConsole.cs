@@ -259,25 +259,40 @@ public static class MagnetoSerialConsole
     /// Open the serial port
     /// </summary>
     /// <returns></returns>
-    public static bool OpenSerialPort()
+    public static bool OpenSerialPort(string portName)
     {
-        var msg = "Opening serial port...";
+        var msg = $"Opening serial port {portName}";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
 
-        // Try opening the serial port
-        try { _serialPort.Open(); }
-        catch (InvalidOperationException)
+        // Find the port in ports list
+        SerialPort foundPort = _serialPorts.Find(port => port.PortName == portName);
+
+        if (foundPort != null)
         {
-            msg = "The port is already open.";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
+            msg = $"Found port {foundPort.PortName}";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+            // Try opening found port
+            try { foundPort.Open(); }
+            catch (InvalidOperationException)
+            {
+                msg = "The port is already open.";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
+            }
+            catch (Exception e)
+            {
+                MagnetoLogger.Log(e.ToString(), LogFactoryLogLevel.LogLevel.ERROR);
+                _success = false;
+            }
+
+            if (foundPort.IsOpen) { _success = true; }
         }
-        catch (Exception e)
+        else // If not in list, return failed
         {
-            MagnetoLogger.Log(e.ToString(), LogFactoryLogLevel.LogLevel.ERROR);
+            msg = $"Could not find port {portName}";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
             _success = false;
         }
-
-        if (_serialPort.IsOpen) { _success = true; }
 
         return _success;
     }
@@ -286,18 +301,52 @@ public static class MagnetoSerialConsole
     /// Close the serial port
     /// </summary>
     /// <returns></returns>
-    public static bool CloseSerialPort()
+    public static bool CloseSerialPort(string portName)
     {
-        var msg = "Closing serial port...";
+        var msg = $"Closing serial port {portName}";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
 
-        // Try opening the serial port
-        try { _serialPort.Close(); }
-        catch
+        // Find the port in ports list
+        SerialPort foundPort = _serialPorts.Find(port => port.PortName == portName);
+        
+        if (foundPort != null)
         {
-            msg = "Cannot close serial port!";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            // Try closing the serial port
+            try { _serialPort.Close(); }
+            catch
+            {
+                msg = "Cannot close serial port!";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+                _success = false;
+            }
+
+            if (!_serialPort.IsOpen) { _success = true; }
+        }
+        else // If not in list, return failed
+        {
+            msg = $"Could not find port {portName}";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
             _success = false;
+        }
+
+        return _success;
+    }
+
+    public static bool CloseAllSerialPorts()
+    {
+        var msg = "Closing all serial ports";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
+
+        foreach (SerialPort port in _serialPorts)
+        {
+            // Try closing the serial port
+            try { port.Close(); }
+            catch
+            {
+                msg = $"Could not close serial port {port.PortName}";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+                _success = false;
+            }
         }
 
         if (!_serialPort.IsOpen) { _success = true; }
@@ -323,39 +372,50 @@ public static class MagnetoSerialConsole
     /// ( Used to send motor commands )
     /// </summary>
     /// <param name="serial_msg"></param> Message to write to the serial console
-    public static void SerialWrite(string serial_msg)
+    public static void SerialWrite(string portName, string serial_msg)
     {
-        var msg = "Sending move command...";
+        var msg = $"Sending move command to port {portName}";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
 
-        if (_serialPort.IsOpen)
-        {
-            if (_serialPort.BytesToRead <= 0)
-            {
-                ASCIIEncoding encoding = new ASCIIEncoding();
-                byte[] data = encoding.GetBytes(serial_msg);
+        // Find the port in ports list
+        SerialPort foundPort = _serialPorts.Find(port => port.PortName == portName);
 
-                try
+        if (foundPort != null)
+        {
+            msg = $"Found port {portName}! Sending move command...";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
+
+            if (foundPort.IsOpen)
+            {
+                if (foundPort.BytesToRead <= 0)
                 {
-                    msg = "Trying to send data...";
-                    MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
-                    _serialPort.Write(data, 0, data.Length);
-                    _serialPort.Write("\n\r");
-                    msg = "Data sent.";
-                    MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
-                }
-                catch
-                {
-                    msg = "Cannot write to serial port.";
-                    MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+                    ASCIIEncoding encoding = new ASCIIEncoding();
+                    byte[] data = encoding.GetBytes(serial_msg);
+
+                    try
+                    {
+                        msg = "Trying to send data...";
+                        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
+                        foundPort.Write(data, 0, data.Length);
+                        foundPort.Write("\n\r");
+                        msg = "Data sent.";
+                        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
+                    }
+                    catch
+                    {
+                        msg = "Cannot write to serial port.";
+                        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+                    }
                 }
             }
+            else
+            {
+                msg = $"Could not open port {portName}.";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            }
         }
-        else
-        {
-            msg = "Serial port not open.";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-        }
+
+        
     }
 
     /// <summary>

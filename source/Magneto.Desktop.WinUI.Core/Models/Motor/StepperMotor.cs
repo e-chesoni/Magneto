@@ -20,6 +20,9 @@ public class StepperMotor : IStepperMotor
     #endregion
 
     #region Public Variables
+
+    public string motorPort { get; set; }
+
     /// <summary>
     /// Possible motor statuses
     /// </summary>
@@ -68,9 +71,19 @@ public class StepperMotor : IStepperMotor
     /// StepperMotor constructor
     /// </summary>
     /// <param name="motorName"></param> The axis that the motor is attached to
-    public StepperMotor(int axis)
+    public StepperMotor(string portName, int axis)
     {
+        motorPort = portName;
         motorAxis = axis;
+    }
+
+    #endregion
+
+    #region Getters and Setters
+
+    public string GetMotorPort()
+    {
+        return motorPort; 
     }
 
     #endregion
@@ -121,9 +134,9 @@ public class StepperMotor : IStepperMotor
 
         // Move motor
         var s = string.Format("{0}MVA{1}", motorAxis, pos);
-        if (MagnetoSerialConsole.OpenSerialPort())
+        if (MagnetoSerialConsole.OpenSerialPort(motorPort))
         {
-            MagnetoSerialConsole.SerialWrite(s);
+            MagnetoSerialConsole.SerialWrite(motorPort, s);
 
             // Log message
             var msg = string.Format("Moving motor on axis {0} to position {1}mm",
@@ -168,12 +181,10 @@ public class StepperMotor : IStepperMotor
             return Task.CompletedTask;
         }
 
-        
-
         var s = string.Format("{0}MVR{1}", motorAxis, pos);
-        if (MagnetoSerialConsole.OpenSerialPort())
+        if (MagnetoSerialConsole.OpenSerialPort(motorPort))
         {
-            MagnetoSerialConsole.SerialWrite(s);
+            MagnetoSerialConsole.SerialWrite(motorPort, s);
 
             // Log message
             var msg = string.Format("Moving motor on axis {0} {1}mm relative to current position",
@@ -219,7 +230,7 @@ public class StepperMotor : IStepperMotor
 
         if (tested)
         {
-            MagnetoSerialConsole.SerialWrite(s);
+            MagnetoSerialConsole.SerialWrite(motorPort, s);
             // TODO: Read serial console to get position value
             // TOOD: Figure out how to actually read serial console (safely)
             // see: Micronix note https://www.dropbox.com/scl/fo/2ls4fr6ffx0nswuno2n4x/h/System.IO.Ports%20Example%20Program%20and%20Guide?dl=0&preview=System.IO.Ports+C%23+Guide.pdf&subfolder_nav_tracking=1

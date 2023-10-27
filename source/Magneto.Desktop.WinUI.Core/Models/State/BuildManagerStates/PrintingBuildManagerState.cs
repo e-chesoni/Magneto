@@ -15,9 +15,6 @@ public class PrintingBuildManagerState : IBuildManagerState
 {
     private BuildManager _BuildManagerSM { get; set; }
 
-    // TODO: Remove after testing
-    StepperMotor testMotor = new StepperMotor(1);
-
     public PrintingBuildManagerState(BuildManager bm)
     {
         MagnetoLogger.Log("PrintingBuildManagerState::PrintingBuildManagerState", 

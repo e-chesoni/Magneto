@@ -22,6 +22,11 @@ public class MotorController : IMotorController
     /// </summary>
     private StepperMotor _motor2 { get; set; }
 
+    private string _mcPort
+    {
+        get; set;
+    }
+
     #endregion
 
     #region Constructors
@@ -32,6 +37,7 @@ public class MotorController : IMotorController
     /// <param name="motor1"></param> Motor to set on axis 1
     public MotorController(StepperMotor motor1)
     {
+        _mcPort = motor1.motorPort;
         _motor1 = motor1;
     }
 
@@ -42,8 +48,18 @@ public class MotorController : IMotorController
     /// <param name="motor2"></param>
     public MotorController(StepperMotor motor1, StepperMotor motor2)
     {
+        _mcPort = motor1.motorPort;
         _motor1 = motor1;
         _motor2 = motor2;
+    }
+
+    #endregion
+
+    #region Getters
+
+    public string GetPortName()
+    {
+        return _mcPort;
     }
 
     #endregion

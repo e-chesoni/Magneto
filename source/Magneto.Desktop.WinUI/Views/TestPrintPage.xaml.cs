@@ -23,7 +23,10 @@ public sealed partial class TestPrintPage : Page
     /// Place holder motor for test carried out through this page
     /// The default axis is 0, which runs the test on both motors
     /// </summary>
-    private StepperMotor testMotor = new StepperMotor(0);
+    private StepperMotor testMotor = new StepperMotor("COM4", 0);
+
+
+    private StepperMotor linearMotor = new StepperMotor("COM7", 0);
 
     #endregion
 
@@ -87,6 +90,11 @@ public sealed partial class TestPrintPage : Page
         // Create test motor object that will (hopefully) be destroyed after run completes
         // TODO: Use debugger to make sure test motor is destroyed after loop exits
         // We don't want a bunch of unused motors hanging around in the app
+
+        // if motor axis is 1 or two, use testStepperMotor
+
+        // else, use testLinearMotor
+
         testMotor.motorAxis = axis;
         testMotor.MoveMotorRel(10);
     }
@@ -136,7 +144,7 @@ public sealed partial class TestPrintPage : Page
     {
         MagnetoLogger.Log("Homing Motor.", LogFactoryLogLevel.LogLevel.VERBOSE);
 
-        if (MagnetoSerialConsole.OpenSerialPort())
+        if (MagnetoSerialConsole.OpenSerialPort(testMotor.motorPort))
         {
             _ = testMotor.HomeMotor(); // TODO: Test! _ may prevent homing
         }
@@ -154,7 +162,7 @@ public sealed partial class TestPrintPage : Page
     /// <param name="e"></param>
     private void MoveMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        if (MagnetoSerialConsole.OpenSerialPort())
+        if (MagnetoSerialConsole.OpenSerialPort(testMotor.motorPort))
         {
             MagnetoLogger.Log("Port Open!", LogFactoryLogLevel.LogLevel.SUCCESS);
 
