@@ -23,10 +23,13 @@ public sealed partial class TestPrintPage : Page
     /// Place holder motor for test carried out through this page
     /// The default axis is 0, which runs the test on both motors
     /// </summary>
-    private StepperMotor testMotor = new StepperMotor("COM4", 0);
+    private StepperMotor stepMotor1 = new StepperMotor("COM4", 1);
 
+    private StepperMotor stepMotor2 = new StepperMotor("COM4", 2);
 
-    private StepperMotor linearMotor = new StepperMotor("COM7", 0);
+    private StepperMotor sweepMotor = new StepperMotor("COM7", 1);
+
+    private StepperMotor currTestMotor;
 
     #endregion
 
@@ -55,6 +58,9 @@ public sealed partial class TestPrintPage : Page
         InitializeComponent();
         
         MagnetoLogger.Log("Landed on Test Print Page", LogFactoryLogLevel.LogLevel.DEBUG);
+
+        // Set current test motor to stepMotor1 by default
+        currTestMotor = stepMotor1;
     }
 
     #endregion
@@ -91,12 +97,8 @@ public sealed partial class TestPrintPage : Page
         // TODO: Use debugger to make sure test motor is destroyed after loop exits
         // We don't want a bunch of unused motors hanging around in the app
 
-        // if motor axis is 1 or two, use testStepperMotor
-
-        // else, use testLinearMotor
-
-        testMotor.motorAxis = axis;
-        testMotor.MoveMotorRel(10);
+        currTestMotor.motorAxis = axis;
+        currTestMotor.MoveMotorRel(10);
     }
 
     #endregion
@@ -110,7 +112,7 @@ public sealed partial class TestPrintPage : Page
     /// <param name="e"></param>
     private void SetMotorAxis1Button_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        testMotor.motorAxis = 1;
+        currTestMotor = stepMotor1;
     }
 
     /// <summary>
@@ -120,7 +122,8 @@ public sealed partial class TestPrintPage : Page
     /// <param name="e"></param>
     private void SetMotorAxis2Button_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        testMotor.motorAxis = 2;
+        currTestMotor = stepMotor2;
+
     }
 
     /// <summary>
@@ -132,7 +135,7 @@ public sealed partial class TestPrintPage : Page
     {
         // TODO: Update this method to set the test motor to the powder distribution motor
         // A the time this code was written, the third motor has not yet arrived
-        testMotor.motorAxis = 3;
+        currTestMotor = sweepMotor;
     }
 
     /// <summary>
@@ -144,9 +147,9 @@ public sealed partial class TestPrintPage : Page
     {
         MagnetoLogger.Log("Homing Motor.", LogFactoryLogLevel.LogLevel.VERBOSE);
 
-        if (MagnetoSerialConsole.OpenSerialPort(testMotor.motorPort))
+        if (MagnetoSerialConsole.OpenSerialPort(currTestMotor.motorPort))
         {
-            _ = testMotor.HomeMotor(); // TODO: Test! _ may prevent homing
+            _ = currTestMotor.HomeMotor();
         }
         else
         {
@@ -162,11 +165,11 @@ public sealed partial class TestPrintPage : Page
     /// <param name="e"></param>
     private void MoveMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        if (MagnetoSerialConsole.OpenSerialPort(testMotor.motorPort))
+        if (MagnetoSerialConsole.OpenSerialPort(currTestMotor.motorPort))
         {
             MagnetoLogger.Log("Port Open!", LogFactoryLogLevel.LogLevel.SUCCESS);
 
-            switch (testMotor.motorAxis)
+            switch (currTestMotor.motorAxis)
             {
                 case 0:
                     MagnetoLogger.Log("No axis selected", 

@@ -190,6 +190,9 @@ public class StepperMotor : IStepperMotor
             var msg = string.Format("Moving motor on axis {0} {1}mm relative to current position",
                 motorAxis, pos);
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+            
+            msg = $"Command Sent: {s}";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
             // Update calculated position
             _calculatedPos = desiredPos;
