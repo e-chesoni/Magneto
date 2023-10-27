@@ -18,6 +18,13 @@ public static class MagnetoSerialConsole
     /// </summary>
     private static SerialPort _serialPort = new SerialPort();
 
+
+    private static List<SerialPort> _serialPorts = new List<SerialPort>();
+
+    #endregion
+
+    #region Default Port Setting Variables
+
     /// <summary>
     /// Success boolean for methods
     /// </summary>
@@ -55,6 +62,36 @@ public static class MagnetoSerialConsole
 
     #endregion
 
+    #region Initialization Methods
+    /// <summary>
+    /// Initialize a new port and manually set port characteristics
+    /// </summary>
+    /// <param name="port"></param> Desired port to use (ex. COM3)
+    /// <param name="baud"></param> Desired port baud rate
+    /// <param name="parity"></param> Desired port parity
+    /// <param name="dataBits"></param> Desired port data bits
+    /// <param name="stopBits"></param> Desired port stop bits
+    /// <param name="handshake"></param> Desired port handshake
+    public static void InitializePort(string portName, int baud, string parity, int dataBits, string stopBits, string handshake)
+    {
+        var msg = $"Initializing a new serial port: {portName}";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
+
+        SerialPort serialPort = new SerialPort();
+
+        // Allow the user to set the appropriate properties.
+        serialPort.PortName = SetPortName(portName);
+        serialPort.BaudRate = SetBaudRate(baud);
+        serialPort.Parity = SetParity(parity);
+        serialPort.DataBits = SetDataBits(dataBits);
+        serialPort.StopBits = SetStopBits(stopBits);
+        serialPort.Handshake = SetHandshake(handshake);
+
+        _serialPorts.Add(serialPort);
+    }
+
+    #endregion
+
     #region Port Setup Methods
 
     /// <summary>
@@ -67,6 +104,17 @@ public static class MagnetoSerialConsole
         foreach (var s in SerialPort.GetPortNames())
         {
             msg = $"   {s}";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+        }
+    }
+
+    public static void GetInitializedPorts()
+    {
+        var msg = "";
+        MagnetoLogger.Log("Initialized Ports:", LogFactoryLogLevel.LogLevel.DEBUG);
+        foreach (SerialPort s in _serialPorts)
+        {
+            msg = $"   {s.PortName}";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
         }
     }

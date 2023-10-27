@@ -27,8 +27,21 @@ public sealed partial class MainPage : Page
         // Set log level
         MagnetoLogger.LogFactoryOutputLevel = LogFactoryOutputLevel.LogOutputLevel.Debug;
 
+        MagnetoSerialConsole.GetAvailablePorts();
+
         // Set up serial console
-        MagnetoSerialConsole.SetDefaultSerialPort();
+        //MagnetoSerialConsole.SetDefaultSerialPort();
+
+        var defaultBaudRate = 38400;
+        var defaultParity = "None";
+        var defaultDataBits = 8;
+        var defaultStopBits = "One";
+        var defaultHandshake = "None";
+
+        MagnetoSerialConsole.InitializePort("COM4", defaultBaudRate, defaultParity, defaultDataBits, defaultStopBits, defaultHandshake);
+        MagnetoSerialConsole.InitializePort("COM7", defaultBaudRate, defaultParity, defaultDataBits, defaultStopBits, defaultHandshake);
+
+        MagnetoSerialConsole.GetInitializedPorts();
 
         // Set initial page loaded to true
         _initialPageLoaded = true;
@@ -63,7 +76,6 @@ public sealed partial class MainPage : Page
         MagnetoLogger.Log("This is a warning message", LogFactoryLogLevel.LogLevel.WARN);
         MagnetoLogger.Log("This is a error message", LogFactoryLogLevel.LogLevel.ERROR);
         MagnetoLogger.Log("This is a success message", LogFactoryLogLevel.LogLevel.SUCCESS);
-
     }
     
     #endregion
