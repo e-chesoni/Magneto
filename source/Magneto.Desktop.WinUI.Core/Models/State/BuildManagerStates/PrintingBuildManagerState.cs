@@ -63,7 +63,23 @@ public class PrintingBuildManagerState : IBuildManagerState
             switch (_BuildManagerSM.build_flag)
             {
                 case BuildManager.BuildFlag.RESUME:
-                    _BuildManagerSM.laserController.Draw(slice);
+                    // TODO: Motor should move down thickness
+
+                    /* TOOD: UPDATE BUILD ORDER OF OPERATIONS:
+                     * 1. Motor 1 moves down
+                     * 2. Draw shape
+                     * 3. Motor 2 moves up
+                     * 4. Sweep
+                     */
+                    //_BuildManagerSM.buildController.MoveMotorRel(1, -thickness);
+
+                    // TODO: Add artificial wait for draw before laser has been incorporated--will have to wait for user response (button) or timeout (abort)
+                    // TODO: Add pop-up for user to execute draw, and indicate draw is complete
+
+                    _BuildManagerSM.laserController.Draw(slice); // this was in original code
+
+                    //_BuildManagerSM.buildController.MoveMotorRel(2, thickness);
+
                     _BuildManagerSM.buildController.MoveMotorsRel(thickness);
                     break;
 
@@ -81,9 +97,7 @@ public class PrintingBuildManagerState : IBuildManagerState
             }
             // Sweep
             _BuildManagerSM.sweepController.MoveMotorRel(1, _BuildManagerSM.GetSweepDist());
-
-            // Wait one second before sweeping back (for dramatic effect
-            Thread.Sleep(2000);
+            Thread.Sleep(2000); // Wait one second before sweeping back (for dramatic effect)
             _BuildManagerSM.sweepController.MoveMotorRel(1, -_BuildManagerSM.GetSweepDist());
         }
         _BuildManagerSM.TransitionTo(new DoneBuildManagerState(_BuildManagerSM));

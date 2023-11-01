@@ -97,7 +97,7 @@ public sealed partial class TestPrintPage : Page
         // TODO: Use debugger to make sure test motor is destroyed after loop exits
         // We don't want a bunch of unused motors hanging around in the app
 
-        currTestMotor.motorAxis = axis;
+        currTestMotor.SetAxis(axis);
         currTestMotor.MoveMotorRel(10);
     }
 
@@ -147,7 +147,7 @@ public sealed partial class TestPrintPage : Page
     {
         MagnetoLogger.Log("Homing Motor.", LogFactoryLogLevel.LogLevel.VERBOSE);
 
-        if (MagnetoSerialConsole.OpenSerialPort(currTestMotor.motorPort))
+        if (MagnetoSerialConsole.OpenSerialPort(currTestMotor.GetPortName()))
         {
             _ = currTestMotor.HomeMotor();
         }
@@ -165,11 +165,11 @@ public sealed partial class TestPrintPage : Page
     /// <param name="e"></param>
     private void MoveMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        if (MagnetoSerialConsole.OpenSerialPort(currTestMotor.motorPort))
+        if (MagnetoSerialConsole.OpenSerialPort(currTestMotor.GetPortName()))
         {
             MagnetoLogger.Log("Port Open!", LogFactoryLogLevel.LogLevel.SUCCESS);
 
-            switch (currTestMotor.motorAxis)
+            switch (currTestMotor.GetAxis())
             {
                 case 0:
                     MagnetoLogger.Log("No axis selected", 

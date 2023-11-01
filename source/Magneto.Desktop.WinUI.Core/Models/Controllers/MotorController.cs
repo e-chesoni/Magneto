@@ -43,7 +43,7 @@ public class MotorController : IMotorController
     /// <param name="motor1"></param> Motor to set on axis 1
     public MotorController(StepperMotor motor1)
     {
-        _mcPort = motor1.motorPort;
+        _mcPort = motor1.GetPortName();
         //_motor1 = motor1;
         _motorList.Add(motor1);
     }
@@ -55,7 +55,7 @@ public class MotorController : IMotorController
     /// <param name="motor2"></param>
     public MotorController(StepperMotor motor1, StepperMotor motor2)
     {
-        _mcPort = motor1.motorPort;
+        _mcPort = motor1.GetPortName();
         //_motor1 = motor1;
         //_motor2 = motor2;
         _motorList.Add(motor1);
@@ -111,7 +111,7 @@ public class MotorController : IMotorController
         var msg = "Moving Motor Absolute";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
-        StepperMotor motor = _motorList.FirstOrDefault(motor => motor.GetMotorID() % 10 == axis);
+        StepperMotor motor = _motorList.FirstOrDefault(motor => motor.GetID() % 10 == axis);
 
         if ( motor != null)
         {
@@ -156,7 +156,7 @@ public class MotorController : IMotorController
         var msg = "Moving Motor Relative";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
-        StepperMotor motor = _motorList.FirstOrDefault(motor => motor.GetMotorID() % 10 == axis);
+        StepperMotor motor = _motorList.FirstOrDefault(motor => motor.GetID() % 10 == axis);
 
         if (motor != null)
         {
@@ -224,7 +224,7 @@ public class MotorController : IMotorController
         var msg = "Getting motor status";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
-        StepperMotor motor = _motorList.FirstOrDefault(motor => motor.GetMotorID() == motorId);
+        StepperMotor motor = _motorList.FirstOrDefault(motor => motor.GetID() == motorId);
 
         if (motor != null)
         { 

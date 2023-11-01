@@ -40,6 +40,19 @@ public class IdleBuildManagerState : IBuildManagerState
         // Get poses for print
         _BuildManagerSM.danceModel.GetPoseStack(im.sliceStack, im.thickness);
 
+        // TODO: Get max height from dance model
+
+        // TODO: Move Motor1 to max height; motor 1 steps down for each iteration (building surface)
+
+        // TODO: Home Motor2; motor 2 steps up for each iteration (powder extruder)
+
+        // TODO: Add artificial wait for user to enter powder
+
+        // TODO: Add WaitForPowderState
+
+        // TODO: Add PowderLoadedState
+
+        // TODO: Move transition to build state to execute in PowderLoadedState
         // Transition to print state
         _BuildManagerSM.TransitionTo(new PrintingBuildManagerState(_BuildManagerSM));
     }

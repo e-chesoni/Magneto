@@ -9,6 +9,27 @@ public class StepperMotor : IStepperMotor
     #region Private Variables
 
     /// <summary>
+    /// Motor ID (the number of the COM port followed by the axis the motor is attached to)
+    /// </summary>
+    private int _motorId
+    {
+        get; set;
+    }
+
+    private string _motorPort
+    {
+        get; set;
+    }
+
+    /// <summary>
+    ///  The axis that the motor is attached to
+    /// </summary>
+    private int _motorAxis
+    {
+        get; set;
+    }
+
+    /// <summary>
     /// Calculated motor position
     /// </summary>
     double _calculatedPos;
@@ -23,8 +44,6 @@ public class StepperMotor : IStepperMotor
     #endregion
 
     #region Public Variables
-
-    public string motorPort { get; set; }
 
     /// <summary>
     /// Possible motor statuses
@@ -56,22 +75,6 @@ public class StepperMotor : IStepperMotor
 
     #endregion
 
-    #region Public Variables
-
-    int motorId
-    {
-        get; set;
-    }
-
-    /// <summary>
-    ///  The axis that the motor is attached to
-    /// </summary>
-    public int motorAxis
-    {
-        get; set;
-    }
-
-    #endregion
 
     #region Constructor
     
@@ -81,8 +84,9 @@ public class StepperMotor : IStepperMotor
     /// <param name="motorName"></param> The axis that the motor is attached to
     public StepperMotor(string portName, int axis)
     {
-        motorPort = portName;
-        motorAxis = axis;
+        // TODO: settings to config file
+        _motorPort = portName;
+        _motorAxis = axis;
         _homePos = 0; // default; in sweep it should be offset (so motor isn't centered at home)
 
         // Create ID for motor
@@ -99,13 +103,13 @@ public class StepperMotor : IStepperMotor
 
             if (int.TryParse(idString, out var resultNumber))
             {
-                motorId = resultNumber;
+                _motorId = resultNumber;
                 var msg = $"Assigning ID: {resultNumber} to motor";
                 MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
             }
             else
             {
-                motorId = 0;
+                _motorId = 0;
                 var msg = "Conversion to integer for motor ID failed.";
                 MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             }
@@ -115,14 +119,34 @@ public class StepperMotor : IStepperMotor
     #endregion
 
     #region Getters and Setters
-    public int GetMotorID()
+    public int GetID()
     {
-        return motorId;
+        return _motorId;
     }
 
-    public string GetMotorPort()
+    public string GetPortName()
     {
-        return motorPort; 
+        return _motorPort; 
+    }
+
+    public int GetAxis()
+    {
+        return _motorAxis;
+    }
+
+    public void SetPortName(string portName)
+    {
+        _motorPort = portName;
+    }
+
+    public void SetAxis(int axis)
+    {
+        _motorAxis = axis;
+    }
+
+    public void SetHomePos(double pos)
+    {
+        _homePos = pos;
     }
 
     #endregion
@@ -172,14 +196,14 @@ public class StepperMotor : IStepperMotor
         }
 
         // Move motor
-        var s = string.Format("{0}MVA{1}", motorAxis, pos);
-        if (MagnetoSerialConsole.OpenSerialPort(motorPort))
+        var s = string.Format("{0}MVA{1}", _motorAxis, pos);
+        if (MagnetoSerialConsole.OpenSerialPort(_motorPort))
         {
-            MagnetoSerialConsole.SerialWrite(motorPort, s);
+            MagnetoSerialConsole.SerialWrite(_motorPort, s);
 
             // Log message
             var msg = string.Format("Moving motor on axis {0} to position {1}mm",
-                motorAxis, pos);
+                _motorAxis, pos);
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
             // Update calculated position
@@ -220,14 +244,14 @@ public class StepperMotor : IStepperMotor
             return Task.CompletedTask;
         }
 
-        var s = string.Format("{0}MVR{1}", motorAxis, pos);
-        if (MagnetoSerialConsole.OpenSerialPort(motorPort))
+        var s = string.Format("{0}MVR{1}", _motorAxis, pos);
+        if (MagnetoSerialConsole.OpenSerialPort(_motorPort))
         {
-            MagnetoSerialConsole.SerialWrite(motorPort, s);
+            MagnetoSerialConsole.SerialWrite(_motorPort, s);
 
             // Log message
             var msg = string.Format("Moving motor on axis {0} {1}mm relative to current position",
-                motorAxis, pos);
+                _motorAxis, pos);
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
             
             msg = $"Command Sent: {s}";
@@ -265,14 +289,14 @@ public class StepperMotor : IStepperMotor
     /// <returns></returns> Returns -1 if request for position fails, otherwise returns motor position
     public double GetPos()
     {
-        var s = string.Format("{0}POS?", motorAxis);
+        var s = string.Format("{0}POS?", _motorAxis);
 
         // TODO: Needs testing; if uncommented causes MoveMotorRel to fail
         bool tested = false;
 
         if (tested)
         {
-            MagnetoSerialConsole.SerialWrite(motorPort, s);
+            MagnetoSerialConsole.SerialWrite(_motorPort, s);
             // TODO: Read serial console to get position value
             // TOOD: Figure out how to actually read serial console (safely)
             // see: Micronix note https://www.dropbox.com/scl/fo/2ls4fr6ffx0nswuno2n4x/h/System.IO.Ports%20Example%20Program%20and%20Guide?dl=0&preview=System.IO.Ports+C%23+Guide.pdf&subfolder_nav_tracking=1

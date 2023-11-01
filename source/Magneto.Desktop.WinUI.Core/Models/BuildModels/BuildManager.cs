@@ -129,8 +129,9 @@ public class BuildManager : ISubsciber, IStateMachine
         motorControllers.Add(buildController);
         motorControllers.Add(sweepController);
 
+        // TODO: Move to config file
         // Set default sweep distance
-        _sweepDist = 20;
+        this.SetSweepDist(20);
 
         // Create a dance model
         danceModel = new DanceModel();
@@ -176,7 +177,7 @@ public class BuildManager : ISubsciber, IStateMachine
             foreach (var m in c.GetMotorList()) { motors.Add(m); }
         }
 
-        StepperMotor motor = motors.FirstOrDefault(motor => motor.GetMotorID() == motorId);
+        StepperMotor motor = motors.FirstOrDefault(motor => motor.GetID() == motorId);
         return motor.GetStatus();
 
     }
@@ -193,6 +194,11 @@ public class BuildManager : ISubsciber, IStateMachine
     #endregion
 
     #region Setters
+
+    public void SetSweepDist(double dist)
+    {
+        _sweepDist = dist;
+    }
 
     /// <summary>
     /// Set the path to the image on the image model
