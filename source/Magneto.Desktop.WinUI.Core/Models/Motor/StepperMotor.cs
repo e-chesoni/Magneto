@@ -18,6 +18,8 @@ public class StepperMotor : IStepperMotor
     /// </summary>
     private MotorStatus _status;
 
+    private double _homePos { get; set; }
+
     #endregion
 
     #region Public Variables
@@ -81,6 +83,7 @@ public class StepperMotor : IStepperMotor
     {
         motorPort = portName;
         motorAxis = axis;
+        _homePos = 0; // default; in sweep it should be offset (so motor isn't centered at home)
 
         // Create ID for motor
         // Use regular expression to match the number part

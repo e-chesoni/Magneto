@@ -66,6 +66,7 @@ public class IdleBuildManagerState : IBuildManagerState
     {
         // Home motors
         await _BuildManagerSM.buildController.HomeMotors();
+        await _BuildManagerSM.sweepController.HomeMotors();
 
         // Return to idle state
         _BuildManagerSM.TransitionTo(new IdleBuildManagerState(_BuildManagerSM));

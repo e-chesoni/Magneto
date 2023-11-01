@@ -21,6 +21,12 @@ namespace Magneto.Desktop.WinUI.Core.Models.BuildModels;
 /// </summary>
 public class BuildManager : ISubsciber, IStateMachine
 {
+    #region Private Variables
+
+    private double _sweepDist { get; set; }
+
+    #endregion
+
     #region Public Variables
 
     /// NOTE: Currently, Magneto has two motor controllers; 
@@ -123,6 +129,9 @@ public class BuildManager : ISubsciber, IStateMachine
         motorControllers.Add(buildController);
         motorControllers.Add(sweepController);
 
+        // Set default sweep distance
+        _sweepDist = 20;
+
         // Create a dance model
         danceModel = new DanceModel();
 
@@ -133,6 +142,11 @@ public class BuildManager : ISubsciber, IStateMachine
     #endregion
 
     #region Getters
+
+    public double GetSweepDist()
+    {
+        return _sweepDist;
+    }
 
     public string GetBuildMotorPort()
     {

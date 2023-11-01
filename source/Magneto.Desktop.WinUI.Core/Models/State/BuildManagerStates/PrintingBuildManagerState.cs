@@ -79,6 +79,12 @@ public class PrintingBuildManagerState : IBuildManagerState
                     Cancel();
                     break;
             }
+            // Sweep
+            _BuildManagerSM.sweepController.MoveMotorRel(1, _BuildManagerSM.GetSweepDist());
+
+            // Wait one second before sweeping back (for dramatic effect
+            Thread.Sleep(2000);
+            _BuildManagerSM.sweepController.MoveMotorRel(1, -_BuildManagerSM.GetSweepDist());
         }
         _BuildManagerSM.TransitionTo(new DoneBuildManagerState(_BuildManagerSM));
     }
@@ -89,6 +95,7 @@ public class PrintingBuildManagerState : IBuildManagerState
     {
         // Home motors
         await _BuildManagerSM.buildController.HomeMotors();
+        await _BuildManagerSM.sweepController.HomeMotors();
 
         // Return to idle state
         _BuildManagerSM.TransitionTo(new IdleBuildManagerState(_BuildManagerSM));
