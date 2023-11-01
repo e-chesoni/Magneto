@@ -97,8 +97,10 @@ public class PrintingBuildManagerState : IBuildManagerState
             }
             // Sweep
             _BuildManagerSM.sweepController.MoveMotorRel(1, _BuildManagerSM.GetSweepDist());
-            Thread.Sleep(2000); // Wait one second before sweeping back (for dramatic effect)
+            Thread.Sleep(2000); // Wait two seconds before sweeping back (for dramatic effect)
             _BuildManagerSM.sweepController.MoveMotorRel(1, -_BuildManagerSM.GetSweepDist());
+            Thread.Sleep(2000); // Wait two seconds after sweep (so build motor doesn't move right away)
+
         }
         _BuildManagerSM.TransitionTo(new DoneBuildManagerState(_BuildManagerSM));
     }

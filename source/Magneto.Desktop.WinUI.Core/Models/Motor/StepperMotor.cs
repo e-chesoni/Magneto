@@ -41,6 +41,10 @@ public class StepperMotor : IStepperMotor
 
     private double _homePos { get; set; }
 
+    private double _maxPos { get; set; }
+
+    private double _minPos { get; set; }
+
     #endregion
 
     #region Public Variables
@@ -82,12 +86,14 @@ public class StepperMotor : IStepperMotor
     /// StepperMotor constructor
     /// </summary>
     /// <param name="motorName"></param> The axis that the motor is attached to
-    public StepperMotor(string portName, int axis)
+    public StepperMotor(string portName, int axis, double maxPos, double minPos, double homePos)
     {
         // TODO: settings to config file
         _motorPort = portName;
         _motorAxis = axis;
-        _homePos = 0; // default; in sweep it should be offset (so motor isn't centered at home)
+        _maxPos = maxPos;
+        _minPos = minPos;
+        _homePos = homePos;
 
         // Create ID for motor
         // Use regular expression to match the number part
@@ -134,6 +140,21 @@ public class StepperMotor : IStepperMotor
         return _motorAxis;
     }
 
+    public double GetHomePos()
+    {
+        return _homePos;
+    }
+
+    public double GetMaxPos()
+    {
+        return _maxPos;
+    }
+
+    public double GetMinPos()
+    {
+        return _minPos;
+    }
+
     public void SetPortName(string portName)
     {
         _motorPort = portName;
@@ -149,6 +170,16 @@ public class StepperMotor : IStepperMotor
         _homePos = pos;
     }
 
+    public void SetMaxPos(double pos)
+    {
+        _maxPos = pos;
+    }
+
+    public void SetMinPos(double pos)
+    {
+        _minPos = pos;
+    }
+
     #endregion
 
     #region Movement Methods
@@ -161,8 +192,8 @@ public class StepperMotor : IStepperMotor
     {
         MagnetoLogger.Log("Homing motor...",
             LogFactoryLogLevel.LogLevel.VERBOSE);
-        await MoveMotorAbs(0);
-        _calculatedPos = 0;
+        await MoveMotorAbs(GetHomePos());
+        _calculatedPos = GetHomePos();
     }
 
     /// <summary>
