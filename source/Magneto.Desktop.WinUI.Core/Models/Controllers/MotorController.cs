@@ -40,12 +40,12 @@ public class MotorController : IMotorController
     /// <summary>
     /// Constructor that accepts one stepper motor
     /// </summary>
-    /// <param name="motor1"></param> Motor to set on axis 1
-    public MotorController(StepperMotor motor1)
+    /// <param name="motor"></param> Motor to set on axis 1
+    public MotorController(StepperMotor motor)
     {
-        _mcPort = motor1.GetPortName();
+        _mcPort = motor.GetPortName();
         //_motor1 = motor1;
-        _motorList.Add(motor1);
+        _motorList.Add(motor);
     }
 
     /// <summary>

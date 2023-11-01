@@ -20,10 +20,13 @@ public class MainViewModel : ObservableRecipient, INavigationAware
     private readonly ISampleDataService _sampleDataService;
     private readonly ISamplePrintService _samplePrintService;
 
+    // Get config file
+
+
     // Create motors
-    private static StepperMotor _powderMotor = new StepperMotor("COM4", 1);
-    private static StepperMotor _buildMotor = new StepperMotor("COM4", 2);
-    private static StepperMotor _sweepMotor = new StepperMotor("COM7", 1); // Linear motor
+    private static StepperMotor _powderMotor = new StepperMotor("COM4", 1, 35, 0, 0);
+    private static StepperMotor _buildMotor = new StepperMotor("COM4", 2, 35, 0, 0);
+    private static StepperMotor _sweepMotor = new StepperMotor("COM7", 1, 50, -50, 0); // Linear motor
 
     private static MotorController _buildController = new(_powderMotor, _buildMotor);
     private static MotorController _sweepController = new(_sweepMotor);

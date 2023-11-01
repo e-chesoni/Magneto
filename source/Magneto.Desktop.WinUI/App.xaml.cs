@@ -13,6 +13,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
 
+using Microsoft.Extensions.Configuration;
+
 namespace Magneto.Desktop.WinUI;
 
 // To learn more about WinUI 3, see https://docs.microsoft.com/windows/apps/winui/winui3/.
@@ -127,6 +129,17 @@ public partial class App : Application
 
     protected async override void OnLaunched(LaunchActivatedEventArgs args)
     {
+        // NEW: adding app settings / config stuff
+        var builder = new ConfigurationBuilder()
+        .SetBasePath(ApplicationData.Current.LocalFolder.Path)
+        .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+
+        IConfigurationRoot configuration = builder.Build();
+
+        // Store the configuration for later access
+        AppConfiguration.Config = configuration;
+
+        // end new
         base.OnLaunched(args);
 
         App.GetService<IAppNotificationService>().Show(string.Format("AppNotificationSamplePayload".GetLocalized(), AppContext.BaseDirectory));
