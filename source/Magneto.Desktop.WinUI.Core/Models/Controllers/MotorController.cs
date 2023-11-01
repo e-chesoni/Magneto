@@ -15,12 +15,17 @@ public class MotorController : IMotorController
     /// <summary>
     /// Motor on axis 1
     /// </summary>
-    private StepperMotor _motor1 { get; set; }
+    //private StepperMotor _motor1 { get; set; }
 
     /// <summary>
     /// Motor on axis 2
     /// </summary>
-    private StepperMotor _motor2 { get; set; }
+    //private StepperMotor _motor2 { get; set; }
+
+    /// <summary>
+    /// List of motors attached to controller
+    /// </summary>
+    private List<StepperMotor> _motorList { get; set; } = new List<StepperMotor>();
 
     private string _mcPort
     {
@@ -28,6 +33,7 @@ public class MotorController : IMotorController
     }
 
     #endregion
+
 
     #region Constructors
 
@@ -38,7 +44,8 @@ public class MotorController : IMotorController
     public MotorController(StepperMotor motor1)
     {
         _mcPort = motor1.motorPort;
-        _motor1 = motor1;
+        //_motor1 = motor1;
+        _motorList.Add(motor1);
     }
 
     /// <summary>
@@ -49,8 +56,10 @@ public class MotorController : IMotorController
     public MotorController(StepperMotor motor1, StepperMotor motor2)
     {
         _mcPort = motor1.motorPort;
-        _motor1 = motor1;
-        _motor2 = motor2;
+        //_motor1 = motor1;
+        //_motor2 = motor2;
+        _motorList.Add(motor1);
+        _motorList.Add(motor2);
     }
 
     #endregion
@@ -60,6 +69,11 @@ public class MotorController : IMotorController
     public string GetPortName()
     {
         return _mcPort;
+    }
+
+    public List<StepperMotor> GetMotorList()
+    {
+        return _motorList;
     }
 
     #endregion
@@ -78,26 +92,10 @@ public class MotorController : IMotorController
 
         // TODO: Thread blocking is not a great idea...
         // Find a more elegant way to handle running one motor at a time in the future
-        if (_motor1 != null)
+        foreach (var motor in _motorList)
         {
-            await _motor1.MoveMotorAbs(thickness);
+            await motor.MoveMotorAbs(thickness);
             Thread.Sleep(2000);
-        }
-        else
-        {
-            MagnetoLogger.Log("Motor 1 is null.",
-                LogFactoryLogLevel.LogLevel.ERROR);
-        }
-
-        if (_motor2 != null)
-        {
-            await _motor2.MoveMotorAbs(thickness);
-            Thread.Sleep(2000);
-        }
-        else
-        {
-            MagnetoLogger.Log("Motor 2 is null.",
-                LogFactoryLogLevel.LogLevel.ERROR);
         }
     }
 
@@ -109,37 +107,22 @@ public class MotorController : IMotorController
     /// <returns></returns>
     public async Task MoveMotorAbs(int axis, double step)
     {
-        MagnetoLogger.Log("Moving Motor Absolute",
-            LogFactoryLogLevel.LogLevel.VERBOSE);
 
-        switch(axis)
+        var msg = "Moving Motor Absolute";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        StepperMotor motor = _motorList.FirstOrDefault(motor => motor.GetMotorID() % 10 == axis);
+
+        if ( motor != null)
         {
-            case 1:
-                if (_motor1 != null)
-                {
-                    await _motor1.MoveMotorAbs(step);
-                }
-                else
-                {
-                    MagnetoLogger.Log("Motor 1 is null.",
-                        LogFactoryLogLevel.LogLevel.ERROR);
-                }
-                break;
-            case 2:
-                if (_motor2 != null)
-                {
-                    await _motor2.MoveMotorAbs(step);
-                }
-                else
-                {
-                    MagnetoLogger.Log("Motor 2 is null.",
-                        LogFactoryLogLevel.LogLevel.ERROR);
-                }
-                break;
-            default:
-                MagnetoLogger.Log("Invalid motor axis received.",
-                    LogFactoryLogLevel.LogLevel.ERROR);
-                break;
+            msg = $"Found motor on axis: {axis}. Stepping motor absolute...";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
+            await motor.MoveMotorAbs(step);
+        }
+        else
+        {
+            msg = $"No motor with Axis {axis} found.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
         }
     }
 
@@ -150,20 +133,14 @@ public class MotorController : IMotorController
     /// <returns></returns> returns 0 on success, -1 on failure
     public async Task MoveMotorsRel(double thickness)
     {
-        MagnetoLogger.Log("MotorController::MoveMotorsAbs -- Moving Motors (PLURAL)...",
-            Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
+        var msg = "Moving Motors (PLURAL)...";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
         // TODO: Thread blocking is not a great idea...
         // Find a more elegant way to handle running one motor at a time in the future
-        if(_motor1 != null)
+        foreach (var motor in _motorList)
         {
-            await _motor1.MoveMotorRel(thickness);
-            Thread.Sleep(2000);
-        }
-
-        if (_motor2 != null)
-        {
-            await _motor2.MoveMotorRel(thickness);
+            await motor.MoveMotorRel(thickness);
             Thread.Sleep(2000);
         }
     }
@@ -176,37 +153,21 @@ public class MotorController : IMotorController
     /// <returns></returns>
     public async Task MoveMotorRel(int axis, double step)
     {
-        MagnetoLogger.Log("Moving Motor Relative",
-            LogFactoryLogLevel.LogLevel.VERBOSE);
+        var msg = "Moving Motor Relative";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
-        switch (axis)
+        StepperMotor motor = _motorList.FirstOrDefault(motor => motor.GetMotorID() % 10 == axis);
+
+        if (motor != null)
         {
-            case 1:
-                if (_motor1 != null)
-                {
-                    await _motor1.MoveMotorRel(step);
-                }
-                else
-                {
-                    MagnetoLogger.Log("Motor 1 is null.",
-                        LogFactoryLogLevel.LogLevel.ERROR);
-                }
-                break;
-            case 2:
-                if (_motor2 != null)
-                {
-                    await _motor2.MoveMotorRel(step);
-                }
-                else
-                {
-                    MagnetoLogger.Log("Motor 2 is null.",
-                        LogFactoryLogLevel.LogLevel.ERROR);
-                }
-                break;
-            default:
-                MagnetoLogger.Log("Invalid motor axis received.",
-                    LogFactoryLogLevel.LogLevel.ERROR);
-                break;
+            msg = $"Found motor on axis: {axis}. Stepping motor relative to current position...";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
+            await motor.MoveMotorRel(step);
+        }
+        else
+        {
+            msg = $"No motor with Axis {axis} found.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
         }
     }
 
@@ -217,11 +178,24 @@ public class MotorController : IMotorController
     /// </summary>
     public async Task HomeMotors()
     {
-        MagnetoLogger.Log("MotorController::HomeMotors -- Homing motors (PLURAL!)...",
-            Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
+        var msg = "MotorController::HomeMotors -- Homing motors (PLURAL!)...";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
-        await _motor1.HomeMotor();
-        await _motor2.HomeMotor();
+        // TODO: Thread blocking is not a great idea...
+        // Find a more elegant way to handle running one motor at a time in the future
+
+        /*
+        foreach (var motor in _motorList)
+        {
+            await motor.HomeMotor();
+        }
+        */
+
+        // Start homing all motors concurrently
+        var homeTasks = _motorList.Select(motor => motor.HomeMotor());
+
+        // Wait for all motors to complete homing
+        await Task.WhenAll(homeTasks);
     }
 
     /// <summary>
@@ -230,15 +204,11 @@ public class MotorController : IMotorController
     /// <returns></returns> returns 0 on success, -1 on failure
     public async Task StopMotors()
     {
-        if (_motor1 != null)
-        {
-            await _motor1.StopMotor();
-        }
+        // Stop all motors concurrently
+        var stopTasks = _motorList.Select(motor => motor.StopMotor());
 
-        if (_motor2 != null)
-        {
-            await _motor2.StopMotor();
-        }
+        // Wait for all motors to stop
+        await Task.WhenAll(stopTasks);
     }
 
     #endregion
@@ -246,21 +216,25 @@ public class MotorController : IMotorController
     #region Status Methods
 
     /// <summary>
-    /// Get the status of a motor on the requested axis
+    /// Get the status of a motor with the requested ID
     /// </summary>
-    /// <param name="axis"></param>
-    public MotorStatus GetMotorStatus(int axis)
+    /// <param name="motorId"></param>
+    public MotorStatus GetMotorStatus(int motorId)
     {
-        switch(axis)
+        var msg = "Getting motor status";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        StepperMotor motor = _motorList.FirstOrDefault(motor => motor.GetMotorID() == motorId);
+
+        if (motor != null)
+        { 
+            return motor.GetStatus();
+        }
+        else
         {
-            case 1:
-                return _motor1.GetStatus();
-            case 2:
-                return _motor2.GetStatus();
-            default:
-                MagnetoLogger.Log("Invalid motor axis.",
-                LogFactoryLogLevel.LogLevel.ERROR);
-                return MotorStatus.Error;
+            msg = "Invalid motor axis.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+            return MotorStatus.Error;
         }
     }
 

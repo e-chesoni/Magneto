@@ -9,6 +9,7 @@ using Magneto.Desktop.WinUI.Core.Contracts.Services.StateMachineServices;
 using Magneto.Desktop.WinUI.Core.Models.Controllers;
 using Magneto.Desktop.WinUI.Core.Models.Image;
 using Magneto.Desktop.WinUI.Core.Models.Monitor;
+using Magneto.Desktop.WinUI.Core.Models.Motor;
 using Magneto.Desktop.WinUI.Core.Models.State.BuildManagerStates;
 using Magneto.Desktop.WinUI.Core.Services;
 using static Magneto.Desktop.WinUI.Core.Models.Motor.StepperMotor;
@@ -25,6 +26,8 @@ public class BuildManager : ISubsciber, IStateMachine
     /// NOTE: Currently, Magneto has two motor controllers; 
     /// One for the build motors (on the base of the housing)
     /// And one for powder distribution (sweep) motor
+    /// 
+    public List<MotorController> motorControllers { get; set; } = new List<MotorController>();
 
     /// <summary>
     /// Controller for build motors
@@ -83,7 +86,7 @@ public class BuildManager : ISubsciber, IStateMachine
     {
         MOTOR1 = 1,
         MOTOR2 = 2,
-        SWEEP = 3, // NOTE: Colloquially refereed to as powder motor or linear motor on occasion
+        SWEEP = 1, // NOTE: Colloquially refereed to as powder motor or linear motor on occasion
     }
 
     private string _buildMotorPort
@@ -117,6 +120,9 @@ public class BuildManager : ISubsciber, IStateMachine
         _buildMotorPort = bc.GetPortName();
         _sweepMotorPort = sc.GetPortName();
 
+        motorControllers.Add(buildController);
+        motorControllers.Add(sweepController);
+
         // Create a dance model
         danceModel = new DanceModel();
 
@@ -145,21 +151,20 @@ public class BuildManager : ISubsciber, IStateMachine
     /// <param name="axis"></param> MotorAxis from enum
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    public MotorStatus GetMotorStatus(MotorAxis axis)
+    public MotorStatus GetMotorStatus(int motorId)
     {
-        switch (axis)
+        // Create temp list for motors
+
+        List <StepperMotor> motors = new List<StepperMotor>();
+
+        foreach (var c in motorControllers)
         {
-            case MotorAxis.MOTOR1:
-                return buildController.GetMotorStatus(1);
-            case MotorAxis.MOTOR2:
-                return buildController.GetMotorStatus(2);
-            case MotorAxis.SWEEP:
-                return sweepController.GetMotorStatus(1);
-            default:
-                MagnetoLogger.Log("Invalid motor axis.",
-                LogFactoryLogLevel.LogLevel.ERROR);
-                return MotorStatus.Error;
+            foreach (var m in c.GetMotorList()) { motors.Add(m); }
         }
+
+        StepperMotor motor = motors.FirstOrDefault(motor => motor.GetMotorID() == motorId);
+        return motor.GetStatus();
+
     }
 
     /// <summary>

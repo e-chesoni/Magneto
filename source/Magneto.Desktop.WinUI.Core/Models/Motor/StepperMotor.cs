@@ -1,6 +1,7 @@
 ﻿using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.Motor;
 using Magneto.Desktop.WinUI.Core.Services;
+using System.Text.RegularExpressions;
 
 namespace Magneto.Desktop.WinUI.Core.Models.Motor;
 public class StepperMotor : IStepperMotor
@@ -55,6 +56,11 @@ public class StepperMotor : IStepperMotor
 
     #region Public Variables
 
+    int motorId
+    {
+        get; set;
+    }
+
     /// <summary>
     ///  The axis that the motor is attached to
     /// </summary>
@@ -66,7 +72,7 @@ public class StepperMotor : IStepperMotor
     #endregion
 
     #region Constructor
-
+    
     /// <summary>
     /// StepperMotor constructor
     /// </summary>
@@ -75,11 +81,41 @@ public class StepperMotor : IStepperMotor
     {
         motorPort = portName;
         motorAxis = axis;
+
+        // Create ID for motor
+        // Use regular expression to match the number part
+        Match match = Regex.Match(portName, @"\d+");
+
+        if (match.Success)
+        {
+            // Extract the number from the match
+            var numberString = match.Value;
+
+            // Create the new string by concatenating the original number with "1"
+            var idString = numberString + axis;
+
+            if (int.TryParse(idString, out var resultNumber))
+            {
+                motorId = resultNumber;
+                var msg = $"Assigning ID: {resultNumber} to motor";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
+            }
+            else
+            {
+                motorId = 0;
+                var msg = "Conversion to integer for motor ID failed.";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            }
+        }
     }
 
     #endregion
 
     #region Getters and Setters
+    public int GetMotorID()
+    {
+        return motorId;
+    }
 
     public string GetMotorPort()
     {
@@ -96,7 +132,7 @@ public class StepperMotor : IStepperMotor
     /// <returns></returns> Returns -1 if home command fails, 0 if home command is successful
     public async Task HomeMotor()
     {
-        MagnetoLogger.Log("StepperMotor::HomeMotor -- Homing motor...",
+        MagnetoLogger.Log("Homing motor...",
             LogFactoryLogLevel.LogLevel.VERBOSE);
         await MoveMotorAbs(0);
         _calculatedPos = 0;
