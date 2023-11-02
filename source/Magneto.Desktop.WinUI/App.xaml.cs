@@ -14,6 +14,9 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
 
 using Microsoft.Extensions.Configuration;
+using Windows.Storage;
+using Magneto.Desktop.WinUI.Core;
+using System.Reflection;
 
 namespace Magneto.Desktop.WinUI;
 
@@ -73,6 +76,9 @@ public partial class App : Application
             services.AddSingleton<ISamplePrintService, SamplePrintService>();
             services.AddSingleton<IFileService, FileService>();
 
+            // Magneto Config
+            //services.AddSingleton<IMagnetoConfig, MagnetoConfig>();
+
             // Views and ViewModels
             services.AddTransient<SettingsViewModel>();
             services.AddTransient<SettingsPage>();
@@ -129,17 +135,6 @@ public partial class App : Application
 
     protected async override void OnLaunched(LaunchActivatedEventArgs args)
     {
-        // NEW: adding app settings / config stuff
-        var builder = new ConfigurationBuilder()
-        .SetBasePath(ApplicationData.Current.LocalFolder.Path)
-        .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
-
-        IConfigurationRoot configuration = builder.Build();
-
-        // Store the configuration for later access
-        AppConfiguration.Config = configuration;
-
-        // end new
         base.OnLaunched(args);
 
         App.GetService<IAppNotificationService>().Show(string.Format("AppNotificationSamplePayload".GetLocalized(), AppContext.BaseDirectory));

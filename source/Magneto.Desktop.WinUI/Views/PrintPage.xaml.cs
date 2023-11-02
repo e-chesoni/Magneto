@@ -19,7 +19,7 @@ public sealed partial class PrintPage : Page
     /// <summary>
     /// Store "global" mission control on this page
     /// </summary>
-    public MissionControl MissionControl;
+    public MissionControl MissionControl { get; set; }
 
     /// <summary>
     /// Page view model

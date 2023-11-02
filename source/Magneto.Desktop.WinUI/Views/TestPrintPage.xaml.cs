@@ -23,11 +23,11 @@ public sealed partial class TestPrintPage : Page
     /// Place holder motor for test carried out through this page
     /// The default axis is 0, which runs the test on both motors
     /// </summary>
-    private StepperMotor stepMotor1 = new StepperMotor("COM4", 1);
+    private StepperMotor stepMotor1 = new StepperMotor("COM4", 1, 35, 0, 0);
 
-    private StepperMotor stepMotor2 = new StepperMotor("COM4", 2);
+    private StepperMotor stepMotor2 = new StepperMotor("COM4", 2, 35, 0, 0);
 
-    private StepperMotor sweepMotor = new StepperMotor("COM7", 1);
+    private StepperMotor sweepMotor = new StepperMotor("COM7", 1, 50, -50, 0);
 
     private StepperMotor currTestMotor;
 

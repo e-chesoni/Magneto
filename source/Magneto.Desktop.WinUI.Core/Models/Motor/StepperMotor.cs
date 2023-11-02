@@ -120,6 +120,9 @@ public class StepperMotor : IStepperMotor
                 MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             }
         }
+        var message = $"Created Stepper Motor attached to {_motorPort} on axis {_motorAxis} with max position of {_maxPos}, min position of {_minPos}, and home position of {_homePos}";
+        MagnetoLogger.Log(message,
+                LogFactoryLogLevel.LogLevel.VERBOSE);
     }
 
     #endregion

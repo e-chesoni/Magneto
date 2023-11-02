@@ -1,4 +1,5 @@
-﻿using Magneto.Desktop.WinUI.Core.Contracts.Services;
+﻿using Magneto.Desktop.WinUI.Core;
+using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Services;
 using Magneto.Desktop.WinUI.Services;
 using Magneto.Desktop.WinUI.ViewModels;
@@ -17,6 +18,9 @@ public sealed partial class MainPage : Page
     /// Boolean to indicate whether to call InitializeMagneto when page loads
     /// </summary>
     private bool _initialPageLoaded = false;
+
+    //private readonly IMagnetoConfig _magnetoConfig;
+    public MagnetoConfig _magnetoConfig = new MagnetoConfig();
 
     /// <summary>
     /// Tasks to handle when application starts up
@@ -38,6 +42,12 @@ public sealed partial class MainPage : Page
         var defaultStopBits = "One";
         var defaultHandshake = "None";
 
+        // TODO: Add stuff to serial console from config file
+        var first = _magnetoConfig.GetFirstMotor().COMPort;
+        MagnetoLogger.Log($"Got config file. fist motor com port is:{first}", LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        // TODO: for each motor in config get UNIQUE com port
+        // TODO: for each com port, initialize port in mag serial console
         MagnetoSerialConsole.InitializePort("COM4", defaultBaudRate, defaultParity, defaultDataBits, defaultStopBits, defaultHandshake);
         MagnetoSerialConsole.InitializePort("COM7", defaultBaudRate, defaultParity, defaultDataBits, defaultStopBits, defaultHandshake);
 
@@ -66,9 +76,10 @@ public sealed partial class MainPage : Page
     public MainPage()
     {
         ViewModel = App.GetService<MainViewModel>();
+
         InitializeComponent();
         if (!_initialPageLoaded) { InitializeMagneto(); }
-        
+
         // Print some log messages for testing
         MagnetoLogger.Log("PRINTING SAMPLE LOG MESSAGES", LogFactoryLogLevel.LogLevel.VERBOSE);
         MagnetoLogger.Log("This is a debug message", LogFactoryLogLevel.LogLevel.DEBUG);

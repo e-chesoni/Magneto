@@ -6,11 +6,13 @@ using CommunityToolkit.Mvvm.Input;
 
 using Magneto.Desktop.WinUI.Contracts.Services;
 using Magneto.Desktop.WinUI.Contracts.ViewModels;
+using Magneto.Desktop.WinUI.Core;
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Models;
 using Magneto.Desktop.WinUI.Core.Models.BuildModels;
 using Magneto.Desktop.WinUI.Core.Models.Controllers;
 using Magneto.Desktop.WinUI.Core.Models.Motor;
+using Magneto.Desktop.WinUI.Core.Services;
 
 namespace Magneto.Desktop.WinUI.ViewModels;
 
@@ -19,8 +21,9 @@ public class MainViewModel : ObservableRecipient, INavigationAware
     public INavigationService _navigationService;
     private readonly ISampleDataService _sampleDataService;
     private readonly ISamplePrintService _samplePrintService;
+    private readonly IMagnetoConfig _magnetoConfig;
 
-    // Get config file
+    // Get config
 
 
     // Create motors
@@ -62,6 +65,8 @@ public class MainViewModel : ObservableRecipient, INavigationAware
         {
             Source.Add(item);
         }
+
+        //var config = await _magnetoConfig.GetMotorDataAsync();
     }
 
     public void OnNavigatedFrom()
