@@ -9,7 +9,7 @@ using Magneto.Desktop.WinUI.Core.Models;
 
 namespace Magneto.Desktop.WinUI.Core;
 
-public class MagnetoMotor
+public class MagnetoMotorConfig
 {
     public string motorName { get; set; }
     public string COMPort { get; set; }
@@ -19,7 +19,7 @@ public class MagnetoMotor
     public double homePos { get; set; }
 }
 
-public class COMPort
+public class COMPortConfig
 {
     public int port { get; set; }
     public int baudRate { get; set; }
@@ -30,18 +30,11 @@ public class COMPort
 }
 public static class MagnetoConfig
 {
-    // TODO: Add getter methods to return motor info
-    // TODO: Add IEnum for com ports
-    // TODO: Change "COMPort" on motor to be a comport from enum
-    private static List<MagnetoMotor> _allMotors;
-
-    private static List<COMPort> _allCOMPorts;
-
-    private static IEnumerable<COMPort> AllCOMPorts()
+    private static IEnumerable<COMPortConfig> AllCOMPorts()
     {
-        return new List<COMPort>()
+        return new List<COMPortConfig>()
         {
-            new COMPort()
+            new COMPortConfig()
             {
                 port = 4,
                 baudRate = 38400,
@@ -50,7 +43,7 @@ public static class MagnetoConfig
                 stopBits = "One",
                 handshake = "None",
             },
-            new COMPort()
+            new COMPortConfig()
             {
                 port = 7,
                 baudRate = 38400,
@@ -62,11 +55,11 @@ public static class MagnetoConfig
         };
     }
 
-    private static IEnumerable<MagnetoMotor> AllMotors()
+    private static IEnumerable<MagnetoMotorConfig> AllMotors()
     {
-        return new List<MagnetoMotor>()
+        return new List<MagnetoMotorConfig>()
         {
-            new MagnetoMotor()
+            new MagnetoMotorConfig()
             {
                 motorName = "powder",
                 COMPort = GetCOMPortName(GetCOMPort(4)),
@@ -75,7 +68,7 @@ public static class MagnetoConfig
                 minPos = 0,
                 homePos = 0,
             },
-            new MagnetoMotor()
+            new MagnetoMotorConfig()
             {
                 motorName = "build",
                 COMPort = GetCOMPortName(GetCOMPort(4)),
@@ -84,7 +77,7 @@ public static class MagnetoConfig
                 minPos = 0,
                 homePos = 0,
             },
-            new MagnetoMotor()
+            new MagnetoMotorConfig()
             {
                 motorName = "sweep",
                 COMPort = GetCOMPortName(GetCOMPort(7)),
@@ -96,47 +89,28 @@ public static class MagnetoConfig
         };
     }
 
-    public static COMPort GetCOMPort(int portNumber)
+    public static COMPortConfig GetCOMPort(int portNumber)
     {
         return AllCOMPorts().FirstOrDefault(port => port.port == portNumber);
     }
 
-    public static string GetCOMPortName(COMPort c)
+    public static string GetCOMPortName(COMPortConfig c)
     {
         return $"COM{c.port}";
     }
 
-    public static MagnetoMotor GetMotorByName(string name)
+    public static MagnetoMotorConfig GetMotorByName(string name)
     {
         return AllMotors().FirstOrDefault(motor => motor.motorName == name);
     }
 
-    public static IEnumerable<COMPort> GetAllCOMPorts()
+    public static IEnumerable<COMPortConfig> GetAllCOMPorts()
     {
         return AllCOMPorts();
     }
 
-    public static IEnumerable<MagnetoMotor> GetAllMotors()
+    public static IEnumerable<MagnetoMotorConfig> GetAllMotors()
     {
         return AllMotors();
     }
-
-    public static async Task<IEnumerable<MagnetoMotor>> GetMotorsDataAsync()
-    {
-        // if _allMotors is null, set equal to new...
-        _allMotors ??= new List<MagnetoMotor>(AllMotors());
-
-        await Task.CompletedTask;
-        return _allMotors;
-    }
-
-    public static async Task<IEnumerable<MagnetoMotor>> GetCOMPortsDataAsync()
-    {
-        // if _allCOMPorts is null, set equal to new...
-        _allCOMPorts ??= new List<COMPort>(AllCOMPorts());
-
-        await Task.CompletedTask;
-        return _allMotors;
-    }
-
 }
