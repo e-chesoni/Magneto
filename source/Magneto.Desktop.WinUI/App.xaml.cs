@@ -76,9 +76,6 @@ public partial class App : Application
             services.AddSingleton<ISamplePrintService, SamplePrintService>();
             services.AddSingleton<IFileService, FileService>();
 
-            // Magneto Config
-            //services.AddSingleton<IMagnetoConfig, MagnetoConfig>();
-
             // Views and ViewModels
             services.AddTransient<SettingsViewModel>();
             services.AddTransient<SettingsPage>();
