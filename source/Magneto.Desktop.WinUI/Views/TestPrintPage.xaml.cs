@@ -89,7 +89,7 @@ public sealed partial class TestPrintPage : Page
     /// Helper that calls the MoveMotorRel method on the motor attached to selected axis
     /// </summary>
     /// <param name="axis"></param>
-    private void MoveMotorHelper(int axis)
+    private void MoveMotorHelper(int axis, string dist)
     {
         MagnetoLogger.Log("TestPrintPage::MoveMotorHelper", LogFactoryLogLevel.LogLevel.VERBOSE);
 
@@ -98,7 +98,7 @@ public sealed partial class TestPrintPage : Page
         // We don't want a bunch of unused motors hanging around in the app
 
         currTestMotor.SetAxis(axis);
-        currTestMotor.MoveMotorRel(10);
+        currTestMotor.MoveMotorRel(double.Parse(dist));
     }
 
     #endregion
@@ -165,6 +165,9 @@ public sealed partial class TestPrintPage : Page
     /// <param name="e"></param>
     private void MoveMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
+        string dist = ViewModel.DistanceText;
+        MagnetoLogger.Log($"Got distance: {dist}", LogFactoryLogLevel.LogLevel.VERBOSE);
+
         if (MagnetoSerialConsole.OpenSerialPort(currTestMotor.GetPortName()))
         {
             MagnetoLogger.Log("Port Open!", LogFactoryLogLevel.LogLevel.SUCCESS);
@@ -176,13 +179,13 @@ public sealed partial class TestPrintPage : Page
                         LogFactoryLogLevel.LogLevel.WARN);
                     break;
                 case 1:
-                    MoveMotorHelper(1);
+                    MoveMotorHelper(1, dist);
                     break; 
                 case 2:
-                    MoveMotorHelper(2);
+                    MoveMotorHelper(2, dist);
                     break;
                 case 3:
-                    MoveMotorHelper(3);
+                    MoveMotorHelper(3, dist);
                     break;
                 default: 
                     break;

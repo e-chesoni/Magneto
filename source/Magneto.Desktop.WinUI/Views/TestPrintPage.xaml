@@ -50,14 +50,14 @@
                     </Grid.ColumnDefinitions>
                 
                     <Button x:Name="SetMotorAxis1Button" Content="1" Grid.Column="0"
-                            Height="30" Margin="5" Click="SetMotorAxis1Button_Click"></Button>
+                            Height="60" Width="60" Margin="5" Click="SetMotorAxis1Button_Click"></Button>
                     <Button x:Name="SetMotorAxis2Button" Content="2" Grid.Column="1"
-                            Height="30" Margin="5" Click="SetMotorAxis2Button_Click" ></Button>
+                            Height="60" Width="60" Margin="5" Click="SetMotorAxis2Button_Click" ></Button>
                     <Button x:Name="SetMotorAxis3Button" Content="3" Grid.Column="2"
-                            Height="30" Margin="5" Click="SetMotorAxis3Button_Click"></Button>
+                            Height="60" Width="60" Margin="5" Click="SetMotorAxis3Button_Click"></Button>
                 
                 </Grid>
-                <TextBox Grid.Column="2" Grid.Row="1"  Width="100" Height ="20" 
+                <TextBox x:Name="DistanceTextBox" Text="{x:Bind ViewModel.DistanceText, Mode=TwoWay}" Grid.Column="2" Grid.Row="1"  Width="100" Height ="20" 
                          MaxLength="100"></TextBox>
 
                 <Grid Grid.Column="2" Grid.Row="2">
