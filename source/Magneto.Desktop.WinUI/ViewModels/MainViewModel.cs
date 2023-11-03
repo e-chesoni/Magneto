@@ -21,23 +21,93 @@ public class MainViewModel : ObservableRecipient, INavigationAware
     public INavigationService _navigationService;
     private readonly ISampleDataService _sampleDataService;
     private readonly ISamplePrintService _samplePrintService;
-    private readonly IMagnetoConfig _magnetoConfig;
 
-    // Get config
+    /// <summary>
+    /// Boolean to indicate whether to call InitializeMagneto when page loads
+    /// </summary>
+    private bool _initialPageLoaded = false;
 
+    /// <summary>
+    /// Tasks to handle when application starts up
+    /// TODO: May want to store in an "App Startup" class in the future
+    /// </summary>
+    private void InitializeMagnetoPorts()
+    {
+        // Set log level
+        MagnetoLogger.LogFactoryOutputLevel = LogFactoryOutputLevel.LogOutputLevel.Debug;
 
-    // Create motors
-    private static StepperMotor _powderMotor = new StepperMotor("COM4", 1, 35, 0, 0);
-    private static StepperMotor _buildMotor = new StepperMotor("COM4", 2, 35, 0, 0);
-    private static StepperMotor _sweepMotor = new StepperMotor("COM7", 1, 50, -50, 0); // Linear motor
+        MagnetoSerialConsole.GetAvailablePorts();
 
-    private static MotorController _buildController = new(_powderMotor, _buildMotor);
-    private static MotorController _sweepController = new(_sweepMotor);
-    private static LaserController _laserController = new();
+        // Get config stuff
+        foreach (var c in MagnetoConfig.GetAllCOMPorts())
+        {
+            MagnetoSerialConsole.InitializePort(MagnetoConfig.GetCOMPortName(c), c.baudRate, c.parity, c.dataBits, c.stopBits, c.handshake);
+        }
 
-    private static BuildManager bm = new BuildManager(_buildController, _sweepController, _laserController);
+        MagnetoSerialConsole.GetInitializedPorts();
 
-    public MissionControl missionControl = new MissionControl(bm);
+        // Set initial page loaded to true
+        _initialPageLoaded = true;
+    }
+
+    private static StepperMotor _powderMotor;
+    private static StepperMotor _buildMotor;
+    private static StepperMotor _sweepMotor;
+
+    private static MotorController _buildController;
+    private static MotorController _sweepController;
+    private static LaserController _laserController;
+    private static BuildManager _buildManager;
+
+    public MissionControl missionControl = new MissionControl(_buildManager);
+
+    private void InitializeMagnetoComponents()
+    {
+        // Initialize Motors
+        MagnetoMotor powderMotorConfig = MagnetoConfig.GetMotorByName("powder");
+        MagnetoMotor buildMotorConfig = MagnetoConfig.GetMotorByName("build");
+        MagnetoMotor sweepMotorConfig = MagnetoConfig.GetMotorByName("sweep");
+
+        var msg = "";
+
+        if (powderMotorConfig != null)
+        {
+            _powderMotor = new StepperMotor(powderMotorConfig.COMPort, powderMotorConfig.axis, powderMotorConfig.maxPos, powderMotorConfig.minPos, powderMotorConfig.homePos);
+        }
+        else
+        {
+            msg = $"Error; could not assign {powderMotorConfig} motor";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+        }
+
+        if (buildMotorConfig != null)
+        {
+            _buildMotor = new StepperMotor(buildMotorConfig.COMPort, buildMotorConfig.axis, buildMotorConfig.maxPos, buildMotorConfig.minPos, buildMotorConfig.homePos);
+        }
+        else
+        {
+            msg = $"Error; could not assign {buildMotorConfig} motor";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+        }
+
+        if (sweepMotorConfig != null)
+        {
+            _sweepMotor = new StepperMotor(sweepMotorConfig.COMPort, sweepMotorConfig.axis, sweepMotorConfig.maxPos, sweepMotorConfig.minPos, sweepMotorConfig.homePos);
+        }
+        else
+        {
+            msg = $"Error; could not assign {sweepMotorConfig} motor";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+        }
+
+        _buildController = new(_powderMotor, _buildMotor);
+        _sweepController = new(_sweepMotor);
+        _laserController = new();
+
+        _buildManager = new BuildManager(_buildController, _sweepController, _laserController);
+        missionControl = new MissionControl(_buildManager);
+    }
+
 
     public ICommand ItemClickCommand
     {
@@ -48,6 +118,12 @@ public class MainViewModel : ObservableRecipient, INavigationAware
 
     public MainViewModel(INavigationService navigationService, ISampleDataService sampleDataService, ISamplePrintService samplePrintService)
     {
+        if (!_initialPageLoaded) 
+        {
+            InitializeMagnetoPorts();
+            InitializeMagnetoComponents();
+        }
+
         _navigationService = navigationService;
         _sampleDataService = sampleDataService;
         _samplePrintService = samplePrintService;

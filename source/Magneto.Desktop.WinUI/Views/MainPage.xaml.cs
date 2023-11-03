@@ -12,53 +12,6 @@ namespace Magneto.Desktop.WinUI.Views;
 
 public sealed partial class MainPage : Page
 {
-    #region Private Variables
-
-    /// <summary>
-    /// Boolean to indicate whether to call InitializeMagneto when page loads
-    /// </summary>
-    private bool _initialPageLoaded = false;
-
-    //private readonly IMagnetoConfig _magnetoConfig;
-    public MagnetoConfig _magnetoConfig = new MagnetoConfig();
-
-    /// <summary>
-    /// Tasks to handle when application starts up
-    /// TODO: May want to store in an "App Startup" class in the future
-    /// </summary>
-    private void InitializeMagneto()
-    {
-        // Set log level
-        MagnetoLogger.LogFactoryOutputLevel = LogFactoryOutputLevel.LogOutputLevel.Debug;
-
-        MagnetoSerialConsole.GetAvailablePorts();
-
-        // Set up serial console
-        //MagnetoSerialConsole.SetDefaultSerialPort();
-
-        var defaultBaudRate = 38400;
-        var defaultParity = "None";
-        var defaultDataBits = 8;
-        var defaultStopBits = "One";
-        var defaultHandshake = "None";
-
-        // TODO: Add stuff to serial console from config file
-        var first = _magnetoConfig.GetFirstMotor().COMPort;
-        MagnetoLogger.Log($"Got config file. fist motor com port is:{first}", LogFactoryLogLevel.LogLevel.VERBOSE);
-
-        // TODO: for each motor in config get UNIQUE com port
-        // TODO: for each com port, initialize port in mag serial console
-        MagnetoSerialConsole.InitializePort("COM4", defaultBaudRate, defaultParity, defaultDataBits, defaultStopBits, defaultHandshake);
-        MagnetoSerialConsole.InitializePort("COM7", defaultBaudRate, defaultParity, defaultDataBits, defaultStopBits, defaultHandshake);
-
-        MagnetoSerialConsole.GetInitializedPorts();
-
-        // Set initial page loaded to true
-        _initialPageLoaded = true;
-    }
-
-    #endregion
-
     #region Public Methods
 
     /// <summary>
@@ -78,7 +31,6 @@ public sealed partial class MainPage : Page
         ViewModel = App.GetService<MainViewModel>();
 
         InitializeComponent();
-        if (!_initialPageLoaded) { InitializeMagneto(); }
 
         // Print some log messages for testing
         MagnetoLogger.Log("PRINTING SAMPLE LOG MESSAGES", LogFactoryLogLevel.LogLevel.VERBOSE);
