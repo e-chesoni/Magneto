@@ -7,6 +7,7 @@ using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Models.BuildModels;
 using Magneto.Desktop.WinUI.Core.Models.Controllers;
 using Magneto.Desktop.WinUI.Core.Models.Image;
+using Magneto.Desktop.WinUI.Core.Models.Motor;
 using Magneto.Desktop.WinUI.Core.Services;
 using static Magneto.Desktop.WinUI.Core.Models.Motor.StepperMotor;
 
@@ -19,6 +20,8 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     /// Build manager to handle printing tasks
     /// </summary>
     private BuildManager _buildManager { get; set; }
+
+    private List<StepperMotor> _motorList { get; set; } = new List<StepperMotor>();
 
     /// <summary>
     /// A list of subscribers that want to receive notifications from Mission Control
@@ -55,6 +58,9 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
 
         _buildManager = bm;
         _bedLevelStep = 1; // mm
+
+        //TODO: Add build manager motors to _mototList
+        foreach(var m in bm.GetMotorList()) { _motorList.Add(m); }
     }
 
     #endregion
@@ -74,6 +80,15 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     #endregion
 
     #region Getters
+
+    /// <summary>
+    /// Get all motors define in build manager
+    /// </summary>
+    /// <returns>List of motors</returns>
+    public List<StepperMotor> GetMotorList()
+    {
+        return _motorList;
+    }
 
     /// <summary>
     /// Get the layer thickness for the print from the build manager

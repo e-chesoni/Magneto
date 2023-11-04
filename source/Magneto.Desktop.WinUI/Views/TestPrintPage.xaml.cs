@@ -1,6 +1,8 @@
 ﻿using System.Reflection;
 using CommunityToolkit.WinUI.UI.Animations;
+using Magneto.Desktop.WinUI.Core;
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
+using Magneto.Desktop.WinUI.Core.Contracts.Services.Motor;
 using Magneto.Desktop.WinUI.Core.Helpers;
 using Magneto.Desktop.WinUI.Core.Models;
 using Magneto.Desktop.WinUI.Core.Models.Motor;
@@ -23,11 +25,11 @@ public sealed partial class TestPrintPage : Page
     /// Place holder motor for test carried out through this page
     /// The default axis is 0, which runs the test on both motors
     /// </summary>
-    private StepperMotor stepMotor1 = new StepperMotor("COM4", 1, 35, 0, 0);
+    private StepperMotor _powderMotor;
 
-    private StepperMotor stepMotor2 = new StepperMotor("COM4", 2, 35, 0, 0);
+    private StepperMotor _buildMotor;
 
-    private StepperMotor sweepMotor = new StepperMotor("COM7", 1, 50, -50, 0);
+    private StepperMotor _sweepMotor;
 
     private StepperMotor currTestMotor;
 
@@ -47,6 +49,67 @@ public sealed partial class TestPrintPage : Page
 
     #endregion
 
+    #region Motor Setup
+
+    private void InitializeMagnetoMotors()
+    {
+        var msg = "";
+
+        //MagnetoLogger.Log(MissionControl.FriendlyMessage, LogFactoryLogLevel.LogLevel.DEBUG);
+        List<MagnetoMotorConfig> motorConfigs = new List<MagnetoMotorConfig>();
+        List<string> motorNames = new List<string>();
+
+        foreach (var m in MagnetoConfig.GetAllMotors())
+        {
+            motorConfigs.Add(m);
+            motorNames.Add(m.motorName);
+        }
+
+        StepperMotor p = MissionControl.GetMotorList().FirstOrDefault(m => m.GetMotorName() == motorNames[0]);
+
+        if (p != null)
+        {
+            msg = $"Found motor in config with name {motorNames[0]}. Setting this to powder motor in test.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+            _powderMotor = p;
+        }
+        else
+        {
+            msg = "Unable to find powder motor";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+        }
+
+        StepperMotor b = MissionControl.GetMotorList().FirstOrDefault(m => m.GetMotorName() == motorNames[1]);
+
+        if (b != null)
+        {
+            msg = $"Found motor in config with name {motorNames[1]}. Setting this to build motor in test.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+            _buildMotor = b;
+        }
+        else
+        {
+            msg = "Unable to find build motor";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+        }
+
+        StepperMotor s = MissionControl.GetMotorList().FirstOrDefault(m => m.GetMotorName() == motorNames[2]);
+
+        if (s != null)
+        {
+            msg = $"Found motor in config with name {motorNames[2]}. Setting this to sweep motor in test.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+            _sweepMotor = s;
+        }
+        else
+        {
+            msg = "Unable to find sweep motor";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+        }
+    }
+
+    #endregion
+
     #region Constructor
 
     /// <summary>
@@ -57,10 +120,11 @@ public sealed partial class TestPrintPage : Page
         ViewModel = App.GetService<TestPrintViewModel>();
         InitializeComponent();
         
+        
         MagnetoLogger.Log("Landed on Test Print Page", LogFactoryLogLevel.LogLevel.DEBUG);
 
         // Set current test motor to stepMotor1 by default
-        currTestMotor = stepMotor1;
+        currTestMotor = _powderMotor;
     }
 
     #endregion
@@ -76,7 +140,7 @@ public sealed partial class TestPrintPage : Page
         // Get mission control (passed over when navigating from previous page)
         base.OnNavigatedTo(e);
         MissionControl = (MissionControl)e.Parameter;
-
+        InitializeMagnetoMotors();
         var msg = string.Format("TestPrintPage::OnNavigatedTo -- {0}", MissionControl.FriendlyMessage);
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
     }
@@ -112,7 +176,7 @@ public sealed partial class TestPrintPage : Page
     /// <param name="e"></param>
     private void SetMotorAxis1Button_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        currTestMotor = stepMotor1;
+        currTestMotor = _powderMotor;
     }
 
     /// <summary>
@@ -122,7 +186,7 @@ public sealed partial class TestPrintPage : Page
     /// <param name="e"></param>
     private void SetMotorAxis2Button_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        currTestMotor = stepMotor2;
+        currTestMotor = _buildMotor;
 
     }
 
@@ -135,7 +199,7 @@ public sealed partial class TestPrintPage : Page
     {
         // TODO: Update this method to set the test motor to the powder distribution motor
         // A the time this code was written, the third motor has not yet arrived
-        currTestMotor = sweepMotor;
+        currTestMotor = _sweepMotor;
     }
 
     /// <summary>

@@ -16,6 +16,11 @@ public class StepperMotor : IStepperMotor
         get; set;
     }
 
+    private string _motorName
+    {
+        get; set; 
+    }
+
     private string _motorPort
     {
         get; set;
@@ -86,9 +91,10 @@ public class StepperMotor : IStepperMotor
     /// StepperMotor constructor
     /// </summary>
     /// <param name="motorName"></param> The axis that the motor is attached to
-    public StepperMotor(string portName, int axis, double maxPos, double minPos, double homePos)
+    public StepperMotor(string motorName, string portName, int axis, double maxPos, double minPos, double homePos)
     {
         // TODO: settings to config file
+        _motorName = motorName;
         _motorPort = portName;
         _motorAxis = axis;
         _maxPos = maxPos;
@@ -128,6 +134,11 @@ public class StepperMotor : IStepperMotor
     #endregion
 
     #region Getters and Setters
+    public string GetMotorName()
+    {
+        return _motorName;
+    }
+
     public int GetID()
     {
         return _motorId;
@@ -156,6 +167,11 @@ public class StepperMotor : IStepperMotor
     public double GetMinPos()
     {
         return _minPos;
+    }
+
+    public void SetMotorName(string name)
+    {
+        _motorName = name;
     }
 
     public void SetPortName(string portName)

@@ -56,8 +56,6 @@ public class MotorController : IMotorController
     public MotorController(StepperMotor motor1, StepperMotor motor2)
     {
         _mcPort = motor1.GetPortName();
-        //_motor1 = motor1;
-        //_motor2 = motor2;
         _motorList.Add(motor1);
         _motorList.Add(motor2);
     }

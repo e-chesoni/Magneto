@@ -25,6 +25,8 @@ public class BuildManager : ISubsciber, IStateMachine
 
     private double _sweepDist { get; set; }
 
+    private List<StepperMotor> _motorList = new List<StepperMotor>();
+
     #endregion
 
     #region Public Variables
@@ -129,9 +131,14 @@ public class BuildManager : ISubsciber, IStateMachine
         motorControllers.Add(buildController);
         motorControllers.Add(sweepController);
 
+        // TODO: Add motors to list
+        foreach(var m in buildController.GetMotorList()) { _motorList.Add(m); }
+        foreach (var m in sweepController.GetMotorList()) { _motorList.Add(m); }
+
+
         // TODO: Move to config file
         // Set default sweep distance
-        this.SetSweepDist(20);
+        SetSweepDist(20);
 
         // Create a dance model
         danceModel = new DanceModel();
@@ -143,6 +150,11 @@ public class BuildManager : ISubsciber, IStateMachine
     #endregion
 
     #region Getters
+
+    public List<StepperMotor> GetMotorList()
+    {
+        return _motorList;
+    }
 
     public double GetSweepDist()
     {
