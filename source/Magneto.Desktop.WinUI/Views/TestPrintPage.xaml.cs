@@ -8,8 +8,9 @@ using Magneto.Desktop.WinUI.Core.Models;
 using Magneto.Desktop.WinUI.Core.Models.Motor;
 using Magneto.Desktop.WinUI.Core.Services;
 using Magneto.Desktop.WinUI.ViewModels;
-
+using Microsoft.UI;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 
 namespace Magneto.Desktop.WinUI.Views;
@@ -32,6 +33,16 @@ public sealed partial class TestPrintPage : Page
     private StepperMotor _sweepMotor;
 
     private StepperMotor currTestMotor;
+
+    private bool _powderMotorSelected = false;
+
+    private bool _buildMotorSelected = false;
+
+    private bool _sweepMotorSelected = false;
+
+    private bool _movingMotorToTarget = false;
+
+    private bool _homigMotor = false;
 
     #endregion
 
@@ -93,7 +104,7 @@ public sealed partial class TestPrintPage : Page
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
         }
 
-        StepperMotor s = MissionControl.GetMotorList().FirstOrDefault(m => m.GetMotorName() == motorNames[2]);
+        StepperMotor s = MissionControl.GetSweepMotor();
 
         if (s != null)
         {
@@ -174,9 +185,26 @@ public sealed partial class TestPrintPage : Page
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="e"></param>
-    private void SetMotorAxis1Button_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    private void SelectPowderMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
         currTestMotor = _powderMotor;
+
+        if (!_powderMotorSelected)
+        {
+            SelectPowderMotorButton.Background = new SolidColorBrush(Colors.Green);
+            _powderMotorSelected = true;
+
+            SelectBuildMotorButton.Background = new SolidColorBrush(Colors.DimGray);
+            _buildMotorSelected = false;
+
+            SelectSweepMotorButton.Background = new SolidColorBrush(Colors.DimGray);
+            _sweepMotorSelected = false;
+        }
+        else
+        {
+            SelectPowderMotorButton.Background = new SolidColorBrush(Colors.DimGray);
+            _powderMotorSelected = false;
+        }
     }
 
     /// <summary>
@@ -184,10 +212,26 @@ public sealed partial class TestPrintPage : Page
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="e"></param>
-    private void SetMotorAxis2Button_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    private void SelectBuildMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
         currTestMotor = _buildMotor;
 
+        if (!_buildMotorSelected)
+        {
+            SelectBuildMotorButton.Background = new SolidColorBrush(Colors.Green);
+            _buildMotorSelected = true;
+
+            SelectPowderMotorButton.Background = new SolidColorBrush(Colors.DimGray);
+            _powderMotorSelected = false;
+
+            SelectSweepMotorButton.Background = new SolidColorBrush(Colors.DimGray);
+            _sweepMotorSelected = false;
+        }
+        else
+        {
+            SelectBuildMotorButton.Background = new SolidColorBrush(Colors.DimGray);
+            _buildMotorSelected = false;
+        }
     }
 
     /// <summary>
@@ -195,11 +239,28 @@ public sealed partial class TestPrintPage : Page
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="e"></param>
-    private void SetMotorAxis3Button_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    private void SelectSweepMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
         // TODO: Update this method to set the test motor to the powder distribution motor
         // A the time this code was written, the third motor has not yet arrived
         currTestMotor = _sweepMotor;
+
+        if (!_sweepMotorSelected)
+        {
+            SelectSweepMotorButton.Background = new SolidColorBrush(Colors.Green);
+            _sweepMotorSelected = true;
+
+            SelectPowderMotorButton.Background = new SolidColorBrush(Colors.DimGray);
+            _powderMotorSelected = false;
+
+            SelectBuildMotorButton.Background = new SolidColorBrush(Colors.DimGray);
+            _buildMotorSelected = false;
+        }
+        else
+        {
+            SelectSweepMotorButton.Background = new SolidColorBrush(Colors.DimGray);
+            _sweepMotorSelected = false;
+        }
     }
 
     /// <summary>
@@ -210,6 +271,18 @@ public sealed partial class TestPrintPage : Page
     private void HomeMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
         MagnetoLogger.Log("Homing Motor.", LogFactoryLogLevel.LogLevel.VERBOSE);
+        _homigMotor = true;
+
+        if (!_homigMotor)
+        {
+            HomeMotorButton.Background = new SolidColorBrush(Colors.Green);
+            _homigMotor = true;
+        }
+        else
+        {
+            HomeMotorButton.Background = new SolidColorBrush(Colors.DimGray);
+            _homigMotor = false;
+        }
 
         if (MagnetoSerialConsole.OpenSerialPort(currTestMotor.GetPortName()))
         {
@@ -220,6 +293,9 @@ public sealed partial class TestPrintPage : Page
             MagnetoLogger.Log("Serial port not open.",
                 LogFactoryLogLevel.LogLevel.ERROR);
         }
+
+        // TODO: keep button green until motor is done moving
+        _homigMotor = false;
     }
 
     /// <summary>
@@ -235,6 +311,18 @@ public sealed partial class TestPrintPage : Page
         if (MagnetoSerialConsole.OpenSerialPort(currTestMotor.GetPortName()))
         {
             MagnetoLogger.Log("Port Open!", LogFactoryLogLevel.LogLevel.SUCCESS);
+            _movingMotorToTarget = true;
+
+            if (!_movingMotorToTarget)
+            {
+                MoveMotorButton.Background = new SolidColorBrush(Colors.Green);
+                _movingMotorToTarget = true;
+            }
+            else
+            {
+                MoveMotorButton.Background = new SolidColorBrush(Colors.DimGray);
+                _movingMotorToTarget = false;
+            }
 
             switch (currTestMotor.GetAxis())
             {
@@ -254,6 +342,9 @@ public sealed partial class TestPrintPage : Page
                 default: 
                     break;
             }
+
+            // TODO:keep button green until motor is done moving
+            _movingMotorToTarget = false;
         }
         else
         {

@@ -9,9 +9,9 @@
     <Grid x:Name="ContentArea">
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="20" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="20" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="20" />
@@ -49,12 +49,21 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                 
-                    <Button x:Name="SetMotorAxis1Button" Content="1" Grid.Column="0"
-                            Height="60" Width="60" Margin="5" Click="SetMotorAxis1Button_Click"></Button>
-                    <Button x:Name="SetMotorAxis2Button" Content="2" Grid.Column="1"
-                            Height="60" Width="60" Margin="5" Click="SetMotorAxis2Button_Click" ></Button>
-                    <Button x:Name="SetMotorAxis3Button" Content="3" Grid.Column="2"
-                            Height="60" Width="60" Margin="5" Click="SetMotorAxis3Button_Click"></Button>
+                    <Button x:Name="SelectPowderMotorButton" Content="Powder Motor" Grid.Column="0"
+                            Height="60" Width="150" Margin="5" HorizontalAlignment="Center"
+                            Background="DimGray"
+                            Click="SelectPowderMotorButton_Click">
+                    </Button>
+                    <Button x:Name="SelectBuildMotorButton" Content="Build Motor" Grid.Column="1"
+                            Height="60" Width="150" Margin="5" HorizontalAlignment="Center"
+                            Background="DimGray"
+                            Click="SelectBuildMotorButton_Click" >
+                    </Button>
+                    <Button x:Name="SelectSweepMotorButton" Content="Sweep Motor" Grid.Column="2"
+                            Height="60" Width="150" Margin="5" HorizontalAlignment="Center"
+                            Background="DimGray"
+                            Click="SelectSweepMotorButton_Click">
+                    </Button>
                 
                 </Grid>
                 <TextBox x:Name="DistanceTextBox" Text="{x:Bind ViewModel.DistanceText, Mode=TwoWay}" Grid.Column="2" Grid.Row="1"  Width="100" Height ="20" 
@@ -62,13 +71,17 @@
 
                 <Grid Grid.Column="2" Grid.Row="2">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <Button x:Name="MoveMotorButton" Content="Move Motor" Grid.Column="0"
-                        Grid.Row="4" Margin="10" Click="MoveMotorButton_Click"></Button>
-                    <Button x:Name="HomeMotorButton" Content="Home Motor" Grid.Column="1"
-                        Grid.Row="4" Margin="10" Click="HomeMotorButton_Click"></Button>
+                    <Button x:Name="MoveMotorButton" Content="Move Motor" Grid.Column="0" Grid.Row="4"
+                            Height="60" Width="100" Margin="10" HorizontalAlignment="Center"
+                            Background="DimGray"
+                            Click="MoveMotorButton_Click"></Button>
+                    <Button x:Name="HomeMotorButton" Content="Home Motor" Grid.Column="1" Grid.Row="4" 
+                            Height="60" Width="100" Margin="10" HorizontalAlignment="Center" 
+                            Background="DimGray"
+                            Click="HomeMotorButton_Click"></Button>
                 </Grid>
             </Grid>
             

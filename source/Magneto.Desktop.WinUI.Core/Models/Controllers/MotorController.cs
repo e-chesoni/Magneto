@@ -49,7 +49,7 @@ public class MotorController : IMotorController
     public MotorController(StepperMotor stepperMotor)
     {
         _mcPort = stepperMotor.GetPortName();
-        _buildMotor = stepperMotor;
+        _sweepMotor = stepperMotor;
         _motorList.Add(stepperMotor);
     }
 
