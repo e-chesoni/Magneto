@@ -238,7 +238,7 @@ public class StepperMotor : IStepperMotor
     public Task MoveMotorAbs(double pos)
     {
         // Invalid position
-        if (pos < 0 || pos > 35)
+        if (pos < _minPos || pos > _maxPos)
         {
             MagnetoLogger.Log("Invalid position. Aborting motor move operation.",
                 LogFactoryLogLevel.LogLevel.ERROR);
@@ -287,7 +287,7 @@ public class StepperMotor : IStepperMotor
         var desiredPos = _calculatedPos + pos;
 
         // if the current position + steps is greater than 35, fail
-        if (desiredPos < 0 || desiredPos > 35)
+        if (desiredPos < _minPos || desiredPos > _maxPos)
         {
             MagnetoLogger.Log("Invalid position. Aborting motor move operation.",
                 LogFactoryLogLevel.LogLevel.ERROR);

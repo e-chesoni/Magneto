@@ -21,7 +21,7 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     /// </summary>
     private BuildManager _buildManager { get; set; }
 
-    private List<StepperMotor> _motorList { get; set; } = new List<StepperMotor>();
+    //private List<StepperMotor> _motorList { get; set; } = new List<StepperMotor>();
 
     /// <summary>
     /// A list of subscribers that want to receive notifications from Mission Control
@@ -58,9 +58,6 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
 
         _buildManager = bm;
         _bedLevelStep = 1; // mm
-
-        //TODO: Add build manager motors to _mototList
-        foreach(var m in bm.GetMotorList()) { _motorList.Add(m); }
     }
 
     #endregion
@@ -87,7 +84,34 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     /// <returns>List of motors</returns>
     public List<StepperMotor> GetMotorList()
     {
-        return _motorList;
+        return _buildManager.GetMotorList();
+    }
+
+    /// <summary>
+    /// Get powder motor from build manager
+    /// </summary>
+    /// <returns></returns>
+    public StepperMotor GetPowderMotor()
+    {
+        return _buildManager.GetPowderMotor();
+    }
+
+    /// <summary>
+    /// Get build motor from build manager
+    /// </summary>
+    /// <returns></returns>
+    public StepperMotor GetBuildMotor()
+    {
+        return _buildManager.GetBuildMotor();
+    }
+
+    /// <summary>
+    /// Get sweep motor from build manager
+    /// </summary>
+    /// <returns></returns>
+    public StepperMotor GetSweepMotor()
+    {
+        return _buildManager.GetSweepMotor();
     }
 
     /// <summary>
@@ -99,6 +123,10 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
         return _buildManager.GetImageThickness();
     }
 
+    /// <summary>
+    /// Get step distance for bed leveling
+    /// </summary>
+    /// <returns></returns>
     public double GedBedLevelStep()
     {
         return _bedLevelStep;
@@ -117,6 +145,10 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
         _buildManager.SetImageThickness(thickness);
     }
 
+    /// <summary>
+    /// Set bed leveling step
+    /// </summary>
+    /// <param name="step"></param>
     public void SetBedLevelStep(double step)
     {
         _bedLevelStep = step;
@@ -126,6 +158,11 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
 
     #region Bed Leveling
 
+    /// <summary>
+    /// Helper for bed leveling
+    /// </summary>
+    /// <param name="axis"></param>
+    /// <param name="dir"></param>
     private void LevelHelper(int axis, MotorDirection dir)
     {
         if (dir == MotorDirection.Up)
@@ -138,6 +175,12 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
             _ = _buildManager.buildController.MoveMotorRel(axis, step);
         }
     }
+
+    /// <summary>
+    /// Moves motor on given axis in one bed level step in given direction
+    /// </summary>
+    /// <param name="axis"></param>
+    /// <param name="dir"></param>
     public void LevelMotor(int axis, MotorDirection dir)
     {
         if (axis > 0 && axis < 3)

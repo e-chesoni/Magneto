@@ -23,9 +23,9 @@ public class BuildManager : ISubsciber, IStateMachine
 {
     #region Private Variables
 
-    private double _sweepDist { get; set; }
-
     private List<StepperMotor> _motorList = new List<StepperMotor>();
+
+    private double _sweepDist { get; set; }
 
     #endregion
 
@@ -133,8 +133,7 @@ public class BuildManager : ISubsciber, IStateMachine
 
         // TODO: Add motors to list
         foreach(var m in buildController.GetMotorList()) { _motorList.Add(m); }
-        foreach (var m in sweepController.GetMotorList()) { _motorList.Add(m); }
-
+        foreach (var n in sweepController.GetMotorList()) { _motorList.Add(n); }
 
         // TODO: Move to config file
         // Set default sweep distance
@@ -154,6 +153,21 @@ public class BuildManager : ISubsciber, IStateMachine
     public List<StepperMotor> GetMotorList()
     {
         return _motorList;
+    }
+
+    public StepperMotor GetPowderMotor()
+    {
+        return buildController.GetPowderMotor();
+    }
+
+    public StepperMotor GetBuildMotor()
+    {
+        return buildController.GetBuildMotor();
+    }
+
+    public StepperMotor GetSweepMotor()
+    {
+        return sweepController.GetSweepMotor();
     }
 
     public double GetSweepDist()
@@ -181,7 +195,6 @@ public class BuildManager : ISubsciber, IStateMachine
     public MotorStatus GetMotorStatus(int motorId)
     {
         // Create temp list for motors
-
         List <StepperMotor> motors = new List<StepperMotor>();
 
         foreach (var c in motorControllers)

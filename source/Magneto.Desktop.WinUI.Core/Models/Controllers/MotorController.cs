@@ -13,14 +13,19 @@ public class MotorController : IMotorController
 {
     #region Private Variables
     /// <summary>
-    /// Motor on axis 1
+    /// Motor on controller 1 axis 1
     /// </summary>
-    //private StepperMotor _motor1 { get; set; }
+    private StepperMotor _powderMotor { get; set; }
 
     /// <summary>
-    /// Motor on axis 2
+    /// Motor on controller 1 axis 2
     /// </summary>
-    //private StepperMotor _motor2 { get; set; }
+    private StepperMotor _buildMotor { get; set; }
+
+    /// <summary>
+    /// Motor on controller 2, axis 1
+    /// </summary>
+    private StepperMotor _sweepMotor { get; set; }
 
     /// <summary>
     /// List of motors attached to controller
@@ -41,11 +46,11 @@ public class MotorController : IMotorController
     /// Constructor that accepts one stepper motor
     /// </summary>
     /// <param name="motor"></param> Motor to set on axis 1
-    public MotorController(StepperMotor motor)
+    public MotorController(StepperMotor stepperMotor)
     {
-        _mcPort = motor.GetPortName();
-        //_motor1 = motor1;
-        _motorList.Add(motor);
+        _mcPort = stepperMotor.GetPortName();
+        _buildMotor = stepperMotor;
+        _motorList.Add(stepperMotor);
     }
 
     /// <summary>
@@ -53,11 +58,13 @@ public class MotorController : IMotorController
     /// </summary>
     /// <param name="motor1"></param>
     /// <param name="motor2"></param>
-    public MotorController(StepperMotor motor1, StepperMotor motor2)
+    public MotorController(StepperMotor powderMotor, StepperMotor buildMotor)
     {
-        _mcPort = motor1.GetPortName();
-        _motorList.Add(motor1);
-        _motorList.Add(motor2);
+        _mcPort = powderMotor.GetPortName();
+        _powderMotor = powderMotor;
+        _buildMotor = buildMotor;
+        _motorList.Add(powderMotor);
+        _motorList.Add(buildMotor);
     }
 
     #endregion
@@ -72,6 +79,36 @@ public class MotorController : IMotorController
     public List<StepperMotor> GetMotorList()
     {
         return _motorList;
+    }
+
+    public StepperMotor GetPowderMotor()
+    {
+        if (_powderMotor == null)
+        {
+            var msg = "Powder motor is not set. Are you calling GetPowderMotor() from the right controller?";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+        }
+        return _powderMotor;
+    }
+
+    public StepperMotor GetBuildMotor()
+    {
+        if (_buildMotor == null)
+        {
+            var msg = "Build motor is not set. Are you calling GetBuildMotor() from the right controller?";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+        }
+        return _buildMotor;
+    }
+
+    public StepperMotor GetSweepMotor()
+    {
+        if (_sweepMotor == null)
+        {
+            var msg = "Sweep motor is not set. Are you calling GetSweepMotor() from the right controller?";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+        }
+        return _sweepMotor;
     }
 
     #endregion

@@ -65,7 +65,7 @@ public sealed partial class TestPrintPage : Page
             motorNames.Add(m.motorName);
         }
 
-        StepperMotor p = MissionControl.GetMotorList().FirstOrDefault(m => m.GetMotorName() == motorNames[0]);
+        StepperMotor p = MissionControl.GetPowderMotor();
 
         if (p != null)
         {
@@ -79,7 +79,7 @@ public sealed partial class TestPrintPage : Page
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
         }
 
-        StepperMotor b = MissionControl.GetMotorList().FirstOrDefault(m => m.GetMotorName() == motorNames[1]);
+        StepperMotor b = MissionControl.GetBuildMotor();
 
         if (b != null)
         {
@@ -106,6 +106,9 @@ public sealed partial class TestPrintPage : Page
             msg = "Unable to find sweep motor";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
         }
+
+        // Set current test motor to stepMotor1 by default
+        currTestMotor = _powderMotor;
     }
 
     #endregion
@@ -122,9 +125,6 @@ public sealed partial class TestPrintPage : Page
         
         
         MagnetoLogger.Log("Landed on Test Print Page", LogFactoryLogLevel.LogLevel.DEBUG);
-
-        // Set current test motor to stepMotor1 by default
-        currTestMotor = _powderMotor;
     }
 
     #endregion
