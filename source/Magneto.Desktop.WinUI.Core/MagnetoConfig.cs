@@ -17,6 +17,7 @@ public class MagnetoMotorConfig
     public double maxPos { get; set; }
     public double minPos { get; set; }
     public double homePos { get; set; }
+    public double velocity { get; set; } // mm/s^2
 }
 
 public class COMPortConfig
@@ -30,6 +31,12 @@ public class COMPortConfig
 }
 public static class MagnetoConfig
 {
+    private static double _defaultPrintThickness = 2;
+
+    private static int _defaultNumSlices = 6;
+
+    private static int _sweepDist = 70;
+
     private static IEnumerable<COMPortConfig> AllCOMPorts()
     {
         return new List<COMPortConfig>()
@@ -67,6 +74,7 @@ public static class MagnetoConfig
                 maxPos = 35,
                 minPos = 0,
                 homePos = 0,
+                velocity = 5, // mm/s^2
             },
             new MagnetoMotorConfig()
             {
@@ -76,15 +84,17 @@ public static class MagnetoConfig
                 maxPos = 35,
                 minPos = 0,
                 homePos = 0,
+                velocity = 5, // mm/s^2
             },
             new MagnetoMotorConfig()
             {
                 motorName = "sweep",
                 COMPort = GetCOMPortName(GetCOMPort(7)),
                 axis = 1,
-                maxPos = 50,
-                minPos = -50,
+                maxPos = 150,
+                minPos = -150,
                 homePos = 0,
+                velocity = 25, // mm/s^2
             },
         };
     }
@@ -112,5 +122,20 @@ public static class MagnetoConfig
     public static IEnumerable<MagnetoMotorConfig> GetAllMotors()
     {
         return AllMotors();
+    }
+
+    public static double GetDefaultPrintThickness()
+    {
+        return _defaultPrintThickness;
+    }
+
+    public static double GetDefaultNumSlices()
+    {
+        return _defaultNumSlices;
+    }
+
+    public static double GetSweepDist()
+    {
+        return _sweepDist; 
     }
 }

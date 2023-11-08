@@ -26,9 +26,11 @@ public static class ImageHandler
         // TODO: Slice image and add slices to image_slices
         MagnetoLogger.Log("Making fake slices to test functionality...",
             Contracts.Services.LogFactoryLogLevel.LogLevel.WARN);
-        image_slices.Push(new Slice());
-        image_slices.Push(new Slice());
-        image_slices.Push(new Slice());
+
+        for (int i = 0; i <= MagnetoConfig.GetDefaultNumSlices(); i++)
+        {
+            image_slices.Push(new Slice());
+        }
 
         return image_slices;
     }

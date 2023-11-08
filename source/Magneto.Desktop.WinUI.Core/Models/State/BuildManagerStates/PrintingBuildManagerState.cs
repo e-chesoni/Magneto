@@ -47,9 +47,47 @@ public class PrintingBuildManagerState : IBuildManagerState
 
     public void Start(ImageModel im) => throw new NotImplementedException();
 
+    public int WaitTimeHelper(StepperMotor motor, double dist)
+    {
+        var velocity = motor.GetVelocity();
+        var waitBuff = 1000;
+        return (((int)Math.Ceiling(dist / velocity)) * 1000) + waitBuff;
+    }
+
     public async Task Draw()
     {
         // TODO: Find a way to set flag using interrupts (if user wants to pause/cancel print)
+        var msg = "";
+
+        // Move build motor to calculated print height
+        //TODO: MOVE TO CALIBRATE STATE: This should be only method in calibrate motors to start
+        var printHeight = MagnetoConfig.GetDefaultPrintThickness() * _BuildManagerSM.danceModel.dance.Count;
+        msg = $"Print Height: {printHeight}";
+        MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        msg = $"Print layers: {_BuildManagerSM.danceModel.dance.Count}";
+        MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        _ = _BuildManagerSM.buildController.MoveMotorAbs(_BuildManagerSM.buildController.GetBuildMotor(), printHeight);
+        // Wait for motor to get to height
+        // TODO: Make wait more robust; right now waits for arbitrary 2 seconds
+        // TODO: Could return a flag to indicate end wait
+        var initialBuildWait = WaitTimeHelper(_BuildManagerSM.buildController.GetBuildMotor(), printHeight);
+        Thread.Sleep(initialBuildWait);
+
+        // Calculate sweep wait time once (used below)
+        var sweepWait = WaitTimeHelper(_BuildManagerSM.sweepController.GetSweepMotor(), _BuildManagerSM.GetSweepDist());
+
+        // Move sweep motor to starting position
+        _ = _BuildManagerSM.sweepController.MoveMotorAbs(_BuildManagerSM.sweepController.GetSweepMotor(), _BuildManagerSM.GetSweepDist());
+        Thread.Sleep(sweepWait);
+
+        // Initialize default wait times
+        var buildWait = WaitTimeHelper(_BuildManagerSM.buildController.GetBuildMotor(), _BuildManagerSM.buildController.GetBuildMotor().GetMaxPos());
+        var powderWait = WaitTimeHelper(_BuildManagerSM.buildController.GetPowderMotor(), _BuildManagerSM.buildController.GetPowderMotor().GetMaxPos());
+
+        msg = $"Sweep wait time: {sweepWait} ms";
+        MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
 
         while (_BuildManagerSM.danceModel.dance.Count > 0)
         {
@@ -58,6 +96,8 @@ public class PrintingBuildManagerState : IBuildManagerState
             
             // Get motor positions and slice from pose
             var thickness = move.thickness;
+            msg = $"Layer Thickness: {thickness}";
+            MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
             var slice = move.slice;
 
             switch (_BuildManagerSM.build_flag)
@@ -78,16 +118,27 @@ public class PrintingBuildManagerState : IBuildManagerState
                     // TODO: Add pop-up for user to execute draw, and indicate draw is complete
 
                     _BuildManagerSM.laserController.Draw(slice); // this was in original code
+                    // TODO: Calculate laser draw time
+                    Thread.Sleep(2000);
 
-                    _BuildManagerSM.buildController.MoveMotorRel(_BuildManagerSM.buildController.GetPowderMotor(), -thickness);
+                    if (_BuildManagerSM.danceModel.dance.Count > 0)
+                    {
+                        _ = _BuildManagerSM.buildController.MoveMotorRel(_BuildManagerSM.buildController.GetBuildMotor(), -thickness);
+                        // Calculate build wait time
+                        buildWait = WaitTimeHelper(_BuildManagerSM.buildController.GetBuildMotor(), thickness);
+                        Thread.Sleep(buildWait);
 
-                    _BuildManagerSM.buildController.MoveMotorRel(_BuildManagerSM.buildController.GetPowderMotor(), thickness);
+                        _ = _BuildManagerSM.buildController.MoveMotorRel(_BuildManagerSM.buildController.GetPowderMotor(), thickness);
+                        // Calculate powder wait time
+                        powderWait = WaitTimeHelper(_BuildManagerSM.buildController.GetPowderMotor(), thickness);
+                        Thread.Sleep(powderWait);
 
-                    _BuildManagerSM.sweepController.MoveMotorAbs(_BuildManagerSM.sweepController.GetSweepMotor(), 50);
-
-                    _BuildManagerSM.sweepController.MoveMotorAbs(_BuildManagerSM.sweepController.GetSweepMotor(), -50);
-
-                    //_BuildManagerSM.buildController.MoveMotorsRel(thickness);
+                        // Sweep
+                        _ = _BuildManagerSM.sweepController.MoveMotorAbs(_BuildManagerSM.sweepController.GetSweepMotor(), -_BuildManagerSM.GetSweepDist());
+                        //Thread.Sleep(1000); // Wait 1 sec before sweeping back
+                        _ = _BuildManagerSM.sweepController.MoveMotorAbs(_BuildManagerSM.sweepController.GetSweepMotor(), _BuildManagerSM.GetSweepDist());
+                        Thread.Sleep(sweepWait*2); // Wait 2x to go there and come back
+                    }
                     break;
 
                 case BuildManager.BuildFlag.PAUSE:
@@ -102,12 +153,13 @@ public class PrintingBuildManagerState : IBuildManagerState
                     Cancel();
                     break;
             }
-            // Sweep
-            _BuildManagerSM.sweepController.MoveMotorRel(1, _BuildManagerSM.GetSweepDist());
-            Thread.Sleep(2000); // Wait two seconds before sweeping back (for dramatic effect)
-            _BuildManagerSM.sweepController.MoveMotorRel(1, -_BuildManagerSM.GetSweepDist());
-            Thread.Sleep(2000); // Wait two seconds after sweep (so build motor doesn't move right away)
-
+            // Don't sweep after if this is the last slice
+            /*
+            if (_BuildManagerSM.danceModel.dance.Count > 0)
+            {
+                
+            }
+            */
         }
         _BuildManagerSM.TransitionTo(new DoneBuildManagerState(_BuildManagerSM));
     }

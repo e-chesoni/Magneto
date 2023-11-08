@@ -72,8 +72,8 @@ public sealed partial class PrintPage : Page
         if (string.IsNullOrEmpty(LayerThickness_TextBox.Text))
         {
             // TODO: Toast Message: Using default thickness of 5mm
-            MagnetoLogger.Log("Using default thickness", LogFactoryLogLevel.LogLevel.DEBUG);
-            MissionControl.SetImageThickness(5);
+            MagnetoLogger.Log("Setting every print layer's thickness to default thickness from MagnetoConfig", LogFactoryLogLevel.LogLevel.DEBUG);
+            MissionControl.SetImageThickness(MissionControl.GetDefaultPrintLayerThickness());
         }
         else
         {

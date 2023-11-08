@@ -50,6 +50,8 @@ public class StepperMotor : IStepperMotor
 
     private double _minPos { get; set; }
 
+    private double _motorVelocity { get; set; }
+
     #endregion
 
     #region Public Variables
@@ -91,7 +93,7 @@ public class StepperMotor : IStepperMotor
     /// StepperMotor constructor
     /// </summary>
     /// <param name="motorName"></param> The axis that the motor is attached to
-    public StepperMotor(string motorName, string portName, int axis, double maxPos, double minPos, double homePos)
+    public StepperMotor(string motorName, string portName, int axis, double maxPos, double minPos, double homePos, double vel)
     {
         // TODO: settings to config file
         _motorName = motorName;
@@ -100,6 +102,7 @@ public class StepperMotor : IStepperMotor
         _maxPos = maxPos;
         _minPos = minPos;
         _homePos = homePos;
+        _motorVelocity = vel;
 
         // Create ID for motor
         // Use regular expression to match the number part
@@ -169,6 +172,11 @@ public class StepperMotor : IStepperMotor
         return _minPos;
     }
 
+    public double GetVelocity()
+    {
+        return _motorVelocity;
+    }
+
     public void SetMotorName(string name)
     {
         _motorName = name;
@@ -197,6 +205,11 @@ public class StepperMotor : IStepperMotor
     public void SetMinPos(double pos)
     {
         _minPos = pos;
+    }
+
+    public void SetVelocit(double vel)
+    {
+        _motorVelocity = vel;
     }
 
     #endregion

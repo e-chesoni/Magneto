@@ -114,7 +114,7 @@ public class MainViewModel : ObservableRecipient, INavigationAware
 
         if (powderMotorConfig != null)
         {
-            _powderMotor = new StepperMotor(powderMotorConfig.motorName, powderMotorConfig.COMPort, powderMotorConfig.axis, powderMotorConfig.maxPos, powderMotorConfig.minPos, powderMotorConfig.homePos);
+            _powderMotor = new StepperMotor(powderMotorConfig.motorName, powderMotorConfig.COMPort, powderMotorConfig.axis, powderMotorConfig.maxPos, powderMotorConfig.minPos, powderMotorConfig.homePos, powderMotorConfig.velocity);
         }
         else
         {
@@ -124,7 +124,7 @@ public class MainViewModel : ObservableRecipient, INavigationAware
 
         if (buildMotorConfig != null)
         {
-            _buildMotor = new StepperMotor(buildMotorConfig.motorName, buildMotorConfig.COMPort, buildMotorConfig.axis, buildMotorConfig.maxPos, buildMotorConfig.minPos, buildMotorConfig.homePos);
+            _buildMotor = new StepperMotor(buildMotorConfig.motorName, buildMotorConfig.COMPort, buildMotorConfig.axis, buildMotorConfig.maxPos, buildMotorConfig.minPos, buildMotorConfig.homePos, buildMotorConfig.velocity);
         }
         else
         {
@@ -134,7 +134,7 @@ public class MainViewModel : ObservableRecipient, INavigationAware
 
         if (sweepMotorConfig != null)
         {
-            _sweepMotor = new StepperMotor(sweepMotorConfig.motorName, sweepMotorConfig.COMPort, sweepMotorConfig.axis, sweepMotorConfig.maxPos, sweepMotorConfig.minPos, sweepMotorConfig.homePos);
+            _sweepMotor = new StepperMotor(sweepMotorConfig.motorName, sweepMotorConfig.COMPort, sweepMotorConfig.axis, sweepMotorConfig.maxPos, sweepMotorConfig.minPos, sweepMotorConfig.homePos, sweepMotorConfig.velocity);
         }
         else
         {

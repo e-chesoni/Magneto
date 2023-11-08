@@ -132,6 +132,12 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
         return _bedLevelStep;
     }
 
+    public double GetDefaultPrintLayerThickness()
+    {
+        return MagnetoConfig.GetDefaultPrintThickness();
+    }
+
+
     #endregion
 
     #region Setters

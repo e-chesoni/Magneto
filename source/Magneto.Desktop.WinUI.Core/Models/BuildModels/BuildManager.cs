@@ -137,7 +137,7 @@ public class BuildManager : ISubsciber, IStateMachine
 
         // TODO: Move to config file
         // Set default sweep distance
-        SetSweepDist(20);
+        SetSweepDist(MagnetoConfig.GetSweepDist());
 
         // Create a dance model
         danceModel = new DanceModel();
