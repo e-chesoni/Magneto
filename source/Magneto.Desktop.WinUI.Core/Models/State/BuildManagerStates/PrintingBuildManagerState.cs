@@ -91,6 +91,9 @@ public class PrintingBuildManagerState : IBuildManagerState
 
         while (_BuildManagerSM.danceModel.dance.Count > 0)
         {
+            msg = $"Executing loop {_BuildManagerSM.danceModel.dance.Count}";
+            MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
+
             // Bust a move (pop a pose of the list)
             var move = _BuildManagerSM.danceModel.dance.Pop();
             
@@ -103,7 +106,6 @@ public class PrintingBuildManagerState : IBuildManagerState
             switch (_BuildManagerSM.build_flag)
             {
                 case BuildManager.BuildFlag.RESUME:
-                    // TODO: Motor should move down thickness
 
                     /* TOOD: UPDATE BUILD ORDER OF OPERATIONS:
                      * From calibration state, motors should be ready to print first layer
@@ -123,6 +125,7 @@ public class PrintingBuildManagerState : IBuildManagerState
 
                     if (_BuildManagerSM.danceModel.dance.Count > 0)
                     {
+                        /*
                         _ = _BuildManagerSM.buildController.MoveMotorRel(_BuildManagerSM.buildController.GetBuildMotor(), -thickness);
                         // Calculate build wait time
                         buildWait = WaitTimeHelper(_BuildManagerSM.buildController.GetBuildMotor(), thickness);
@@ -132,12 +135,14 @@ public class PrintingBuildManagerState : IBuildManagerState
                         // Calculate powder wait time
                         powderWait = WaitTimeHelper(_BuildManagerSM.buildController.GetPowderMotor(), thickness);
                         Thread.Sleep(powderWait);
-
+                        */
                         // Sweep
-                        _ = _BuildManagerSM.sweepController.MoveMotorAbs(_BuildManagerSM.sweepController.GetSweepMotor(), -_BuildManagerSM.GetSweepDist());
+                        var task = _BuildManagerSM.sweepController.MoveMotorAbs(_BuildManagerSM.sweepController.GetSweepMotor(), -_BuildManagerSM.GetSweepDist());
+                        task.Wait();
                         //Thread.Sleep(1000); // Wait 1 sec before sweeping back
-                        _ = _BuildManagerSM.sweepController.MoveMotorAbs(_BuildManagerSM.sweepController.GetSweepMotor(), _BuildManagerSM.GetSweepDist());
-                        Thread.Sleep(sweepWait*2); // Wait 2x to go there and come back
+                        var task2 =_BuildManagerSM.sweepController.MoveMotorAbs(_BuildManagerSM.sweepController.GetSweepMotor(), _BuildManagerSM.GetSweepDist());
+                        task2.Wait();
+                        //Thread.Sleep(sweepWait*2);
                     }
                     break;
 
@@ -153,13 +158,6 @@ public class PrintingBuildManagerState : IBuildManagerState
                     Cancel();
                     break;
             }
-            // Don't sweep after if this is the last slice
-            /*
-            if (_BuildManagerSM.danceModel.dance.Count > 0)
-            {
-                
-            }
-            */
         }
         _BuildManagerSM.TransitionTo(new DoneBuildManagerState(_BuildManagerSM));
     }
