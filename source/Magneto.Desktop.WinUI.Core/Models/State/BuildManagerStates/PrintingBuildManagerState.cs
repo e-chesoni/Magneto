@@ -66,9 +66,10 @@ public class PrintingBuildManagerState : IBuildManagerState
                     // TODO: Motor should move down thickness
 
                     /* TOOD: UPDATE BUILD ORDER OF OPERATIONS:
-                     * 1. Motor 1 moves down
-                     * 2. Draw shape
-                     * 3. Motor 2 moves up
+                     * From calibration state, motors should be ready to print first layer
+                     * 1. Draw shape
+                     * 2. Build motor moves down
+                     * 3. Powder motor moves up
                      * 4. Sweep
                      */
                     //_BuildManagerSM.buildController.MoveMotorRel(1, -thickness);
@@ -78,9 +79,15 @@ public class PrintingBuildManagerState : IBuildManagerState
 
                     _BuildManagerSM.laserController.Draw(slice); // this was in original code
 
-                    //_BuildManagerSM.buildController.MoveMotorRel(2, thickness);
+                    _BuildManagerSM.buildController.MoveMotorRel(_BuildManagerSM.buildController.GetPowderMotor(), -thickness);
 
-                    _BuildManagerSM.buildController.MoveMotorsRel(thickness);
+                    _BuildManagerSM.buildController.MoveMotorRel(_BuildManagerSM.buildController.GetPowderMotor(), thickness);
+
+                    _BuildManagerSM.sweepController.MoveMotorAbs(_BuildManagerSM.sweepController.GetSweepMotor(), 50);
+
+                    _BuildManagerSM.sweepController.MoveMotorAbs(_BuildManagerSM.sweepController.GetSweepMotor(), -50);
+
+                    //_BuildManagerSM.buildController.MoveMotorsRel(thickness);
                     break;
 
                 case BuildManager.BuildFlag.PAUSE:

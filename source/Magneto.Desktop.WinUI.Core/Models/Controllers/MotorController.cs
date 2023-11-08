@@ -161,6 +161,25 @@ public class MotorController : IMotorController
         }
     }
 
+    public async Task MoveMotorAbs(StepperMotor motor, double step)
+    {
+
+        var msg = "Moving Motor Absolute";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        if (motor != null)
+        {
+            msg = $"Found {motor.GetMotorName()} on. Stepping motor absolute...";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
+            await motor.MoveMotorAbs(step);
+        }
+        else
+        {
+            msg = $"Motor not found.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+        }
+    }
+
     /// <summary>
     /// Perform sequenced motor movement
     /// Syntax to move both motors to relative position
@@ -202,6 +221,24 @@ public class MotorController : IMotorController
         else
         {
             msg = $"No motor with Axis {axis} found.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+        }
+    }
+
+    public async Task MoveMotorRel(StepperMotor motor, double step)
+    {
+        var msg = "Moving Motor Relative";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        if (motor != null)
+        {
+            msg = $"Found {motor.GetMotorName} motor. Stepping motor relative to current position...";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
+            await motor.MoveMotorRel(step);
+        }
+        else
+        {
+            msg = $"Motor is null. Are you sure you're accessing the right controller?";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
         }
     }
