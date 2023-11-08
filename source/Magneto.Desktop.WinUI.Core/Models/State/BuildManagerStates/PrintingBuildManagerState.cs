@@ -137,11 +137,9 @@ public class PrintingBuildManagerState : IBuildManagerState
                         Thread.Sleep(powderWait);
                         */
                         // Sweep
-                        var task = _BuildManagerSM.sweepController.MoveMotorAbs(_BuildManagerSM.sweepController.GetSweepMotor(), -_BuildManagerSM.GetSweepDist());
-                        task.Wait();
+                        _ = _BuildManagerSM.sweepController.MoveMotorAbs(_BuildManagerSM.sweepController.GetSweepMotor(), -_BuildManagerSM.GetSweepDist());
                         //Thread.Sleep(1000); // Wait 1 sec before sweeping back
-                        var task2 =_BuildManagerSM.sweepController.MoveMotorAbs(_BuildManagerSM.sweepController.GetSweepMotor(), _BuildManagerSM.GetSweepDist());
-                        task2.Wait();
+                        _ =_BuildManagerSM.sweepController.MoveMotorAbs(_BuildManagerSM.sweepController.GetSweepMotor(), _BuildManagerSM.GetSweepDist());
                         //Thread.Sleep(sweepWait*2);
                     }
                     break;
