@@ -207,7 +207,7 @@ public class StepperMotor : IStepperMotor
         _minPos = pos;
     }
 
-    public void SetVelocit(double vel)
+    public void SetVelocity(double vel)
     {
         _motorVelocity = vel;
     }
