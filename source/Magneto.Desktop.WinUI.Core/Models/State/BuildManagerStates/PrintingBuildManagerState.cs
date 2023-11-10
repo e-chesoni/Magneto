@@ -127,7 +127,7 @@ public class PrintingBuildManagerState : IBuildManagerState
                     powderWait = WaitTimeHelper(_BuildManagerSM.buildController.GetPowderMotor(), thickness);
                     Thread.Sleep(powderWait);
                     */
-
+                    // TODO: Try with await = (instead of _ =)
                     // Sweep
                     _ = _BuildManagerSM.sweepController.MoveMotorAbs(_BuildManagerSM.sweepController.GetSweepMotor(), -_BuildManagerSM.GetSweepDist());
                     //Thread.Sleep(1000); // Wait 1 sec before sweeping back
