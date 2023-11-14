@@ -120,7 +120,7 @@ public class MotorController : IMotorController
     /// Syntax to move both motors to absolute position
     /// </summary>
     /// <returns></returns> returns 0 on success, -1 on failure
-    public async Task MoveMotorsAbs(double thickness)
+    public async Task MoveMotorsAbsAsync(double thickness)
     {
         MagnetoLogger.Log("Moving Motors (PLURAL)",
             LogFactoryLogLevel.LogLevel.VERBOSE);
@@ -129,7 +129,7 @@ public class MotorController : IMotorController
         // Find a more elegant way to handle running one motor at a time in the future
         foreach (var motor in _motorList)
         {
-            await motor.MoveMotorAbs(thickness);
+            await motor.MoveMotorAbsAsync(thickness);
             Thread.Sleep(2000);
         }
     }
@@ -140,7 +140,7 @@ public class MotorController : IMotorController
     /// <param name="axis"></param> The axis of the motor to move
     /// <param name="step"></param> Distance to move motor
     /// <returns></returns>
-    public async Task MoveMotorAbs(int axis, double step)
+    public async Task MoveMotorAbsAsync(int axis, double step)
     {
 
         var msg = "Moving Motor Absolute";
@@ -152,7 +152,7 @@ public class MotorController : IMotorController
         {
             msg = $"Found motor on axis: {axis}. Stepping motor absolute...";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
-            await motor.MoveMotorAbs(step);
+            await motor.MoveMotorAbsAsync(step);
         }
         else
         {
@@ -194,7 +194,7 @@ public class MotorController : IMotorController
         // Find a more elegant way to handle running one motor at a time in the future
         foreach (var motor in _motorList)
         {
-            await motor.MoveMotorRel(thickness);
+            await motor.MoveMotorRelAsync(thickness);
             Thread.Sleep(2000);
         }
     }
@@ -216,7 +216,7 @@ public class MotorController : IMotorController
         {
             msg = $"Found motor on axis: {axis}. Stepping motor relative to current position...";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
-            await motor.MoveMotorRel(step);
+            await motor.MoveMotorRelAsync(step);
         }
         else
         {
@@ -234,7 +234,7 @@ public class MotorController : IMotorController
         {
             msg = $"Found {motor.GetMotorName} motor. Stepping motor relative to current position...";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
-            await motor.MoveMotorRel(step);
+            await motor.MoveMotorRelAsync(step);
         }
         else
         {

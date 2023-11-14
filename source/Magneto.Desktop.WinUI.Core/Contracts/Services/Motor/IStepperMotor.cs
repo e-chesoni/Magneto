@@ -22,14 +22,14 @@ public interface IStepperMotor
     /// </summary>
     /// <param name="pos"></param>
     /// <returns></returns> Returns Task complete when done
-    Task MoveMotorAbs(double pos);
+    Task MoveMotorAbsAsync(double pos);
 
     /// <summary>
     /// Move motor relative to current position
     /// </summary>
     /// <param name="steps"></param>
     /// <returns></returns> Returns Task complete when done
-    Task MoveMotorRel(double steps);
+    Task MoveMotorRelAsync(double steps);
 
     /// <summary>
     /// EMERGENCY STOP: Stop motor

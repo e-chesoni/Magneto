@@ -15,11 +15,11 @@ public interface IMotorController
     // TODO: You can probably find a clever way to simplify this using unpacking, kwargs, or something...
 
     /// <summary>
-    /// Perform sequenced motor movement
+    /// Perform asynchronous motor movement
     /// </summary>
     /// <param name="thickness"></param> Layer thickness for print
     /// <returns></returns>
-    Task MoveMotorsAbs(double thickness);
+    Task MoveMotorsAbsAsync(double thickness);
 
     /// <summary>
     /// Move one motor relative to an absolute position
@@ -27,7 +27,14 @@ public interface IMotorController
     /// <param name="axis"></param> The axis of the motor to move
     /// <param name="step"></param> Distance to move motor
     /// <returns></returns>
-    Task MoveMotorAbs(int axis, double step);
+    Task MoveMotorAbsAsync(int axis, double step);
+
+    /// <summary>
+    /// Move motor synchronously during prints
+    /// </summary>
+    /// <param name="thickness"></param>
+    /// <returns></returns>
+    Task MoveMotorAbs(StepperMotor motor, double step);
 
     /// <summary>
     /// Perform sequenced motor movement

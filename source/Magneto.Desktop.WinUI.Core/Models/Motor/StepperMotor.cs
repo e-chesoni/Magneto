@@ -224,7 +224,7 @@ public class StepperMotor : IStepperMotor
     {
         MagnetoLogger.Log("Homing motor...",
             LogFactoryLogLevel.LogLevel.VERBOSE);
-        await MoveMotorAbs(GetHomePos());
+        await MoveMotorAbsAsync(GetHomePos());
         _calculatedPos = GetHomePos();
     }
 
@@ -248,7 +248,7 @@ public class StepperMotor : IStepperMotor
     /// </summary>
     /// <param name="pos"></param>
     /// <returns></returns> Returns completed task when finished
-    public Task MoveMotorAbs(double pos)
+    public Task MoveMotorAbsAsync(double pos)
     {
         // Invalid position
         if (pos < _minPos || pos > _maxPos)
@@ -278,7 +278,59 @@ public class StepperMotor : IStepperMotor
         {
             MagnetoLogger.Log("Port Closed.", LogFactoryLogLevel.LogLevel.ERROR);
         }
+        return Task.CompletedTask;
+    }
 
+    public int WaitTimeHelper(double dist)
+    {
+        var velocity = GetVelocity();
+        var waitBuff = 1000;
+        return (((int)Math.Ceiling(dist / velocity)) * 1000) + waitBuff;
+    }
+
+    public Task MoveMotorAbs(double pos)
+    {
+        var msg = "";
+
+        // Invalid position
+        if (pos < _minPos || pos > _maxPos)
+        {
+            msg = "Invalid position. Aborting motor move operation.";
+            MagnetoLogger.Log(msg,
+                LogFactoryLogLevel.LogLevel.ERROR);
+            return Task.CompletedTask;
+        }
+
+        // Calculate move wait time
+        // TODO: use get position to calculate actual distance to move
+        var dist = Math.Abs(pos);
+        var moveWaitTime = WaitTimeHelper(dist);
+
+        msg = $"Move wait time: {moveWaitTime} ms";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        // Move motor
+        var s = string.Format("{0}MVA{1}", _motorAxis, pos);
+        if (MagnetoSerialConsole.OpenSerialPort(_motorPort))
+        {
+            MagnetoSerialConsole.SerialWrite(_motorPort, s);
+
+            // Log message
+            msg = string.Format("Moving motor on axis {0} to position {1}mm",
+                _motorAxis, pos);
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+            // Update calculated position
+            _calculatedPos = pos;
+            msg = $"New calculated position: {_calculatedPos}";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+        }
+        else
+        {
+            msg = "Port Closed.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+        }
+        Thread.Sleep(moveWaitTime);
         return Task.CompletedTask;
     }
 
@@ -292,7 +344,7 @@ public class StepperMotor : IStepperMotor
     /// </summary>
     /// <param name="steps"></param>
     /// <returns></returns> Returns -1 if move command fails, 0 if move command is successful
-    public Task MoveMotorRel(double pos)
+    public Task MoveMotorRelAsync(double pos)
     {
         // get the current position
         // TODO: In the future use GetPos to get desiredPos
@@ -354,7 +406,7 @@ public class StepperMotor : IStepperMotor
     {
         var s = string.Format("{0}POS?", _motorAxis);
 
-        // TODO: Needs testing; if uncommented causes MoveMotorRel to fail
+        // TODO: Needs testing; if uncommented causes MoveMotorRelAsync to fail
         bool tested = false;
 
         if (tested)

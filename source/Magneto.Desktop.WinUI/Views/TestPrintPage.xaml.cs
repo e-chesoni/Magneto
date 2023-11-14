@@ -161,7 +161,7 @@ public sealed partial class TestPrintPage : Page
     #region Helper Methods
 
     /// <summary>
-    /// Helper that calls the MoveMotorRel method on the motor attached to selected axis
+    /// Helper that calls the MoveMotorRelAsync method on the motor attached to selected axis
     /// </summary>
     /// <param name="axis"></param>
     private void MoveMotorHelper(int axis, string dist)
@@ -173,7 +173,7 @@ public sealed partial class TestPrintPage : Page
         // We don't want a bunch of unused motors hanging around in the app
 
         currTestMotor.SetAxis(axis);
-        currTestMotor.MoveMotorRel(double.Parse(dist));
+        currTestMotor.MoveMotorRelAsync(double.Parse(dist));
     }
 
     #endregion

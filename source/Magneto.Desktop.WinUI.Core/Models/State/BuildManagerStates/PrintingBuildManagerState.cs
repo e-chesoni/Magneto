@@ -47,13 +47,6 @@ public class PrintingBuildManagerState : IBuildManagerState
 
     public void Start(ImageModel im) => throw new NotImplementedException();
 
-    public int WaitTimeHelper(StepperMotor motor, double dist)
-    {
-        var velocity = motor.GetVelocity();
-        var waitBuff = 1000;
-        return (((int)Math.Ceiling(dist / velocity)) * 1000) + waitBuff;
-    }
-
     public async Task Draw()
     {
         // TODO: Find a way to set flag using interrupts (if user wants to pause/cancel print)
@@ -72,23 +65,24 @@ public class PrintingBuildManagerState : IBuildManagerState
         // Wait for motor to get to height
         // TODO: Make wait more robust; right now waits for arbitrary 2 seconds
         // TODO: Could return a flag to indicate end wait
+        /*
         var initialBuildWait = WaitTimeHelper(_BuildManagerSM.buildController.GetBuildMotor(), printHeight);
         Thread.Sleep(initialBuildWait);
-
+        
         // Calculate sweep wait time once (used below)
         var sweepWait = WaitTimeHelper(_BuildManagerSM.sweepController.GetSweepMotor(), _BuildManagerSM.GetSweepDist());
-
+        
         // Move sweep motor to starting position
-        _ = _BuildManagerSM.sweepController.MoveMotorAbs(_BuildManagerSM.sweepController.GetSweepMotor(), _BuildManagerSM.GetSweepDist());
+        _ = _BuildManagerSM.sweepController.MoveMotorAbsAsync(_BuildManagerSM.sweepController.GetSweepMotor(), _BuildManagerSM.GetSweepDist());
         Thread.Sleep(sweepWait);
 
         // Initialize default wait times
         var buildWait = WaitTimeHelper(_BuildManagerSM.buildController.GetBuildMotor(), _BuildManagerSM.buildController.GetBuildMotor().GetMaxPos());
         var powderWait = WaitTimeHelper(_BuildManagerSM.buildController.GetPowderMotor(), _BuildManagerSM.buildController.GetPowderMotor().GetMaxPos());
-
+        
         msg = $"Sweep wait time: {sweepWait} ms";
         MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
-
+        */
         int ctr = 0;
 
         foreach(var move in _BuildManagerSM.danceModel.dance)
@@ -112,27 +106,25 @@ public class PrintingBuildManagerState : IBuildManagerState
                     // TODO: Add artificial wait for draw before laser has been incorporated--will have to wait for user response (button) or timeout (abort)
                     // TODO: Add pop-up for user to execute draw, and indicate draw is complete
 
-                    _BuildManagerSM.laserController.Draw(slice); // this was in original code
+                    //_BuildManagerSM.laserController.Draw(slice); // this was in original code
                     // TODO: Calculate laser draw time
-                    Thread.Sleep(2000);
+                    //Thread.Sleep(2000);
 
                     /*
-                    _ = _BuildManagerSM.buildController.MoveMotorRel(_BuildManagerSM.buildController.GetBuildMotor(), -thickness);
+                    _ = _BuildManagerSM.buildController.MoveMotorRelAsync(_BuildManagerSM.buildController.GetBuildMotor(), -thickness);
                     // Calculate build wait time
                     buildWait = WaitTimeHelper(_BuildManagerSM.buildController.GetBuildMotor(), thickness);
                     Thread.Sleep(buildWait);
 
-                    _ = _BuildManagerSM.buildController.MoveMotorRel(_BuildManagerSM.buildController.GetPowderMotor(), thickness);
+                    _ = _BuildManagerSM.buildController.MoveMotorRelAsync(_BuildManagerSM.buildController.GetPowderMotor(), thickness);
                     // Calculate powder wait time
                     powderWait = WaitTimeHelper(_BuildManagerSM.buildController.GetPowderMotor(), thickness);
                     Thread.Sleep(powderWait);
                     */
                     // TODO: Try with await = (instead of _ =)
                     // Sweep
-                    _ = _BuildManagerSM.sweepController.MoveMotorAbs(_BuildManagerSM.sweepController.GetSweepMotor(), -_BuildManagerSM.GetSweepDist());
-                    //Thread.Sleep(1000); // Wait 1 sec before sweeping back
-                    _ = _BuildManagerSM.sweepController.MoveMotorAbs(_BuildManagerSM.sweepController.GetSweepMotor(), _BuildManagerSM.GetSweepDist());
-                    //Thread.Sleep(sweepWait*2);
+                    await _BuildManagerSM.sweepController.MoveMotorAbs(_BuildManagerSM.sweepController.GetSweepMotor(), -_BuildManagerSM.GetSweepDist());
+                    await _BuildManagerSM.sweepController.MoveMotorAbs(_BuildManagerSM.sweepController.GetSweepMotor(), _BuildManagerSM.GetSweepDist());
 
                     break;
 
