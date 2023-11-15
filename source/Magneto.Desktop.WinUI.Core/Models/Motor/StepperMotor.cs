@@ -330,7 +330,8 @@ public class StepperMotor : IStepperMotor
             msg = "Port Closed.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
         }
-        Thread.Sleep(moveWaitTime);
+        //Thread.Sleep(moveWaitTime);
+        Thread.Sleep(5000);
         return Task.CompletedTask;
     }
 
