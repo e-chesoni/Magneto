@@ -88,7 +88,7 @@ public class MainViewModel : ObservableRecipient, INavigationAware
         // Set log level
         MagnetoLogger.LogFactoryOutputLevel = LogFactoryOutputLevel.LogOutputLevel.Debug;
 
-        MagnetoSerialConsole.GetAvailablePorts();
+        MagnetoSerialConsole.LogAvailablePorts();
 
         // Get config stuff
         foreach (var c in MagnetoConfig.GetAllCOMPorts())

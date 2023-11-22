@@ -1,6 +1,7 @@
 ﻿using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.Motor;
 using Magneto.Desktop.WinUI.Core.Services;
+using Microsoft.VisualBasic;
 using System.Text.RegularExpressions;
 
 namespace Magneto.Desktop.WinUI.Core.Models.Motor;
@@ -303,11 +304,11 @@ public class StepperMotor : IStepperMotor
 
         // Calculate move wait time
         // TODO: use get position to calculate actual distance to move
-        var dist = Math.Abs(pos);
-        var moveWaitTime = WaitTimeHelper(dist);
+        //var dist = Math.Abs(pos);
+        //var moveWaitTime = WaitTimeHelper(dist);
 
-        msg = $"Move wait time: {moveWaitTime} ms";
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+        //msg = $"Move wait time: {moveWaitTime} ms";
+        //MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
         // Move motor
         var s = string.Format("{0}MVA{1}", _motorAxis, pos);
@@ -331,7 +332,7 @@ public class StepperMotor : IStepperMotor
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
         }
         //Thread.Sleep(moveWaitTime);
-        Thread.Sleep(5000);
+        //Thread.Sleep(5000);
         return Task.CompletedTask;
     }
 
@@ -405,26 +406,13 @@ public class StepperMotor : IStepperMotor
     /// <returns></returns> Returns -1 if request for position fails, otherwise returns motor position
     public double GetPos()
     {
+        var msg = "";
         var s = string.Format("{0}POS?", _motorAxis);
 
-        // TODO: Needs testing; if uncommented causes MoveMotorRelAsync to fail
-        bool tested = false;
-
-        if (tested)
-        {
-            MagnetoSerialConsole.SerialWrite(_motorPort, s);
-            // TODO: Read serial console to get position value
-            // TOOD: Figure out how to actually read serial console (safely)
-            // see: Micronix note https://www.dropbox.com/scl/fo/2ls4fr6ffx0nswuno2n4x/h/System.IO.Ports%20Example%20Program%20and%20Guide?dl=0&preview=System.IO.Ports+C%23+Guide.pdf&subfolder_nav_tracking=1
-            // see: Microsoft SerialPort.ReadLine Method https://learn.microsoft.com/en-us/dotnet/api/system.io.ports.serialport.readline?source=recommendations&view=dotnet-plat-ext-7.0
-
-            // TODO: This probably won't work
-            // see: https://stackoverflow.com/questions/13754694/what-is-the-correct-way-to-read-a-serial-port-using-net-framework
-            // test: In WPF app or simple console log app
-            // string s = MagnetoSerialConsole.SerialRead(sender, e);
-
-            // Remember to check if the port is open!
-        }
+        // Writing #POS? should initialize data send; data received event is registered in MagnetoSerialConsole, and should pick up position
+        MagnetoSerialConsole.SerialWrite(_motorPort, s);
+        msg = $"Position request sent: {s}";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
 
         return 0;
     }

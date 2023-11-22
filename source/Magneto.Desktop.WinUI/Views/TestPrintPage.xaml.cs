@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.IO.Ports;
+using System.Reflection;
 using CommunityToolkit.WinUI.UI.Animations;
 using Magneto.Desktop.WinUI.Core;
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
@@ -12,6 +13,7 @@ using Microsoft.UI;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using Windows.Devices.SerialCommunication;
 
 namespace Magneto.Desktop.WinUI.Views;
 
@@ -133,9 +135,23 @@ public sealed partial class TestPrintPage : Page
     {
         ViewModel = App.GetService<TestPrintViewModel>();
         InitializeComponent();
+
+        var msg = "";
         
-        
-        MagnetoLogger.Log("Landed on Test Print Page", LogFactoryLogLevel.LogLevel.DEBUG);
+        msg = "Landed on Test Print Page";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
+        MagnetoSerialConsole.LogAvailablePorts();
+
+        foreach (SerialPort port in MagnetoSerialConsole.GetAvailablePorts())
+        {
+            // Get default motor (build motor) to get port
+            if (port.PortName.Equals("COM4", StringComparison.OrdinalIgnoreCase))
+            {
+                MagnetoSerialConsole.AddEventHandler(port);
+                msg = $"Requesting addition of event hander or port {port.PortName}";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+            }
+        }
     }
 
     #endregion
@@ -168,12 +184,16 @@ public sealed partial class TestPrintPage : Page
     {
         MagnetoLogger.Log("TestPrintPage::MoveMotorHelper", LogFactoryLogLevel.LogLevel.VERBOSE);
 
-        // Create test motor object that will (hopefully) be destroyed after run completes
-        // TODO: Use debugger to make sure test motor is destroyed after loop exits
-        // We don't want a bunch of unused motors hanging around in the app
-
         currTestMotor.SetAxis(axis);
         currTestMotor.MoveMotorRelAsync(double.Parse(dist));
+    }
+
+    private void GetMotorPositionHelper(int axis)
+    {
+        MagnetoLogger.Log("TestPrintPage::MoveMotorHelper", LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        currTestMotor.SetAxis(axis);
+        currTestMotor.GetPos();
     }
 
     #endregion
@@ -306,7 +326,7 @@ public sealed partial class TestPrintPage : Page
     private void MoveMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
         string dist = ViewModel.DistanceText;
-        MagnetoLogger.Log($"Got distance: {dist}", LogFactoryLogLevel.LogLevel.VERBOSE);
+        MagnetoLogger.Log($"Commanded distance to move: {dist}", LogFactoryLogLevel.LogLevel.VERBOSE);
 
         if (MagnetoSerialConsole.OpenSerialPort(currTestMotor.GetPortName()))
         {
@@ -353,4 +373,39 @@ public sealed partial class TestPrintPage : Page
     }
 
     #endregion
+
+    private void GetPositionButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        var msg = "";
+        msg = "GetPositionButton Clicked...";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        if (MagnetoSerialConsole.OpenSerialPort(currTestMotor.GetPortName()))
+        {
+            MagnetoLogger.Log("Port Open!", LogFactoryLogLevel.LogLevel.SUCCESS);
+            switch (currTestMotor.GetAxis())
+            {
+                case 0:
+                    MagnetoLogger.Log("No axis selected",
+                        LogFactoryLogLevel.LogLevel.WARN);
+                    break;
+                case 1:
+                    GetMotorPositionHelper(1);
+                    break;
+                case 2:
+                    GetMotorPositionHelper(2);
+                    break;
+                case 3:
+                    GetMotorPositionHelper(3);
+                    break;
+                default:
+                    break;
+            }
+        }
+        else
+        {
+            msg = "Port Closed.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+        }
+    }
 }

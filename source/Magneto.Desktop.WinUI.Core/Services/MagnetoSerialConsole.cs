@@ -92,12 +92,22 @@ public static class MagnetoSerialConsole
 
     #endregion
 
+    public static void AddEventHandler(SerialPort port)
+    {
+        var msg = "";
+
+        // Event registration to read data off port
+        port.DataReceived += new SerialDataReceivedEventHandler(COM4_DataReceived);
+        msg = $"Registered COM4_DataReceived on _serialPort {port.PortName} for data read";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
+    }
+
     #region Port Setup Methods
 
     /// <summary>
     /// Print list of available ports
     /// </summary>
-    public static void GetAvailablePorts()
+    public static void LogAvailablePorts()
     {
         var msg = "";
         MagnetoLogger.Log("Available Ports:", LogFactoryLogLevel.LogLevel.DEBUG);
@@ -106,6 +116,11 @@ public static class MagnetoSerialConsole
             msg = $"   {s}";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
         }
+    }
+
+    public static List<SerialPort> GetAvailablePorts()
+    {
+        return _serialPorts; 
     }
 
     public static void GetInitializedPorts()
@@ -448,6 +463,74 @@ public static class MagnetoSerialConsole
         }
 
         return s;
+    }
+
+    private static void COM4_DataReceived(object sender, SerialDataReceivedEventArgs e)
+    {
+        var msg = "";
+        var termread = "";
+        SerialPort readPort = null;
+
+        msg = $"Data received";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
+
+        // Get com port 4
+        foreach (SerialPort port in GetAvailablePorts())
+        {
+            // Get default motor (build motor) to get port
+            if (port.PortName.Equals("COM4", StringComparison.OrdinalIgnoreCase))
+            {
+                readPort = port;
+            }
+        }
+
+        msg = $"Checking port {readPort.PortName}";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        if (readPort.IsOpen)
+        {
+            int bytes = readPort.BytesToRead;
+            byte[] buffer = new byte[bytes];
+            if (readPort.BytesToWrite <= 0)
+            {
+                while (readPort.BytesToRead > 0)
+                {
+                    msg = "fetching data...";
+                    MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+                    try
+                    {
+                        termread = readPort.ReadLine();
+                        msg = $"{termread}";
+                        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
+                        readPort.Read(buffer, 0, bytes);
+                        termread = Encoding.Default.GetString(buffer);
+                    }
+                    catch
+                    {
+                        try
+                        {
+                            readPort.Open();
+
+                        }
+                        catch
+                        {
+                            msg = "Error reading motor position.";
+                            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                msg = "No bytes to read.";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            }
+        }
+        else
+        {
+            msg = "Your port has been disconnected";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+        }
     }
 
     #endregion

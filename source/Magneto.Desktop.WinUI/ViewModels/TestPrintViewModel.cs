@@ -10,6 +10,16 @@ public class TestPrintViewModel : ObservableRecipient
 
     private double _distance;
 
+    private string _positionText;
+
+    private double _position;
+
+    public TestPrintViewModel()
+    {
+        // Set default distance to move motors
+        SetDistance(10);
+    }
+
     public string DistanceText
     {
         get
@@ -23,10 +33,17 @@ public class TestPrintViewModel : ObservableRecipient
         }
     }
 
-    public TestPrintViewModel()
+    public string PositionText
     {
-        // Set default distance to move motors
-        SetDistance(10);
+        get
+        {
+            return _positionText;
+        }
+        set
+        {
+            _positionText = value;
+            OnPropertyChanged(nameof(PositionText)); // Implement INotifyPropertyChanged
+        }
     }
 
     private void SetDistance(int distance)
@@ -35,5 +52,4 @@ public class TestPrintViewModel : ObservableRecipient
         _distanceText = distance.ToString();
     }
 
-    
 }
