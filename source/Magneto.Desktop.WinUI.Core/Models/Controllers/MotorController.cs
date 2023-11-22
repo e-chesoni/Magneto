@@ -140,7 +140,7 @@ public class MotorController : IMotorController
     /// <param name="axis"></param> The axis of the motor to move
     /// <param name="step"></param> Distance to move motor
     /// <returns></returns>
-    public async Task MoveMotorAbsAsync(int axis, double step)
+    public async Task MoveMotorByAxisAsync(int axis, double step)
     {
 
         var msg = "Moving Motor Absolute";
@@ -161,7 +161,7 @@ public class MotorController : IMotorController
         }
     }
 
-    public async Task MoveMotorAbs(StepperMotor motor, double step)
+    public async Task MoveMotorAbsAsync(StepperMotor motor, double step)
     {
 
         var msg = "Moving Motor Absolute";
@@ -171,7 +171,7 @@ public class MotorController : IMotorController
         {
             msg = $"Found {motor.GetMotorName()} on. Stepping motor absolute...";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
-            await motor.MoveMotorAbs(step);
+            await motor.MoveMotorAbsAsync(step);
         }
         else
         {

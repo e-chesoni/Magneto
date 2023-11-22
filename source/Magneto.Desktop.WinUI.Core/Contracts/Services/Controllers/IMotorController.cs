@@ -27,14 +27,14 @@ public interface IMotorController
     /// <param name="axis"></param> The axis of the motor to move
     /// <param name="step"></param> Distance to move motor
     /// <returns></returns>
-    Task MoveMotorAbsAsync(int axis, double step);
+    Task MoveMotorByAxisAsync(int axis, double step);
 
     /// <summary>
     /// Move motor synchronously during prints
     /// </summary>
     /// <param name="thickness"></param>
     /// <returns></returns>
-    Task MoveMotorAbs(StepperMotor motor, double step);
+    Task MoveMotorAbsAsync(StepperMotor motor, double step);
 
     /// <summary>
     /// Perform sequenced motor movement

@@ -215,6 +215,7 @@ public class StepperMotor : IStepperMotor
 
     #endregion
 
+    // TODO: Update movement commands to check for position and return true if position was reached (consider using a while loop)
     #region Movement Methods
 
     /// <summary>
@@ -279,60 +280,6 @@ public class StepperMotor : IStepperMotor
         {
             MagnetoLogger.Log("Port Closed.", LogFactoryLogLevel.LogLevel.ERROR);
         }
-        return Task.CompletedTask;
-    }
-
-    public int WaitTimeHelper(double dist)
-    {
-        var velocity = GetVelocity();
-        var waitBuff = 1000;
-        return (((int)Math.Ceiling(dist / velocity)) * 1000) + waitBuff;
-    }
-
-    public Task MoveMotorAbs(double pos)
-    {
-        var msg = "";
-
-        // Invalid position
-        if (pos < _minPos || pos > _maxPos)
-        {
-            msg = "Invalid position. Aborting motor move operation.";
-            MagnetoLogger.Log(msg,
-                LogFactoryLogLevel.LogLevel.ERROR);
-            return Task.CompletedTask;
-        }
-
-        // Calculate move wait time
-        // TODO: use get position to calculate actual distance to move
-        //var dist = Math.Abs(pos);
-        //var moveWaitTime = WaitTimeHelper(dist);
-
-        //msg = $"Move wait time: {moveWaitTime} ms";
-        //MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-
-        // Move motor
-        var s = string.Format("{0}MVA{1}", _motorAxis, pos);
-        if (MagnetoSerialConsole.OpenSerialPort(_motorPort))
-        {
-            MagnetoSerialConsole.SerialWrite(_motorPort, s);
-
-            // Log message
-            msg = string.Format("Moving motor on axis {0} to position {1}mm",
-                _motorAxis, pos);
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-
-            // Update calculated position
-            _calculatedPos = pos;
-            msg = $"New calculated position: {_calculatedPos}";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-        }
-        else
-        {
-            msg = "Port Closed.";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-        }
-        //Thread.Sleep(moveWaitTime);
-        //Thread.Sleep(5000);
         return Task.CompletedTask;
     }
 
