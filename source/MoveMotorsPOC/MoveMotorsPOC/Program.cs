@@ -68,23 +68,67 @@ namespace MoveMotorsPOC
             }
         }
 
+        private static void serialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        {
+            string termread = "";
+            if (_serialPort.IsOpen)
+            {
+                int bytes = _serialPort.BytesToRead;
+                byte[] buffer = new byte[bytes];
+                if (_serialPort.BytesToWrite <= 0)
+                {
+                    while (_serialPort.BytesToRead > 0)
+                    {
+                        try
+                        {
+                            termread = _serialPort.ReadLine();
+                            Console.WriteLine("MMC: " + termread);					
+                            _serialPort.Read(buffer, 0, bytes);
+                            termread = Encoding.Default.GetString(buffer);
+                        }
+                        catch
+                        {
+                            try
+                            {
+                                _serialPort.Open();
+       
+                            }
+                            catch
+                            {
+                                Console.WriteLine("caught error");
+                            }
+                        }
+                        Console.WriteLine("term encoded: " + termread); // does not print
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Your port has been disconnected");
+                }
+            }
+        }
+
         static void Main(string[] args)
         {
             // Create a new SerialPort object with default settings.
             _serialPort = new SerialPort();
             _success = true;
 
+            // Event registration remains the same
+            _serialPort.DataReceived += new SerialDataReceivedEventHandler(serialPort_DataReceived);
+
             SetupSerialPort();
             if (OpenSerialPort())
             {
                 // Write hard-coded move command
-                SerialWrite("1MVR5"); // success!
+                //SerialWrite("1MVR5"); // success!
+                SerialWrite("1pos?"); // success!
             }
             else
             {
                 Console.WriteLine("Cannot complete the mission. Try again later.");
             }
-            
+
             Console.ReadLine();
         }
     }
