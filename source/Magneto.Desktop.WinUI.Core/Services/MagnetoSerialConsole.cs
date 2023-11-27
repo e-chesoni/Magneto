@@ -21,6 +21,8 @@ public static class MagnetoSerialConsole
 
     private static List<SerialPort> _serialPorts = new List<SerialPort>();
 
+    private static string _termread = "";
+
     #endregion
 
     #region Default Port Setting Variables
@@ -92,6 +94,8 @@ public static class MagnetoSerialConsole
 
     #endregion
 
+    #region Event Handlers
+
     public static void AddEventHandler(SerialPort port)
     {
         var msg = "";
@@ -101,6 +105,17 @@ public static class MagnetoSerialConsole
         msg = $"Registered COM4_DataReceived on _serialPort {port.PortName} for data read";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
     }
+
+    #endregion
+
+    #region Getters
+
+    public static string GetTermRead()
+    {
+        return _termread;
+    }
+
+    #endregion
 
     #region Port Setup Methods
 
@@ -468,7 +483,6 @@ public static class MagnetoSerialConsole
     private static void COM4_DataReceived(object sender, SerialDataReceivedEventArgs e)
     {
         var msg = "";
-        var termread = "";
         SerialPort readPort = null;
 
         msg = $"Data received";
@@ -499,18 +513,17 @@ public static class MagnetoSerialConsole
                     MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
                     try
                     {
-                        termread = readPort.ReadLine();
-                        msg = $"{termread}";
+                        _termread = readPort.ReadLine();
+                        msg = $"{_termread}";
                         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
                         readPort.Read(buffer, 0, bytes);
-                        termread = Encoding.Default.GetString(buffer);
+                        _termread = msg;
                     }
                     catch
                     {
                         try
                         {
                             readPort.Open();
-
                         }
                         catch
                         {

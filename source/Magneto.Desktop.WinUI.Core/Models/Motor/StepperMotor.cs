@@ -347,21 +347,76 @@ public class StepperMotor : IStepperMotor
 
     #region Status Methods
 
+    static double ExtractDoubleFromString(string input)
+    {
+        var msg = "Extracting double from position string...";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        // Check if the input string starts with '#'
+        if (input.StartsWith("#"))
+        {
+            // Find the index of the period after '#'
+            var dotIndex = input.IndexOf('.');
+
+            // If a period is found, attempt to parse the substring
+            if (dotIndex != -1)
+            {
+                // Extract the substring from '#' to the period and parse as double
+                var numberString = input.Substring(1, dotIndex + 6);
+                if (double.TryParse(numberString, out var result))
+                {
+                    return result;
+                }
+            }
+        }
+        else
+        {
+            msg = "Incompatible string format.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            return -1.0;
+        }    
+
+        // TODO: Throw exception if this fails
+        return -1.0;
+    }
+
     /// <summary>
     /// Get current motor position
     /// </summary>
     /// <returns></returns> Returns -1 if request for position fails, otherwise returns motor position
     public double GetPos()
     {
-        var msg = "";
+        // Method entry notification for log
+        var msg = $"Getting {_motorName} position...";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        // Format position request
         var s = string.Format("{0}POS?", _motorAxis);
 
-        // Writing #POS? should initialize data send; data received event is registered in MagnetoSerialConsole, and should pick up position
-        MagnetoSerialConsole.SerialWrite(_motorPort, s);
-        msg = $"Position request sent: {s}";
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
+        // Make sure port is open
+        if (MagnetoSerialConsole.OpenSerialPort(_motorPort))
+        {
+            // Writing #POS? should initialize data send;
+            // Data received event is registered in MagnetoSerialConsole
+            // Position should be pick up there
+            MagnetoSerialConsole.SerialWrite(_motorPort, s);
+            msg = $"Position request sent: {s}";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
+        }
+        else
+        {
+            msg = "Port Closed.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+        }
 
-        return 0;
+        var position = MagnetoSerialConsole.GetTermRead();
+        msg = $"TermRead: {position}";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        msg = $"Position as double: {ExtractDoubleFromString(position)}";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        return 0.0;
     }
 
     /// <summary>
