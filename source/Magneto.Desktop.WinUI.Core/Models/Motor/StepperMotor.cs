@@ -360,7 +360,14 @@ public class StepperMotor : IStepperMotor
             {
                 msg = "Desired position reached. Exiting the loop.";
                 MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
+
+                // Set position reached to true
                 posReached = true;
+
+                // Clear the last term read
+                MagnetoSerialConsole.ClearTermRead();
+
+                // Make sure we exit the loop
                 break;
             }
             msg = $"Sleeping. Will check again in a ms...";

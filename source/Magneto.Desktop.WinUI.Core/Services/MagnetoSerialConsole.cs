@@ -21,7 +21,7 @@ public static class MagnetoSerialConsole
 
     private static List<SerialPort> _serialPorts = new List<SerialPort>();
 
-    private static string _termread { get; set; }
+    private static string _lastTermRead { get; set; }
 
     #endregion
 
@@ -112,7 +112,7 @@ public static class MagnetoSerialConsole
 
     public static string GetTermRead()
     {
-        return _termread;
+        return _lastTermRead;
     }
 
     #endregion
@@ -121,7 +121,7 @@ public static class MagnetoSerialConsole
 
     public static void ClearTermRead()
     {
-        _termread = "";
+        _lastTermRead = "";
     }
 
     #endregion
@@ -522,11 +522,11 @@ public static class MagnetoSerialConsole
                     MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
                     try
                     {
-                        _termread = readPort.ReadLine();
-                        msg = $"{_termread}";
+                        _lastTermRead = readPort.ReadLine();
+                        msg = $"{_lastTermRead}";
                         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
                         readPort.Read(buffer, 0, bytes);
-                        _termread = msg;
+                        _lastTermRead = msg;
                     }
                     catch
                     {
