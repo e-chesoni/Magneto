@@ -21,7 +21,7 @@ public static class MagnetoSerialConsole
 
     private static List<SerialPort> _serialPorts = new List<SerialPort>();
 
-    private static string _termread = "";
+    private static string _termread { get; set; }
 
     #endregion
 
@@ -113,6 +113,15 @@ public static class MagnetoSerialConsole
     public static string GetTermRead()
     {
         return _termread;
+    }
+
+    #endregion
+
+    #region
+
+    public static void ClearTermRead()
+    {
+        _termread = "";
     }
 
     #endregion

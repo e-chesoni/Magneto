@@ -98,6 +98,9 @@ public class MainViewModel : ObservableRecipient, INavigationAware
 
         MagnetoSerialConsole.GetInitializedPorts();
 
+        // Set default termread value
+        MagnetoSerialConsole.ClearTermRead();
+
         // Set initial page loaded to true
         _initialPageLoaded = true;
     }

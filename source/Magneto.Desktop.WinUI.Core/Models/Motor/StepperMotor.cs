@@ -9,6 +9,8 @@ public class StepperMotor : IStepperMotor
 {
     #region Private Variables
 
+    private double tolerance = 0.05;
+
     /// <summary>
     /// Motor ID (the number of the COM port followed by the axis the motor is attached to)
     /// </summary>
@@ -130,9 +132,9 @@ public class StepperMotor : IStepperMotor
                 MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             }
         }
+
         var message = $"Created Stepper Motor attached to {_motorPort} on axis {_motorAxis} with max position of {_maxPos}, min position of {_minPos}, and home position of {_homePos}";
-        MagnetoLogger.Log(message,
-                LogFactoryLogLevel.LogLevel.VERBOSE);
+        MagnetoLogger.Log(message, LogFactoryLogLevel.LogLevel.VERBOSE);
     }
 
     #endregion
@@ -295,6 +297,8 @@ public class StepperMotor : IStepperMotor
     /// <returns></returns> Returns -1 if move command fails, 0 if move command is successful
     public Task MoveMotorRelAsync(double pos)
     {
+        bool posReached = false;
+
         // get the current position
         // TODO: In the future use GetPos to get desiredPos
         //var currPos = GetPos();
@@ -302,7 +306,7 @@ public class StepperMotor : IStepperMotor
 
         // Calculate desired position:
         // Get current position
-        var initialPos = GetPos();
+        var initialPos = GetPos(); // TODO: FIXME This si getting termread from magneto console which is the same for both motors!!
         var msg = $"Initial motor position: {initialPos}";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
 
@@ -341,7 +345,7 @@ public class StepperMotor : IStepperMotor
             MagnetoLogger.Log("Port Closed.", LogFactoryLogLevel.LogLevel.ERROR);
         }
 
-        while (true)
+        while (!posReached)
         {
             msg = $"ENTERED POSITION CHECKING LOOP";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
@@ -349,13 +353,14 @@ public class StepperMotor : IStepperMotor
             // Update the current position each time we check
             var currentPos = GetPos();
 
-            msg = $"Current Position: {currentPos}";
+            msg = $"Current Position: {currentPos}, Desired Position: {desiredPos}";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
-            if (currentPos >= desiredPos)
+            if (Math.Abs(currentPos - desiredPos) <= tolerance)
             {
                 msg = "Desired position reached. Exiting the loop.";
                 MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
+                posReached = true;
                 break;
             }
             msg = $"Sleeping. Will check again in a ms...";
@@ -442,11 +447,26 @@ public class StepperMotor : IStepperMotor
         {
             msg = "Port Closed.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            return -1.0;
         }
-
+        /*
         var posString = MagnetoSerialConsole.GetTermRead();
         msg = $"TermRead: {posString}";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+        */
+
+        string posString = null;
+
+        // Loop until a valid position string is received
+        while (string.IsNullOrEmpty(posString) || !posString.StartsWith("#"))
+        {
+            posString = MagnetoSerialConsole.GetTermRead();
+            msg = $"TermRead: {posString}";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+            // Add a delay to avoid busy-waiting and reduce CPU usage
+            Thread.Sleep(100); // Adjust the delay as needed
+        }
 
         var posDoub = ExtractDoubleFromString(posString);
         msg = $"Position as double: {posDoub}";
