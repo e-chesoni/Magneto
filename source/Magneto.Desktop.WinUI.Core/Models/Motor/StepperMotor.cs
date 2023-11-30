@@ -277,6 +277,9 @@ public class StepperMotor : IStepperMotor
             _calculatedPos = pos;
             msg = $"New calculated position: {_calculatedPos}";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+            // Wait until position is reached
+            CheckPos(pos);
         }
         else
         {
@@ -297,16 +300,9 @@ public class StepperMotor : IStepperMotor
     /// <returns></returns> Returns -1 if move command fails, 0 if move command is successful
     public Task MoveMotorRelAsync(double pos)
     {
-        bool posReached = false;
-
-        // get the current position
-        // TODO: In the future use GetPos to get desiredPos
-        //var currPos = GetPos();
-        //var desiredPos = _calculatedPos + pos;
-
         // Calculate desired position:
         // Get current position
-        var initialPos = GetPos(); // TODO: FIXME This si getting termread from magneto console which is the same for both motors!!
+        var initialPos = GetPos();
         var msg = $"Initial motor position: {initialPos}";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
 
@@ -339,11 +335,21 @@ public class StepperMotor : IStepperMotor
             // Log command sent
             msg = $"Command Sent: {s}";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
+
+            // Wait until position is reached
+            CheckPos(desiredPos);
         }
         else
         {
             MagnetoLogger.Log("Port Closed.", LogFactoryLogLevel.LogLevel.ERROR);
         }
+        return Task.CompletedTask;
+    }
+
+    public bool CheckPos(double desiredPos)
+    {
+        var msg = "";
+        bool posReached = false;
 
         while (!posReached)
         {
@@ -375,8 +381,9 @@ public class StepperMotor : IStepperMotor
             Thread.Sleep(100); // Sleep for 1 second before checking again (for example)
         }
 
-        return Task.CompletedTask;
+        return posReached;
     }
+
 
     /// <summary>
     /// EMERGENCY STOP: Stop motor
@@ -456,11 +463,6 @@ public class StepperMotor : IStepperMotor
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             return -1.0;
         }
-        /*
-        var posString = MagnetoSerialConsole.GetTermRead();
-        msg = $"TermRead: {posString}";
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-        */
 
         string posString = null;
 
@@ -472,7 +474,7 @@ public class StepperMotor : IStepperMotor
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
             // Add a delay to avoid busy-waiting and reduce CPU usage
-            Thread.Sleep(100); // Adjust the delay as needed
+            Thread.Sleep(100); // TODO: Adjust delay as needed
         }
 
         var posDoub = ExtractDoubleFromString(posString);
