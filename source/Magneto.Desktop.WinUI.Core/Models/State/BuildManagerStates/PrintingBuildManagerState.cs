@@ -74,14 +74,13 @@ public class PrintingBuildManagerState : IBuildManagerState
             ctr++;
             msg = $"Executing print loop {ctr}";
             MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
-
-            // Bust a move (pop a pose of the list)
-            //var move = _BuildManagerSM.danceModel.dance.Pop();
             
             // Get motor positions and slice from pose
             var thickness = move.thickness;
             msg = $"Layer Thickness: {thickness}";
             MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
+            
+            // TODO: Use slice information to coordinate laser when image is incorporated
             var slice = move.slice;
 
             switch (_BuildManagerSM.build_flag)
