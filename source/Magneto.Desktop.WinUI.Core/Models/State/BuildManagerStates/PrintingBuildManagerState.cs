@@ -61,23 +61,18 @@ public class PrintingBuildManagerState : IBuildManagerState
         msg = $"Print layers: {_BuildManagerSM.danceModel.dance.Count}";
         MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
 
-        // TODO: Try homing build and powder motors first
-        _ = _BuildManagerSM.buildController.HomeMotors();
-
         _ = _BuildManagerSM.buildController.MoveMotorAbsAsync(_BuildManagerSM.buildController.GetBuildMotor(), printHeight);
-        // Wait for motor to get to height
-        // TODO: Make wait more robust; right now waits for arbitrary 2 seconds
-        // TODO: Could return a flag to indicate end wait
-        /*
+        
         // Move sweep motor to starting position
-        _ = _BuildManagerSM.sweepController.MoveMotorByAxisAsync(_BuildManagerSM.sweepController.GetSweepMotor(), _BuildManagerSM.GetSweepDist());
-        */
-        int ctr = 0;
+        _ = _BuildManagerSM.sweepController.MoveMotorAbsAsync(_BuildManagerSM.sweepController.GetSweepMotor(), _BuildManagerSM.GetSweepDist());
+        
+        // Keep track of loop (remove later)
+        var ctr = 0;
 
         foreach(var move in _BuildManagerSM.danceModel.dance)
         {
             ctr++;
-            msg = $"Executing loop {ctr}";
+            msg = $"Executing print loop {ctr}";
             MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
 
             // Bust a move (pop a pose of the list)
