@@ -254,6 +254,10 @@ public class StepperMotor : IStepperMotor
     /// <returns></returns> Returns completed task when finished
     public Task MoveMotorAbsAsync(double pos)
     {
+        var initialPos = GetPos();
+        var msg = $"Initial motor position: {initialPos}";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
+
         // Invalid position
         if (pos < _minPos || pos > _maxPos)
         {
@@ -269,7 +273,7 @@ public class StepperMotor : IStepperMotor
             MagnetoSerialConsole.SerialWrite(_motorPort, s);
 
             // Log message
-            var msg = string.Format("Moving motor on axis {0} to position {1}mm",
+            msg = string.Format("Moving motor on axis {0} to position {1}mm",
                 _motorAxis, pos);
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
@@ -441,7 +445,7 @@ public class StepperMotor : IStepperMotor
         // TODO: FUTURE IMPROVMENT -- returns previous position, not current position
 
         // Method entry notification for log
-        var msg = $"Getting {_motorName} position...";
+        var msg = $"Getting {_motorName} motor position...";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
         // Format position request

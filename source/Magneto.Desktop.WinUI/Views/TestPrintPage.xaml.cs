@@ -142,6 +142,7 @@ public sealed partial class TestPrintPage : Page
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
         MagnetoSerialConsole.LogAvailablePorts();
 
+        // Register event handlers on page
         foreach (SerialPort port in MagnetoSerialConsole.GetAvailablePorts())
         {
             // Get default motor (build motor) to get port

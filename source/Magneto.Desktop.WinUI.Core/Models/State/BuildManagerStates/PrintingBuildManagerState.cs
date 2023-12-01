@@ -61,6 +61,9 @@ public class PrintingBuildManagerState : IBuildManagerState
         msg = $"Print layers: {_BuildManagerSM.danceModel.dance.Count}";
         MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
 
+        // TODO: Try homing build and powder motors first
+        _ = _BuildManagerSM.buildController.HomeMotors();
+
         _ = _BuildManagerSM.buildController.MoveMotorAbsAsync(_BuildManagerSM.buildController.GetBuildMotor(), printHeight);
         // Wait for motor to get to height
         // TODO: Make wait more robust; right now waits for arbitrary 2 seconds

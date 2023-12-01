@@ -1,4 +1,5 @@
-﻿using System.Xml.Linq;
+﻿using System.IO.Ports;
+using System.Xml.Linq;
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Models;
 using Magneto.Desktop.WinUI.Core.Models.Image;
@@ -40,6 +41,30 @@ public sealed partial class PrintPage : Page
     {
         ViewModel = App.GetService<PrintViewModel>();
         InitializeComponent(); // This is fine...not sure why there are red lines sometimes
+
+        var msg = "";
+
+        msg = "Landed on Print Page";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
+        MagnetoSerialConsole.LogAvailablePorts();
+
+        // Register event handlers on page
+        foreach (SerialPort port in MagnetoSerialConsole.GetAvailablePorts())
+        {
+            // Get default motor (build motor) to get port
+            if (port.PortName.Equals("COM4", StringComparison.OrdinalIgnoreCase))
+            {
+                MagnetoSerialConsole.AddEventHandler(port);
+                msg = $"Requesting addition of event hander or port {port.PortName}";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+            }
+            else if (port.PortName.Equals("COM7", StringComparison.OrdinalIgnoreCase))
+            {
+                MagnetoSerialConsole.AddEventHandler(port);
+                msg = $"Requesting addition of event hander or port {port.PortName}";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+            }
+        }
     }
 
     #endregion
