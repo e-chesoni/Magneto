@@ -89,13 +89,11 @@ public class PrintingBuildManagerState : IBuildManagerState
                     // TODO: Add artificial wait for draw before laser has been incorporated--will have to wait for user response (button) or timeout (abort)
                     // TODO: Add pop-up for user to execute draw, and indicate draw is complete
 
-                    //_BuildManagerSM.laserController.Draw(slice); // this was in original code
+                    _BuildManagerSM.laserController.Draw(slice); // this was in original code
 
-                    /*
-                    _ = _BuildManagerSM.buildController.MoveMotorRelAsync(_BuildManagerSM.buildController.GetBuildMotor(), -thickness);
+                    _ = _BuildManagerSM.buildController.MoveMotorRel(_BuildManagerSM.buildController.GetBuildMotor(), -thickness);
 
-                    _ = _BuildManagerSM.buildController.MoveMotorRelAsync(_BuildManagerSM.buildController.GetPowderMotor(), thickness);
-                    */
+                    _ = _BuildManagerSM.buildController.MoveMotorRel(_BuildManagerSM.buildController.GetPowderMotor(), thickness);
 
                     // Sweep
                     await _BuildManagerSM.sweepController.MoveMotorAbsAsync(_BuildManagerSM.sweepController.GetSweepMotor(), -_BuildManagerSM.GetSweepDist());
