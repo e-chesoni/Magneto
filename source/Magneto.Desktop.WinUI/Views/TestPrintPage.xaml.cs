@@ -151,6 +151,12 @@ public sealed partial class TestPrintPage : Page
                 msg = $"Requesting addition of event hander or port {port.PortName}";
                 MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
             }
+            else if (port.PortName.Equals("COM7", StringComparison.OrdinalIgnoreCase))
+            {
+                MagnetoSerialConsole.AddEventHandler(port);
+                msg = $"Requesting addition of event hander or port {port.PortName}";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+            }
         }
     }
 
