@@ -33,7 +33,7 @@ public static class MagnetoConfig
 {
     private static double _defaultPrintThickness = 2;
 
-    private static int _defaultNumSlices = 6;
+    private static int _defaultNumSlices = 5;
 
     private static int _sweepDist = 70;
 

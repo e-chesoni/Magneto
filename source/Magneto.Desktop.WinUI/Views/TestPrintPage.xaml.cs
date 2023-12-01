@@ -34,7 +34,7 @@ public sealed partial class TestPrintPage : Page
 
     private StepperMotor _sweepMotor;
 
-    private StepperMotor currTestMotor;
+    private StepperMotor _currTestMotor;
 
     private bool _powderMotorSelected = false;
 
@@ -120,8 +120,8 @@ public sealed partial class TestPrintPage : Page
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
         }
 
-        // Set current test motor to stepMotor1 by default
-        currTestMotor = _powderMotor;
+        // Set current test motor to _powderMotor by default
+        SelectPowderMotorHelper();
     }
 
     #endregion
@@ -191,30 +191,25 @@ public sealed partial class TestPrintPage : Page
     {
         MagnetoLogger.Log("TestPrintPage::MoveMotorHelper", LogFactoryLogLevel.LogLevel.VERBOSE);
 
-        currTestMotor.SetAxis(axis);
-        currTestMotor.MoveMotorRelAsync(double.Parse(dist));
+        _currTestMotor.SetAxis(axis);
+        _currTestMotor.MoveMotorRelAsync(double.Parse(dist));
     }
 
     private void GetMotorPositionHelper(int axis)
     {
         MagnetoLogger.Log("TestPrintPage::MoveMotorHelper", LogFactoryLogLevel.LogLevel.VERBOSE);
 
-        currTestMotor.SetAxis(axis);
-        currTestMotor.GetPos();
+        _currTestMotor.SetAxis(axis);
+        _currTestMotor.GetPos();
     }
 
     #endregion
 
     #region Button Methods
 
-    /// <summary>
-    /// Set the test motor axis to 1
-    /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="e"></param>
-    private void SelectPowderMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    private void SelectPowderMotorHelper()
     {
-        currTestMotor = _powderMotor;
+        _currTestMotor = _powderMotor;
 
         if (!_powderMotorSelected)
         {
@@ -235,13 +230,23 @@ public sealed partial class TestPrintPage : Page
     }
 
     /// <summary>
+    /// Set the test motor axis to 1
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void SelectPowderMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        SelectPowderMotorHelper();
+    }
+
+    /// <summary>
     /// Set the test motor axis to 2
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="e"></param>
     private void SelectBuildMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        currTestMotor = _buildMotor;
+        _currTestMotor = _buildMotor;
 
         if (!_buildMotorSelected)
         {
@@ -270,7 +275,7 @@ public sealed partial class TestPrintPage : Page
     {
         // TODO: Update this method to set the test motor to the powder distribution motor
         // A the time this code was written, the third motor has not yet arrived
-        currTestMotor = _sweepMotor;
+        _currTestMotor = _sweepMotor;
 
         if (!_sweepMotorSelected)
         {
@@ -311,9 +316,9 @@ public sealed partial class TestPrintPage : Page
             _homigMotor = false;
         }
 
-        if (MagnetoSerialConsole.OpenSerialPort(currTestMotor.GetPortName()))
+        if (MagnetoSerialConsole.OpenSerialPort(_currTestMotor.GetPortName()))
         {
-            _ = currTestMotor.HomeMotor();
+            _ = _currTestMotor.HomeMotor();
         }
         else
         {
@@ -335,7 +340,7 @@ public sealed partial class TestPrintPage : Page
         string dist = ViewModel.DistanceText;
         MagnetoLogger.Log($"Commanded distance to move: {dist}", LogFactoryLogLevel.LogLevel.VERBOSE);
 
-        if (MagnetoSerialConsole.OpenSerialPort(currTestMotor.GetPortName()))
+        if (MagnetoSerialConsole.OpenSerialPort(_currTestMotor.GetPortName()))
         {
             MagnetoLogger.Log("Port Open!", LogFactoryLogLevel.LogLevel.SUCCESS);
             _movingMotorToTarget = true;
@@ -351,7 +356,7 @@ public sealed partial class TestPrintPage : Page
                 _movingMotorToTarget = false;
             }
 
-            switch (currTestMotor.GetAxis())
+            switch (_currTestMotor.GetAxis())
             {
                 case 0:
                     MagnetoLogger.Log("No axis selected", 
@@ -387,10 +392,10 @@ public sealed partial class TestPrintPage : Page
         msg = "GetPositionButton Clicked...";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
-        if (MagnetoSerialConsole.OpenSerialPort(currTestMotor.GetPortName()))
+        if (MagnetoSerialConsole.OpenSerialPort(_currTestMotor.GetPortName()))
         {
             MagnetoLogger.Log("Port Open!", LogFactoryLogLevel.LogLevel.SUCCESS);
-            switch (currTestMotor.GetAxis())
+            switch (_currTestMotor.GetAxis())
             {
                 case 0:
                     MagnetoLogger.Log("No axis selected",
