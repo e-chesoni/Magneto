@@ -14,15 +14,15 @@
     <Grid x:Name="ContentArea">
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1*"/>
-                <ColumnDefinition Width="6*"/>
-                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="5*"/>
+                <RowDefinition Height="3*"/>
                 <RowDefinition Height="20*"/>
                 <RowDefinition Height="30*"/>
-                <RowDefinition Height="10*"/>
+                <RowDefinition Height="7*"/>
             </Grid.RowDefinitions>
 
             <Grid Grid.Column="1" Grid.Row="1">
@@ -58,6 +58,7 @@
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
                     <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="24" 
                            Text="Test Mark"></TextBlock>
@@ -66,12 +67,25 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <Button Grid.Column="0" x:Name="GetLastMarkButton" HorizontalAlignment="Right" VerticalAlignment="Center" 
-                                Margin="10" Content="Get Last Mark time" Click="GetLastMarkButton_Click"></Button>
-                        <TextBox Grid.Column="1" x:Name="LastMarkTimeTextBox" HorizontalAlignment="Left" VerticalAlignment="Center" 
+                        <TextBox Grid.Column="0" x:Name="LastMarkTimeTextBox" HorizontalAlignment="Right" VerticalAlignment="Center" 
                                  Width="150" Margin="10"></TextBox>
+                        <Button Grid.Column="1" x:Name="GetLastMarkButton" HorizontalAlignment="Left" VerticalAlignment="Center" 
+                                Margin="10" Content="Get Last Mark time" Click="GetLastMarkButton_Click"></Button>
                     </Grid>
-                    <Grid Grid.Row="2" HorizontalAlignment="Center">
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10"
+                                   FontSize="12" Text="Search Directory"></TextBlock>
+                        <TextBox Grid.Column="1" x:Name="JobFileSearchDirectory" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                 Width="360" Margin="10"></TextBox>
+                        <Button Grid.Column="2" x:Name="UpdateDirectoryButton" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                Margin="10" Content="Update Directory" Click="UpdateDirectoryButton_Click"></Button>
+                    </Grid>
+                    <Grid Grid.Row="3" HorizontalAlignment="Center">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
@@ -88,7 +102,7 @@
                                 Margin="10" Content="Use Default Job" Click="UseDefaultJobButton_Click"></Button>
                     </Grid>
                     
-                    <Grid Grid.Row="3">
+                    <Grid Grid.Row="4">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>

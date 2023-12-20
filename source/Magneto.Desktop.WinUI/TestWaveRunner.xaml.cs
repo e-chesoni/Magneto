@@ -18,6 +18,7 @@ using Windows.Foundation.Collections;
 using SAMLIGHT_CLIENT_CTRL_EXLib;
 using Magneto.Desktop.WinUI.Core.Services;
 using ABI.System;
+using static System.Net.Mime.MediaTypeNames;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -28,13 +29,25 @@ namespace Magneto.Desktop.WinUI;
 /// </summary>
 public sealed partial class TestWaveRunner : Page
 {
-    static ScSamlightClientCtrlEx ctrlNew = new ScSamlightClientCtrlEx();
-    string m_text_is_marking = "";
-    string _jobFilePath = "";
-
+    private static ScSamlightClientCtrlEx ctrlNew = new ScSamlightClientCtrlEx();
+    private string m_text_is_marking = "";
+    private string _defaultJobDirectory { get; set; }
+    private string _jobDirectory { get; set; }
+    private string _jobFilePath { get; set; }
+    private string _defaultJobName { get; set; }
+    
     public TestWaveRunner()
     {
         InitializeComponent();
+
+        // Set Job Directory
+        _defaultJobDirectory = @"C:\Scanner Application\Scanner Software\jobfiles";
+        _jobDirectory = _defaultJobDirectory;
+        JobFileSearchDirectory.Text = _jobDirectory;
+
+        // Set Job File
+        _defaultJobName = "100mm_Square.sjf";
+        JobFileNameTextBox.Text = _defaultJobName;
     }
 
     #region Button Methods
@@ -108,23 +121,19 @@ public sealed partial class TestWaveRunner : Page
         ctrlNew.ScStopMarking();
     }
 
+    private void UpdateDirectoryButton_Click(object sender, RoutedEventArgs e)
+    {
+        _jobDirectory = JobFileSearchDirectory.Text;
+        StartMarkButton.IsEnabled = false;
+    }
+
     private void GetJobButton_Click(object sender, RoutedEventArgs e)
     {
-        // Get the current working directory
-        string currentDirectory = Directory.GetCurrentDirectory();
-
-        var msg = $"Current Working Directory: {currentDirectory}";
-        MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
-
-        // TODO: Navigate to job file folder
-        string targetDirectory = @"C:\Scanner Application\Scanner Software\jobfiles";
-
-        // Log the target directory
-        msg = $"Target Directory: {targetDirectory}";
+        var msg = "Getting job...";
         MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
 
         // Check if the directory exists
-        if (!Directory.Exists(targetDirectory))
+        if (FindJobDirectory() < 0)
         {
             msg = "Directory does not exist. Cannot get job.";
             MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
@@ -134,10 +143,10 @@ public sealed partial class TestWaveRunner : Page
         //PrintDirectoryFiles(targetDirectory);
 
         // Construct the full file path
-        var fullFilePath = Path.Combine(targetDirectory, JobFileNameTextBox.Text);
+        var fullFilePath = Path.Combine(_jobDirectory, JobFileNameTextBox.Text);
 
         // Check if the file exists
-        if (FindFile(fullFilePath) < 0) // FindFile returns -1 if file does not exist
+        if (FindFile(fullFilePath) == 0) // FindFile returns 0 if file does not exist
         {
             msg = $"File not found: {fullFilePath}";
             MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
@@ -148,6 +157,24 @@ public sealed partial class TestWaveRunner : Page
             _jobFilePath = fullFilePath;
             StartMarkButton.IsEnabled= true;
         }
+    }
+
+    private void UseDefaultJobButton_Click(object sender, RoutedEventArgs e)
+    {
+        // Update job file name
+        JobFileNameTextBox.Text = _defaultJobName;
+
+        var msg = $"Setting job file to default job {_defaultJobName}";
+        MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        // Check if the directory exists
+        if (FindJobDirectory() == 0) // Returns 0 on fail; 1 on success
+        {
+            msg = "Directory does not exist. Cannot get job.";
+            MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
+            return;
+        }
+
     }
 
     #endregion
@@ -174,6 +201,25 @@ public sealed partial class TestWaveRunner : Page
         }
     }
 
+    private int FindJobDirectory()
+    {
+        // Log the target directory
+        var msg = $"Target Directory: {_jobDirectory}";
+        MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        // Check if the directory exists
+        if (!Directory.Exists(_jobDirectory))
+        {
+            msg = "Directory does not exist. Cannot get job.";
+            MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
+            return 0;
+        }
+        else
+        {
+            return 1;
+        }
+    }
+
     private int FindFile(string fileName)
     {
         // Check if the file exists
@@ -181,13 +227,13 @@ public sealed partial class TestWaveRunner : Page
         {
             var msg = $"Could not find: {fileName}";
             MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
-            return -1;
+            return 0;
         }
         else
         {
             var msg = $"Found file: {fileName}";
             MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS);
-            return 0;
+            return 1;
         }
     }
 
@@ -202,6 +248,7 @@ public sealed partial class TestWaveRunner : Page
         {
             msg = "SAMLight not found";
             MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
+            StartMarkButton.IsEnabled = false;
             return 0;
         }
 
@@ -259,6 +306,7 @@ public sealed partial class TestWaveRunner : Page
 
         msg = "SAMLight is done marking";
         MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS);
+        StartMarkButton.IsEnabled = false;
 
         return 1;
     }
@@ -274,8 +322,4 @@ public sealed partial class TestWaveRunner : Page
 
     #endregion
 
-    private void UseDefaultJobButton_Click(object sender, RoutedEventArgs e)
-    {
-
-    }
 }
