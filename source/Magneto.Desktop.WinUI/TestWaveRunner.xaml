@@ -42,7 +42,7 @@
                 <Button Grid.Row="3" x:Name="SayHelloButton" Background="CadetBlue"
                         HorizontalAlignment="Center" VerticalAlignment="Top"
                         Content="Say Hello" Click="SayHelloButton_Click"></Button>
-                <TextBlock Grid.Row="4" HorizontalAlignment="Center" VerticalAlignment="Top" FontSize="12" 
+                <TextBlock Grid.Row="4" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontSize="12" 
                            Text="(You should see a pop up window with a hello message in WaveRunner)"></TextBlock>
             </Grid>
             <Grid Grid.Column="1" Grid.Row="2">
@@ -71,18 +71,21 @@
                         <TextBox Grid.Column="1" x:Name="LastMarkTimeTextBox" HorizontalAlignment="Left" VerticalAlignment="Center" 
                                  Width="150" Margin="10"></TextBox>
                     </Grid>
-                    <Grid Grid.Row="2">
+                    <Grid Grid.Row="2" HorizontalAlignment="Center">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10"
                                    FontSize="12" Text="File Name:"></TextBlock>
                         <TextBox Grid.Column="1" x:Name="JobFileNameTextBox" HorizontalAlignment="Center" VerticalAlignment="Center" 
-                                 Width="300"  Margin="10"></TextBox>
-                        <Button Grid.Column="2" x:Name="GetJobButton" HorizontalAlignment="Left" VerticalAlignment="Center" 
+                                 TextAlignment="Right" Width="150"  Margin="10"></TextBox>
+                        <Button Grid.Column="2" x:Name="GetJobButton" HorizontalAlignment="Center" VerticalAlignment="Center" 
                                 Margin="10" Content="Get Job" Click="GetJobButton_Click"></Button>
+                        <Button Grid.Column="3" x:Name="UseDefaultJobButton" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                Margin="10" Content="Use Default Job" Click="UseDefaultJobButton_Click"></Button>
                     </Grid>
                     
                     <Grid Grid.Row="3">
@@ -92,9 +95,9 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <Button Grid.Column="0" x:Name="StartMarkButton" HorizontalAlignment="Right" VerticalAlignment="Center" 
-                                Margin="10" Content="Start Mark" Click="StartMarkButton_Click"></Button>
-                        <TextBlock Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10"
-                                   FontSize="12" Text="Is Marking" Foreground="DarkGray"></TextBlock>
+                                Margin="10" Content="Start Mark" Click="StartMarkButton_Click" IsEnabled="False"></Button>
+                        <TextBlock Grid.Column="1" x:Name="IsMarkingText" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10"
+                                   FontSize="12" Text="Waiting to Start Mark" Foreground="DarkGray"></TextBlock>
                         <Button Grid.Column="2" x:Name="StopMarkButton" HorizontalAlignment="Left" VerticalAlignment="Center" 
                                 Margin="10" Content="Stop Mark" Click="StopMarkButton_Click"></Button>
                     </Grid>
