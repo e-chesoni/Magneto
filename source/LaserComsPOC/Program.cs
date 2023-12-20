@@ -7,6 +7,9 @@ internal class Program
 {
     static ScSamlightClientCtrlEx ctrlNew = new ScSamlightClientCtrlEx();
 
+    /// <summary>
+    /// Check communication to WaveRuner
+    /// </summary>
     static void cci_hello_world()
     {
         try
