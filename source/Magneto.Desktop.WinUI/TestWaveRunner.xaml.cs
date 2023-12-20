@@ -248,6 +248,8 @@ public sealed partial class TestWaveRunner : Page
         {
             msg = "SAMLight not found";
             MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
+            m_text_is_marking = "Cannot Mark; WaveRunner is closed.";
+            UpdateUIText(m_text_is_marking);
             StartMarkButton.IsEnabled = false;
             return 0;
         }
