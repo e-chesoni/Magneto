@@ -20,10 +20,12 @@
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="1*"/>
-                <RowDefinition Height="1*"/>
+                <RowDefinition Height="20*"/>
+                <RowDefinition Height="20*"/>
+                <RowDefinition Height="3*"/>
             </Grid.RowDefinitions>
 
-            <Grid Grid.Column="1" Grid.Row="0">
+            <Grid Grid.Column="1" Grid.Row="1">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="*"/>
@@ -33,15 +35,66 @@
                 </Grid.RowDefinitions>
                 <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="24" 
                            Text="Test Connection"></TextBlock>
-                <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12" 
+                <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontSize="12" 
                            Text="Note: WaveRunner must be open to interact with laser using Magneto"></TextBlock>
-                <TextBlock Grid.Row="2" HorizontalAlignment="Center"  VerticalAlignment="Center" FontSize="12" 
+                <TextBlock Grid.Row="2" HorizontalAlignment="Center"  VerticalAlignment="Top" FontSize="12" 
                            Text="Send communication test to WaveRunner"></TextBlock>
                 <Button Grid.Row="3" x:Name="SayHelloButton" Background="CadetBlue"
-                        HorizontalAlignment="Center" VerticalAlignment="Center"
+                        HorizontalAlignment="Center" VerticalAlignment="Top"
                         Content="Say Hello" Click="SayHelloButton_Click"></Button>
-                <TextBlock Grid.Row="4" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12" 
+                <TextBlock Grid.Row="4" HorizontalAlignment="Center" VerticalAlignment="Top" FontSize="12" 
                            Text="(You should see a pop up window with a hello message in WaveRunner)"></TextBlock>
+            </Grid>
+            <Grid Grid.Column="1" Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="18*"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+
+                <Grid Grid.Column="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="24" 
+                           Text="Test Mark"></TextBlock>
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0" x:Name="GetLastMarkButton" HorizontalAlignment="Right" VerticalAlignment="Center" 
+                                Margin="10" Content="Get Last Mark time" Click="GetLastMarkButton_Click"></Button>
+                        <TextBox Grid.Column="1" x:Name="LastMarkTimeTextBox" HorizontalAlignment="Left" VerticalAlignment="Center" 
+                                 Width="150" Margin="10"></TextBox>
+                    </Grid>
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10"
+                                   FontSize="12" Text="File Name:"></TextBlock>
+                        <TextBox Grid.Column="1" x:Name="JobFileNameTextBox" HorizontalAlignment="Left" VerticalAlignment="Center" 
+                                 Width="150"  Margin="10"></TextBox>
+                    </Grid>
+                    <Grid Grid.Row="3">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0" x:Name="StartMarkButton" HorizontalAlignment="Right" VerticalAlignment="Center" 
+                                Margin="10" Content="Start Mark" Click="StartMarkButton_Click"></Button>
+                        <TextBlock Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10"
+                                   FontSize="12" Text="Is Marking" Foreground="DarkGray"></TextBlock>
+                        <Button Grid.Column="2" x:Name="StopMarkButton" HorizontalAlignment="Left" VerticalAlignment="Center" 
+                                Margin="10" Content="Stop Mark" Click="StopMarkButton_Click"></Button>
+                    </Grid>
+                </Grid>
             </Grid>
         </Grid>
     </Grid>

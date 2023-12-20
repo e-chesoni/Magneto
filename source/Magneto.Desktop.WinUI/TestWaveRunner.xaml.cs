@@ -47,4 +47,19 @@ public sealed partial class TestWaveRunner : Page
             MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
         }
     }
+
+    private void GetLastMarkButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void StartMarkButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void StopMarkButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
 }
