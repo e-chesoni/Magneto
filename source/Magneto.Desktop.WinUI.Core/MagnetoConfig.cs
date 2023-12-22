@@ -71,8 +71,8 @@ public static class MagnetoConfig
                 motorName = "build",
                 COMPort = GetCOMPortName(GetCOMPort(4)),
                 axis = 1,
-                maxPos = 35,
-                minPos = 0,
+                maxPos = 0,
+                minPos = -35,
                 homePos = 0,
                 velocity = 5, // mm/s^2
             },
@@ -81,8 +81,8 @@ public static class MagnetoConfig
                 motorName = "powder",
                 COMPort = GetCOMPortName(GetCOMPort(4)),
                 axis = 2,
-                maxPos = 35,
-                minPos = 0,
+                maxPos = 0,
+                minPos = -35,
                 homePos = 0,
                 velocity = 5, // mm/s^2
             },
@@ -91,8 +91,8 @@ public static class MagnetoConfig
                 motorName = "sweep",
                 COMPort = GetCOMPortName(GetCOMPort(5)),
                 axis = 1,
-                maxPos = 150,
-                minPos = -150,
+                maxPos = 173.73,
+                minPos = -110,
                 homePos = -110,
                 velocity = 25, // mm/s^2
             },

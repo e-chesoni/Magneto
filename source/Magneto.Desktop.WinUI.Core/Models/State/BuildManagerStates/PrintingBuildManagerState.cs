@@ -51,8 +51,9 @@ public class PrintingBuildManagerState : IBuildManagerState
     {
         // TODO: Find a way to set flag using interrupts (if user wants to pause/cancel print)
         var msg = "";
+        //TODO: Implement start routine
+        // Calc starting pos for build and powder motors (printHeight)
 
-        // Move build motor to calculated print height
         //TODO: MOVE TO CALIBRATE STATE: This should be only method in calibrate motors to start
         var printHeight = MagnetoConfig.GetDefaultPrintThickness() * _BuildManagerSM.danceModel.dance.Count;
         msg = $"Print Height: {printHeight}";
@@ -60,10 +61,14 @@ public class PrintingBuildManagerState : IBuildManagerState
 
         msg = $"Print layers: {_BuildManagerSM.danceModel.dance.Count}";
         MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
-
-        _ = _BuildManagerSM.buildController.MoveMotorAbsAsync(_BuildManagerSM.buildController.GetBuildMotor(), printHeight);
         
-        // Move sweep motor to starting position
+        // TODO: Let user calibrate build start height (height of first layer; ~1mm below plate height for testing)
+        _ = _BuildManagerSM.buildController.MoveMotorAbsAsync(_BuildManagerSM.buildController.GetBuildMotor(), -MagnetoConfig.GetDefaultPrintThickness());
+
+        // Powder motor moves DOWN to calcStartPosPowder (IRL this is done by the user; use artificial start here)
+        _ = _BuildManagerSM.buildController.MoveMotorAbsAsync(_BuildManagerSM.buildController.GetPowderMotor(), -printHeight);
+
+        // Sweep motor moves to starting position (home)
         _ = _BuildManagerSM.sweepController.MoveMotorAbsAsync(_BuildManagerSM.sweepController.GetSweepMotor(), _BuildManagerSM.sweepController.GetSweepMotor().GetHomePos());
         
         // Keep track of loop (remove later)
