@@ -96,8 +96,8 @@ public class PrintingBuildManagerState : IBuildManagerState
                     _ = _BuildManagerSM.buildController.MoveMotorRel(_BuildManagerSM.buildController.GetPowderMotor(), thickness);
 
                     // Sweep
-                    await _BuildManagerSM.sweepController.MoveMotorAbsAsync(_BuildManagerSM.sweepController.GetSweepMotor(), -_BuildManagerSM.GetSweepDist());
                     await _BuildManagerSM.sweepController.MoveMotorAbsAsync(_BuildManagerSM.sweepController.GetSweepMotor(), _BuildManagerSM.GetSweepDist());
+                    await _BuildManagerSM.sweepController.MoveMotorAbsAsync(_BuildManagerSM.sweepController.GetSweepMotor(), -_BuildManagerSM.GetSweepDist());
 
                     break;
 

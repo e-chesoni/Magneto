@@ -261,7 +261,7 @@ public class StepperMotor : IStepperMotor
         // Invalid position
         if (pos < _minPos || pos > _maxPos)
         {
-            MagnetoLogger.Log("Invalid position. Aborting motor move operation.",
+            MagnetoLogger.Log($"Invalid position: {pos}. for motor {_motorName} _minPos is {_minPos} and _maxPos is {_maxPos}. Aborting motor move operation.",
                 LogFactoryLogLevel.LogLevel.ERROR);
             return Task.CompletedTask;
         }
@@ -316,7 +316,7 @@ public class StepperMotor : IStepperMotor
         // If the current position + steps is greater than 35, fail
         if (desiredPos < _minPos || desiredPos > _maxPos)
         {
-            msg = "Invalid position. Aborting motor move operation.";
+            msg = $"Invalid position: {desiredPos}. for {_motorName} build _minPos is {_minPos} and _maxPos is {_maxPos}. Aborting motor move operation.";
             MagnetoLogger.Log(msg,
                 LogFactoryLogLevel.LogLevel.ERROR);
             return Task.CompletedTask;
@@ -444,6 +444,11 @@ public class StepperMotor : IStepperMotor
         // Method entry notification for log
         var msg = $"Getting {_motorName} motor position...";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        // Clear old term
+        msg = $"Clearing previous term...";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+        MagnetoSerialConsole.ClearTermRead();
 
         // Format position request
         var s = string.Format("{0}POS?", _motorAxis);
