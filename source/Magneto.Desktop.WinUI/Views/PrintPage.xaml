@@ -24,6 +24,7 @@
     <Grid x:Name="ContentArea">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="6*"/>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="1*"/>
         </Grid.ColumnDefinitions>
@@ -38,14 +39,14 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="1*"/>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="1*"/>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="1*"/>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="1*"/>
-                <RowDefinition Height="1*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -54,14 +55,14 @@
             <TextBox Grid.Row="0" x:Name="SelectedPrint" HorizontalAlignment="Center" VerticalAlignment="Center" Width="300" 
                      TextWrapping="Wrap" AcceptsReturn="True" 
                      Text="Please select a file..."></TextBox>
-            <Button Grid.Row="1" HorizontalAlignment="Center" Margin="10" Height="50" Width="175" Content="Find Print"
+            <Button Grid.Row="1" HorizontalAlignment="Center" Margin="10" Height="45" Width="175" Content="Find Print"
                     Click="FindPrint_Click"></Button>
             <TextBlock Grid.Row="2" x:Name="FindPrintStatusTextBlock" HorizontalAlignment="Center" VerticalAlignment="Center" 
                        Text="Waiting for user to select print." FontSize="12" Margin="10"></TextBlock>
-            <Button Grid.Row="3" HorizontalAlignment="Center" Margin="10" Height="50" Width="175" Content="Go To Starting Position" IsEnabled="False"></Button>
+            <Button Grid.Row="3" HorizontalAlignment="Center" Margin="10" Height="45" Width="175" Content="Go To Starting Position" IsEnabled="False"></Button>
             <TextBlock Grid.Row="4" x:Name="StartingPositionStatusTextBlock" HorizontalAlignment="Center" VerticalAlignment="Center" 
                        Text="User must select print to determine starting position." FontSize="12" Margin="10"></TextBlock>
-            <Button Grid.Row="5" HorizontalAlignment="Center" Margin="10" Height="50" Width="175" Content="Calibrate Motors" IsEnabled="False"></Button>
+            <Button Grid.Row="5" HorizontalAlignment="Center" Margin="10" Height="45" Width="175" Content="Calibrate Motors" IsEnabled="False"></Button>
             <TextBlock Grid.Row="6" x:Name="CalibrateMotorsStatusTextBlock" HorizontalAlignment="Center" VerticalAlignment="Center" 
                        Text="User must select print to calibrate motors." FontSize="12" Margin="10"></TextBlock>
 
@@ -88,98 +89,105 @@
                        Text="Layer Thickness" FontSize="12" Margin="10"></TextBlock>
                 <TextBlock Grid.Column="5" x:Name="PrintLayerThicknessTextBlock" HorizontalAlignment="Left" VerticalAlignment="Center" 
                        Text="" FontSize="12" Margin="10"></TextBlock>
-            </Grid>
 
-            <Button Grid.Row="8" x:Name="StartPrintButton" HorizontalAlignment="Center" Margin="10" Height="50" Width="175" Content="Start Print" IsEnabled="False"
+            </Grid>
+            <Button Grid.Row="8" x:Name="StartPrintButton" HorizontalAlignment="Center" Margin="10" Height="45" Width="175" Content="Start Print" IsEnabled="False"
                     Click="StartPrint_Click"></Button>
-            <Button Grid.Row="9" HorizontalAlignment="Center" Margin="10" Height="50" Width="175" Content="Cancel Print" Background="Red"></Button>
-            <Button Grid.Row="10" HorizontalAlignment="Center" Margin="10" Height="50" Width="175" Content="Home Motors"
+            <Button Grid.Row="9" HorizontalAlignment="Center" Margin="10" Height="45" Width="175" Content="Cancel Print" Background="Red"></Button>
+            <Button Grid.Row="10" HorizontalAlignment="Center" Margin="10" Height="45" Width="175" Content="Home Motors"
                     Click="HomeMotors_Click"></Button>
+        </Grid>
+
+        <Grid Grid.Column="2" Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="6*"/>
+                <ColumnDefinition Width="4*"/>
+                <ColumnDefinition Width="6*"/>
+            </Grid.ColumnDefinitions>
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                       Text="Build Plate" FontSize="16" Margin="10"></TextBlock>
+
+                <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Height="150"
+                       Text="Placeholder for Build Plate Animation" TextWrapping="Wrap" FontSize="10" Margin="10"></TextBlock>
+                <Grid Grid.Row="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                   Text="Current Position:" FontSize="12" Margin="10"></TextBlock>
+                    <TextBlock Grid.Column="1" x:Name="BuildMotorCurrentPositionTextBlock"  HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                   Text="" FontSize="12" Margin="10"></TextBlock>
+                </Grid>
+                <Grid Grid.Row="3">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                   Text="Desired Position:" FontSize="12" Margin="10"></TextBlock>
+                    <TextBlock Grid.Column="3" x:Name="BuildMotorDesiredPositionTextBlock"  HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                   Text="" FontSize="12" Margin="10"></TextBlock>
+                </Grid>
+            </Grid>
 
             <Grid Grid.Column="1">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="6*"/>
-                    <ColumnDefinition Width="4*"/>
-                    <ColumnDefinition Width="6*"/>
-                </Grid.ColumnDefinitions>
-                <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid Grid.Column="1" Grid.Row="1">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
-                    <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" 
-                       Text="Build Plate" FontSize="16" Margin="10"></TextBlock>
-                    
-                    <TextBlock Grid.Column="0" Grid.Row="1"  Text="HI"></TextBlock>
-                    
-                    <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" 
-                       Text="Placeholder for Build Plate Animation" TextWrapping="Wrap" FontSize="10" Margin="10"></TextBlock>
-                    <Grid Grid.Row="2">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" 
-                                   Text="Current Position:" FontSize="12" Margin="10"></TextBlock>
-                        <TextBlock Grid.Row="1" x:Name="BuildMotorCurrentPositionTextBlock"  HorizontalAlignment="Center" VerticalAlignment="Center" 
-                                   Text=":" FontSize="12" Margin="10"></TextBlock>
-                        <TextBlock Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center" 
-                                   Text="Desired Position:" FontSize="12" Margin="10"></TextBlock>
-                        <TextBlock Grid.Row="3" x:Name="BuildMotorDesiredPositionTextBlock"  HorizontalAlignment="Center" VerticalAlignment="Center" 
-                                   Text="" FontSize="12" Margin="10"></TextBlock>
-                    </Grid>
-                </Grid>
-
-                <Grid Grid.Column="1">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    <Grid Grid.Column="1" Grid.Row="1">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" 
-                                       Text="Currently Printing Layer:" FontSize="16" Margin="10"></TextBlock>
-                        <TextBlock Grid.Row="1" x:Name="CurrentPrintLayerTextBlock" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                    <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       Text="Currently Printing Layer:" FontSize="12" Margin="10"></TextBlock>
+                    <TextBlock Grid.Row="1" x:Name="CurrentPrintLayerTextBlock" HorizontalAlignment="Center" VerticalAlignment="Center" 
                                        Text="" FontSize="16" Margin="10"></TextBlock>
-                    </Grid>
-                </Grid>
-
-                <Grid Grid.Column="2">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" 
-                       Text="Material Plate" FontSize="16" Margin="10"></TextBlock>
-                    <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" 
-                       Text="Placeholder for Material Plate Animation" TextWrapping="Wrap" FontSize="10" Margin="10"></TextBlock>
-                    <Grid Grid.Row="2">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" 
-                                   Text="Current Position:" FontSize="12" Margin="10"></TextBlock>
-                        <TextBlock Grid.Row="1" x:Name="PowderMotorCurrentPositionTextBlock"  HorizontalAlignment="Center" VerticalAlignment="Center" 
-                                   Text=":" FontSize="12" Margin="10"></TextBlock>
-                        <TextBlock Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center" 
-                                   Text="Desired Position:" FontSize="12" Margin="10"></TextBlock>
-                        <TextBlock Grid.Row="3" x:Name="PowderMotorDesiredPositionTextBlock"  HorizontalAlignment="Center" VerticalAlignment="Center" 
-                                   Text="" FontSize="12" Margin="10"></TextBlock>
-                    </Grid>
                 </Grid>
             </Grid>
-            
+
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                       Text="Material Plate" FontSize="16" Margin="10"></TextBlock>
+                <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Height="150"
+                       Text="Placeholder for Material Plate Animation" TextWrapping="Wrap" FontSize="10" Margin="10"></TextBlock>
+                <Grid Grid.Row="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                   Text="Current Position:" FontSize="12" Margin="10"></TextBlock>
+                    <TextBlock Grid.Column="1" x:Name="PowderMotorCurrentPositionTextBlock"  HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                   Text="" FontSize="12" Margin="10"></TextBlock>
+                </Grid>
+                <Grid Grid.Row="3">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                   Text="Desired Position:" FontSize="12" Margin="10"></TextBlock>
+                    <TextBlock Grid.Column="3" x:Name="PowderMotorDesiredPositionTextBlock"  HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                   Text="" FontSize="12" Margin="10"></TextBlock>
+                </Grid>
+            </Grid>
         </Grid>
     </Grid>
 </Page>
