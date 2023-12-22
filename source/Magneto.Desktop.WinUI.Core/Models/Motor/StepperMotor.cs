@@ -3,6 +3,7 @@ using Magneto.Desktop.WinUI.Core.Contracts.Services.Motor;
 using Magneto.Desktop.WinUI.Core.Services;
 using Microsoft.VisualBasic;
 using System.Text.RegularExpressions;
+using System.Diagnostics;
 
 namespace Magneto.Desktop.WinUI.Core.Models.Motor;
 public class StepperMotor : IStepperMotor
@@ -434,6 +435,8 @@ public class StepperMotor : IStepperMotor
         return -1.0;
     }
 
+
+
     /// <summary>
     /// Get current motor position
     /// </summary>
@@ -470,16 +473,24 @@ public class StepperMotor : IStepperMotor
         }
 
         string posString = null;
+        var timeout = TimeSpan.FromSeconds(5); // Set timeout duration
+        var stopwatch = Stopwatch.StartNew();
 
         // Loop until a valid position string is received
         while (string.IsNullOrEmpty(posString) || !posString.StartsWith("#"))
         {
+            if (stopwatch.Elapsed > timeout)
+            {
+                msg = "Timeout reached while waiting for position data.";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+                return -1.0;
+            }
+
             posString = MagnetoSerialConsole.GetTermRead();
             msg = $"TermRead: {posString}";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
-            // Add a delay to avoid busy-waiting and reduce CPU usage
-            Thread.Sleep(100); // TODO: Adjust delay as needed
+            Thread.Sleep(100); // Use delay to avoid busy-waiting
         }
 
         var posDoub = ExtractDoubleFromString(posString);
