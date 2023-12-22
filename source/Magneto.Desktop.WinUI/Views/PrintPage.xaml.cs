@@ -88,41 +88,36 @@ public sealed partial class PrintPage : Page
 
     private void FindPrint_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        string path_to_image = "c:/path/to/image";
+        string path_to_image = "c:/path/to/test_print.sjf";
+        var msg = "";
 
-        // Add dummy string to text box
-        // SelectedPrint is the name of the TextBox in PrintPage.xaml
-        SelectedPrint.Text = path_to_image; // This is fine...not sure why there are red lines sometimes
+        // TODO: Check if path is valid
+        var _validPath = true;
 
-        // Put a new image on the build manager
-        MissionControl.CreateImageModel(path_to_image);
-
-        // TODO: Initialize Print
-        if (string.IsNullOrEmpty(LayerThickness_TextBox.Text))
+        if (_validPath)
         {
+            // Add dummy string to text box
+            // SelectedPrint is the name of the TextBox in PrintPage.xaml
+            SelectedPrint.Text = path_to_image;
+
+            // Put a new image on the build manager
+            MissionControl.CreateImageModel(path_to_image);
+
             // TODO: Toast Message: Using default thickness of 5mm
-            MagnetoLogger.Log("Setting every print layer's thickness to default thickness from MagnetoConfig", LogFactoryLogLevel.LogLevel.DEBUG);
+            msg = "Setting every print layer's thickness to default thickness from MagnetoConfig";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
             MissionControl.SetImageThickness(MissionControl.GetDefaultPrintLayerThickness());
+
+            // Slice image
+            MissionControl.SliceImage();
+            StartPrintButton.IsEnabled = true;
         }
         else
         {
-            // Check that text box entry is a number
-            var textBoxValue = LayerThickness_TextBox.Text;
-            double value;
-            if (double.TryParse(textBoxValue, out value))
-            {
-                // Conversion succeeded, do something with 'value'
-                MissionControl.SetImageThickness(value);
-            }
-            else
-            {
-                // Conversion failed, handle the error
-                MagnetoLogger.Log("Conversion failed. Are you sure you entered a number?", 
-                    LogFactoryLogLevel.LogLevel.ERROR);
-            }
+            msg = "Cannot find print: Invalid file path.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            return;
         }
-        // Slice image
-        MissionControl.SliceImage();
     }
 
     #endregion
@@ -174,32 +169,6 @@ public sealed partial class PrintPage : Page
 
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
         MissionControl.LevelMotor(axis, dir);
-    }
-
-    private void LevelBed_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-    {
-        MissionControl.HomeMotors();
-    }
-
-    private void MoveMotor1Up_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-    {
-
-        HandleLevelMotor(1, MotorDirection.Up, Motor1StepTextBox);
-    }
-
-    private void MoveMotor1Down_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-    {
-        HandleLevelMotor(1, MotorDirection.Down, Motor1StepTextBox);
-    }
-
-    private void MoveMotor2Up_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-    {
-        HandleLevelMotor(2, MotorDirection.Up, Motor2StepTextBox);
-    }
-
-    private void MoveMotor2Down_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-    {
-        HandleLevelMotor(2, MotorDirection.Down, Motor2StepTextBox);
     }
 
     private void StartPrint_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)

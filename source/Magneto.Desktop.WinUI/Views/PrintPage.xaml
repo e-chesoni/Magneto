@@ -23,10 +23,10 @@
     </Page.Resources>
     <Grid x:Name="ContentArea">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="20"/>
-            <ColumnDefinition Width="700"/>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="20"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="1*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="20"/>
@@ -39,10 +39,6 @@
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
-                <RowDefinition Height="170"/>
-                <RowDefinition Height="75"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
@@ -50,85 +46,16 @@
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <Button Grid.Column="0" HorizontalAlignment="Center" Margin="10" Height="50" Width="150"
-                    Content="Level Bed" Click="LevelBed_Click"></Button>
-            <Grid Grid.Row="1" VerticalAlignment="Center">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="100"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="75"/>
-                    <ColumnDefinition Width="75"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="100"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="75"/>
-                    <ColumnDefinition Width="75"/>
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                <TextBlock Grid.Column="0" Grid.Row="0" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10"
-                           Text="Motor 1:"></TextBlock>
-                <TextBox Grid.Column="1" Grid.Row="0" x:Name="Motor1StepTextBox" HorizontalAlignment="Center" VerticalAlignment="Center" 
-                         TextAlignment="Center" Height="50" Width="60"></TextBox>
-                <TextBlock Grid.Column="2" Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10"
-                           Text="mm"></TextBlock>
-                <Button Grid.Column="3" Grid.Row="0" HorizontalAlignment="Center" Margin="10" Height="50" Width="50"
-                        Content="⃤" Click="MoveMotor1Up_Click"></Button>
-                <Button Grid.Column="4" Grid.Row="0" HorizontalAlignment="Center" Margin="10" Height="50" Width="50"
-                        Content="▽" Click="MoveMotor1Down_Click"></Button>
 
-                <TextBlock Grid.Column="6" Grid.Row="0" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10"
-                           Text="Motor 2:"></TextBlock>
-                <TextBox Grid.Column="7" Grid.Row="0" x:Name="Motor2StepTextBox" HorizontalAlignment="Center" VerticalAlignment="Center" 
-                         TextAlignment="Center" Height="50" Width="60"></TextBox>
-                <TextBlock Grid.Column="8" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10"
-                           Text="mm"></TextBlock>
-                <Button Grid.Column="9" Grid.Row="0" HorizontalAlignment="Center" Margin="10" Height="50" Width="50"
-                        Content="⃤" Click="MoveMotor2Up_Click"></Button>
-                <Button Grid.Column="10" Grid.Row="0" HorizontalAlignment="Center" Margin="10" Height="50" Width="50"
-                        Content="▽" Click="MoveMotor2Down_Click"></Button>
-            </Grid>
-            
-            <Button Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10" Height="50"
-                        Content="Done"></Button>
-            
-            <TextBlock Grid.Row="3" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Manage Print"></TextBlock>
-            <TextBox Grid.Row="4" x:Name="SelectedPrint" HorizontalAlignment="Center" Height="50" Width="500" TextWrapping="Wrap" AcceptsReturn="True" Text="Please select a file..."></TextBox>
-            <Grid Grid.Row="5">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="300"/>
-                    <ColumnDefinition Width="100"/>
-                    <ColumnDefinition Width="75"/>
-                    <ColumnDefinition Width="75"/>
-                    <ColumnDefinition Width="75"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10"  
-                           Text="Please enter the desired thickness:"></TextBlock>
-                <TextBox Grid.Column="1" x:Name="LayerThickness_TextBox" HorizontalAlignment="Center" Height="50" Width="60" 
-                         Text="{Binding _currentImage.thickness, UpdateSourceTrigger=PropertyChanged}"
-                         TextWrapping="Wrap" AcceptsReturn="True"></TextBox>
-                <TextBlock Grid.Column="2" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10"
-                           Text="mm"></TextBlock>
-                <Button Grid.Column="3" HorizontalAlignment="Center" Margin="10" Height="50" Width="50"
-                     Click="IncrementThickness_Click">
-                    
-                </Button>
-                <Button Grid.Column="4" HorizontalAlignment="Center" Margin="10" Height="50" Width="50"
-                    Click="DecrementThickness_Click">
-                    <Image Height="512" Width="512" Source="caret-down.png" />
-                </Button>
-            </Grid>
-            <Button Grid.Row="6" HorizontalAlignment="Center" Margin="10" Height="50" Width="150" Content="Find Print"
+            <TextBox Grid.Row="0" x:Name="SelectedPrint" HorizontalAlignment="Center" Height="50" Width="500" TextWrapping="Wrap" AcceptsReturn="True" Text="Please select a file..."></TextBox>
+            <Button Grid.Row="1" HorizontalAlignment="Center" Margin="10" Height="50" Width="175" Content="Find Print"
                     Click="FindPrint_Click"></Button>
-            <Button Grid.Row="7" HorizontalAlignment="Center" Margin="10" Height="50" Width="150" Content="Add Print"></Button>
-            <Button Grid.Row="8" HorizontalAlignment="Center" Margin="10" Height="50" Width="150" Content="Start Print" 
+            <Button Grid.Row="2" HorizontalAlignment="Center" Margin="10" Height="50" Width="175" Content="Go To Starting Position" IsEnabled="False"></Button>
+            <Button Grid.Row="3" HorizontalAlignment="Center" Margin="10" Height="50" Width="175" Content="Calibrate Motors" IsEnabled="False"></Button>
+            <Button Grid.Row="4" x:Name="StartPrintButton" HorizontalAlignment="Center" Margin="10" Height="50" Width="175" Content="Start Print" IsEnabled="False"
                     Click="StartPrint_Click"></Button>
-            <Button Grid.Row="9" HorizontalAlignment="Center" Margin="10" Height="50" Width="150" Content="Cancel Print"></Button>
-            <Button Grid.Row="10" HorizontalAlignment="Center" Margin="10" Height="50" Width="150" Content="Home Motors"
+            <Button Grid.Row="5" HorizontalAlignment="Center" Margin="10" Height="50" Width="175" Content="Cancel Print" Background="Red"></Button>
+            <Button Grid.Row="6" HorizontalAlignment="Center" Margin="10" Height="50" Width="175" Content="Home Motors"
                     Click="HomeMotors_Click"></Button>
         </Grid>
     </Grid>
