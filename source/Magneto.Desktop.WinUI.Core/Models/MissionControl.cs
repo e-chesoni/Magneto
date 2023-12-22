@@ -78,6 +78,11 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
 
     #region Getters
 
+    public double GetCurrentBuildHeight()
+    {
+        return _buildManager.GetCurrentPrintHeight();
+    }
+
     /// <summary>
     /// Get all motors define in build manager
     /// </summary>

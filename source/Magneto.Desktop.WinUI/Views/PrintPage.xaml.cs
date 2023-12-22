@@ -111,6 +111,9 @@ public sealed partial class PrintPage : Page
             // Slice image
             MissionControl.SliceImage();
             StartPrintButton.IsEnabled = true;
+
+            // TODO: MOVE ME -- Populate after successful calibration
+            PrintHeightTextBlock.Text = MissionControl.GetCurrentBuildHeight().ToString();
         }
         else
         {

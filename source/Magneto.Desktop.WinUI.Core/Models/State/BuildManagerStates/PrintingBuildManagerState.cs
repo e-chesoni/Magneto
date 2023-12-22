@@ -56,6 +56,7 @@ public class PrintingBuildManagerState : IBuildManagerState
 
         //TODO: MOVE TO CALIBRATE STATE: This should be only method in calibrate motors to start
         var printHeight = MagnetoConfig.GetDefaultPrintThickness() * _BuildManagerSM.danceModel.dance.Count;
+        _BuildManagerSM.SetCurrentPrintHeight(printHeight);
         msg = $"Print Height: {printHeight}";
         MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
 

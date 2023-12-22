@@ -27,6 +27,8 @@ public class BuildManager : ISubsciber, IStateMachine
 
     private double _sweepDist { get; set; }
 
+    private double _currentPrintHeight { get; set; }
+
     #endregion
 
     #region Public Variables
@@ -150,6 +152,11 @@ public class BuildManager : ISubsciber, IStateMachine
 
     #region Getters
 
+    public double GetCurrentPrintHeight()
+    {
+        return _currentPrintHeight; 
+    }
+
     public List<StepperMotor> GetMotorList()
     {
         return _motorList;
@@ -219,6 +226,12 @@ public class BuildManager : ISubsciber, IStateMachine
     #endregion
 
     #region Setters
+
+    public void SetCurrentPrintHeight(double printHeight)
+    {
+        _currentPrintHeight = printHeight;
+    }
+
 
     public void SetSweepDist(double dist)
     {
