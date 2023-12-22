@@ -307,13 +307,13 @@ public class StepperMotor : IStepperMotor
         // Calculate desired position:
         // Get current position
         var initialPos = GetPos();
-        var msg = $"Initial motor position: {initialPos}";
+        var msg = $"Initial position of {_motorName} motor: {initialPos}";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
 
         // Add pos to current position
-        var desiredPos = initialPos + pos;
+        var desiredPos = initialPos + pos; // TODO: FIX ME--somehow gets zero as desired pos in print
 
-        // If the current position + steps is greater than 35, fail
+        // If the current position + steps is greater than _maxPos, fail
         if (desiredPos < _minPos || desiredPos > _maxPos)
         {
             msg = $"Invalid position: {desiredPos}. for {_motorName} build _minPos is {_minPos} and _maxPos is {_maxPos}. Aborting motor move operation.";
@@ -332,8 +332,7 @@ public class StepperMotor : IStepperMotor
             MagnetoSerialConsole.SerialWrite(_motorPort, s);
 
             // Log friendly message
-            msg = string.Format("Moving motor on axis {0} {1}mm relative to current position",
-                _motorAxis, pos);
+            msg = $"Moving {_motorName} motor on axis {_motorAxis} {pos}mm relative to current position";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
             
             // Log command sent
@@ -481,7 +480,6 @@ public class StepperMotor : IStepperMotor
 
             // Add a delay to avoid busy-waiting and reduce CPU usage
             Thread.Sleep(100); // TODO: Adjust delay as needed
-            //return -1.0;
         }
 
         var posDoub = ExtractDoubleFromString(posString);

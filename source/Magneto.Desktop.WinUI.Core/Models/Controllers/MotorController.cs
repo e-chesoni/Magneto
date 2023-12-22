@@ -225,6 +225,7 @@ public class MotorController : IMotorController
         }
     }
 
+    // USED IN PRINT SEQUENCE
     public async Task MoveMotorRel(StepperMotor motor, double step)
     {
         var msg = "Moving Motor Relative";
@@ -232,7 +233,7 @@ public class MotorController : IMotorController
 
         if (motor != null)
         {
-            msg = $"Found {motor.GetMotorName} motor. Stepping motor relative to current position...";
+            msg = $"Found {motor.GetMotorName()} motor. Stepping motor {step} steps relative to current position...";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
             await motor.MoveMotorRelAsync(step);
         }

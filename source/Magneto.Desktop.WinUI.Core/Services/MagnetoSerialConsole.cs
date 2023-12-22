@@ -141,6 +141,7 @@ public static class MagnetoSerialConsole
     {
         var msg = $"Clearing term read...";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
+        _lastTermRead = "";
     }
 
     #endregion
