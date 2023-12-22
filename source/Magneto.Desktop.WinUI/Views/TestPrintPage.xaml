@@ -9,19 +9,12 @@
     <Grid x:Name="ContentArea">
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="10" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="10" />
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="10*" />
+                <ColumnDefinition Width="1*" />
             </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="20" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="20" />
-            </Grid.RowDefinitions>
 
-            <Grid Grid.Column="1" Grid.Row="2">
+            <Grid Grid.Column="1">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>

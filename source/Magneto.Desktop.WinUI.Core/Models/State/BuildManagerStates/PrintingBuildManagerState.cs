@@ -64,7 +64,7 @@ public class PrintingBuildManagerState : IBuildManagerState
         _ = _BuildManagerSM.buildController.MoveMotorAbsAsync(_BuildManagerSM.buildController.GetBuildMotor(), printHeight);
         
         // Move sweep motor to starting position
-        _ = _BuildManagerSM.sweepController.MoveMotorAbsAsync(_BuildManagerSM.sweepController.GetSweepMotor(), _BuildManagerSM.GetSweepDist());
+        _ = _BuildManagerSM.sweepController.MoveMotorAbsAsync(_BuildManagerSM.sweepController.GetSweepMotor(), _BuildManagerSM.sweepController.GetSweepMotor().GetHomePos());
         
         // Keep track of loop (remove later)
         var ctr = 0;

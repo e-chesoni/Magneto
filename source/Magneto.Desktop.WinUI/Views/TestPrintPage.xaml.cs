@@ -64,7 +64,7 @@ public sealed partial class TestPrintPage : Page
 
     #region Motor Setup
 
-    private void InitializeMagnetoMotors()
+    private void SetUpTestMotors()
     {
         var msg = "";
 
@@ -142,17 +142,21 @@ public sealed partial class TestPrintPage : Page
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
         MagnetoSerialConsole.LogAvailablePorts();
 
+        // Get motor ports
+        var buildPort = MagnetoConfig.GetMotorByName("build").COMPort;
+        var sweepPort = MagnetoConfig.GetMotorByName("sweep").COMPort;
+
         // Register event handlers on page
         foreach (SerialPort port in MagnetoSerialConsole.GetAvailablePorts())
         {
             // Get default motor (build motor) to get port
-            if (port.PortName.Equals("COM4", StringComparison.OrdinalIgnoreCase))
+            if (port.PortName.Equals(buildPort, StringComparison.OrdinalIgnoreCase))
             {
                 MagnetoSerialConsole.AddEventHandler(port);
                 msg = $"Requesting addition of event hander or port {port.PortName}";
                 MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
             }
-            else if (port.PortName.Equals("COM7", StringComparison.OrdinalIgnoreCase))
+            else if (port.PortName.Equals(sweepPort, StringComparison.OrdinalIgnoreCase))
             {
                 MagnetoSerialConsole.AddEventHandler(port);
                 msg = $"Requesting addition of event hander or port {port.PortName}";
@@ -174,7 +178,7 @@ public sealed partial class TestPrintPage : Page
         // Get mission control (passed over when navigating from previous page)
         base.OnNavigatedTo(e);
         MissionControl = (MissionControl)e.Parameter;
-        InitializeMagnetoMotors();
+        SetUpTestMotors();
         var msg = string.Format("TestPrintPage::OnNavigatedTo -- {0}", MissionControl.FriendlyMessage);
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
     }
@@ -200,7 +204,9 @@ public sealed partial class TestPrintPage : Page
         MagnetoLogger.Log("TestPrintPage::MoveMotorHelper", LogFactoryLogLevel.LogLevel.VERBOSE);
 
         _currTestMotor.SetAxis(axis);
-        _currTestMotor.GetPos();
+        var pos = _currTestMotor.GetPos();
+        // Update position
+        PositionTextBox.Text = pos.ToString();
     }
 
     #endregion
@@ -210,6 +216,8 @@ public sealed partial class TestPrintPage : Page
     private void SelectPowderMotorHelper()
     {
         _currTestMotor = _powderMotor;
+        var msg = $"Setting current motor to {_currTestMotor.GetMotorName()} motor";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
         if (!_powderMotorSelected)
         {
@@ -236,6 +244,9 @@ public sealed partial class TestPrintPage : Page
     /// <param name="e"></param>
     private void SelectPowderMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
+        // Clear position text box
+        PositionTextBox.Text = "";
+
         SelectPowderMotorHelper();
     }
 
@@ -246,7 +257,12 @@ public sealed partial class TestPrintPage : Page
     /// <param name="e"></param>
     private void SelectBuildMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
+        // Clear position text box
+        PositionTextBox.Text = "";
+
         _currTestMotor = _buildMotor;
+        var msg = $"Setting current motor to {_currTestMotor.GetMotorName()} motor";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
         if (!_buildMotorSelected)
         {
@@ -273,9 +289,13 @@ public sealed partial class TestPrintPage : Page
     /// <param name="e"></param>
     private void SelectSweepMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        // TODO: Update this method to set the test motor to the powder distribution motor
-        // A the time this code was written, the third motor has not yet arrived
+        
+        // Clear position text box
+        PositionTextBox.Text = "";
+
         _currTestMotor = _sweepMotor;
+        var msg = $"Setting current motor to {_currTestMotor.GetMotorName()} motor";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
         if (!_sweepMotorSelected)
         {

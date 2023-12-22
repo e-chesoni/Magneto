@@ -1,5 +1,6 @@
 ﻿using System.IO.Ports;
 using System.Xml.Linq;
+using Magneto.Desktop.WinUI.Core;
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Models;
 using Magneto.Desktop.WinUI.Core.Models.Image;
@@ -48,17 +49,20 @@ public sealed partial class PrintPage : Page
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
         MagnetoSerialConsole.LogAvailablePorts();
 
+        var buildPort = MagnetoConfig.GetMotorByName("build").COMPort;
+        var sweepPort = MagnetoConfig.GetMotorByName("sweep").COMPort;
+
         // Register event handlers on page
         foreach (SerialPort port in MagnetoSerialConsole.GetAvailablePorts())
         {
             // Get default motor (build motor) to get port
-            if (port.PortName.Equals("COM4", StringComparison.OrdinalIgnoreCase))
+            if (port.PortName.Equals(buildPort, StringComparison.OrdinalIgnoreCase))
             {
                 MagnetoSerialConsole.AddEventHandler(port);
                 msg = $"Requesting addition of event hander or port {port.PortName}";
                 MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
             }
-            else if (port.PortName.Equals("COM7", StringComparison.OrdinalIgnoreCase))
+            else if (port.PortName.Equals(sweepPort, StringComparison.OrdinalIgnoreCase))
             {
                 MagnetoSerialConsole.AddEventHandler(port);
                 msg = $"Requesting addition of event hander or port {port.PortName}";

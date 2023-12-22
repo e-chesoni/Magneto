@@ -441,9 +441,6 @@ public class StepperMotor : IStepperMotor
     /// <returns></returns> Returns -1 if request for position fails, otherwise returns motor position
     public double GetPos()
     {
-        // TODO: NOTE -- Will return -1 on first call after application is started
-        // TODO: FUTURE IMPROVMENT -- returns previous position, not current position
-
         // Method entry notification for log
         var msg = $"Getting {_motorName} motor position...";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
@@ -479,6 +476,7 @@ public class StepperMotor : IStepperMotor
 
             // Add a delay to avoid busy-waiting and reduce CPU usage
             Thread.Sleep(100); // TODO: Adjust delay as needed
+            //return -1.0;
         }
 
         var posDoub = ExtractDoubleFromString(posString);

@@ -31,11 +31,11 @@ public class COMPortConfig
 }
 public static class MagnetoConfig
 {
-    private static double _defaultPrintThickness = 2;
+    private static double _defaultPrintThickness = 1;
 
-    private static int _defaultNumSlices = 5;
+    private static int _defaultNumSlices = 3;
 
-    private static int _sweepDist = 70;
+    private static int _sweepDist = 110;
 
     private static IEnumerable<COMPortConfig> AllCOMPorts()
     {
@@ -52,7 +52,7 @@ public static class MagnetoConfig
             },
             new COMPortConfig()
             {
-                port = 7,
+                port = 5,
                 baudRate = 38400,
                 parity = "None",
                 dataBits = 8,
@@ -89,11 +89,11 @@ public static class MagnetoConfig
             new MagnetoMotorConfig()
             {
                 motorName = "sweep",
-                COMPort = GetCOMPortName(GetCOMPort(7)),
+                COMPort = GetCOMPortName(GetCOMPort(5)),
                 axis = 1,
                 maxPos = 150,
                 minPos = -150,
-                homePos = 0,
+                homePos = -110,
                 velocity = 25, // mm/s^2
             },
         };

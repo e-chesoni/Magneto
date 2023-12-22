@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO.Ports;
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
+using Microsoft.VisualBasic;
 //using Microsoft.Extensions.Logging.Console.Internal;
 
 namespace Magneto.Desktop.WinUI.Core.Services;
@@ -99,17 +100,20 @@ public static class MagnetoSerialConsole
     public static void AddEventHandler(SerialPort port)
     {
         var msg = "";
-        if (port.PortName == "COM4")
+        var buildPort = MagnetoConfig.GetMotorByName("build").COMPort;
+        var sweepPort = MagnetoConfig.GetMotorByName("sweep").COMPort;
+
+        if (port.PortName == buildPort)
         {
             // Event registration to read data off port
-            port.DataReceived += new SerialDataReceivedEventHandler(COM4_DataReceived);
-            msg = $"Registered COM4_DataReceived on _serialPort {port.PortName} for data read";
+            port.DataReceived += new SerialDataReceivedEventHandler(build_powder_port_DataReceived);
+            msg = $"Registered build_powder_port_DataReceived on _serialPort {port.PortName} for data read";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
         }
-        else if (port.PortName == "COM7")
+        else if (port.PortName == sweepPort)
         {
-            port.DataReceived += new SerialDataReceivedEventHandler(COM7_DataReceived);
-            msg = $"Registered COM7_DataReceived on _serialPort {port.PortName} for data read";
+            port.DataReceived += new SerialDataReceivedEventHandler(sweep_port_DataReceived);
+            msg = $"Registered sweep_port_DataReceived on _serialPort {port.PortName} for data read";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
         }
         else
@@ -135,7 +139,8 @@ public static class MagnetoSerialConsole
 
     public static void ClearTermRead()
     {
-        _lastTermRead = "";
+        var msg = $"Clearing term read...";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
     }
 
     #endregion
@@ -503,7 +508,7 @@ public static class MagnetoSerialConsole
         return s;
     }
 
-    private static void COM4_DataReceived(object sender, SerialDataReceivedEventArgs e)
+    private static void build_powder_port_DataReceived(object sender, SerialDataReceivedEventArgs e)
     {
         var msg = "";
         SerialPort readPort = null;
@@ -511,11 +516,13 @@ public static class MagnetoSerialConsole
         msg = $"Data received";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
 
+        var buildPort = MagnetoConfig.GetMotorByName("build").COMPort;
+
         // Get com port 4
         foreach (SerialPort port in GetAvailablePorts())
         {
             // Get default motor (build motor) to get port
-            if (port.PortName.Equals("COM4", StringComparison.OrdinalIgnoreCase))
+            if (port.PortName.Equals(buildPort, StringComparison.OrdinalIgnoreCase))
             {
                 readPort = port;
             }
@@ -566,10 +573,16 @@ public static class MagnetoSerialConsole
         {
             msg = "Your port has been disconnected";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+
+            msg = $"Trying to re-open port{readPort.PortName}";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
+
+            // try opening port again
+            OpenSerialPort(readPort.PortName);
         }
     }
 
-    private static void COM7_DataReceived(object sender, SerialDataReceivedEventArgs e)
+    private static void sweep_port_DataReceived(object sender, SerialDataReceivedEventArgs e)
     {
         var msg = "";
         SerialPort readPort = null;
@@ -577,11 +590,13 @@ public static class MagnetoSerialConsole
         msg = $"Data received";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
 
-        // Get com port 4
+        var sweepPort = MagnetoConfig.GetMotorByName("sweep").COMPort;
+
+        // Get com port 5
         foreach (SerialPort port in GetAvailablePorts())
         {
             // Get default motor (build motor) to get port
-            if (port.PortName.Equals("COM7", StringComparison.OrdinalIgnoreCase))
+            if (port.PortName.Equals(sweepPort, StringComparison.OrdinalIgnoreCase))
             {
                 readPort = port;
             }
