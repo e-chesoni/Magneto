@@ -205,7 +205,7 @@ public sealed partial class TestPrintPage : Page
 
         _currTestMotor.SetAxis(axis);
         var pos = _currTestMotor.GetPos();
-        // Update position
+        // TODO: Creaet position text boxes for each motor -> set current positon text box like motor (same with desire text box)
         PositionTextBox.Text = pos.ToString();
     }
 
@@ -408,36 +408,54 @@ public sealed partial class TestPrintPage : Page
 
     private void GetPositionButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        var msg = "";
-        msg = "GetPositionButton Clicked...";
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+        
+    }
 
+    private void HomeAllMotorsButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+
+    }
+
+    private void MoveMotorAbsButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+
+    }
+
+    private void GetPositionHelper()
+    {
         if (MagnetoSerialConsole.OpenSerialPort(_currTestMotor.GetPortName()))
         {
+            GetMotorPositionHelper(_currTestMotor.GetAxis());
             MagnetoLogger.Log("Port Open!", LogFactoryLogLevel.LogLevel.SUCCESS);
-            switch (_currTestMotor.GetAxis())
-            {
-                case 0:
-                    MagnetoLogger.Log("No axis selected",
-                        LogFactoryLogLevel.LogLevel.WARN);
-                    break;
-                case 1:
-                    GetMotorPositionHelper(1);
-                    break;
-                case 2:
-                    GetMotorPositionHelper(2);
-                    break;
-                case 3:
-                    GetMotorPositionHelper(3);
-                    break;
-                default:
-                    break;
-            }
         }
         else
         {
-            msg = "Port Closed.";
+            var msg = "Port Closed.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
         }
+    }
+
+    private void GetBuildPositionButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        var msg = "";
+        msg = "GetBuildPositionButton_Click Clicked...";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+        GetPositionHelper();
+    }
+
+    private void GetPowderPositionButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        var msg = "";
+        msg = "GetPowderPositionButton_Click Clicked...";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+        GetPositionHelper();
+    }
+
+    private void GetSweepPositionButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        var msg = "";
+        msg = "GetSweepPositionButton_Click Clicked...";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+        GetPositionHelper();
     }
 }
