@@ -1,5 +1,5 @@
 <h1 align="center">Welcome to Magneto 🧲 </h1>
-
+## TLDR;
 Custom Metal 3D Printer Control Software
 
 <h2 align="left">Demo:</h2>
@@ -9,7 +9,26 @@ Custom Metal 3D Printer Control Software
 🔭 This project is currently in progress: [Magneto](https://github.com/e-chesoni/Magneto)
 
 ## Project Overview
-This project, developed as part of Tertuliano Lab at the University of Pennsylvania, is dedicated to the creation of control software for a custom metal 3D printer. Our goal is to explore and expand the possibilities in additive manufacturing, focusing on applications that can benefit biological and space manufacturing.
+This project, developed as part of Tertuliano Lab at the University of Pennsylvania, is dedicated to creating control software for a custom metal 3D printer. Our goal is to explore and expand the possibilities in additive manufacturing, focusing on applications that can benefit biological and space manufacturing.
+
+### What the Magneto Does
+The software controls motors, a laser, and a gas pump, and monitors various parameters to facilitate additive manufacturing in 3D metal printing.
+
+### Technologies Used
+- Micronix Motors (Stepper and Linear)
+- InstruTech Vacuum Guage Controller
+- Busy Bee Vacuum Guage
+- Thor Labs Scan Head
+- Thor Labs Laser
+- Hicube 80 Eco Station Gas Pump
+
+### Next Steps
+#### Testing the Laser Integration
+Development has been completed on code that interfaces with the Waverunner software, responsible for controlling the laser. The immediate next step involves testing this software to ensure its effectiveness and reliability in laser control.
+
+#### Integration and Monitoring of External Components
+Focus will then shift to testing read and write operations with the remaining external components, which include the oxygen monitor, mass flow controller, and vacuum gauge controller and monitor.
+Successful testing will be followed by the integration of code to enable real-time reading and control of these components, ensuring precision and safety in the 3D metal printing process.
 
 ## Prerequisites
 - Visual Studio Code or any preferred C# IDE
