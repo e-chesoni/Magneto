@@ -472,9 +472,7 @@ public static class MagnetoSerialConsole
                 msg = $"Could not open port {portName}.";
                 MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             }
-        }
-
-        
+        }   
     }
 
     /// <summary>
@@ -593,7 +591,7 @@ public static class MagnetoSerialConsole
 
         var sweepPort = MagnetoConfig.GetMotorByName("sweep").COMPort;
 
-        // Get com port 5
+        // Get com port 7
         foreach (SerialPort port in GetAvailablePorts())
         {
             // Get default motor (build motor) to get port

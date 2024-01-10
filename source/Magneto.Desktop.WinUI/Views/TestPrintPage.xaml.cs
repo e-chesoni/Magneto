@@ -199,14 +199,48 @@ public sealed partial class TestPrintPage : Page
         _currTestMotor.MoveMotorRelAsync(double.Parse(dist));
     }
 
+    /*
     private void GetMotorPositionHelper(int axis)
     {
         MagnetoLogger.Log("TestPrintPage::MoveMotorHelper", LogFactoryLogLevel.LogLevel.VERBOSE);
 
         _currTestMotor.SetAxis(axis);
         var pos = _currTestMotor.GetPos();
-        // TODO: Creaet position text boxes for each motor -> set current positon text box like motor (same with desire text box)
+        // TODO: Create position text boxes for each motor -> set current position text box like motor (same with desire text box)
         PositionTextBox.Text = pos.ToString();
+    }
+    */
+
+    private TextBox GetMotorTextBoxHelper(StepperMotor motor)
+    {
+        if (motor.GetMotorName() == "build")
+        {
+            return BuildPositionTextBox;
+        }
+        else if (motor.GetMotorName() == "powder")
+        {
+            return PowderPositionTextBox;
+        }
+        else if (motor.GetMotorName() == "sweep")
+        {
+            return SweepPositionTextBox;
+        }
+        else
+        {
+            var msg = "Invalid motor name given. Cannot get position.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            return null;
+        }
+    }
+
+    private void GetMotorPositionHelper(StepperMotor motor)
+    {
+        var msg = "Using StepperMotor to get position";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        var pos = motor.GetPos();
+        // TODO: Create position text boxes for each motor -> set current position text box like motor (same with desire text box)
+        GetMotorTextBoxHelper(motor).Text = pos.ToString();
     }
 
     #endregion
@@ -245,7 +279,7 @@ public sealed partial class TestPrintPage : Page
     private void SelectPowderMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
         // Clear position text box
-        PositionTextBox.Text = "";
+        PowderPositionTextBox.Text = "";
 
         SelectPowderMotorHelper();
     }
@@ -258,7 +292,7 @@ public sealed partial class TestPrintPage : Page
     private void SelectBuildMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
         // Clear position text box
-        PositionTextBox.Text = "";
+        BuildPositionTextBox.Text = "";
 
         _currTestMotor = _buildMotor;
         var msg = $"Setting current motor to {_currTestMotor.GetMotorName()} motor";
@@ -289,9 +323,8 @@ public sealed partial class TestPrintPage : Page
     /// <param name="e"></param>
     private void SelectSweepMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        
         // Clear position text box
-        PositionTextBox.Text = "";
+        SweepPositionTextBox.Text = "";
 
         _currTestMotor = _sweepMotor;
         var msg = $"Setting current motor to {_currTestMotor.GetMotorName()} motor";
@@ -357,6 +390,19 @@ public sealed partial class TestPrintPage : Page
     /// <param name="e"></param>
     private void MoveMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
+        
+    }
+
+    #endregion
+
+    private void HomeAllMotorsButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        var msg = "Method not defined.";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+    }
+
+    private void MoveMotorAbsButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
         string dist = ViewModel.DistanceText;
         MagnetoLogger.Log($"Commanded distance to move: {dist}", LogFactoryLogLevel.LogLevel.VERBOSE);
 
@@ -367,32 +413,27 @@ public sealed partial class TestPrintPage : Page
 
             if (!_movingMotorToTarget)
             {
-                MoveMotorButton.Background = new SolidColorBrush(Colors.Green);
+                MoveMotorAbsButton.Background = new SolidColorBrush(Colors.Green);
                 _movingMotorToTarget = true;
             }
             else
             {
-                MoveMotorButton.Background = new SolidColorBrush(Colors.DimGray);
+                MoveMotorAbsButton.Background = new SolidColorBrush(Colors.DimGray);
                 _movingMotorToTarget = false;
             }
 
-            switch (_currTestMotor.GetAxis())
+            // Get motor name
+            if (_currTestMotor.GetMotorName() == "build")
             {
-                case 0:
-                    MagnetoLogger.Log("No axis selected", 
-                        LogFactoryLogLevel.LogLevel.WARN);
-                    break;
-                case 1:
-                    MoveMotorHelper(1, dist);
-                    break; 
-                case 2:
-                    MoveMotorHelper(2, dist);
-                    break;
-                case 3:
-                    MoveMotorHelper(3, dist);
-                    break;
-                default: 
-                    break;
+                _buildMotor.MoveMotorAbsAsync(double.Parse(AbsDistTextBox.Text));
+            }
+            else if (_currTestMotor.GetMotorName() == "powder")
+            {
+                _powderMotor.MoveMotorAbsAsync(double.Parse(AbsDistTextBox.Text));
+            }
+            else if (_currTestMotor.GetMotorName() == "sweep")
+            {
+                _sweepMotor.MoveMotorAbsAsync(double.Parse(AbsDistTextBox.Text));
             }
 
             // TODO:keep button green until motor is done moving
@@ -404,28 +445,11 @@ public sealed partial class TestPrintPage : Page
         }
     }
 
-    #endregion
-
-    private void GetPositionButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    private void GetPositionHelper(StepperMotor motor)
     {
-        
-    }
-
-    private void HomeAllMotorsButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-    {
-
-    }
-
-    private void MoveMotorAbsButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-    {
-
-    }
-
-    private void GetPositionHelper()
-    {
-        if (MagnetoSerialConsole.OpenSerialPort(_currTestMotor.GetPortName()))
+        if (MagnetoSerialConsole.OpenSerialPort(motor.GetPortName()))
         {
-            GetMotorPositionHelper(_currTestMotor.GetAxis());
+            GetMotorPositionHelper(motor);
             MagnetoLogger.Log("Port Open!", LogFactoryLogLevel.LogLevel.SUCCESS);
         }
         else
@@ -437,25 +461,27 @@ public sealed partial class TestPrintPage : Page
 
     private void GetBuildPositionButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        var msg = "";
-        msg = "GetBuildPositionButton_Click Clicked...";
+        var msg = "GetBuildPositionButton_Click Clicked...";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-        GetPositionHelper();
+        GetPositionHelper(_buildMotor);
     }
 
     private void GetPowderPositionButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        var msg = "";
-        msg = "GetPowderPositionButton_Click Clicked...";
+        var msg = "GetPowderPositionButton_Click Clicked...";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-        GetPositionHelper();
+        GetPositionHelper(_powderMotor);
     }
 
     private void GetSweepPositionButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        var msg = "";
-        msg = "GetSweepPositionButton_Click Clicked...";
+        var msg = "GetSweepPositionButton_Click Clicked...";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-        GetPositionHelper();
+        GetPositionHelper(_sweepMotor);
+    }
+
+    private void MoveMotorRelativeButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+
     }
 }

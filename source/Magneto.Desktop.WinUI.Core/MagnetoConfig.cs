@@ -37,13 +37,17 @@ public static class MagnetoConfig
 
     private static int _sweepDist = 110;
 
+    private static int _build_and_powder_port = 4;
+
+    private static int _sweep_port = 7;
+
     private static IEnumerable<COMPortConfig> AllCOMPorts()
     {
         return new List<COMPortConfig>()
         {
             new COMPortConfig()
             {
-                port = 4,
+                port = _build_and_powder_port,
                 baudRate = 38400,
                 parity = "None",
                 dataBits = 8,
@@ -52,7 +56,7 @@ public static class MagnetoConfig
             },
             new COMPortConfig()
             {
-                port = 5,
+                port = _sweep_port,
                 baudRate = 38400,
                 parity = "None",
                 dataBits = 8,
@@ -69,7 +73,7 @@ public static class MagnetoConfig
             new MagnetoMotorConfig()
             {
                 motorName = "build",
-                COMPort = GetCOMPortName(GetCOMPort(4)),
+                COMPort = GetCOMPortName(GetCOMPort(_build_and_powder_port)),
                 axis = 1,
                 maxPos = 0,
                 minPos = -35,
@@ -79,7 +83,7 @@ public static class MagnetoConfig
             new MagnetoMotorConfig()
             {
                 motorName = "powder",
-                COMPort = GetCOMPortName(GetCOMPort(4)),
+                COMPort = GetCOMPortName(GetCOMPort(_build_and_powder_port)),
                 axis = 2,
                 maxPos = 0,
                 minPos = -35,
@@ -89,7 +93,7 @@ public static class MagnetoConfig
             new MagnetoMotorConfig()
             {
                 motorName = "sweep",
-                COMPort = GetCOMPortName(GetCOMPort(5)),
+                COMPort = GetCOMPortName(GetCOMPort(_sweep_port)),
                 axis = 1,
                 maxPos = 173.73,
                 minPos = -110,
