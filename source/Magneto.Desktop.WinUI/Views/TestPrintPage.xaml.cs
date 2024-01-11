@@ -10,6 +10,7 @@ using Magneto.Desktop.WinUI.Core.Models.Motor;
 using Magneto.Desktop.WinUI.Core.Services;
 using Magneto.Desktop.WinUI.ViewModels;
 using Microsoft.UI;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
@@ -24,10 +25,6 @@ public sealed partial class TestPrintPage : Page
 {
     #region Private Variables
 
-    /// <summary>
-    /// Place holder motor for test carried out through this page
-    /// The default axis is 0, which runs the test on both motors
-    /// </summary>
     private StepperMotor _powderMotor;
 
     private StepperMotor _buildMotor;
@@ -43,8 +40,6 @@ public sealed partial class TestPrintPage : Page
     private bool _sweepMotorSelected = false;
 
     private bool _movingMotorToTarget = false;
-
-    private bool _homigMotor = false;
 
     #endregion
 
@@ -68,7 +63,6 @@ public sealed partial class TestPrintPage : Page
     {
         var msg = "";
 
-        //MagnetoLogger.Log(MissionControl.FriendlyMessage, LogFactoryLogLevel.LogLevel.DEBUG);
         List<MagnetoMotorConfig> motorConfigs = new List<MagnetoMotorConfig>();
         List<string> motorNames = new List<string>();
 
@@ -121,7 +115,7 @@ public sealed partial class TestPrintPage : Page
         }
 
         // Set current test motor to _powderMotor by default
-        SelectPowderMotorHelper();
+        //SelectPowderMotorHelper();
     }
 
     #endregion
@@ -187,30 +181,6 @@ public sealed partial class TestPrintPage : Page
 
     #region Helper Methods
 
-    /// <summary>
-    /// Helper that calls the MoveMotorRelAsync method on the motor attached to selected axis
-    /// </summary>
-    /// <param name="axis"></param>
-    private void MoveMotorHelper(int axis, string dist)
-    {
-        MagnetoLogger.Log("TestPrintPage::MoveMotorHelper", LogFactoryLogLevel.LogLevel.VERBOSE);
-
-        _currTestMotor.SetAxis(axis);
-        _currTestMotor.MoveMotorRelAsync(double.Parse(dist));
-    }
-
-    /*
-    private void GetMotorPositionHelper(int axis)
-    {
-        MagnetoLogger.Log("TestPrintPage::MoveMotorHelper", LogFactoryLogLevel.LogLevel.VERBOSE);
-
-        _currTestMotor.SetAxis(axis);
-        var pos = _currTestMotor.GetPos();
-        // TODO: Create position text boxes for each motor -> set current position text box like motor (same with desire text box)
-        PositionTextBox.Text = pos.ToString();
-    }
-    */
-
     private TextBox GetMotorTextBoxHelper(StepperMotor motor)
     {
         if (motor.GetMotorName() == "build")
@@ -243,110 +213,64 @@ public sealed partial class TestPrintPage : Page
         GetMotorTextBoxHelper(motor).Text = pos.ToString();
     }
 
+    private void HomeMotorHelper(StepperMotor motor)
+    {
+        var msg = "Using helper to home motors...";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        if (MagnetoSerialConsole.OpenSerialPort(_currTestMotor.GetPortName()))
+        {
+            _ = motor.HomeMotor();
+        }
+        else
+        {
+            MagnetoLogger.Log("Serial port not open.",
+                LogFactoryLogLevel.LogLevel.ERROR);
+        }
+    }
+
     #endregion
 
-    #region Button Methods
+    #region Select Motor Button Methods
 
-    private void SelectPowderMotorHelper()
+    private void SelectMotorHelper(StepperMotor motor, Button selectedButton, TextBox positionTextBox, ref bool thisMotorSelected)
     {
-        _currTestMotor = _powderMotor;
+        // Clear position text box
+        positionTextBox.Text = "";
+
+        _currTestMotor = motor;
         var msg = $"Setting current motor to {_currTestMotor.GetMotorName()} motor";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
-        if (!_powderMotorSelected)
-        {
-            SelectPowderMotorButton.Background = new SolidColorBrush(Colors.Green);
-            _powderMotorSelected = true;
+        // Update button backgrounds and selection flags
+        SelectPowderMotorButton.Background = new SolidColorBrush(_powderMotor == motor ? Colors.Green : Colors.DimGray);
+        _powderMotorSelected = _powderMotor == motor;
 
-            SelectBuildMotorButton.Background = new SolidColorBrush(Colors.DimGray);
-            _buildMotorSelected = false;
+        SelectBuildMotorButton.Background = new SolidColorBrush(_buildMotor == motor ? Colors.Green : Colors.DimGray);
+        _buildMotorSelected = _buildMotor == motor;
 
-            SelectSweepMotorButton.Background = new SolidColorBrush(Colors.DimGray);
-            _sweepMotorSelected = false;
-        }
-        else
-        {
-            SelectPowderMotorButton.Background = new SolidColorBrush(Colors.DimGray);
-            _powderMotorSelected = false;
-        }
+        SelectSweepMotorButton.Background = new SolidColorBrush(_sweepMotor == motor ? Colors.Green : Colors.DimGray);
+        _sweepMotorSelected = _sweepMotor == motor;
+
+        // Update the selection flag for this motor
+        thisMotorSelected = !thisMotorSelected;
     }
 
-    /// <summary>
-    /// Set the test motor axis to 1
-    /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="e"></param>
     private void SelectPowderMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        // Clear position text box
-        PowderPositionTextBox.Text = "";
-
-        SelectPowderMotorHelper();
+        SelectMotorHelper(_powderMotor, SelectPowderMotorButton, PowderPositionTextBox, ref _powderMotorSelected);
     }
 
-    /// <summary>
-    /// Set the test motor axis to 2
-    /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="e"></param>
     private void SelectBuildMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        // Clear position text box
-        BuildPositionTextBox.Text = "";
-
-        _currTestMotor = _buildMotor;
-        var msg = $"Setting current motor to {_currTestMotor.GetMotorName()} motor";
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-
-        if (!_buildMotorSelected)
-        {
-            SelectBuildMotorButton.Background = new SolidColorBrush(Colors.Green);
-            _buildMotorSelected = true;
-
-            SelectPowderMotorButton.Background = new SolidColorBrush(Colors.DimGray);
-            _powderMotorSelected = false;
-
-            SelectSweepMotorButton.Background = new SolidColorBrush(Colors.DimGray);
-            _sweepMotorSelected = false;
-        }
-        else
-        {
-            SelectBuildMotorButton.Background = new SolidColorBrush(Colors.DimGray);
-            _buildMotorSelected = false;
-        }
+        SelectMotorHelper(_buildMotor, SelectBuildMotorButton, BuildPositionTextBox, ref _buildMotorSelected);
     }
 
-    /// <summary>
-    /// Set the test motor to the sweep motor
-    /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="e"></param>
     private void SelectSweepMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        // Clear position text box
-        SweepPositionTextBox.Text = "";
-
-        _currTestMotor = _sweepMotor;
-        var msg = $"Setting current motor to {_currTestMotor.GetMotorName()} motor";
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-
-        if (!_sweepMotorSelected)
-        {
-            SelectSweepMotorButton.Background = new SolidColorBrush(Colors.Green);
-            _sweepMotorSelected = true;
-
-            SelectPowderMotorButton.Background = new SolidColorBrush(Colors.DimGray);
-            _powderMotorSelected = false;
-
-            SelectBuildMotorButton.Background = new SolidColorBrush(Colors.DimGray);
-            _buildMotorSelected = false;
-        }
-        else
-        {
-            SelectSweepMotorButton.Background = new SolidColorBrush(Colors.DimGray);
-            _sweepMotorSelected = false;
-        }
+        SelectMotorHelper(_sweepMotor, SelectSweepMotorButton, SweepPositionTextBox, ref _sweepMotorSelected);
     }
+
 
     /// <summary>
     /// Home the motor currently being tested
@@ -356,55 +280,48 @@ public sealed partial class TestPrintPage : Page
     private void HomeMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
         MagnetoLogger.Log("Homing Motor.", LogFactoryLogLevel.LogLevel.VERBOSE);
-        _homigMotor = true;
-
-        if (!_homigMotor)
-        {
-            HomeMotorButton.Background = new SolidColorBrush(Colors.Green);
-            _homigMotor = true;
-        }
-        else
-        {
-            HomeMotorButton.Background = new SolidColorBrush(Colors.DimGray);
-            _homigMotor = false;
-        }
-
-        if (MagnetoSerialConsole.OpenSerialPort(_currTestMotor.GetPortName()))
-        {
-            _ = _currTestMotor.HomeMotor();
-        }
-        else
-        {
-            MagnetoLogger.Log("Serial port not open.",
-                LogFactoryLogLevel.LogLevel.ERROR);
-        }
-
-        // TODO: keep button green until motor is done moving
-        _homigMotor = false;
-    }
-
-    /// <summary>
-    /// Moves motor attached to selected access (default axis is 0, which no motor is attached to)
-    /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="e"></param>
-    private void MoveMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-    {
-        
+        HomeMotorHelper(_currTestMotor);
     }
 
     #endregion
 
     private void HomeAllMotorsButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        var msg = "Method not defined.";
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+        var msg = "Homing all motors";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        HomeMotorHelper(_buildMotor);
+        HomeMotorHelper(_powderMotor);
+        HomeMotorHelper(_sweepMotor);
+    }
+
+    private int ValidMotorRequest(StepperMotor motor)
+    {
+        if (motor == null)
+        {
+            var msg = "No motor selected.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            return -1;
+        }
+        else 
+        {
+            return 0;
+        }
     }
 
     private void MoveMotorAbsButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        string dist = ViewModel.DistanceText;
-        MagnetoLogger.Log($"Commanded distance to move: {dist}", LogFactoryLogLevel.LogLevel.VERBOSE);
+        var msg = "Request to move motor to an absolute position submitted...";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        var dist = ViewModel.DistanceText;
+        msg = $"Commanded distance to move: {dist}";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        if (!(ValidMotorRequest(_currTestMotor)==0))
+        {
+            return;
+        }
 
         if (MagnetoSerialConsole.OpenSerialPort(_currTestMotor.GetPortName()))
         {
@@ -422,18 +339,21 @@ public sealed partial class TestPrintPage : Page
                 _movingMotorToTarget = false;
             }
 
-            // Get motor name
+            // Get current motor name to move motor and update text box accordingly
             if (_currTestMotor.GetMotorName() == "build")
             {
                 _buildMotor.MoveMotorAbsAsync(double.Parse(AbsDistTextBox.Text));
+                BuildPositionTextBox.Text = _buildMotor.GetCurrentPos().ToString();
             }
             else if (_currTestMotor.GetMotorName() == "powder")
             {
                 _powderMotor.MoveMotorAbsAsync(double.Parse(AbsDistTextBox.Text));
+                PowderPositionTextBox.Text = _powderMotor.GetCurrentPos().ToString();
             }
             else if (_currTestMotor.GetMotorName() == "sweep")
             {
                 _sweepMotor.MoveMotorAbsAsync(double.Parse(AbsDistTextBox.Text));
+                SweepPositionTextBox.Text = _sweepMotor.GetCurrentPos().ToString();
             }
 
             // TODO:keep button green until motor is done moving

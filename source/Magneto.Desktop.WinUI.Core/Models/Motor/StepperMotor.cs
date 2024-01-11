@@ -10,33 +10,21 @@ public class StepperMotor : IStepperMotor
 {
     #region Private Variables
 
-    private double tolerance = 0.05;
+    private readonly double _tolerance = 0.05;
 
     /// <summary>
     /// Motor ID (the number of the COM port followed by the axis the motor is attached to)
     /// </summary>
-    private int _motorId
-    {
-        get; set;
-    }
+    private int _motorId { get; set; }
 
-    private string _motorName
-    {
-        get; set; 
-    }
+    private string _motorName { get; set; }
 
-    private string _motorPort
-    {
-        get; set;
-    }
+    private string _motorPort { get; set; }
 
     /// <summary>
     ///  The axis that the motor is attached to
     /// </summary>
-    private int _motorAxis
-    {
-        get; set;
-    }
+    private int _motorAxis { get; set; }
 
     /// <summary>
     /// Calculated motor position
@@ -55,6 +43,10 @@ public class StepperMotor : IStepperMotor
     private double _minPos { get; set; }
 
     private double _motorVelocity { get; set; }
+
+    private double _currentPos { get; set; }
+
+    private bool _motorMoving { get; set; }
 
     #endregion
 
@@ -181,6 +173,16 @@ public class StepperMotor : IStepperMotor
         return _motorVelocity;
     }
 
+    public double GetCurrentPos()
+    {
+        return _currentPos;
+    }
+
+    public bool IsMotorMoving()
+    {
+        return _motorMoving; 
+    }
+
     public void SetMotorName(string name)
     {
         _motorName = name;
@@ -268,10 +270,13 @@ public class StepperMotor : IStepperMotor
         }
 
         // Move motor
-        var s = string.Format("{0}MVA{1}", _motorAxis, pos);
+        var moveCmd = string.Format("{0}MVA{1}", _motorAxis, pos);
         if (MagnetoSerialConsole.OpenSerialPort(_motorPort))
         {
-            MagnetoSerialConsole.SerialWrite(_motorPort, s);
+            MagnetoSerialConsole.SerialWrite(_motorPort, moveCmd);
+
+            // Acknowledge that motor is moving 
+            _motorMoving = true;
 
             // Log message
             msg = string.Format("Moving motor on axis {0} to position {1}mm",
@@ -285,6 +290,9 @@ public class StepperMotor : IStepperMotor
 
             // Wait until position is reached
             CheckPos(pos);
+
+            // Acknowledge that motor has stopped moving
+            _motorMoving = false;
         }
         else
         {
@@ -352,21 +360,23 @@ public class StepperMotor : IStepperMotor
 
     public bool CheckPos(double desiredPos)
     {
-        var msg = "";
-        bool posReached = false;
+        var msg = "Checking motor position.";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        var posReached = false;
 
         while (!posReached)
         {
-            msg = $"ENTERED POSITION CHECKING LOOP";
+            msg = $"Entered position checking loop";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
 
             // Update the current position each time we check
-            var currentPos = GetPos();
+            _currentPos = GetPos();
 
-            msg = $"Current Position: {currentPos}, Desired Position: {desiredPos}";
+            msg = $"Current Position: {_currentPos}, Desired Position: {desiredPos}";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
-            if (Math.Abs(currentPos - desiredPos) <= tolerance)
+            if (Math.Abs(_currentPos - desiredPos) <= _tolerance)
             {
                 msg = "Desired position reached. Exiting the loop.";
                 MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
@@ -382,7 +392,7 @@ public class StepperMotor : IStepperMotor
             }
             msg = $"Sleeping. Will check again in a ms...";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-            Thread.Sleep(100); // Sleep for 1 second before checking again (for example)
+            Thread.Sleep(100); // Sleep for 1ms before checking again
         }
 
         return posReached;
