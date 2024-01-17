@@ -314,10 +314,6 @@ public sealed partial class TestPrintPage : Page
         var msg = "Request to move motor to an absolute position submitted...";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
-        var dist = ViewModel.DistanceText;
-        msg = $"Commanded distance to move: {dist}";
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-
         if (!(ValidMotorRequest(_currTestMotor)==0))
         {
             return;
@@ -327,17 +323,7 @@ public sealed partial class TestPrintPage : Page
         {
             MagnetoLogger.Log("Port Open!", LogFactoryLogLevel.LogLevel.SUCCESS);
             _movingMotorToTarget = true;
-
-            if (!_movingMotorToTarget)
-            {
-                MoveMotorAbsButton.Background = new SolidColorBrush(Colors.Green);
-                _movingMotorToTarget = true;
-            }
-            else
-            {
-                MoveMotorAbsButton.Background = new SolidColorBrush(Colors.DimGray);
-                _movingMotorToTarget = false;
-            }
+            MoveMotorAbsButton.Background = new SolidColorBrush(Colors.Green);
 
             // Get current motor name to move motor and update text box accordingly
             if (_currTestMotor.GetMotorName() == "build")
@@ -400,8 +386,50 @@ public sealed partial class TestPrintPage : Page
         GetPositionHelper(_sweepMotor);
     }
 
+    // TODO: Test relative move cmd 
     private void MoveMotorRelativeButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
+        var msg = "Request to move motor relative to current position submitted...";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
+        var dist = ViewModel.DistanceText;
+        msg = $"Commanded distance to move: {dist}";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        if (!(ValidMotorRequest(_currTestMotor) == 0))
+        {
+            return;
+        }
+
+        if (MagnetoSerialConsole.OpenSerialPort(_currTestMotor.GetPortName()))
+        {
+            MagnetoLogger.Log("Port Open!", LogFactoryLogLevel.LogLevel.SUCCESS);
+            _movingMotorToTarget = true;
+            MoveMotorAbsButton.Background = new SolidColorBrush(Colors.Green);
+
+            // Get current motor name to move motor and update text box accordingly
+            if (_currTestMotor.GetMotorName() == "build")
+            {
+                _buildMotor.MoveMotorRelAsync(double.Parse(AbsDistTextBox.Text));
+                BuildPositionTextBox.Text = _buildMotor.GetCurrentPos().ToString();
+            }
+            else if (_currTestMotor.GetMotorName() == "powder")
+            {
+                _powderMotor.MoveMotorRelAsync(double.Parse(AbsDistTextBox.Text));
+                PowderPositionTextBox.Text = _powderMotor.GetCurrentPos().ToString();
+            }
+            else if (_currTestMotor.GetMotorName() == "sweep")
+            {
+                _sweepMotor.MoveMotorRelAsync(double.Parse(AbsDistTextBox.Text));
+                SweepPositionTextBox.Text = _sweepMotor.GetCurrentPos().ToString();
+            }
+
+            // TODO:keep button green until motor is done moving
+            _movingMotorToTarget = false;
+        }
+        else
+        {
+            MagnetoLogger.Log("Port Closed.", LogFactoryLogLevel.LogLevel.ERROR);
+        }
     }
 }
