@@ -8,6 +8,7 @@ using Magneto.Desktop.WinUI.Core.Helpers;
 using Magneto.Desktop.WinUI.Core.Models;
 using Magneto.Desktop.WinUI.Core.Models.Motor;
 using Magneto.Desktop.WinUI.Core.Services;
+using Magneto.Desktop.WinUI.Helpers;
 using Magneto.Desktop.WinUI.ViewModels;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
@@ -426,19 +427,6 @@ public sealed partial class TestPrintPage : Page
 
     #region Motor Movement Buttons
 
-    private async Task ShowContentDialog(string title, string message)
-    {
-        var dialog = new ContentDialog
-        {
-            Title = title,
-            Content = message,
-            CloseButtonText = "Ok",
-            XamlRoot = this.Content.XamlRoot // Ensure it's associated with the current XAML root
-        };
-
-        await dialog.ShowAsync();
-    }
-
     /// <summary>
     /// Moves the current test motor by a specified distance, which can be absolute or relative based on the parameter.
     /// This method handles validation of the motor request, opens the serial port, initiates the motor movement,
@@ -490,7 +478,7 @@ public sealed partial class TestPrintPage : Page
                 else
                 {
                     MagnetoLogger.Log($"Motor '{motorName}' not initialized or not found.", LogFactoryLogLevel.LogLevel.ERROR);
-                    await ShowContentDialog("Error", $"{motorName} motor is not connected");
+                    await DialogHelper.ShowContentDialog(this.Content.XamlRoot, "Error", $"{motorName} motor is not connected");
                 }
             }
             catch (Exception ex)
