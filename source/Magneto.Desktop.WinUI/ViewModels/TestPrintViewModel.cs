@@ -6,13 +6,13 @@ namespace Magneto.Desktop.WinUI.ViewModels;
 
 public class TestPrintViewModel : ObservableRecipient
 {
-    private string _distanceText;
+    private string? _distanceText;
 
-    private double _distance;
+    private double? _distance;
 
-    private string _positionText;
+    private string? _positionText;
 
-    private double _position;
+    private double? _position;
 
     public TestPrintViewModel()
     {

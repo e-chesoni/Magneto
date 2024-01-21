@@ -10,7 +10,7 @@ namespace Magneto.Desktop.WinUI.Views;
 
 public sealed partial class PrintQueuePage : Page
 {
-    public MissionControl MissionControl { get; set; }
+    public MissionControl? MissionControl { get; set; }
 
     public PrintQueueViewModel ViewModel { get; }
 

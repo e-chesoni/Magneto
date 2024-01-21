@@ -31,37 +31,37 @@ public class MainViewModel : ObservableRecipient, INavigationAware
     /// <summary>
     /// powder motor
     /// </summary>
-    private static StepperMotor _powderMotor;
+    private static StepperMotor? _powderMotor;
 
     /// <summary>
     /// build motor
     /// </summary>
-    private static StepperMotor _buildMotor;
+    private static StepperMotor? _buildMotor;
 
     /// <summary>
     /// sweep motor
     /// </summary>
-    private static StepperMotor _sweepMotor;
+    private static StepperMotor? _sweepMotor;
 
     /// <summary>
     /// build controller
     /// </summary>
-    private static MotorController _buildController;
+    private static MotorController? _buildController;
 
     /// <summary>
     /// sweep controller
     /// </summary>
-    private static MotorController _sweepController;
+    private static MotorController? _sweepController;
 
     /// <summary>
     /// laser controller
     /// </summary>
-    private static LaserController _laserController;
+    private static LaserController? _laserController;
 
     /// <summary>
     /// build manager
     /// </summary>
-    private static BuildManager _buildManager;
+    private static BuildManager? _buildManager;
 
     /// <summary>
     /// Boolean to indicate whether to call InitializeMagneto when page loads

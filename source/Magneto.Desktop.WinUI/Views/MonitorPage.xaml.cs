@@ -15,7 +15,7 @@ public sealed partial class MonitorPage : Page
     /// <summary>
     /// Store "global" mission control on this page
     /// </summary>
-    public MissionControl MissionControl { get; set; }
+    public MissionControl? MissionControl { get; set; }
 
     /// <summary>
     /// Page view model
