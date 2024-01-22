@@ -135,46 +135,83 @@ public class StepperMotor : IStepperMotor
     #endregion
 
     #region Basic Getters and Setters
+    
+    /// <summary>
+    /// Get the motor name
+    /// </summary>
+    /// <returns></returns>
     public string GetMotorName()
     {
         return _motorName;
     }
 
+    /// <summary>
+    /// Get the motor id
+    /// </summary>
+    /// <returns></returns>
     public int GetID()
     {
         return _motorId;
     }
 
+    /// <summary>
+    /// Get the port assigned to the motor
+    /// </summary>
+    /// <returns></returns>
     public string GetPortName()
     {
         return _motorPort; 
     }
 
+    /// <summary>
+    /// Get the motor axis (initially assigned during startup in Magneto Config)
+    /// </summary>
+    /// <returns></returns>
     public int GetAxis()
     {
         return _motorAxis;
     }
 
+    /// <summary>
+    /// Get the home position of the motor (initially defined in Magneto Config at startup)
+    /// </summary>
+    /// <returns></returns>
     public double GetHomePos()
     {
         return _homePos;
     }
 
+    /// <summary>
+    /// Get the max position of the motor (initially defined in Magneto Config at startup)
+    /// </summary>
+    /// <returns></returns>
     public double GetMaxPos()
     {
         return _maxPos;
     }
 
+    /// <summary>
+    /// Get the min position of the motor (initially defined in Magneto Config at startup)
+    /// </summary>
+    /// <returns></returns>
     public double GetMinPos()
     {
         return _minPos;
     }
 
+    /// <summary>
+    /// Get the max velocity of the motor (initially defined in Magneto Config at startup)
+    /// </summary>
+    /// <returns></returns>
     public double GetVelocity()
     {
         return _motorVelocity;
     }
 
+    /// <summary>
+    /// Get the current position of the motor
+    /// </summary>
+    /// <returns></returns>
     public double GetCurrentPos()
     {
         return _currentPos;
@@ -190,36 +227,64 @@ public class StepperMotor : IStepperMotor
         return _status;
     }
 
+    /// <summary>
+    /// Set the motor name
+    /// </summary>
+    /// <param name="name"></param>
     public void SetMotorName(string name)
     {
         _motorName = name;
     }
 
+    /// <summary>
+    /// Set the motor com port
+    /// </summary>
+    /// <param name="portName"></param>
     public void SetPortName(string portName)
     {
         _motorPort = portName;
     }
 
+    /// <summary>
+    /// Set the motor axis
+    /// </summary>
+    /// <param name="axis"></param>
     public void SetAxis(int axis)
     {
         _motorAxis = axis;
     }
 
+    /// <summary>
+    /// Set the motor home position
+    /// </summary>
+    /// <param name="pos"></param>
     public void SetHomePos(double pos)
     {
         _homePos = pos;
     }
 
+    /// <summary>
+    /// Set the motor's max position
+    /// </summary>
+    /// <param name="pos"></param>
     public void SetMaxPos(double pos)
     {
         _maxPos = pos;
     }
 
+    /// <summary>
+    /// Set the motor's min position
+    /// </summary>
+    /// <param name="pos"></param>
     public void SetMinPos(double pos)
     {
         _minPos = pos;
     }
 
+    /// <summary>
+    /// Set the motor velocity
+    /// </summary>
+    /// <param name="vel"></param>
     public void SetVelocity(double vel)
     {
         _motorVelocity = vel;
@@ -239,50 +304,42 @@ public class StepperMotor : IStepperMotor
     /// </summary>
     /// <param name="pos"></param>
     /// <returns></returns> Returns completed task when finished
-    public Task MoveMotorAbsAsync(double pos)
+    public async Task MoveMotorAbsAsync(double pos)
     {
         var initialPos = GetPos();
-        var msg = $"Initial motor position: {initialPos}";
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
+        MagnetoLogger.Log($"Initial motor position: {initialPos}", LogFactoryLogLevel.LogLevel.WARN);
 
-        // Invalid position
         if (pos < _minPos || pos > _maxPos)
         {
-            MagnetoLogger.Log($"Invalid position: {pos}. for motor {_motorName} _minPos is {_minPos} and _maxPos is {_maxPos}. Aborting motor move operation.",
-                LogFactoryLogLevel.LogLevel.ERROR);
-            return Task.CompletedTask;
+            MagnetoLogger.Log($"Invalid position: {pos}. For motor {_motorName}, _minPos is {_minPos} and _maxPos is {_maxPos}. Aborting motor move operation.", LogFactoryLogLevel.LogLevel.ERROR);
+            return;
         }
 
-        // Move motor
-        var moveCmd = string.Format("{0}MVA{1}", _motorAxis, pos);
         if (MagnetoSerialConsole.OpenSerialPort(_motorPort))
         {
-            MagnetoSerialConsole.SerialWrite(_motorPort, moveCmd);
-
-            // Acknowledge that motor is moving 
-            _motorMoving = true;
-
-            // Log message
-            msg = string.Format("Moving motor on axis {0} to position {1}mm",
-                _motorAxis, pos);
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-
-            // Update calculated position
-            _calculatedPos = pos;
-            msg = $"New calculated position: {_calculatedPos}";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-
-            // Wait until position is reached
-            CheckPos(pos);
-
-            // Acknowledge that motor has stopped moving
-            _motorMoving = false;
+            await PerformMotorMoveAsync(pos);
         }
         else
         {
             MagnetoLogger.Log("Port Closed.", LogFactoryLogLevel.LogLevel.ERROR);
         }
-        return Task.CompletedTask;
+    }
+
+    private async Task PerformMotorMoveAsync(double pos)
+    {
+        var moveCmd = $"{_motorAxis}MVA{pos}";
+        MagnetoSerialConsole.SerialWrite(_motorPort, moveCmd);
+
+        _motorMoving = true;
+        MagnetoLogger.Log($"Moving motor on axis {_motorAxis} to position {pos}mm", LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        _calculatedPos = pos;
+        MagnetoLogger.Log($"New calculated position: {_calculatedPos}", LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        CheckPos(pos);
+        //await CheckPosAsync(pos);
+
+        _motorMoving = false;
     }
 
     /// NOTE: The syntax to move a motor in relative to a position is:
@@ -341,7 +398,6 @@ public class StepperMotor : IStepperMotor
         }
         return Task.CompletedTask;
     }
-
 
     /// <summary>
     /// EMERGENCY STOP: Stop motor
@@ -435,6 +491,44 @@ public class StepperMotor : IStepperMotor
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
         return posDoub;
+    }
+
+    // TODO: Update methods to use asynchronous position check
+    public async Task<bool> CheckPosAsync(double desiredPos)
+    {
+        var msg = "Checking motor position.";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        var posReached = false;
+
+        while (!posReached)
+        {
+            msg = "Entered position checking loop";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
+
+            // Update the current position each time we check
+            _currentPos = GetPos();
+
+            msg = $"Current Position: {_currentPos}, Desired Position: {desiredPos}";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+            if (Math.Abs(_currentPos - desiredPos) <= _tolerance)
+            {
+                msg = "Desired position reached. Exiting the loop.";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
+                posReached = true;
+                MagnetoSerialConsole.ClearTermRead();
+                break;
+            }
+
+            msg = "Sleeping. Will check again in a ms...";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+            // Use Task.Delay for asynchronous wait
+            await Task.Delay(1); // Sleep for 1ms before checking again
+        }
+
+        return posReached;
     }
 
     public bool CheckPos(double desiredPos)

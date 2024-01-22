@@ -15,7 +15,7 @@ public interface IStepperMotor
     /// <summary>
     /// Move motor to position zero
     /// </summary>
-    Task HomeMotor();
+    Task<int> HomeMotor();
 
     /// <summary>
     /// Move motor to an absolute position

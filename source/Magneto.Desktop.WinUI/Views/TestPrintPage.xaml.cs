@@ -147,7 +147,7 @@ public sealed partial class TestPrintPage : Page
         var sweepPort = sweepMotorConfig?.COMPort;
         
         // Initialize motor map to simplify coordinated calls below
-        InitializeMotorMap();
+        //InitializeMotorMap();
 
         // Register event handlers on page
         foreach (SerialPort port in MagnetoSerialConsole.GetAvailablePorts())
@@ -181,6 +181,7 @@ public sealed partial class TestPrintPage : Page
         base.OnNavigatedTo(e);
         MissionControl = (MissionControl)e.Parameter;
         SetUpTestMotors();
+        InitializeMotorMap();
         var msg = string.Format("TestPrintPage::OnNavigatedTo -- {0}", MissionControl.FriendlyMessage);
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
     }
@@ -465,7 +466,7 @@ public sealed partial class TestPrintPage : Page
             try
             {
                 // Use motor name to get motor from motor map
-                if (_motorToPosTextBoxMap.TryGetValue(motorName, out var motor) && motor != null)
+                if (_motorToPosTextBoxMap.TryGetValue(motorName, out var motor) && motor != null) // TODO: FIX THIS -- motor is null here...just use currmotor? why is it null?
                 {
                     var distance = double.Parse(AbsDistTextBox.Text);
                     if (isAbsolute)
