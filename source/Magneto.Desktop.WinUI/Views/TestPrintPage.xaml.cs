@@ -242,7 +242,7 @@ public sealed partial class TestPrintPage : Page
     /// Logs an error if the serial port cannot be opened or if the corresponding text box for the motor is null.
     /// </summary>
     /// <param name="motor">The StepperMotor object whose position is to be retrieved and displayed.</param>
-    private void GetPositionHelper(StepperMotor motor)
+    private async void GetPositionHelper(StepperMotor motor)
     {
         // Attempt to open the serial port
         if (MagnetoSerialConsole.OpenSerialPort(motor.GetPortName()))
@@ -254,7 +254,7 @@ public sealed partial class TestPrintPage : Page
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
             // Get the motor's position
-            var pos = motor.GetPos();
+            var pos = await motor.GetPosAsync();
 
             // Safely update the corresponding text box
             var textBox = GetMotorTextBoxHelper(motor);
@@ -443,16 +443,22 @@ public sealed partial class TestPrintPage : Page
 
             try
             {
-                // Use motor name to get motor from motor map
-                if (_motorToPosTextBoxMap.TryGetValue(motorName, out var motor) && motor != null) // TODO: FIX THIS -- motor is null here...just use currmotor? why is it null?
+                if (_motorToPosTextBoxMap.TryGetValue(motorName, out var motor) && motor != null)
                 {
-                    var distance = double.Parse(AbsDistTextBox.Text);
-                    if (isAbsolute)
-                        await motor.MoveMotorAbsAsync(distance);
-                    else
-                       await motor.MoveMotorRelAsync(distance);
+                    if (double.TryParse(AbsDistTextBox.Text, out var distance))
+                    {
+                        if (isAbsolute)
+                            await motor.MoveMotorAbsAsync(distance);
+                        else
+                            await motor.MoveMotorRelAsync(distance);
 
-                    UpdateMotorPositionTextBox(motorName, motor);
+                        UpdateMotorPositionTextBox(motorName, motor);
+                    }
+                    else
+                    {
+                        await DialogHelper.ShowContentDialog(this.Content.XamlRoot, "Error", $"\"{AbsDistTextBox.Text}\" is not a valid distance. Please make sure you entered a number in the textbox.");
+                        return;
+                    }
                 }
                 else
                 {

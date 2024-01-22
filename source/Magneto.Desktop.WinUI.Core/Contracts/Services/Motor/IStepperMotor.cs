@@ -45,7 +45,7 @@ public interface IStepperMotor
     /// Get current motor position
     /// </summary>
     /// <returns></returns> Returns -1 if request for position fails, otherwise returns motor position
-    double GetPos();
+    Task<double> GetPosAsync();
 
     /// <summary>
     /// Send error message about motor
