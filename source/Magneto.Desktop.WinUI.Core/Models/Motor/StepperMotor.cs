@@ -134,7 +134,7 @@ public class StepperMotor : IStepperMotor
 
     #endregion
 
-    #region Getters and Setters
+    #region Basic Getters and Setters
     public string GetMotorName()
     {
         return _motorName;
@@ -180,9 +180,14 @@ public class StepperMotor : IStepperMotor
         return _currentPos;
     }
 
-    public bool IsMotorMoving()
+    /// <summary>
+    /// Get current status of motor
+    /// </summary>
+    /// <param name="newStatus"></param>
+    /// <returns></returns> Returns the status of the motor
+    public MotorStatus GetStatus()
     {
-        return _motorMoving; 
+        return _status;
     }
 
     public void SetMotorName(string name)
@@ -222,20 +227,7 @@ public class StepperMotor : IStepperMotor
 
     #endregion
 
-    // TODO: Update movement commands to check for position and return true if position was reached (consider using a while loop)
     #region Movement Methods
-
-    /// <summary>
-    /// Move motor to position zero
-    /// </summary>
-    /// <returns></returns> Returns -1 if home command fails, 0 if home command is successful
-    public async Task HomeMotor()
-    {
-        MagnetoLogger.Log("Homing motor...",
-            LogFactoryLogLevel.LogLevel.VERBOSE);
-        await MoveMotorAbsAsync(GetHomePos());
-        _calculatedPos = GetHomePos();
-    }
 
     /// NOTE: The syntax to move a motor in an absolute position is:
     /// nMVAx
@@ -350,46 +342,6 @@ public class StepperMotor : IStepperMotor
         return Task.CompletedTask;
     }
 
-    public bool CheckPos(double desiredPos)
-    {
-        var msg = "Checking motor position.";
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-
-        var posReached = false;
-
-        while (!posReached)
-        {
-            msg = $"Entered position checking loop";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
-
-            // Update the current position each time we check
-            _currentPos = GetPos();
-
-            msg = $"Current Position: {_currentPos}, Desired Position: {desiredPos}";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-
-            if (Math.Abs(_currentPos - desiredPos) <= _tolerance)
-            {
-                msg = "Desired position reached. Exiting the loop.";
-                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
-
-                // Set position reached to true
-                posReached = true;
-
-                // Clear the last term read
-                MagnetoSerialConsole.ClearTermRead();
-
-                // Make sure we exit the loop
-                break;
-            }
-            msg = $"Sleeping. Will check again in a ms...";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-            Thread.Sleep(100); // Sleep for 1ms before checking again
-        }
-
-        return posReached;
-    }
-
 
     /// <summary>
     /// EMERGENCY STOP: Stop motor
@@ -400,45 +352,28 @@ public class StepperMotor : IStepperMotor
         throw new NotImplementedException();
     }
 
-    #endregion
-
-    #region Status Methods
-
-    static double ExtractDoubleFromString(string input)
+    /// <summary>
+    /// Initiates the process of moving the motor to its home position as defined in the Magneto configuration.
+    /// Logs the action and performs the movement asynchronously.
+    /// </summary>
+    /// <returns>
+    /// A Task that represents the asynchronous operation. 
+    /// The task result is -1 if the home command fails, and 0 if the home command is successful.
+    /// </returns>
+    public async Task<int> HomeMotor()
     {
-        var msg = "Extracting double from position string...";
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+        MagnetoLogger.Log("Homing motor...", LogFactoryLogLevel.LogLevel.VERBOSE);
+        await MoveMotorAbsAsync(GetHomePos());
+        _calculatedPos = GetHomePos();
 
-        // Check if the input string starts with '#'
-        if (input.StartsWith("#"))
-        {
-            // Find the index of the period after '#'
-            var dotIndex = input.IndexOf('.');
-
-            // If a period is found, attempt to parse the substring
-            if (dotIndex != -1)
-            {
-                // Extract the substring from '#' to the period and parse as double
-                var numberString = input.Substring(1, dotIndex + 6);
-                if (double.TryParse(numberString, out var result))
-                {
-                    return result;
-                }
-            }
-        }
-        else
-        {
-            msg = "Incompatible string format.";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            return -1.0;
-        }    
-
-        // TODO: Throw exception if this fails
-        return -1.0;
+        // TODO: You need to implement the logic to determine if the command has failed or succeeded
+        // and return -1 or 0 accordingly. This is just a placeholder.
+        return 0; // Or -1 if failed
     }
 
+    #endregion
 
-
+    #region Helpers
     /// <summary>
     /// Get current motor position
     /// </summary>
@@ -502,15 +437,82 @@ public class StepperMotor : IStepperMotor
         return posDoub;
     }
 
-    /// <summary>
-    /// Get current status of motor
-    /// </summary>
-    /// <param name="newStatus"></param>
-    /// <returns></returns> Returns the status of the motor
-    public MotorStatus GetStatus()
+    public bool CheckPos(double desiredPos)
     {
-        return _status;
+        var msg = "Checking motor position.";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        var posReached = false;
+
+        while (!posReached)
+        {
+            msg = $"Entered position checking loop";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
+
+            // Update the current position each time we check
+            _currentPos = GetPos();
+
+            msg = $"Current Position: {_currentPos}, Desired Position: {desiredPos}";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+            if (Math.Abs(_currentPos - desiredPos) <= _tolerance)
+            {
+                msg = "Desired position reached. Exiting the loop.";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
+
+                // Set position reached to true
+                posReached = true;
+
+                // Clear the last term read
+                MagnetoSerialConsole.ClearTermRead();
+
+                // Make sure we exit the loop
+                break;
+            }
+            msg = $"Sleeping. Will check again in a ms...";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+            Thread.Sleep(100); // Sleep for 1ms before checking again
+        }
+
+        return posReached;
     }
+
+    static double ExtractDoubleFromString(string input)
+    {
+        var msg = "Extracting double from position string...";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        // Check if the input string starts with '#'
+        if (input.StartsWith("#"))
+        {
+            // Find the index of the period after '#'
+            var dotIndex = input.IndexOf('.');
+
+            // If a period is found, attempt to parse the substring
+            if (dotIndex != -1)
+            {
+                // Extract the substring from '#' to the period and parse as double
+                var numberString = input.Substring(1, dotIndex + 6);
+                if (double.TryParse(numberString, out var result))
+                {
+                    return result;
+                }
+            }
+        }
+        else
+        {
+            msg = "Incompatible string format.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            return -1.0;
+        }
+
+        // TODO: Throw exception if this fails
+        return -1.0;
+    }
+
+    #endregion
+
+    #region Error Methods
 
     /// <summary>
     /// Send error message about motor
