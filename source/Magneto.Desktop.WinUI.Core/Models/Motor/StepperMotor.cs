@@ -336,7 +336,6 @@ public class StepperMotor : IStepperMotor
         _calculatedPos = pos;
         MagnetoLogger.Log($"New calculated position: {_calculatedPos}", LogFactoryLogLevel.LogLevel.VERBOSE);
 
-        //CheckPos(pos);
         await CheckPosAsync(pos);
 
         _motorMoving = false;
@@ -352,51 +351,32 @@ public class StepperMotor : IStepperMotor
     /// </summary>
     /// <param name="steps"></param>
     /// <returns></returns> Returns -1 if move command fails, 0 if move command is successful
-    public Task MoveMotorRelAsync(double pos)
+    public async Task MoveMotorRelAsync(double pos)
     {
-        // Calculate desired position:
-        // Get current position
         var initialPos = GetPos();
-        var msg = $"Initial position of {_motorName} motor: {initialPos}";
+        var desiredPos = initialPos + pos;
+        var msg = $"Initial position of {_motorName} motor: {initialPos}. Desired relative position: {desiredPos}";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
 
-        // Add pos to current position
-        var desiredPos = initialPos + pos; // TODO: FIX ME--somehow gets zero as desired pos in print
-
-        // If the current position + steps is greater than _maxPos, fail
         if (desiredPos < _minPos || desiredPos > _maxPos)
         {
-            msg = $"Invalid position: {desiredPos}. for {_motorName} build _minPos is {_minPos} and _maxPos is {_maxPos}. Aborting motor move operation.";
-            MagnetoLogger.Log(msg,
-                LogFactoryLogLevel.LogLevel.ERROR);
-            return Task.CompletedTask;
+            MagnetoLogger.Log($"Invalid position: {desiredPos} for {_motorName}. _minPos is {_minPos} and _maxPos is {_maxPos}. Aborting motor move operation.", LogFactoryLogLevel.LogLevel.ERROR);
+            return;
         }
 
-        // Format relative move command
-        var s = string.Format("{0}MVR{1}", _motorAxis, pos);
-
-        // Check if serial port is open
         if (MagnetoSerialConsole.OpenSerialPort(_motorPort))
         {
-            // Send move command to serial port associated with this motor
-            MagnetoSerialConsole.SerialWrite(_motorPort, s);
+            var moveCommand = $"{_motorAxis}MVR{pos}";
+            MagnetoSerialConsole.SerialWrite(_motorPort, moveCommand);
+            MagnetoLogger.Log($"Moving {_motorName} motor on axis {_motorAxis} {pos}mm relative to current position. Command Sent: {moveCommand}", LogFactoryLogLevel.LogLevel.VERBOSE);
 
-            // Log friendly message
-            msg = $"Moving {_motorName} motor on axis {_motorAxis} {pos}mm relative to current position";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-            
-            // Log command sent
-            msg = $"Command Sent: {s}";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
-
-            // Wait until position is reached
-            CheckPos(desiredPos);
+            // Asynchronously wait until the desired position is reached
+            await CheckPosAsync(desiredPos);
         }
         else
         {
             MagnetoLogger.Log("Port Closed.", LogFactoryLogLevel.LogLevel.ERROR);
         }
-        return Task.CompletedTask;
     }
 
     /// <summary>
@@ -451,7 +431,7 @@ public class StepperMotor : IStepperMotor
         // Make sure port is open
         if (MagnetoSerialConsole.OpenSerialPort(_motorPort))
         {
-            // Writing #POS? should initialize data send;
+            // Writing #POS? initializes data send;
             // Data received event is registered in MagnetoSerialConsole
             // Position should be pick up there
             MagnetoSerialConsole.SerialWrite(_motorPort, s);
@@ -496,80 +476,31 @@ public class StepperMotor : IStepperMotor
     // TODO: Update methods to use asynchronous position check
     public async Task<bool> CheckPosAsync(double desiredPos)
     {
-        var msg = "Checking motor position.";
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+        MagnetoLogger.Log("Checking motor position.", LogFactoryLogLevel.LogLevel.VERBOSE);
 
-        var posReached = false;
+        const int maxAttempts = 10000; // Can modify limit; currently will try to reach position for about 10sec
+        var attempt = 0;
 
-        while (!posReached)
+        while (attempt < maxAttempts)
         {
-            msg = "Entered position checking loop";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
-
-            // Update the current position each time we check
             _currentPos = GetPos();
-
-            msg = $"Current Position: {_currentPos}, Desired Position: {desiredPos}";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+            MagnetoLogger.Log($"Current Position: {_currentPos}, Desired Position: {desiredPos}", LogFactoryLogLevel.LogLevel.VERBOSE);
 
             if (Math.Abs(_currentPos - desiredPos) <= _tolerance)
             {
-                msg = "Desired position reached. Exiting the loop.";
-                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
-                posReached = true;
+                MagnetoLogger.Log("Desired position reached.", LogFactoryLogLevel.LogLevel.SUCCESS);
                 MagnetoSerialConsole.ClearTermRead();
-                break;
+                return true;
             }
 
-            msg = "Sleeping. Will check again in a ms...";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-
-            // Use Task.Delay for asynchronous wait
-            await Task.Delay(1); // Sleep for 1ms before checking again
+            await Task.Delay(100); // Adjust based on your scenario
+            attempt++;
         }
 
-        return posReached;
+        MagnetoLogger.Log("Failed to reach the desired position within the maximum number of attempts.", LogFactoryLogLevel.LogLevel.ERROR);
+        return false;
     }
 
-    public bool CheckPos(double desiredPos)
-    {
-        var msg = "Checking motor position.";
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-
-        var posReached = false;
-
-        while (!posReached)
-        {
-            msg = $"Entered position checking loop";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
-
-            // Update the current position each time we check
-            _currentPos = GetPos();
-
-            msg = $"Current Position: {_currentPos}, Desired Position: {desiredPos}";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-
-            if (Math.Abs(_currentPos - desiredPos) <= _tolerance)
-            {
-                msg = "Desired position reached. Exiting the loop.";
-                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
-
-                // Set position reached to true
-                posReached = true;
-
-                // Clear the last term read
-                MagnetoSerialConsole.ClearTermRead();
-
-                // Make sure we exit the loop
-                break;
-            }
-            msg = $"Sleeping. Will check again in a ms...";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-            Thread.Sleep(100); // Sleep for 1ms before checking again
-        }
-
-        return posReached;
-    }
 
     static double ExtractDoubleFromString(string input)
     {

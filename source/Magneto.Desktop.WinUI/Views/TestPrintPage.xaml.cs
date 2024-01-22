@@ -65,59 +65,32 @@ public sealed partial class TestPrintPage : Page
     /// and initializing the respective StepperMotor objects. Logs success or error for each motor setup.
     /// Assumes motor order in configuration corresponds to powder, build, and sweep.
     /// </summary>
-    private void SetUpTestMotors()
+    private async void SetUpTestMotors()
     {
-        var msg = "";
-
-        List<MagnetoMotorConfig> motorConfigs = new List<MagnetoMotorConfig>();
-        List<string> motorNames = new List<string>();
-
-        foreach (var m in MagnetoConfig.GetAllMotors())
+        if (MissionControl == null)
         {
-            motorConfigs.Add(m);
-            motorNames.Add(m.motorName);
+            MagnetoLogger.Log("MissionControl is null. Unable to set up motors.", LogFactoryLogLevel.LogLevel.ERROR);
+            await DialogHelper.ShowContentDialog(this.Content.XamlRoot,"Error", "MissionControl is not Connected.");
+            return;
         }
 
-        StepperMotor p = MissionControl.GetPowderMotor();
+        SetUpMotor("powder", MissionControl.GetPowderMotor(), out _powderMotor);
+        SetUpMotor("build", MissionControl.GetBuildMotor(), out _buildMotor);
+        SetUpMotor("sweep", MissionControl.GetSweepMotor(), out _sweepMotor);
+    }
 
-        if (p != null)
+    private void SetUpMotor(string motorType, StepperMotor motor, out StepperMotor motorField)
+    {
+        if (motor != null)
         {
-            msg = $"Found motor in config with name {motorNames[0]}. Setting this to powder motor in test.";
+            motorField = motor;
+            var msg = $"Found motor in config with name {motor.GetMotorName()}. Setting this to {motorType} motor in test.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-            _powderMotor = p;
         }
         else
         {
-            msg = "Unable to find powder motor";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-        }
-
-        StepperMotor b = MissionControl.GetBuildMotor();
-
-        if (b != null)
-        {
-            msg = $"Found motor in config with name {motorNames[1]}. Setting this to build motor in test.";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-            _buildMotor = b;
-        }
-        else
-        {
-            msg = "Unable to find build motor";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-        }
-
-        StepperMotor s = MissionControl.GetSweepMotor();
-
-        if (s != null)
-        {
-            msg = $"Found motor in config with name {motorNames[2]}. Setting this to sweep motor in test.";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-            _sweepMotor = s;
-        }
-        else
-        {
-            msg = "Unable to find sweep motor";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            motorField = null;
+            MagnetoLogger.Log($"Unable to find {motorType} motor", LogFactoryLogLevel.LogLevel.ERROR);
         }
     }
 
@@ -145,9 +118,6 @@ public sealed partial class TestPrintPage : Page
         // Get motor ports, ensuring that the motor configurations are not null
         var buildPort = buildMotorConfig?.COMPort;
         var sweepPort = sweepMotorConfig?.COMPort;
-        
-        // Initialize motor map to simplify coordinated calls below
-        //InitializeMotorMap();
 
         // Register event handlers on page
         foreach (SerialPort port in MagnetoSerialConsole.GetAvailablePorts())
@@ -179,9 +149,17 @@ public sealed partial class TestPrintPage : Page
     {
         // Get mission control (passed over when navigating from previous page)
         base.OnNavigatedTo(e);
+
+        // Set mission control after navigating to new page
         MissionControl = (MissionControl)e.Parameter;
+        
+        // Initialize motor set up for test page
         SetUpTestMotors();
+        
+        // Initialize motor map to simplify coordinated calls below
+        // Make sure this happens AFTER motor setup
         InitializeMotorMap();
+        
         var msg = string.Format("TestPrintPage::OnNavigatedTo -- {0}", MissionControl.FriendlyMessage);
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
     }
