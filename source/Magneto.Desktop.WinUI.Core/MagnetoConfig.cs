@@ -72,7 +72,7 @@ public static class MagnetoConfig
         {
             new MagnetoMotorConfig()
             {
-                motorName = "build",
+                motorName = "powder",
                 COMPort = GetCOMPortName(GetCOMPort(_build_and_powder_port)),
                 axis = 1,
                 maxPos = 0,
@@ -82,7 +82,7 @@ public static class MagnetoConfig
             },
             new MagnetoMotorConfig()
             {
-                motorName = "powder",
+                motorName = "build",
                 COMPort = GetCOMPortName(GetCOMPort(_build_and_powder_port)),
                 axis = 2,
                 maxPos = 0,

@@ -336,8 +336,8 @@ public class StepperMotor : IStepperMotor
         _calculatedPos = pos;
         MagnetoLogger.Log($"New calculated position: {_calculatedPos}", LogFactoryLogLevel.LogLevel.VERBOSE);
 
-        CheckPos(pos);
-        //await CheckPosAsync(pos);
+        //CheckPos(pos);
+        await CheckPosAsync(pos);
 
         _motorMoving = false;
     }
