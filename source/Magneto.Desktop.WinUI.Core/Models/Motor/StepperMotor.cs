@@ -63,13 +63,15 @@ public class StepperMotor : IStepperMotor
     }
 
     /// <summary>
-    /// Directions in which  the motor can move
+    /// Directions in which the motor can move
     /// </summary>
+    /*
     public enum MotorDirection : short
     {
         Down = -1,
         Up = 1
     }
+    */
 
     // TODO: Define error codes for stepper motor
     /// <summary>
@@ -235,17 +237,7 @@ public class StepperMotor : IStepperMotor
         _calculatedPos = GetHomePos();
     }
 
-    /// <summary>
-    /// Move motor one step
-    /// </summary>
-    /// <param name="dir"></param> Direction to move motor
-    /// <returns></returns>
-    public int StepMotor(MotorDirection dir)
-    {
-        throw new NotImplementedException();
-    }
-
-    /// NOTE: The syntax to move a motor in an absolute direction is:
+    /// NOTE: The syntax to move a motor in an absolute position is:
     /// nMVAx
     /// Where n is the axis
     /// And x is the number of mm to move
@@ -508,17 +500,6 @@ public class StepperMotor : IStepperMotor
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
         return posDoub;
-    }
-
-    /// <summary>
-    /// Update the motor status
-    /// </summary>
-    /// <param name="newStatus"></param> New status of motor
-    /// <returns></returns> Returns the updated status of the motor
-    private MotorStatus UpdateStatus(MotorStatus newStatus)
-    {
-        _status = newStatus;
-        return GetStatus();
     }
 
     /// <summary>

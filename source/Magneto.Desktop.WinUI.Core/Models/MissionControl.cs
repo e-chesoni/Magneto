@@ -167,46 +167,6 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
 
     #endregion
 
-    #region Bed Leveling
-
-    /// <summary>
-    /// Helper for bed leveling
-    /// </summary>
-    /// <param name="axis"></param>
-    /// <param name="dir"></param>
-    private void LevelHelper(int axis, MotorDirection dir)
-    {
-        if (dir == MotorDirection.Up)
-        {
-            _ = _buildManager.buildController.MoveMotorRel(axis, _bedLevelStep);
-        }
-        else
-        {
-            var step = -_bedLevelStep;
-            _ = _buildManager.buildController.MoveMotorRel(axis, step);
-        }
-    }
-
-    /// <summary>
-    /// Moves motor on given axis in one bed level step in given direction
-    /// </summary>
-    /// <param name="axis"></param>
-    /// <param name="dir"></param>
-    public void LevelMotor(int axis, MotorDirection dir)
-    {
-        if (axis > 0 && axis < 3)
-        {
-            LevelHelper(axis, dir);
-        }
-        else
-        {
-            MagnetoLogger.Log("Received invalid axis.",
-                    LogFactoryLogLevel.LogLevel.ERROR);
-        }
-    }
-
-    #endregion
-
     #region Operations Delegated to ImageManager
 
     /// <summary>

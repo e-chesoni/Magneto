@@ -152,28 +152,6 @@ public sealed partial class PrintPage : Page
         }
     }
 
-    private void HandleLevelMotor(int axis, MotorDirection dir, TextBox textBox)
-    {
-        UpdateBedLevel(textBox);
-
-        string? msg;
-        switch (dir)
-        {
-            case MotorDirection.Up:
-                msg = $"Incrementing Bed Level By: {MissionControl.GedBedLevelStep()}";
-                break;
-            case MotorDirection.Down:
-                msg = $"Decrementing Bed Level By: {MissionControl.GedBedLevelStep()}";
-                break;
-            default:
-                msg = "Invalid direction.";
-                break;
-        }
-
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-        MissionControl.LevelMotor(axis, dir);
-    }
-
     private void StartPrint_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
         // Calls build manager in method to handle print
