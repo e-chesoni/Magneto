@@ -6,6 +6,15 @@ using System.Text.RegularExpressions;
 using System.Diagnostics;
 
 namespace Magneto.Desktop.WinUI.Core.Models.Motor;
+
+/// <summary>
+/// Represents a stepper motor and encapsulates its functionality and control mechanisms.
+/// This class provides methods for initializing the motor, setting its parameters, and controlling
+/// its movement to precise positions. It also includes functionalities for monitoring the motor's
+/// status, handling errors, and executing specific motion commands tailored to the requirements
+/// of stepper motor applications. The class is designed to be used in systems where accurate
+/// positioning and speed control of a motor are critical.
+/// </summary>
 public class StepperMotor : IStepperMotor
 {
     #region Private Variables
@@ -17,8 +26,15 @@ public class StepperMotor : IStepperMotor
     /// </summary>
     private int _motorId { get; set; }
 
+    /// <summary>
+    /// Name of the motor (either build, powder or sweep) set in Magneto config
+    /// Used to distribute tasks through out app
+    /// </summary>
     private string _motorName { get; set; }
 
+    /// <summary>
+    /// Port motor is attached to
+    /// </summary>
     private string _motorPort { get; set; }
 
     /// <summary>
@@ -36,16 +52,35 @@ public class StepperMotor : IStepperMotor
     /// </summary>
     private MotorStatus _status;
 
+    /// <summary>
+    /// Home position of the motor
+    /// </summary>
     private double _homePos { get; set; }
 
+    /// <summary>
+    /// Max reach of the motor set in Magneto config
+    /// </summary>
     private double _maxPos { get; set; }
 
+    /// <summary>
+    /// Minimum position motor is allowed to reach set in Magneto config
+    /// </summary>
     private double _minPos { get; set; }
 
+    /// <summary>
+    /// Motor velocity noted in Magneto config
+    /// </summary>
     private double _motorVelocity { get; set; }
 
+    /// <summary>
+    /// Current motor position
+    /// </summary>
     private double _currentPos { get; set; }
 
+    /// <summary>
+    /// Boolean used to determine whether motor is currently moving
+    /// Used for position tracking
+    /// </summary>
     private bool _motorMoving { get; set; }
 
     #endregion
@@ -63,37 +98,72 @@ public class StepperMotor : IStepperMotor
     }
 
     /// <summary>
-    /// Directions in which the motor can move
-    /// </summary>
-    /*
-    public enum MotorDirection : short
-    {
-        Down = -1,
-        Up = 1
-    }
-    */
-
-    // TODO: Define error codes for stepper motor
-    /// <summary>
-    /// Motor error codes
+    /// Enumerates various error codes for motor operations
     /// </summary>
     public enum MotorError : short
     {
-    
+        ReceiveBufferOverrun = 10,
+        MotorDisabled = 11,
+        NoEncoderDetected = 12,
+        IndexNotFound = 13,
+        HomeRequiresEncoder = 14,
+        MoveLimitRequiresEncoder = 15,
+        CommandIsReadOnly = 20,
+        OneReadOperationPerLine = 21,
+        TooManyCommandsOnLine = 22,
+        LineCharacterLimitExceeded = 23,
+        MissingAxisNumber = 24,
+        MalformedCommand = 25,
+        InvalidCommand = 26,
+        GlobalReadOperationRequest = 27,
+        InvalidParameterType = 28,
+        InvalidCharacterParameter = 29,
+        CommandCannotBeUsedInGlobalContext = 30,
+        ParameterOutOfBounds = 31,
+        IncorrectJogVelocityRequest = 32,
+        NotInJogMode = 33,
+        TraceAlreadyInProgress = 34,
+        TraceDidNotComplete = 35,
+        CommandCannotBeExecutedDuringMotion = 36,
+        MoveOutsideSoftLimits = 37,
+        ReadNotAvailableForThisCommand = 38,
+        ProgramNumberOutOfRange = 39,
+        ProgramSizeLimitExceeded = 40,
+        ProgramFailedToRecord = 41,
+        EndCommandMustBeOnItsOwnLine = 42,
+        FailedToReadProgram = 43,
+        CommandOnlyValidWithinProgram = 44,
+        ProgramAlreadyExists = 45,
+        ProgramDoesntExist = 46,
+        ReadOperationsNotAllowedInsideProgram = 47,
+        CommandOperationsNotAllowedWhileProgramInProgress = 48,
+        LimitActivated = 50,
+        EndOfTravelLimit = 51,
+        HomeInProgress = 52,
+        IOFunctionAlreadyInUse = 53,
+        LimitsAreNotConfiguredProperly = 55,
+        CommandNotAvailableInThisVersion = 80,
+        AnalogEncoderNotAvailableInThisVersion = 81
     }
+
 
     #endregion
 
 
     #region Constructor
-    
+
     /// <summary>
     /// StepperMotor constructor
     /// </summary>
     /// <param name="motorName"></param> The axis that the motor is attached to
     public StepperMotor(string motorName, string portName, int axis, double maxPos, double minPos, double homePos, double vel)
     {
-        // TODO: settings to config file
+        // Validate parameters
+        if (string.IsNullOrWhiteSpace(motorName) || string.IsNullOrWhiteSpace(portName))
+        {
+            throw new ArgumentException("Motor name and port name cannot be null or empty.");
+        }
+
         _motorName = motorName;
         _motorPort = portName;
         _motorAxis = axis;
@@ -102,40 +172,26 @@ public class StepperMotor : IStepperMotor
         _homePos = homePos;
         _motorVelocity = vel;
 
-        // Create ID for motor
-        // Use regular expression to match the number part
-        Match match = Regex.Match(portName, @"\d+");
-
-        if (match.Success)
+        // Extract ID from portName using regular expression
+        var idString = Regex.Match(portName, @"\d+").Value + axis;
+        if (int.TryParse(idString, out var tempMotorId))
         {
-            // Extract the number from the match
-            var numberString = match.Value;
-
-            // Create the new string by concatenating the original number with "1"
-            var idString = numberString + axis;
-
-            if (int.TryParse(idString, out var resultNumber))
-            {
-                _motorId = resultNumber;
-                var msg = $"Assigning ID: {resultNumber} to motor";
-                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
-            }
-            else
-            {
-                _motorId = 0;
-                var msg = "Conversion to integer for motor ID failed.";
-                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            }
+            _motorId = tempMotorId;
+            MagnetoLogger.Log($"Assigning ID: {_motorId} to motor", LogFactoryLogLevel.LogLevel.SUCCESS);
+        }
+        else
+        {
+            _motorId = 0; // Consider if a default value or an exception is more appropriate
+            MagnetoLogger.Log("Conversion to integer for motor ID failed.", LogFactoryLogLevel.LogLevel.ERROR);
         }
 
-        var message = $"Created Stepper Motor attached to {_motorPort} on axis {_motorAxis} with max position of {_maxPos}, min position of {_minPos}, and home position of {_homePos}";
-        MagnetoLogger.Log(message, LogFactoryLogLevel.LogLevel.VERBOSE);
+        MagnetoLogger.Log($"Created Stepper Motor '{_motorName}' on port '{_motorPort}', axis {_motorAxis}, max position: {_maxPos}, min position: {_minPos}, home position: {_homePos}, velocity: {_motorVelocity}", LogFactoryLogLevel.LogLevel.VERBOSE);
     }
 
     #endregion
 
     #region Basic Getters and Setters
-    
+
     /// <summary>
     /// Get the motor name
     /// </summary>
@@ -325,6 +381,13 @@ public class StepperMotor : IStepperMotor
         }
     }
 
+    /// <summary>
+    /// Asynchronously moves the motor to a specified position.
+    /// This method constructs and sends a command to move the motor, logs the action,
+    /// updates the calculated position, and awaits the completion of the movement.
+    /// </summary>
+    /// <param name="pos"></param>
+    /// <returns></returns>
     private async Task PerformMotorMoveAsync(double pos)
     {
         var moveCmd = $"{_motorAxis}MVA{pos}";
@@ -482,7 +545,14 @@ public class StepperMotor : IStepperMotor
         return false;
     }
 
-
+    /// <summary>
+    /// Extracts a double value from a given string, assuming a specific format.
+    /// The method searches for a numeric value within the string, starting just after a '#'
+    /// character and ending at a specified position after a period. It logs the process and 
+    /// handles format incompatibilities.
+    /// </summary>
+    /// <param name="input"></param>
+    /// <returns></returns>
     static double ExtractDoubleFromString(string input)
     {
         var msg = "Extracting double from position string...";
