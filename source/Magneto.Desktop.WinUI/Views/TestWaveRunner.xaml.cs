@@ -46,7 +46,7 @@ public sealed partial class TestWaveRunner : Page
         JobFileSearchDirectory.Text = _jobDirectory;
 
         // Set Job File
-        _defaultJobName = "100mm_Square.sjf";
+        _defaultJobName = "center_crosshair_OAT.sjf";
         JobFileNameTextBox.Text = _defaultJobName;
     }
 
@@ -256,13 +256,13 @@ public sealed partial class TestWaveRunner : Page
 
         m_text_is_marking = "Sending Objects!";
         UpdateUIText(m_text_is_marking); // Update UI method
-        long markFlags = 0x0;
+        long markFlags = 0x0; // TODO: Turn guidebeam on (probs a diff flag)
         ctrlNew.ScSetMarkFlags((int)markFlags);
 
         // TODO: Test actual marking
 
         // ACTUAL MARKING
-        /*
+        
         // Starts marking
         ctrlNew.ScMarkEntityByName(entityNameToMark, 0);
         m_text_is_marking = "Marking!";
@@ -289,9 +289,10 @@ public sealed partial class TestWaveRunner : Page
         ctrlNew.ScStopMarking();
 
         // END OF ACTUAL MARKING
-        */
+        
 
         // TEST MARKING
+        /*
         await Task.Delay(1000); // false wait for sending objects
 
         m_text_is_marking = "Marking!";
@@ -301,6 +302,7 @@ public sealed partial class TestWaveRunner : Page
         MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.WARN);
 
         await Task.Delay(5000);
+        */
         // END OF TEST
 
         m_text_is_marking = "Done Marking";
@@ -309,7 +311,7 @@ public sealed partial class TestWaveRunner : Page
         msg = "SAMLight is done marking";
         MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS);
         StartMarkButton.IsEnabled = false;
-
+        
         return 1;
     }
 
