@@ -24,7 +24,7 @@ namespace Magneto.Desktop.WinUI.Views;
 /// </summary>
 public sealed partial class TestPrintPage : Page
 {
-    #region Private Variables
+    #region Motor Variables
 
     private StepperMotor? _powderMotor;
 
@@ -41,6 +41,12 @@ public sealed partial class TestPrintPage : Page
     private bool _sweepMotorSelected = false;
 
     private bool _movingMotorToTarget = false;
+
+    #endregion
+
+    #region Text Variables
+
+
 
     #endregion
 
@@ -91,6 +97,38 @@ public sealed partial class TestPrintPage : Page
         {
             motorField = null;
             MagnetoLogger.Log($"Unable to find {motorType} motor", LogFactoryLogLevel.LogLevel.ERROR);
+        }
+    }
+
+    // TODO: Get position of all motors on page load
+    private void GetMotorPositions()
+    {
+        var msg = "Getting motor positions";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        if (_buildMotor != null)
+        {
+            GetPositionHelper(_buildMotor);
+        }
+        else
+        {
+            MagnetoLogger.Log("Build Motor is null, cannot get position.", LogFactoryLogLevel.LogLevel.ERROR);
+        }
+        if (_powderMotor != null)
+        {
+            GetPositionHelper(_powderMotor);
+        }
+        else
+        {
+            MagnetoLogger.Log("Powder Motor is null, cannot get position.", LogFactoryLogLevel.LogLevel.ERROR);
+        }
+        if (_sweepMotor != null)
+        {
+            GetPositionHelper(_sweepMotor);
+        }
+        else
+        {
+            MagnetoLogger.Log("Sweep Motor is null, cannot get position.", LogFactoryLogLevel.LogLevel.ERROR);
         }
     }
 
@@ -159,7 +197,11 @@ public sealed partial class TestPrintPage : Page
         // Initialize motor map to simplify coordinated calls below
         // Make sure this happens AFTER motor setup
         InitializeMotorMap();
-        
+
+        // Get motor positions
+        //TODO: FIX ME -- mixes up motor positions
+        //GetMotorPositions();
+
         var msg = string.Format("TestPrintPage::OnNavigatedTo -- {0}", MissionControl.FriendlyMessage);
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
     }
@@ -256,16 +298,10 @@ public sealed partial class TestPrintPage : Page
             // Get the motor's position
             var pos = await motor.GetPosAsync();
 
-            // Safely update the corresponding text box
             var textBox = GetMotorTextBoxHelper(motor);
-            if (textBox != null)
+            if (textBox != null) // Full error checking in UITextHelper
             {
-                textBox.Text = pos.ToString();
-            }
-            else
-            {
-                msg = "Motor text box is null.";
-                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+                UpdateUITextHelper.UpdateUIText(textBox, pos.ToString());
             }
         }
         else
@@ -586,6 +622,7 @@ public sealed partial class TestPrintPage : Page
 
     #endregion
 
+
     #region Position Buttons
 
     /// <summary>
@@ -655,4 +692,34 @@ public sealed partial class TestPrintPage : Page
     }
 
     #endregion
+
+    private void IncrBuild_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void DecrBuild_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void IncrPowder_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void DecrPowder_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void IncrSweep_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void DecrSweep_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
 }

@@ -68,6 +68,9 @@
                             <TextBlock Grid.Column="0" Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Current Position:"></TextBlock>
                             <TextBox  Grid.Column="1" Grid.Row="2"  x:Name="BuildPositionTextBox" Width="50" Height ="20" Margin="10" 
                                       Text="..."></TextBox>
+                            <Button Grid.Column="2" Grid.Row="2" Grid.ColumnSpan="2" x:Name="GetBuildPositionButton" Content="Get Build Position" Height="30" Width="150" Margin="10" HorizontalAlignment="Center"
+                                        Background="DimGray" Click="GetBuildPositionButton_Click">
+                            </Button>
                             <TextBlock Grid.Column="0" Grid.Row="3" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Increment Position:"></TextBlock>
                             <TextBox  Grid.Column="1" Grid.Row="3"  x:Name="IncrBuildPositionTextBox" Width="50" Height ="20" Margin="10" 
                                       Text="..."></TextBox>
@@ -126,6 +129,9 @@
                                 <TextBlock Grid.Column="0" Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Current Position:"></TextBlock>
                                 <TextBox  Grid.Column="1" Grid.Row="2"  x:Name="PowderPositionTextBox" Width="50" Height ="20" Margin="10" 
                                       Text="..."></TextBox>
+                                <Button Grid.Column="2" Grid.Row="2" Grid.ColumnSpan="2" x:Name="GetPowderPositionButton" Content="Get Powder Position" Height="30" Width="150" Margin="10" HorizontalAlignment="Center"
+                                        Background="DimGray" Click="GetPowderPositionButton_Click">
+                                </Button>
                                 <TextBlock Grid.Column="0" Grid.Row="3" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Increment Position:"></TextBlock>
                                 <TextBox  Grid.Column="1" Grid.Row="3"  x:Name="IncrPowderPositionTextBox" Width="50" Height ="20" Margin="10" 
                                       Text="..."></TextBox>
@@ -187,6 +193,9 @@
                                 <TextBlock Grid.Column="0" Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Current Position:"></TextBlock>
                                 <TextBox  Grid.Column="1" Grid.Row="2"  x:Name="SweepPositionTextBox" Width="50" Height ="20" Margin="10" 
                                       Text="..."></TextBox>
+                                <Button Grid.Column="2" Grid.Row="2" Grid.ColumnSpan="2" x:Name="GetSweepPositionButton" Content="Get Sweep Position" Height="30" Width="150" Margin="10" HorizontalAlignment="Center"
+                                        Background="DimGray" Click="GetSweepPositionButton_Click">
+                                </Button>
                                 <TextBlock Grid.Column="0" Grid.Row="3" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Increment Position:"></TextBlock>
                                 <TextBox  Grid.Column="1" Grid.Row="3"  x:Name="IncrSweepPositionTextBox" Width="50" Height ="20" Margin="10" 
                                       Text="..."></TextBox>

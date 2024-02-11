@@ -17,6 +17,7 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using SAMLIGHT_CLIENT_CTRL_EXLib;
 using Magneto.Desktop.WinUI.Core.Services;
+using Magneto.Desktop.WinUI.Helpers;
 using ABI.System;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -56,11 +57,6 @@ public sealed partial class TestWaveRunner : Page
     /// Path to directory to search for files
     /// </summary>
     private string? _jobFilePath { get; set; }
-
-    /// <summary>
-    /// Text displayed in UI indicating marking status
-    /// </summary>
-    private string _display_text = "";
 
 
     #region Enumerators
@@ -230,8 +226,7 @@ public sealed partial class TestWaveRunner : Page
             return;
         }
 
-        _display_text = "Stopping Mark";
-        UpdateUIText(_display_text);
+        LogMessage("Stopping Mark", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS);
 
         msg = "SAMLight is stopping mark";
         MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.WARN);
@@ -363,6 +358,7 @@ public sealed partial class TestWaveRunner : Page
 
     #region Logging Methods
 
+    /*
     private void UpdateUIText(string text)
     {
         // Ensure the UI update is performed on the UI thread
@@ -371,12 +367,11 @@ public sealed partial class TestWaveRunner : Page
             IsMarkingText.Text = text;
         });
     }
-
+    */
     private void LogMessage(string uiMessage, Core.Contracts.Services.LogFactoryLogLevel.LogLevel logLevel, string logMessage = null)
     {
         // Update UI with the message
-        UpdateUIText(uiMessage);
-
+        UpdateUITextHelper.UpdateUIText(IsMarkingText, uiMessage);
         // Use the provided log level for logging
         MagnetoLogger.Log(logMessage ?? uiMessage, logLevel);
     }
