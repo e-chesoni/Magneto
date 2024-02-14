@@ -20,6 +20,7 @@ using Magneto.Desktop.WinUI.Core.Services;
 using Magneto.Desktop.WinUI.Helpers;
 using ABI.System;
 using static System.Net.Mime.MediaTypeNames;
+using Microsoft.UI;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -57,6 +58,8 @@ public sealed partial class TestWaveRunner : Page
     /// Path to directory to search for files
     /// </summary>
     private string? _jobFilePath { get; set; }
+
+    private bool _redPointerEnabled { get; set; }
 
 
     #region Enumerators
@@ -98,6 +101,11 @@ public sealed partial class TestWaveRunner : Page
         // Set Job File
         _defaultJobName = "center_crosshair_OAT.sjf";
         JobFileNameTextBox.Text = _defaultJobName;
+
+        // ASSUMPTION: Red pointer is off when application starts
+        // Have not found way to check red pointer status in SAMLight docs 
+        // Initialize red pointer to off
+        _redPointerEnabled = false;
     }
 
     #endregion
@@ -207,6 +215,95 @@ public sealed partial class TestWaveRunner : Page
         //MessageBox.Show(mark_time_string, "Info", MessageBoxButtons.OK);
     }
 
+    private void UpdateDirectoryButton_Click(object sender, RoutedEventArgs e)
+    {
+        _jobDirectory = JobFileSearchDirectory.Text;
+        StartMarkButton.IsEnabled = false;
+    }
+
+    private ExecStatus ValidateJob(string fullPath)
+    {
+        MagnetoLogger.Log("Getting job...", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        if (!Directory.Exists(_jobDirectory))
+        {
+            MagnetoLogger.Log("Directory does not exist. Cannot get job.", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
+            return ExecStatus.Failure;
+        }
+
+        if (!File.Exists(fullPath))
+        {
+            MagnetoLogger.Log($"File not found: {fullPath}", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
+            return ExecStatus.Failure;
+        }
+
+        return ExecStatus.Success;
+    }
+
+
+    private void GetJobButton_Click(object sender, RoutedEventArgs e)
+    {
+        var fullFilePath = Path.Combine(_jobDirectory, JobFileNameTextBox.Text);
+
+        if (ValidateJob(fullFilePath) == ExecStatus.Success)
+        {
+            _jobFilePath = fullFilePath; // Assuming _jobFilePath is a class member
+            StartMarkButton.IsEnabled = true;
+            ToggleRedPointerButton.IsEnabled = true;
+        }
+        else
+        {
+            StartMarkButton.IsEnabled = false;
+            ToggleRedPointerButton.IsEnabled = false;
+        }
+    }
+
+    private void UseDefaultJobButton_Click(object sender, RoutedEventArgs e)
+    {
+        // Update job file name
+        JobFileNameTextBox.Text = _defaultJobName;
+
+        var msg = $"Setting job file to default job {_defaultJobName}";
+        MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        // Check if the directory exists
+        if (FindJobDirectory() == 0) // Returns 0 on fail; 1 on success
+        {
+            msg = "Directory does not exist. Cannot get job.";
+            MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
+            return;
+        }
+    }
+
+    private void StartRedPointerButton_Click(object sender, RoutedEventArgs e)
+    {
+        // File exists, proceed with marking
+        var msg = $"Starting Red Pointer";
+        MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS);
+        StartRedPointer();
+    }
+
+    private void ToggleRedPointerButton_Click(object sender, RoutedEventArgs e)
+    {
+        _redPointerEnabled = !_redPointerEnabled;
+
+        if (_redPointerEnabled)
+        {
+            MagnetoLogger.Log("Starting Red Pointer", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS);
+            StartRedPointer();
+            ToggleRedPointerButton.Background = new SolidColorBrush(Colors.Red);
+            StartMarkButton.IsEnabled = false; // Assume job validation does not change.
+        }
+        else
+        {
+            MagnetoLogger.Log("Stopping Red Pointer", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS);
+            StopRedPointer();
+            ToggleRedPointerButton.Background = (SolidColorBrush)Microsoft.UI.Xaml.Application.Current.Resources["ButtonBackgroundThemeBrush"];
+            // Re-enable StartMarkButton only if _jobFilePath is still valid
+            StartMarkButton.IsEnabled = !string.IsNullOrEmpty(_jobFilePath) && File.Exists(_jobFilePath);
+        }
+    }
+
     private void StartMarkButton_Click(object sender, RoutedEventArgs e)
     {
         // File exists, proceed with marking
@@ -234,59 +331,6 @@ public sealed partial class TestWaveRunner : Page
         cci.ScStopMarking();
     }
 
-    private void UpdateDirectoryButton_Click(object sender, RoutedEventArgs e)
-    {
-        _jobDirectory = JobFileSearchDirectory.Text;
-        StartMarkButton.IsEnabled = false;
-    }
-
-    private void GetJobButton_Click(object sender, RoutedEventArgs e)
-    {
-        var msg = "Getting job...";
-        MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
-
-        // Check if the directory exists
-        if (FindJobDirectory() < 0)
-        {
-            msg = "Directory does not exist. Cannot get job.";
-            MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
-            return;
-        }
-
-        // Construct the full file path
-        var fullFilePath = Path.Combine(_jobDirectory, JobFileNameTextBox.Text);
-
-        // Check if the file exists
-        if (FindFile(fullFilePath) == 0) // FindFile returns 0 if file does not exist
-        {
-            msg = $"File not found: {fullFilePath}";
-            MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
-            return;
-        }
-        else // If file exists, set _jobFilePath to full path name, and enable start job button
-        {
-            _jobFilePath = fullFilePath;
-            StartMarkButton.IsEnabled= true;
-        }
-    }
-
-    private void UseDefaultJobButton_Click(object sender, RoutedEventArgs e)
-    {
-        // Update job file name
-        JobFileNameTextBox.Text = _defaultJobName;
-
-        var msg = $"Setting job file to default job {_defaultJobName}";
-        MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
-
-        // Check if the directory exists
-        if (FindJobDirectory() == 0) // Returns 0 on fail; 1 on success
-        {
-            msg = "Directory does not exist. Cannot get job.";
-            MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
-            return;
-        }
-    }
-
     #endregion
 
 
@@ -307,6 +351,17 @@ public sealed partial class TestWaveRunner : Page
 
         // returns void
         cci.ScExecCommand((int)ScComSAMLightClientCtrlExecCommandConstants.scComSAMLightClientCtrlExecCommandRedPointerStart);
+
+        // TODO: Replace once we figure out how to interact with error codes form SAM
+        return (int)ExecStatus.Success;
+    }
+
+    public int StopRedPointer()
+    {
+        LogMessage("Stopping red pointer", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS);
+
+        // returns void
+        cci.ScExecCommand((int)ScComSAMLightClientCtrlExecCommandConstants.scComSAMLightClientCtrlExecCommandRedPointerStop);
 
         // TODO: Replace once we figure out how to interact with error codes form SAM
         return (int)ExecStatus.Success;
@@ -340,11 +395,7 @@ public sealed partial class TestWaveRunner : Page
 
         LogMessage("Sending Objects!", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS); // Update UI with status
 
-        // TODO: TEST -- I think this should turn red pointer on, then trace entity shape
-        // It could, however, turn the red pointer on and do nothing
-        // SCAPS DOCS
-        // "The red pointer has to be stopped before the marking procedure can be started by this command."
-        StartRedPointer();
+        // TOOD: CAUSES ERROR
         await Mark(entityNameToMark); // Perform mark
 
         LogMessage("Done Marking", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS, "SAMLight is done marking.");

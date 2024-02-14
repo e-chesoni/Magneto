@@ -107,12 +107,18 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <Button Grid.Column="0" x:Name="StartMarkButton" HorizontalAlignment="Right" VerticalAlignment="Center" 
+                        <Button Grid.Column="0" x:Name="ToggleRedPointerButton" HorizontalAlignment="Right" VerticalAlignment="Center" 
+                                Margin="10" Content="Toggle Red Pointer" Click="ToggleRedPointerButton_Click" IsEnabled="False"></Button>
+                        <TextBlock Grid.Column="1" x:Name="RedPointerInfoText" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10"
+                                   FontSize="12" Text="Red pointer must be off to Start Mark" Foreground="DarkGray"></TextBlock>
+                        <Button Grid.Column="2" x:Name="StartMarkButton" HorizontalAlignment="Right" VerticalAlignment="Center" 
                                 Margin="10" Content="Start Mark" Click="StartMarkButton_Click" IsEnabled="False"></Button>
-                        <TextBlock Grid.Column="1" x:Name="IsMarkingText" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10"
+                        <TextBlock Grid.Column="3" x:Name="IsMarkingText" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10"
                                    FontSize="12" Text="Waiting to Start Mark" Foreground="DarkGray"></TextBlock>
-                        <Button Grid.Column="2" x:Name="StopMarkButton" HorizontalAlignment="Left" VerticalAlignment="Center" 
+                        <Button Grid.Column="4" x:Name="StopMarkButton" HorizontalAlignment="Left" VerticalAlignment="Center" 
                                 Margin="10" Content="Stop Mark" Click="StopMarkButton_Click"></Button>
                     </Grid>
                 </Grid>
