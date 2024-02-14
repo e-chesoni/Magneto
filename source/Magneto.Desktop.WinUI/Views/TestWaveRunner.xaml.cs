@@ -369,7 +369,11 @@ public sealed partial class TestWaveRunner : Page
 
     private async Task<int> Mark(string entityNameToMark)
     {
-        cci.ScMarkEntityByName(entityNameToMark, 0);
+        // load demo jobfile
+        cci.ScLoadJob(entityNameToMark, 1, 1, 0);
+
+        // mark job
+        cci.ScMarkEntityByName(entityNameToMark, 1); // 1 is blocking, 0 returns control to user immediately
         LogMessage("Marking!", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.WARN, "SAMLight is Marking...");
 
         await Task.Run(() =>
@@ -384,25 +388,42 @@ public sealed partial class TestWaveRunner : Page
         return 1;
     }
 
-    public async Task<int> MarkEntityAsync(string entityNameToMark)
+    public async Task<ExecStatus> MarkEntityAsync(string entityNameToMark)
     {
         if (cci.ScIsRunning() == 0)
         {
             LogMessage("Cannot Mark; WaveRunner is closed.", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR, "SAMLight not found");
             StartMarkButton.IsEnabled = false;
-            return 0;
+            return ExecStatus.Failure;
         }
 
         LogMessage("Sending Objects!", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS); // Update UI with status
 
-        // TOOD: CAUSES ERROR
-        await Mark(entityNameToMark); // Perform mark
+        try
+        {
+            cci.ScMarkEntityByName(entityNameToMark, 0); // 0 returns control to the user immediately
+            LogMessage("Marking!", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.WARN, "SAMLight is Marking...");
 
-        LogMessage("Done Marking", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS, "SAMLight is done marking.");
-        StartMarkButton.IsEnabled = false;
+            // Wait for marking to complete
+            while (cci.ScIsMarking() != 0)
+            {
+                await Task.Delay(100); // Use a delay to throttle the loop for checking marking status
+            }
 
-        return 1;
+            cci.ScStopMarking();
+            LogMessage("Done Marking", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS, "SAMLight is done marking.");
+            StartMarkButton.IsEnabled = true; // Allow retrying
+
+            return ExecStatus.Success;
+        }
+        catch (System.Runtime.InteropServices.COMException comEx)
+        {
+            LogMessage($"COM Exception: {comEx.Message}", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
+            StartMarkButton.IsEnabled = true; // Allow retrying
+            return ExecStatus.Failure;
+        }
     }
+
 
     #endregion
 
