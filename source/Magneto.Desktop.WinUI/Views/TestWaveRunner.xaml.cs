@@ -367,26 +367,11 @@ public sealed partial class TestWaveRunner : Page
         return (int)ExecStatus.Success;
     }
 
-    private async Task<int> Mark(string entityNameToMark)
-    {
-        // load demo jobfile
-        cci.ScLoadJob(entityNameToMark, 1, 1, 0);
-
-        // mark job
-        cci.ScMarkEntityByName(entityNameToMark, 1); // 1 is blocking, 0 returns control to user immediately
-        LogMessage("Marking!", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.WARN, "SAMLight is Marking...");
-
-        await Task.Run(() =>
-        {
-            while (cci.ScIsMarking() != 0)
-            {
-                Task.Delay(100).Wait(); // Use a delay to throttle the loop for checking marking status
-            }
-        });
-
-        cci.ScStopMarking();
-        return 1;
-    }
+    // test res:
+    // first toggle starts red pointer
+    // second toggle starts laser
+    // stop mark does not stop laser
+    // start mark does not start laser
 
     public async Task<ExecStatus> MarkEntityAsync(string entityNameToMark)
     {
@@ -402,9 +387,13 @@ public sealed partial class TestWaveRunner : Page
         // load demo jobfile
         cci.ScLoadJob(entityNameToMark, 1, 1, 0);
 
+        var msg = $"Loaded file at path: {entityNameToMark} for marking...";
+
+        MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.WARN);
+
         try
         {
-            cci.ScMarkEntityByName(entityNameToMark, 0); // 0 returns control to the user immediately
+            cci.ScMarkEntityByName("", 0); // 0 returns control to the user immediately
             LogMessage("Marking!", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.WARN, "SAMLight is Marking...");
 
             // Wait for marking to complete
