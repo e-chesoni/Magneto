@@ -398,6 +398,9 @@ public sealed partial class TestWaveRunner : Page
         }
 
         LogMessage("Sending Objects!", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS); // Update UI with status
+        
+        // load demo jobfile
+        cci.ScLoadJob(entityNameToMark, 1, 1, 0);
 
         try
         {
