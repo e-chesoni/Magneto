@@ -57,7 +57,7 @@ public sealed partial class TestWaveRunner : Page
     /// <summary>
     /// Full file path to entity
     /// </summary>
-    private string? _jobFilePath { get; set; }
+    private string? _fullJobFilePath { get; set; }
 
     private bool _redPointerEnabled { get; set; }
 
@@ -246,7 +246,7 @@ public sealed partial class TestWaveRunner : Page
 
         if (ValidateJob(fullFilePath) == ExecStatus.Success)
         {
-            _jobFilePath = fullFilePath; // Assuming _jobFilePath is a class member
+            _fullJobFilePath = fullFilePath; // Assuming _fullJobFilePath is a class member
             StartMarkButton.IsEnabled = true;
             ToggleRedPointerButton.IsEnabled = true;
         }
@@ -298,15 +298,15 @@ public sealed partial class TestWaveRunner : Page
             MagnetoLogger.Log("Stopping Red Pointer", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS);
             StopRedPointer();
             ToggleRedPointerButton.Background = (SolidColorBrush)Microsoft.UI.Xaml.Application.Current.Resources["ButtonBackgroundThemeBrush"];
-            // Re-enable StartMarkButton only if _jobFilePath is still valid
-            StartMarkButton.IsEnabled = !string.IsNullOrEmpty(_jobFilePath) && File.Exists(_jobFilePath);
+            // Re-enable StartMarkButton only if _fullJobFilePath is still valid
+            StartMarkButton.IsEnabled = !string.IsNullOrEmpty(_fullJobFilePath) && File.Exists(_fullJobFilePath);
         }
     }
 
     private void StartMarkButton_Click(object sender, RoutedEventArgs e)
     {
         // File exists, proceed with marking
-        var msg = $"Starting mark for file: {_jobFilePath}";
+        var msg = $"Starting mark for file: {_fullJobFilePath}";
         MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
         _ = MarkEntityAsync();
     }
@@ -356,8 +356,8 @@ public sealed partial class TestWaveRunner : Page
 
         LogMessage("Sending Objects!", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS); // Update UI with status
 
-        // load demo jobfile
-        cci.ScLoadJob(_jobFilePath, 1, 1, 0);
+        // load demo job file
+        cci.ScLoadJob(_fullJobFilePath, 1, 1, 0);
 
         // returns void
         cci.ScExecCommand((int)ScComSAMLightClientCtrlExecCommandConstants.scComSAMLightClientCtrlExecCommandRedPointerStart);
@@ -380,10 +380,6 @@ public sealed partial class TestWaveRunner : Page
         return (int)ExecStatus.Success;
     }
 
-    // test res:
-    // start / stop laser now working when OAT file has been opened in waverunner
-    // unable to start red pointer or mark if OAT file is not open
-
     public async Task<ExecStatus> MarkEntityAsync()
     {
         if (cci.ScIsRunning() == 0)
@@ -395,10 +391,10 @@ public sealed partial class TestWaveRunner : Page
 
         LogMessage("Sending Objects!", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS); // Update UI with status
         
-        // load demo jobfile
-        cci.ScLoadJob(_jobFilePath, 1, 1, 0);
+        // load demo job file
+        cci.ScLoadJob(_fullJobFilePath, 1, 1, 0);
 
-        var msg = $"Loaded file at path: {_jobFilePath} for marking...";
+        var msg = $"Loaded file at path: {_fullJobFilePath} for marking...";
 
         MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.WARN);
 
@@ -428,26 +424,16 @@ public sealed partial class TestWaveRunner : Page
         }
     }
 
-
     #endregion
 
 
     #region Logging Methods
 
-    /*
-    private void UpdateUIText(string text)
-    {
-        // Ensure the UI update is performed on the UI thread
-        DispatcherQueue.TryEnqueue(() =>
-        {
-            IsMarkingText.Text = text;
-        });
-    }
-    */
     private void LogMessage(string uiMessage, Core.Contracts.Services.LogFactoryLogLevel.LogLevel logLevel, string logMessage = null)
     {
         // Update UI with the message
         UpdateUITextHelper.UpdateUIText(IsMarkingText, uiMessage);
+
         // Use the provided log level for logging
         MagnetoLogger.Log(logMessage ?? uiMessage, logLevel);
     }
