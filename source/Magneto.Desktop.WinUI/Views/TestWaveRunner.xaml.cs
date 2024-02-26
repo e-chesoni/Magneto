@@ -34,7 +34,7 @@ public sealed partial class TestWaveRunner : Page
     /// <summary>
     /// WaveRunner client control interface
     /// </summary>
-    private static ScSamlightClientCtrlEx cci = new ScSamlightClientCtrlEx();
+    private static readonly ScSamlightClientCtrlEx cci = new();
 
     /// <summary>
     /// Default job directory (to search for job files)
@@ -55,7 +55,7 @@ public sealed partial class TestWaveRunner : Page
     private string _jobDirectory { get; set; }
 
     /// <summary>
-    /// Path to directory to search for files
+    /// Full file path to entity
     /// </summary>
     private string? _jobFilePath { get; set; }
 
@@ -240,7 +240,6 @@ public sealed partial class TestWaveRunner : Page
         return ExecStatus.Success;
     }
 
-
     private void GetJobButton_Click(object sender, RoutedEventArgs e)
     {
         var fullFilePath = Path.Combine(_jobDirectory, JobFileNameTextBox.Text);
@@ -309,7 +308,7 @@ public sealed partial class TestWaveRunner : Page
         // File exists, proceed with marking
         var msg = $"Starting mark for file: {_jobFilePath}";
         MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
-        _ = MarkEntityAsync(JobFileNameTextBox.Text);
+        _ = MarkEntityAsync();
     }
 
     private void StopMarkButton_Click(object sender, RoutedEventArgs e)
@@ -349,6 +348,17 @@ public sealed partial class TestWaveRunner : Page
     {
         LogMessage("Starting red pointer", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS);
 
+        if (cci.ScIsRunning() == 0)
+        {
+            LogMessage("Cannot Mark; WaveRunner is closed.", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR, "SAMLight not found");
+            StartMarkButton.IsEnabled = false;
+        }
+
+        LogMessage("Sending Objects!", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS); // Update UI with status
+
+        // load demo jobfile
+        cci.ScLoadJob(_jobFilePath, 1, 1, 0);
+
         // returns void
         cci.ScExecCommand((int)ScComSAMLightClientCtrlExecCommandConstants.scComSAMLightClientCtrlExecCommandRedPointerStart);
 
@@ -362,18 +372,19 @@ public sealed partial class TestWaveRunner : Page
 
         // returns void
         cci.ScExecCommand((int)ScComSAMLightClientCtrlExecCommandConstants.scComSAMLightClientCtrlExecCommandRedPointerStop);
+        
+        // make sure laser does not mark when stopping red pointer
+        cci.ScStopMarking();
 
         // TODO: Replace once we figure out how to interact with error codes form SAM
         return (int)ExecStatus.Success;
     }
 
     // test res:
-    // first toggle starts red pointer
-    // second toggle starts laser
-    // stop mark does not stop laser
-    // start mark does not start laser
+    // start / stop laser now working when OAT file has been opened in waverunner
+    // unable to start red pointer or mark if OAT file is not open
 
-    public async Task<ExecStatus> MarkEntityAsync(string entityNameToMark)
+    public async Task<ExecStatus> MarkEntityAsync()
     {
         if (cci.ScIsRunning() == 0)
         {
@@ -385,14 +396,15 @@ public sealed partial class TestWaveRunner : Page
         LogMessage("Sending Objects!", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS); // Update UI with status
         
         // load demo jobfile
-        cci.ScLoadJob(entityNameToMark, 1, 1, 0);
+        cci.ScLoadJob(_jobFilePath, 1, 1, 0);
 
-        var msg = $"Loaded file at path: {entityNameToMark} for marking...";
+        var msg = $"Loaded file at path: {_jobFilePath} for marking...";
 
         MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.WARN);
 
         try
         {
+            // TODO: Test 1
             cci.ScMarkEntityByName("", 0); // 0 returns control to the user immediately
             LogMessage("Marking!", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.WARN, "SAMLight is Marking...");
 
