@@ -103,7 +103,7 @@ public sealed partial class PrintPage : Page
             // Put a new image on the build manager
             MissionControl.CreateImageModel(path_to_image);
 
-            // TODO: Toast Message: Using default thickness of 5mm
+            // TODO: Toast Message: Using default thickness of {} get from config
             msg = "Setting every print layer's thickness to default thickness from MagnetoConfig";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
             MissionControl.SetImageThickness(MissionControl.GetDefaultPrintLayerThickness());
