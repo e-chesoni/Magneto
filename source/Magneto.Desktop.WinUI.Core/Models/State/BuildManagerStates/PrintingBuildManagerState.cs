@@ -45,7 +45,10 @@ public class PrintingBuildManagerState : IBuildManagerState
         _BuildManagerSM.TransitionTo(new PausedBuildManagerState(_BuildManagerSM));
     }
 
-    public void Start(ImageModel im) => throw new NotImplementedException();
+    public void Start(ImageModel im)
+    {
+        Draw();
+    }
 
     public async Task Draw()
     {
@@ -54,7 +57,10 @@ public class PrintingBuildManagerState : IBuildManagerState
         //TODO: Implement start routine
         // Calc starting pos for build and powder motors (printHeight)
 
-        //TODO: MOVE TO CALIBRATE STATE: This should be only method in calibrate motors to start
+        // TODO: MOVE TO CALIBRATE STATE: This should be only method in calibrate motors to start
+        // INFO: dance count = total slices. this number is obtained when user clicks "find print"
+        // In testing, the number of slices is set by ImageHandler
+        // ImageHandler references Magneto Config to get slice number
         var printHeight = MagnetoConfig.GetDefaultPrintThickness() * _BuildManagerSM.danceModel.dance.Count;
         _BuildManagerSM.SetCurrentPrintHeight(printHeight);
         msg = $"Print Height: {printHeight}";

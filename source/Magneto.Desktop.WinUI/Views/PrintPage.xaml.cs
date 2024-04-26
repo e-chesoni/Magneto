@@ -109,7 +109,7 @@ public sealed partial class PrintPage : Page
             MissionControl.SetImageThickness(MissionControl.GetDefaultPrintLayerThickness());
 
             // Slice image
-            MissionControl.SliceImage();
+            MissionControl.SliceImage(); // TODO: IMAGE HANDLER references Magneto Config to control slice number: SliceImage calls SliceImage in build controller which calls ImageHandler
             StartPrintButton.IsEnabled = true;
 
             // TODO: MOVE ME -- Populate after successful calibration

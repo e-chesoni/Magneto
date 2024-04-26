@@ -174,6 +174,7 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     /// </summary>
     public void SliceImage()
     {
+        // TODO: IMAGE HANDLER CONTROLS SLICE NUMBER (SliceImage calls ImageHandler method)
         _buildManager.SliceImage();
     }
 

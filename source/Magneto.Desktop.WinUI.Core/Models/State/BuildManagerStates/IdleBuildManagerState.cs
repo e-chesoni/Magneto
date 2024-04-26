@@ -37,7 +37,7 @@ public class IdleBuildManagerState : IBuildManagerState
     {
         MagnetoLogger.Log("Starting...", Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
 
-        // Get poses for print
+        // Get poses for print (each "pose" has a slice (shape to trace) and a thickness)
         _BuildManagerSM.danceModel.GetPoseStack(im.sliceStack, im.thickness);
 
         // TODO: Get max height from dance model

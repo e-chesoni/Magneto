@@ -261,6 +261,7 @@ public class BuildManager : ISubsciber, IStateMachine
     /// </summary>
     public void SliceImage()
     {
+        // TODO: UPDATE in production. Currently uses default number of slicees from Magneto Config
         imageModel.sliceStack = ImageHandler.SliceImage(imageModel);
     }
     
