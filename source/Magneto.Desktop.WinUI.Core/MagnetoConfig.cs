@@ -31,11 +31,11 @@ public class COMPortConfig
 }
 public static class MagnetoConfig
 {
-    private static double _defaultPrintThickness = 1;
+    private static double _defaultPrintThickness = 2;
 
     private static int _defaultNumSlices = 3;
 
-    private static int _sweepDist = 110;
+    private static int _sweepDist = 220;
 
     private static int _build_and_powder_port = 4;
 
@@ -74,9 +74,9 @@ public static class MagnetoConfig
             {
                 motorName = "powder",
                 COMPort = GetCOMPortName(GetCOMPort(_build_and_powder_port)),
-                axis = 1,
+                axis = 2,
                 maxPos = 0,
-                minPos = -35,
+                minPos = -36,
                 homePos = 0,
                 velocity = 5, // mm/s^2
             },
@@ -84,9 +84,9 @@ public static class MagnetoConfig
             {
                 motorName = "build",
                 COMPort = GetCOMPortName(GetCOMPort(_build_and_powder_port)),
-                axis = 2,
+                axis = 1,
                 maxPos = 0,
-                minPos = -35,
+                minPos = -36,
                 homePos = 0,
                 velocity = 5, // mm/s^2
             },
@@ -95,9 +95,9 @@ public static class MagnetoConfig
                 motorName = "sweep",
                 COMPort = GetCOMPortName(GetCOMPort(_sweep_port)),
                 axis = 1,
-                maxPos = 173.73,
-                minPos = -110,
-                homePos = -110,
+                maxPos = 283,
+                minPos = -9, // touching wall is -110 (as of 2024-04-26)
+                homePos = 0,
                 velocity = 25, // mm/s^2
             },
         };
