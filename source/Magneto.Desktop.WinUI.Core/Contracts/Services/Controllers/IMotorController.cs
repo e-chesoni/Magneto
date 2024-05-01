@@ -22,7 +22,7 @@ public interface IMotorController
     Task MoveMotorsAbsAsync(double thickness);
 
     /// <summary>
-    /// Move one motor relative to an absolute position
+    /// Move one motor to an absolute position
     /// </summary>
     /// <param name="axis"></param> The axis of the motor to move
     /// <param name="step"></param> Distance to move motor
@@ -30,26 +30,34 @@ public interface IMotorController
     Task MoveMotorByAxisAsync(int axis, double step);
 
     /// <summary>
-    /// Move motor synchronously during prints
+    /// Move motor to absolute position
     /// </summary>
     /// <param name="thickness"></param>
     /// <returns></returns>
     Task MoveMotorAbsAsync(StepperMotor motor, double step);
 
     /// <summary>
-    /// Perform sequenced motor movement
+    /// Move all motors attached to controller relative to their current position
     /// Syntax to move both motors to relative position
     /// </summary>
     /// <returns></returns> returns 0 on success, -1 on failure
-    Task MoveMotorsRel(double thickness);
+    Task MoveMotorsRelAsync(double thickness);
 
     /// <summary>
-    /// Move one motor relative to its current position
+    /// Move motor relative to its current position
     /// </summary>
     /// <param name="axis"></param> The axis of the motor to move
     /// <param name="step"></param> Distance to move motor
     /// <returns></returns>
-    Task MoveMotorRel(int axis, double step);
+    Task MoveMotorRelAsync(int axis, double step);
+
+    /// <summary>
+    /// Move motor relative to its current position 
+    /// </summary>
+    /// <param name="motor"></param>
+    /// <param name="step"></param>
+    /// <returns></returns>
+    Task MoveMotorRelAsync(StepperMotor motor, double step);
 
     /// <summary>
     /// Home all attached motors

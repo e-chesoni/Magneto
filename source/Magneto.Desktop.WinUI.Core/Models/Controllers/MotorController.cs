@@ -188,7 +188,7 @@ public class MotorController : IMotorController
     /// Syntax to move both motors to relative position
     /// </summary>
     /// <returns></returns> returns 0 on success, -1 on failure
-    public async Task MoveMotorsRel(double thickness)
+    public async Task MoveMotorsRelAsync(double thickness)
     {
         var msg = "Moving Motors (PLURAL)...";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
@@ -198,7 +198,7 @@ public class MotorController : IMotorController
         foreach (var motor in _motorList)
         {
             await motor.MoveMotorRelAsync(thickness);
-            Thread.Sleep(2000);
+            //Thread.Sleep(2000);
         }
     }
 
@@ -208,7 +208,7 @@ public class MotorController : IMotorController
     /// <param name="axis"></param> The axis of the motor to move
     /// <param name="step"></param> Distance to move motor
     /// <returns></returns>
-    public async Task MoveMotorRel(int axis, double step)
+    public async Task MoveMotorRelAsync(int axis, double step)
     {
         var msg = "Moving Motor Relative";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
@@ -229,7 +229,7 @@ public class MotorController : IMotorController
     }
 
     // USED IN PRINT SEQUENCE
-    public async Task MoveMotorRel(StepperMotor motor, double step)
+    public async Task MoveMotorRelAsync(StepperMotor motor, double step)
     {
         var msg = "Moving Motor Relative";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);

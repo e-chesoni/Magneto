@@ -416,20 +416,32 @@ public class StepperMotor : IStepperMotor
     /// <returns></returns> Returns -1 if move command fails, 0 if move command is successful
     public async Task MoveMotorRelAsync(double steps)
     {
+        // Get the motors initial position
         var initialPos = await GetPosAsync();
+
+        // Calculate desired position
         var desiredPos = initialPos + steps;
+
+        // Log initial and desired position
         var msg = $"Initial position of {_motorName} motor: {initialPos}. Desired relative position: {desiredPos}";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
 
+        // Check if desired position is out of range
         if (desiredPos < _minPos || desiredPos > _maxPos)
         {
+            // If it is, log error and exit method
             MagnetoLogger.Log($"Invalid position: {desiredPos} for {_motorName}. _minPos is {_minPos} and _maxPos is {_maxPos}. Aborting motor move operation.", LogFactoryLogLevel.LogLevel.ERROR);
             return;
         }
 
+        // Check if serial port assigned to motor is open
         if (MagnetoSerialConsole.OpenSerialPort(_motorPort))
         {
+            // If port is open:
+            // Create move command
             var moveCommand = $"{_motorAxis}MVR{steps}";
+
+            // Send move command to motor port
             MagnetoSerialConsole.SerialWrite(_motorPort, moveCommand);
             MagnetoLogger.Log($"Moving {_motorName} motor on axis {_motorAxis} {steps}mm relative to current position. Command Sent: {moveCommand}", LogFactoryLogLevel.LogLevel.VERBOSE);
 
@@ -438,7 +450,9 @@ public class StepperMotor : IStepperMotor
         }
         else
         {
+            // If port is closed, log error and exit method
             MagnetoLogger.Log("Port Closed.", LogFactoryLogLevel.LogLevel.ERROR);
+            return;
         }
     }
 

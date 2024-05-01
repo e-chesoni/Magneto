@@ -73,11 +73,12 @@ public class PrintingBuildManagerState : IBuildManagerState
         // Log number of print layers
         msg = $"Print layers: {_BuildManagerSM.danceModel.dance.Count}";
         MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
-        
+
         // TODO: Let user calibrate build start height
 
-        // Move build motor down to start position
-        await _BuildManagerSM.buildController.MoveMotorAbsAsync(_BuildManagerSM.buildController.GetBuildMotor(), -MagnetoConfig.GetDefaultPrintThickness());
+        // Move build plate down to start position: total print height + build plate thickness
+        double build_plate_thickness = 5;
+        await _BuildManagerSM.buildController.MoveMotorAbsAsync(_BuildManagerSM.buildController.GetBuildMotor(), -(build_plate_thickness + MagnetoConfig.GetDefaultPrintThickness()));
 
         // Move powder motor down to start position
         await _BuildManagerSM.buildController.MoveMotorAbsAsync(_BuildManagerSM.buildController.GetPowderMotor(), -printHeight);
@@ -118,12 +119,11 @@ public class PrintingBuildManagerState : IBuildManagerState
 
                     _BuildManagerSM.laserController.Draw(slice); // this was in original code
 
-                    // Move build plate down height of print + build plate thickness
-                    double build_plate_thickness = 5; 
+                    
 
-                    await _BuildManagerSM.buildController.MoveMotorRel(_BuildManagerSM.buildController.GetBuildMotor(), -(build_plate_thickness + thickness));
+                    await _BuildManagerSM.buildController.MoveMotorRelAsync(_BuildManagerSM.buildController.GetBuildMotor(), -thickness);
 
-                    await _BuildManagerSM.buildController.MoveMotorRel(_BuildManagerSM.buildController.GetPowderMotor(), thickness);
+                    await _BuildManagerSM.buildController.MoveMotorRelAsync(_BuildManagerSM.buildController.GetPowderMotor(), thickness);
 
                     // Sweep
                     //await _BuildManagerSM.sweepController.MoveMotorAbsAsync(_BuildManagerSM.sweepController.GetSweepMotor(), _BuildManagerSM.GetSweepDist());
