@@ -45,49 +45,64 @@ public class PrintingBuildManagerState : IBuildManagerState
         _BuildManagerSM.TransitionTo(new PausedBuildManagerState(_BuildManagerSM));
     }
 
-    public void Start(ImageModel im)
-    {
-        Draw();
-    }
+    public void Start(ImageModel im) => throw new NotImplementedException();
 
     public async Task Draw()
     {
         // TODO: Find a way to set flag using interrupts (if user wants to pause/cancel print)
         var msg = "";
-        //TODO: Implement start routine
-        // Calc starting pos for build and powder motors (printHeight)
 
         // TODO: MOVE TO CALIBRATE STATE: This should be only method in calibrate motors to start
         // INFO: dance count = total slices. this number is obtained when user clicks "find print"
         // In testing, the number of slices is set by ImageHandler
         // ImageHandler references Magneto Config to get slice number
+
+        // Get print height
         var printHeight = MagnetoConfig.GetDefaultPrintThickness() * _BuildManagerSM.danceModel.dance.Count;
+
+        // Set the current print height on the build manager
+        // TODO: Why do you need to set the current height on the build manager?
+        // Is it every referenced?
+        // Could reference later to display height on print page
         _BuildManagerSM.SetCurrentPrintHeight(printHeight);
+
+        // Log print height
         msg = $"Print Height: {printHeight}";
         MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
 
+        // Log number of print layers
         msg = $"Print layers: {_BuildManagerSM.danceModel.dance.Count}";
         MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
         
-        // TODO: Let user calibrate build start height (height of first layer; ~1mm below plate height for testing)
+        // TODO: Let user calibrate build start height
+
+        // Move build motor down to start position
         await _BuildManagerSM.buildController.MoveMotorAbsAsync(_BuildManagerSM.buildController.GetBuildMotor(), -MagnetoConfig.GetDefaultPrintThickness());
 
-        // Powder motor moves DOWN to calcStartPosPowder (IRL this is done by the user; use artificial start here)
+        // Move powder motor down to start position
         await _BuildManagerSM.buildController.MoveMotorAbsAsync(_BuildManagerSM.buildController.GetPowderMotor(), -printHeight);
 
         // Sweep motor moves to starting position (home)
         //_ = _BuildManagerSM.sweepController.MoveMotorAbsAsync(_BuildManagerSM.sweepController.GetSweepMotor(), _BuildManagerSM.sweepController.GetSweepMotor().GetHomePos());
+
+        // TODO: Let user calibrate
+
+        // TODO: Go to build print when user clicks 'Done' in calibrate state
         
-        // Keep track of loop (remove later)
+        // Keep track of loop
         var ctr = 0;
 
+        // Dance move = slice + shape
         foreach(var move in _BuildManagerSM.danceModel.dance)
         {
+            // Increment loop counter
             ctr++;
+
+            // Log loop count
             msg = $"Executing print loop {ctr}";
             MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
             
-            // Get motor positions and slice from pose
+            // Get motor thickness from Pose.move
             var thickness = move.thickness;
             msg = $"Layer Thickness: {thickness}";
             MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);

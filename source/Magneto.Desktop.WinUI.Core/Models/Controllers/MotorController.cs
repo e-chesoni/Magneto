@@ -146,6 +146,9 @@ public class MotorController : IMotorController
         var msg = "Moving Motor Absolute";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
+        // Search the controller _motorlist for a motor with axis == axis given
+        // % 10 gets the last digit of the ID here
+        // And axis is the last digit of the motor id
         StepperMotor motor = _motorList.FirstOrDefault(motor => motor.GetID() % 10 == axis);
 
         if ( motor != null)

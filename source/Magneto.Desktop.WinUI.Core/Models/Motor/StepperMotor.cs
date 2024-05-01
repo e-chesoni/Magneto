@@ -414,10 +414,10 @@ public class StepperMotor : IStepperMotor
     /// </summary>
     /// <param name="steps"></param>
     /// <returns></returns> Returns -1 if move command fails, 0 if move command is successful
-    public async Task MoveMotorRelAsync(double pos)
+    public async Task MoveMotorRelAsync(double steps)
     {
         var initialPos = await GetPosAsync();
-        var desiredPos = initialPos + pos;
+        var desiredPos = initialPos + steps;
         var msg = $"Initial position of {_motorName} motor: {initialPos}. Desired relative position: {desiredPos}";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
 
@@ -429,9 +429,9 @@ public class StepperMotor : IStepperMotor
 
         if (MagnetoSerialConsole.OpenSerialPort(_motorPort))
         {
-            var moveCommand = $"{_motorAxis}MVR{pos}";
+            var moveCommand = $"{_motorAxis}MVR{steps}";
             MagnetoSerialConsole.SerialWrite(_motorPort, moveCommand);
-            MagnetoLogger.Log($"Moving {_motorName} motor on axis {_motorAxis} {pos}mm relative to current position. Command Sent: {moveCommand}", LogFactoryLogLevel.LogLevel.VERBOSE);
+            MagnetoLogger.Log($"Moving {_motorName} motor on axis {_motorAxis} {steps}mm relative to current position. Command Sent: {moveCommand}", LogFactoryLogLevel.LogLevel.VERBOSE);
 
             // Asynchronously wait until the desired position is reached
             await CheckPosAsync(desiredPos);
@@ -472,7 +472,7 @@ public class StepperMotor : IStepperMotor
 
     #endregion
 
-    #region Helpers
+    #region Movement Helpers
     /// <summary>
     /// Get current motor position
     /// </summary>
