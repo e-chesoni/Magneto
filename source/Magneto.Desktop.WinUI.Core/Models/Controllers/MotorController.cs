@@ -251,24 +251,15 @@ public class MotorController : IMotorController
     /// </summary>
     public async Task HomeMotors()
     {
-        var msg = "MotorController::HomeMotors -- Homing motors (PLURAL!)...";
+        var msg = "MotorController::HomeMotors -- Homing motors one at a time...";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
-        // TODO: Thread blocking is not a great idea...
-        // Find a more elegant way to handle running one motor at a time in the future
-
-        /*
+        // Home each motor one at a time
         foreach (var motor in _motorList)
         {
             await motor.HomeMotor();
+            MagnetoLogger.Log($"Motor {motor.GetID()} homed successfully.", LogFactoryLogLevel.LogLevel.SUCCESS);
         }
-        */
-
-        // Start homing all motors concurrently
-        var homeTasks = _motorList.Select(motor => motor.HomeMotor());
-
-        // Wait for all motors to complete homing
-        await Task.WhenAll(homeTasks);
     }
 
     /// <summary>

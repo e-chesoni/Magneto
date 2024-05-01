@@ -70,13 +70,13 @@ public class PrintingBuildManagerState : IBuildManagerState
         MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
         
         // TODO: Let user calibrate build start height (height of first layer; ~1mm below plate height for testing)
-        _ = _BuildManagerSM.buildController.MoveMotorAbsAsync(_BuildManagerSM.buildController.GetBuildMotor(), -MagnetoConfig.GetDefaultPrintThickness());
+        await _BuildManagerSM.buildController.MoveMotorAbsAsync(_BuildManagerSM.buildController.GetBuildMotor(), -MagnetoConfig.GetDefaultPrintThickness());
 
         // Powder motor moves DOWN to calcStartPosPowder (IRL this is done by the user; use artificial start here)
-        _ = _BuildManagerSM.buildController.MoveMotorAbsAsync(_BuildManagerSM.buildController.GetPowderMotor(), -printHeight);
+        await _BuildManagerSM.buildController.MoveMotorAbsAsync(_BuildManagerSM.buildController.GetPowderMotor(), -printHeight);
 
         // Sweep motor moves to starting position (home)
-        _ = _BuildManagerSM.sweepController.MoveMotorAbsAsync(_BuildManagerSM.sweepController.GetSweepMotor(), _BuildManagerSM.sweepController.GetSweepMotor().GetHomePos());
+        //_ = _BuildManagerSM.sweepController.MoveMotorAbsAsync(_BuildManagerSM.sweepController.GetSweepMotor(), _BuildManagerSM.sweepController.GetSweepMotor().GetHomePos());
         
         // Keep track of loop (remove later)
         var ctr = 0;
@@ -103,13 +103,16 @@ public class PrintingBuildManagerState : IBuildManagerState
 
                     _BuildManagerSM.laserController.Draw(slice); // this was in original code
 
-                    _ = _BuildManagerSM.buildController.MoveMotorRel(_BuildManagerSM.buildController.GetBuildMotor(), -thickness);
+                    // Move build plate down height of print + build plate thickness
+                    double build_plate_thickness = 5; 
 
-                    _ = _BuildManagerSM.buildController.MoveMotorRel(_BuildManagerSM.buildController.GetPowderMotor(), thickness);
+                    await _BuildManagerSM.buildController.MoveMotorRel(_BuildManagerSM.buildController.GetBuildMotor(), -(build_plate_thickness + thickness));
+
+                    await _BuildManagerSM.buildController.MoveMotorRel(_BuildManagerSM.buildController.GetPowderMotor(), thickness);
 
                     // Sweep
-                    await _BuildManagerSM.sweepController.MoveMotorAbsAsync(_BuildManagerSM.sweepController.GetSweepMotor(), _BuildManagerSM.GetSweepDist());
-                    await _BuildManagerSM.sweepController.MoveMotorAbsAsync(_BuildManagerSM.sweepController.GetSweepMotor(), -_BuildManagerSM.GetSweepDist());
+                    //await _BuildManagerSM.sweepController.MoveMotorAbsAsync(_BuildManagerSM.sweepController.GetSweepMotor(), _BuildManagerSM.GetSweepDist());
+                    //await _BuildManagerSM.sweepController.MoveMotorAbsAsync(_BuildManagerSM.sweepController.GetSweepMotor(), -_BuildManagerSM.GetSweepDist());
 
                     break;
 
