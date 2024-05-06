@@ -1,4 +1,8 @@
-﻿using Magneto.Desktop.WinUI.Core.Contracts.Services;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.Controllers;
 using Magneto.Desktop.WinUI.Core.Models.Motor;
 using Magneto.Desktop.WinUI.Core.Services;
@@ -32,10 +36,21 @@ public class MotorController : IMotorController
     /// </summary>
     private List<StepperMotor> _motorList { get; set; } = new List<StepperMotor>();
 
-    private string _mcPort
+    private string _mcPort { get; set; }
+
+    private Queue<string> commandQueue = new Queue<string>();
+
+    private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+    
+    private bool isCommandProcessing = false;
+
+    public enum CommandType
     {
-        get; set;
+        AbsoluteMove, // Corresponds to "MVA" for absolute movements
+        RelativeMove, // Corresponds to "MVR" for relative movements
+        PositionQuery // Corresponds to "POS?" for querying current position
     }
+
 
     #endregion
 
@@ -109,6 +124,92 @@ public class MotorController : IMotorController
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
         }
         return _sweepMotor;
+    }
+
+    #endregion
+
+    #region Queue Management
+
+    /// <summary>
+    /// Adds a command to the motor command queue.
+    /// </summary>
+    /// <param name="axis">The axis of the motor to which the command will be sent.</param>
+    /// <param name="cmdType">The type of movement or query command.</param>
+    /// <param name="dist">The distance or position for movement commands; ignored for position queries.</param>
+    public void AddCommand(int axis, CommandType cmdType, double dist)
+    {
+        string command = $"{axis}";
+        switch (cmdType)
+        {
+            case CommandType.AbsoluteMove:
+                command += $"MVA{dist}";
+                break;
+            case CommandType.RelativeMove:
+                command += $"MVR{dist}";
+                break;
+            case CommandType.PositionQuery:
+                command += "POS?";
+                break;
+        }
+
+        commandQueue.Enqueue(command);
+    }
+
+    private async Task ProcessCommands()
+    {
+        var msg = "Processing controller command queue...";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        while (commandQueue.Count > 0)
+        {
+            string command;
+            lock (commandQueue)
+            {
+                command = commandQueue.Dequeue();
+            }
+
+            int axis = int.Parse(command.Substring(0, 1));
+            string motorCommand = command.Substring(1);
+
+            // TODO: Search motor list for id match; return that motor
+            StepperMotor motor = _motorList.FirstOrDefault(motor => motor.GetID() % 10 == axis);
+
+            if (motor != null)
+            {
+                msg = $"Found motor on axis: {axis}. Stepping motor absolute...";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
+
+                if (motorCommand.Contains("POS"))
+                {
+                    // TOOD: Return motor position
+                }
+                
+                // TODO: Get command type (POS, MVR, or MVA)
+                else if (motorCommand.Contains("MVA"))
+                {
+                    double pos = double.Parse(motorCommand.Substring(4));
+                    await motor.MoveMotorAbsAsync(pos);
+                }
+
+                else if (motorCommand.Contains("MVR"))
+                {
+                    double step = double.Parse(motorCommand.Substring(4));
+                    await motor.MoveMotorRelAsync(step);
+                }
+            }
+            else
+            {
+                msg = $"No motor with Axis {axis} found.";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            }
+        }
+        isCommandProcessing = false;
+    }
+
+    public void CancelOperations()
+    {
+        cancellationTokenSource.Cancel();
+        Console.WriteLine("Cancellation requested.");
     }
 
     #endregion
@@ -246,7 +347,6 @@ public class MotorController : IMotorController
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
         }
     }
-
 
     /// <summary>
     /// Home all attached motors

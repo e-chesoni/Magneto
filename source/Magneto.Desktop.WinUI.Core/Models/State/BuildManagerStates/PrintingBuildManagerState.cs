@@ -78,6 +78,11 @@ public class PrintingBuildManagerState : IBuildManagerState
 
         // Move build plate down to start position: total print height + build plate thickness
         double build_plate_thickness = 5;
+
+        // TODO: Change to controller.AddCommand(axis, moveType, dist);
+
+        //var a = _BuildManagerSM.buildController.GetBuildMotor().GetAxis();
+
         await _BuildManagerSM.buildController.MoveMotorAbsAsync(_BuildManagerSM.buildController.GetBuildMotor(), -(build_plate_thickness + MagnetoConfig.GetDefaultPrintThickness()));
 
         // Move powder motor down to start position
@@ -118,8 +123,6 @@ public class PrintingBuildManagerState : IBuildManagerState
                     // TODO: Add pop-up for user to execute draw, and indicate draw is complete
 
                     _BuildManagerSM.laserController.Draw(slice); // this was in original code
-
-                    
 
                     await _BuildManagerSM.buildController.MoveMotorRelAsync(_BuildManagerSM.buildController.GetBuildMotor(), -thickness);
 
