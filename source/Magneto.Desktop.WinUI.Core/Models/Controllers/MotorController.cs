@@ -206,16 +206,22 @@ public class MotorController : IMotorController
                     msg = $"Processing MVA command...";
                     MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
-                    double pos = double.Parse(motorCommand.Substring(4));
+                    double pos = double.Parse(motorCommand.Substring(3));
+                    msg = $"Pos to get to: {pos.ToString()}";
+                    MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
                     await motor.MoveMotorAbsAsync(pos);
                 }
 
                 else if (motorCommand.Contains("MVR"))
                 {
-                    msg = $"Processing MVR command...";
+                    msg = $"Processing MVR command: {motorCommand}";
                     MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
-                    double step = double.Parse(motorCommand.Substring(4));
+                    double step = double.Parse(motorCommand.Substring(3));
+
+                    msg = $"Steps to process: {step.ToString()}";
+                    MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
                     await motor.MoveMotorRelAsync(step);
                 }
             }
