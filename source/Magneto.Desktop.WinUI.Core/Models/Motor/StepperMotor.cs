@@ -536,7 +536,7 @@ public class StepperMotor : IStepperMotor
     {
         MagnetoLogger.Log("Checking motor position.", LogFactoryLogLevel.LogLevel.VERBOSE);
 
-        const int maxAttempts = 10000; // Can modify limit; currently will try to reach position for about 10sec
+        const int maxAttempts = 10000; // Can modify max wait limit; This waits for 10000*100 ms (task delay below) ~ 16.7 min
         var attempt = 0;
 
         while (attempt < maxAttempts)

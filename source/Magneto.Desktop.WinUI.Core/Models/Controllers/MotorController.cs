@@ -138,21 +138,33 @@ public class MotorController : IMotorController
     /// <param name="dist">The distance or position for movement commands; ignored for position queries.</param>
     public void AddCommand(int axis, CommandType cmdType, double dist)
     {
-        string command = $"{axis}";
-        switch (cmdType)
-        {
-            case CommandType.AbsoluteMove:
-                command += $"MVA{dist}";
-                break;
-            case CommandType.RelativeMove:
-                command += $"MVR{dist}";
-                break;
-            case CommandType.PositionQuery:
-                command += "POS?";
-                break;
-        }
+        var msg = "Adding Command to Queue. Locking commandQueue";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
-        commandQueue.Enqueue(command);
+        lock (commandQueue)
+        {
+            string command = $"{axis}";
+
+            switch (cmdType)
+            {
+                case CommandType.AbsoluteMove:
+                    command += $"MVA{dist}";
+                    break;
+                case CommandType.RelativeMove:
+                    command += $"MVR{dist}";
+                    break;
+                case CommandType.PositionQuery:
+                    command += "POS?";
+                    break;
+            }
+
+            commandQueue.Enqueue(command);
+            if (!isCommandProcessing)
+            {
+                isCommandProcessing = true;
+                Task.Run(() => ProcessCommands());
+            }
+        }
     }
 
     private async Task ProcessCommands()
@@ -171,28 +183,38 @@ public class MotorController : IMotorController
             int axis = int.Parse(command.Substring(0, 1));
             string motorCommand = command.Substring(1);
 
-            // TODO: Search motor list for id match; return that motor
+            // Search motor list for id match; return that motor
             StepperMotor motor = _motorList.FirstOrDefault(motor => motor.GetID() % 10 == axis);
 
             if (motor != null)
             {
-                msg = $"Found motor on axis: {axis}. Stepping motor absolute...";
+                msg = $"Found motor on axis: {axis}. Adding command associated with this motor to the control queue.";
                 MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
 
                 if (motorCommand.Contains("POS"))
                 {
+                    msg = $"Processing POS command...";
+                    MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
                     // TOOD: Return motor position
+
                 }
                 
                 // TODO: Get command type (POS, MVR, or MVA)
                 else if (motorCommand.Contains("MVA"))
                 {
+                    msg = $"Processing MVA command...";
+                    MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
                     double pos = double.Parse(motorCommand.Substring(4));
                     await motor.MoveMotorAbsAsync(pos);
                 }
 
                 else if (motorCommand.Contains("MVR"))
                 {
+                    msg = $"Processing MVR command...";
+                    MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
                     double step = double.Parse(motorCommand.Substring(4));
                     await motor.MoveMotorRelAsync(step);
                 }
@@ -203,9 +225,14 @@ public class MotorController : IMotorController
                 MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             }
         }
+
+        msg = "Done processing queue. Unlocking commandQueue";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
         isCommandProcessing = false;
     }
 
+    // TODO: Implement cancel token to respond to button click (see MotorQueue POC -- will need to modify)
     public void CancelOperations()
     {
         cancellationTokenSource.Cancel();

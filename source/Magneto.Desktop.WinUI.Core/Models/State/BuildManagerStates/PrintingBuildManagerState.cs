@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.StateMachineServices;
 using Magneto.Desktop.WinUI.Core.Models.BuildModels;
+using Magneto.Desktop.WinUI.Core.Models.Controllers;
 using Magneto.Desktop.WinUI.Core.Models.Image;
 using Magneto.Desktop.WinUI.Core.Models.Motor;
 using Magneto.Desktop.WinUI.Core.Services;
@@ -26,7 +27,10 @@ public class PrintingBuildManagerState : IBuildManagerState
         _BuildManagerSM.build_flag = BuildManager.BuildFlag.RESUME;
 
         // Start drawing
-        _ = Draw();
+        //_ = Draw();
+
+        // TODO: Test control queue
+        _ = TestDraw();
     }
 
     public void Cancel()
@@ -46,6 +50,16 @@ public class PrintingBuildManagerState : IBuildManagerState
     }
 
     public void Start(ImageModel im) => throw new NotImplementedException();
+
+    public async Task TestDraw()
+    {
+        // Each motor should move 4 times in test
+        for (var i = 0; i < 5; i++)
+        {
+            _BuildManagerSM.buildController.AddCommand(1, MotorController.CommandType.RelativeMove, -2);
+            _BuildManagerSM.buildController.AddCommand(2, MotorController.CommandType.RelativeMove, -2);
+        }
+    }
 
     public async Task Draw()
     {
