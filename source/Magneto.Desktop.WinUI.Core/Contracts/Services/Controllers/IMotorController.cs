@@ -10,9 +10,11 @@ namespace Magneto.Desktop.WinUI.Core.Contracts.Services.Controllers;
 /// <summary>
 /// Interface for wrapper used to synchronized motors attached to the same controller
 /// </summary>
-public interface IMotorController
+public interface IMotorController : IController
 {
     // TODO: You can probably find a clever way to simplify this using unpacking, kwargs, or something...
+
+    public List<StepperMotor> GetMotorList();
 
     /// <summary>
     /// Perform asynchronous motor movement

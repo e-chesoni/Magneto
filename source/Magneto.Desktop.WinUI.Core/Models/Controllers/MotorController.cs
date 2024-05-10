@@ -30,8 +30,8 @@ public class MotorController : IMotorController
     /// Motor on controller 2, axis 1
     /// </summary>
     private StepperMotor _sweepMotor { get; set; }
-
-    /// <summary>
+    
+    /// <summar>
     /// List of motors attached to controller
     /// </summary>
     private List<StepperMotor> _motorList { get; set; } = new List<StepperMotor>();
