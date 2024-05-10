@@ -53,14 +53,31 @@ public class PrintingBuildManagerState : IBuildManagerState
 
     public async Task TestDraw()
     {
-        // Each motor should move 4 times in test
+        // dance routine:
+        // 1. move motors to calculated start position
+        // 2. open adjustment screen
+        // 3. allow user to adjust
+        // 4. once user clicks 'done' close adjustment screen
+        // 5. start dance
+        // INTERRUPT dance if cancel is clicked
+
+        // TODO: Add dummy calibration move
+
+        // Each motor should move 5 times in test
         for (var i = 0; i < 5; i++)
         {
-            //_BuildManagerSM.buildController.AddCommand(1, MotorController.CommandType.RelativeMove, -2);
-            //_BuildManagerSM.buildController.AddCommand(2, MotorController.CommandType.RelativeMove, -2);
+            // dance loop:
+            // 1. sweep
+            // 2. run laser
+            // 3. move powder up
+            // 4. move build down
+            // REPEAT until all slices have been processed
 
-            _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, 1, BuildManager.CommandType.RelativeMove, -2);
+            // build on axis 1, powder on 2
+
             _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, 2, BuildManager.CommandType.RelativeMove, -2);
+            _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, 1, BuildManager.CommandType.RelativeMove, -2);
+
         }
     }
 
