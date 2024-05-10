@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.Controllers;
@@ -106,6 +107,27 @@ public class BuildManager : ISubsciber, IStateMachine
     private string _sweepMotorPort
     {
         get; set;
+    }
+
+    private Queue<string> commandQueue = new Queue<string>();
+
+    private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+
+    private bool isCommandProcessing = false;
+
+    // All controller types are 5 letters long
+    public enum ControllerType
+    {
+        BUILD, // Corresponds to build motors
+        SWEEP, // Corresponds to sweep motor
+        LASER // Corresponds to Waverunner
+    }
+
+    public enum CommandType
+    {
+        AbsoluteMove, // Corresponds to "MVA" for absolute movements
+        RelativeMove, // Corresponds to "MVR" for relative movements
+        PositionQuery // Corresponds to "POS?" for querying current position
     }
 
     #endregion
@@ -264,7 +286,171 @@ public class BuildManager : ISubsciber, IStateMachine
         // TODO: UPDATE in production. Currently uses default number of slices from Magneto Config
         imageModel.sliceStack = ImageHandler.SliceImage(imageModel);
     }
-    
+
+    #endregion
+
+    #region Queue Management
+
+    /// <summary>
+    /// Adds a command to the motor command queue.
+    /// </summary>
+    /// <param name="axis">The axis of the motor to which the command will be sent.</param>
+    /// <param name="cmdType">The type of movement or query command.</param>
+    /// <param name="dist">The distance or position for movement commands; ignored for position queries.</param>
+    public void AddCommand(ControllerType controllerType, int axis, CommandType cmdType, double dist)
+    {
+        var msg = "Adding Command to Queue. Locking commandQueue";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+
+        lock (commandQueue)
+        {
+            var command = "";
+
+            switch (controllerType)
+            {
+                case ControllerType.BUILD:
+                    command += $"BUILD{axis}";
+                    break;
+                case ControllerType.SWEEP:
+                    command += $"SWEEP{axis}";
+                    break;
+                case ControllerType.LASER:
+                    command += $"LASER{axis}";
+                    break;
+            }
+
+            switch (cmdType)
+            {
+                case CommandType.AbsoluteMove:
+                    command += $"MVA{dist}";
+                    break;
+                case CommandType.RelativeMove:
+                    command += $"MVR{dist}";
+                    break;
+                case CommandType.PositionQuery:
+                    command += "POS?";
+                    break;
+            }
+
+            // Example cmd: BUILD1MVR5
+            commandQueue.Enqueue(command);
+            if (!isCommandProcessing)
+            {
+                isCommandProcessing = true;
+                Task.Run(() => ProcessCommands());
+            }
+        }
+    }
+
+    private async Task ProcessCommands()
+    {
+        var msg = "Processing controller command queue...";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        while (commandQueue.Count > 0)
+        {
+            string command;
+            lock (commandQueue)
+            {
+                command = commandQueue.Dequeue();
+            }
+
+            // TODO: get the controller
+            
+            // Set default controllers
+            MotorController controller = buildController;
+            LaserController wv = laserController; // TOOD: Not setup yet
+
+            // Get controller type from command
+            string ctlType = command.Substring(0, 5);
+
+            switch (ctlType)
+            {
+                case "BUILD":
+                    controller = buildController;
+                    break;
+                case "SWEEP":
+                    controller = sweepController;
+                    break;
+                case "LASER":
+                    wv = laserController;
+                    break;
+            }
+
+            // TODO: print axis to make sure this gets the axis
+            int axis = int.Parse(command.Substring(5, 6)); // In command, axis appears after 5-letter controller type
+            string motorCommand = command.Substring(6);
+
+            // Search motor list for id match; return that motor
+            //StepperMotor motor = _motorList.FirstOrDefault(motor => motor.GetID() % 10 == axis);
+
+            // Search controller motor list
+            StepperMotor motor = controller.GetMotorList().FirstOrDefault(motor => motor.GetID() % 10 == axis);
+
+            if (motor != null)
+            {
+                msg = $"Found motor on axis: {axis}. Adding command associated with this motor to the control queue.";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
+
+                if (motorCommand.Contains("POS"))
+                {
+                    msg = $"Processing POS command...";
+                    MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+                    // TOOD: Return motor position
+
+                }
+
+                // TODO: Get command type (POS, MVR, or MVA)
+                else if (motorCommand.Contains("MVA"))
+                {
+                    msg = $"Processing MVA command...";
+                    MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+                    double pos = double.Parse(motorCommand.Substring(3));
+                    
+                    msg = $"Pos to get to: {pos}";
+                    MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+                    
+                    await controller.MoveMotorAbsAsync(motor, pos);
+                    //await motor.MoveMotorAbsAsync(pos);
+                }
+
+                else if (motorCommand.Contains("MVR"))
+                {
+                    msg = $"Processing MVR command: {motorCommand}";
+                    MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+                    double step = double.Parse(motorCommand.Substring(3));
+
+                    msg = $"Steps to process: {step}";
+                    MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+                    
+                    await controller.MoveMotorRelAsync(motor, step);
+                    //await motor.MoveMotorRelAsync(step);
+                }
+            }
+            else
+            {
+                msg = $"No motor with Axis {axis} found.";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            }
+        }
+
+        msg = "Done processing queue. Unlocking commandQueue";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        isCommandProcessing = false;
+    }
+
+    // TODO: Implement cancel token to respond to button click (see MotorQueue POC -- will need to modify)
+    public void CancelOperations()
+    {
+        cancellationTokenSource.Cancel();
+        Console.WriteLine("Cancellation requested.");
+    }
+
     #endregion
 
     #region State Machine Methods

@@ -29,7 +29,7 @@ public class PrintingBuildManagerState : IBuildManagerState
         // Start drawing
         //_ = Draw();
 
-        // TODO: Test control queue
+        // TODO: Test build manager queue
         _ = TestDraw();
     }
 
@@ -56,8 +56,11 @@ public class PrintingBuildManagerState : IBuildManagerState
         // Each motor should move 4 times in test
         for (var i = 0; i < 5; i++)
         {
-            _BuildManagerSM.buildController.AddCommand(1, MotorController.CommandType.RelativeMove, -2);
-            _BuildManagerSM.buildController.AddCommand(2, MotorController.CommandType.RelativeMove, -2);
+            //_BuildManagerSM.buildController.AddCommand(1, MotorController.CommandType.RelativeMove, -2);
+            //_BuildManagerSM.buildController.AddCommand(2, MotorController.CommandType.RelativeMove, -2);
+
+            _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, 1, BuildManager.CommandType.RelativeMove, -2);
+            _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, 2, BuildManager.CommandType.RelativeMove, -2);
         }
     }
 
