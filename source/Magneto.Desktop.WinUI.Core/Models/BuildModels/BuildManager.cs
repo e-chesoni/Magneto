@@ -90,16 +90,6 @@ public class BuildManager : ISubsciber, IStateMachine
         CANCEL
     }
 
-    /// <summary>
-    /// Motor axis to get the status of a specific motor the controller as knowledge of
-    /// </summary>
-    public enum MotorAxis : ushort
-    {
-        MOTOR1 = 1,
-        MOTOR2 = 2,
-        SWEEP = 1, // NOTE: Colloquially refereed to as powder motor or linear motor on occasion
-    }
-
     private string _buildMotorPort
     {
         get; set;
@@ -119,6 +109,16 @@ public class BuildManager : ISubsciber, IStateMachine
         BUILD, // Corresponds to build motors
         SWEEP, // Corresponds to sweep motor
         LASER // Corresponds to Waverunner
+    }
+
+    /// <summary>
+    /// Motor axis to get the status of a specific motor the controller as knowledge of
+    /// </summary>
+    public enum MotorAxis : ushort
+    {
+        BUILD_AXIS = 1,
+        POWDER_AXIS = 2,
+        SWEEP_AXIS = 1, // NOTE: Colloquially refereed to as powder motor or linear motor on occasion
     }
 
     public enum CommandType

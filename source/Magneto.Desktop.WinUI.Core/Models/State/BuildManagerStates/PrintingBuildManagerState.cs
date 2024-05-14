@@ -61,7 +61,13 @@ public class PrintingBuildManagerState : IBuildManagerState
         // 5. start dance
         // INTERRUPT dance if cancel is clicked
 
+        var powder_axis = _BuildManagerSM.buildController.GetPowderMotor().GetAxis();
+        var build_axis = _BuildManagerSM.buildController.GetBuildMotor().GetAxis();
+
         // TODO: Add dummy calibration move
+        // Loop below runs 5 times, and each motor moves 2mm per loop
+        // Therefore, calibration step for the powder motor is down 2*5=10mm
+        _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, powder_axis, BuildManager.CommandType.RelativeMove, -10);
 
         // Each motor should move 5 times in test
         for (var i = 0; i < 5; i++)
@@ -73,10 +79,11 @@ public class PrintingBuildManagerState : IBuildManagerState
             // 4. move build down
             // REPEAT until all slices have been processed
 
-            // build on axis 1, powder on 2
-
-            _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, 2, BuildManager.CommandType.RelativeMove, -2);
-            _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, 1, BuildManager.CommandType.RelativeMove, -2);
+            // After calibration, powder motor moves up slice thickness
+            _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, powder_axis, BuildManager.CommandType.RelativeMove, 2);
+            
+            // Build motor moves down slice thickness
+            _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, build_axis, BuildManager.CommandType.RelativeMove, -2);
 
         }
     }
@@ -185,12 +192,21 @@ public class PrintingBuildManagerState : IBuildManagerState
     }
 
     public void Resume() => throw new NotImplementedException();
+    
     public void Done() => throw new NotImplementedException();
+
     public async Task Homing()
     {
+
+        var powder_axis = _BuildManagerSM.buildController.GetPowderMotor().GetAxis();
+        var build_axis = _BuildManagerSM.buildController.GetBuildMotor().GetAxis();
+
         // Home motors
-        await _BuildManagerSM.buildController.HomeMotors();
-        await _BuildManagerSM.sweepController.HomeMotors();
+        //await _BuildManagerSM.buildController.HomeMotors();
+        //await _BuildManagerSM.sweepController.HomeMotors();
+
+        _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, powder_axis, BuildManager.CommandType.AbsoluteMove, 0);
+        _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, build_axis, BuildManager.CommandType.AbsoluteMove, 0);
 
         // Return to idle state
         _BuildManagerSM.TransitionTo(new IdleBuildManagerState(_BuildManagerSM));
