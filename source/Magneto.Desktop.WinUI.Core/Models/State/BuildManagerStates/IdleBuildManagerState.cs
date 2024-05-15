@@ -77,9 +77,12 @@ public class IdleBuildManagerState : IBuildManagerState
 
     public async Task Homing()
     {
-        // Home motors
-        await _BuildManagerSM.buildController.HomeMotors();
-        await _BuildManagerSM.sweepController.HomeMotors();
+        var powder_axis = _BuildManagerSM.buildController.GetPowderMotor().GetAxis();
+        var build_axis = _BuildManagerSM.buildController.GetBuildMotor().GetAxis();
+
+        // TODO: Fix absolute move command; doesn't seem to register
+        _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, powder_axis, BuildManager.CommandType.AbsoluteMove, 0);
+        _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, build_axis, BuildManager.CommandType.AbsoluteMove, 0);
 
         // Return to idle state
         _BuildManagerSM.TransitionTo(new IdleBuildManagerState(_BuildManagerSM));

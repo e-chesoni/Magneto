@@ -362,22 +362,43 @@ public class StepperMotor : IStepperMotor
     /// <returns></returns> Returns completed task when finished
     public async Task MoveMotorAbsAsync(double pos)
     {
-        var initialPos = GetPosAsync();
-        MagnetoLogger.Log($"Initial motor position: {initialPos}", LogFactoryLogLevel.LogLevel.WARN);
+        // Get the motors initial position
+        var initialPos = await GetPosAsync();
 
-        if (pos < _minPos || pos > _maxPos)
+        // Calculate desired position
+        var desiredPos = pos;
+
+        // Log initial and desired position
+        var msg = $"Initial position of {_motorName} motor: {initialPos}. Desired relative position: {desiredPos}";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
+
+        // Check if desired position is out of range
+        if (desiredPos < _minPos || desiredPos > _maxPos)
         {
-            MagnetoLogger.Log($"Invalid position: {pos}. For motor {_motorName}, _minPos is {_minPos} and _maxPos is {_maxPos}. Aborting motor move operation.", LogFactoryLogLevel.LogLevel.ERROR);
+            // If it is, log error and exit method
+            MagnetoLogger.Log($"Invalid position: {desiredPos} for {_motorName}. _minPos is {_minPos} and _maxPos is {_maxPos}. Aborting motor move operation.", LogFactoryLogLevel.LogLevel.ERROR);
             return;
         }
 
+        // Check if serial port assigned to motor is open
         if (MagnetoSerialConsole.OpenSerialPort(_motorPort))
         {
-            await PerformMotorMoveAsync(pos);
+            // If port is open:
+            // Create move command
+            var moveCommand = $"{_motorAxis}MVA{pos}";
+
+            // Send move command to motor port
+            MagnetoSerialConsole.SerialWrite(_motorPort, moveCommand);
+            MagnetoLogger.Log($"Moving {_motorName} motor on axis {_motorAxis} to {pos}mm. Command Sent: {moveCommand}", LogFactoryLogLevel.LogLevel.VERBOSE);
+
+            // Asynchronously wait until the desired position is reached
+            await CheckPosAsync(desiredPos);
         }
         else
         {
+            // If port is closed, log error and exit method
             MagnetoLogger.Log("Port Closed.", LogFactoryLogLevel.LogLevel.ERROR);
+            return;
         }
     }
 

@@ -352,7 +352,7 @@ public class BuildManager : ISubsciber, IStateMachine
                     StepperMotor motor = controller.GetMotorList().FirstOrDefault(m => m.GetID() % 10 == axis);
                     if (motor != null)
                     {
-                        msg = $"Found motor on axis: {axis}. Executing command.";
+                        msg = $"Found motor on axis: {axis}. Executing command: {motorCommand}.";
                         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
                         await ExecuteMotorCommand(motor, motorCommand);
                     }
@@ -393,6 +393,9 @@ public class BuildManager : ISubsciber, IStateMachine
     private async Task ExecuteMotorCommand(StepperMotor motor, string motorCommand)
     {
         double value = double.Parse(motorCommand.Substring(3));
+        var msg = $"Executing command {value}.";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
+
         if (motorCommand.StartsWith("MVA"))
         {
             await motor.MoveMotorAbsAsync(value);

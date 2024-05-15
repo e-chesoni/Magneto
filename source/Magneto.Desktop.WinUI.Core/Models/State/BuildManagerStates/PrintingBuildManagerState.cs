@@ -63,11 +63,16 @@ public class PrintingBuildManagerState : IBuildManagerState
 
         var powder_axis = _BuildManagerSM.buildController.GetPowderMotor().GetAxis();
         var build_axis = _BuildManagerSM.buildController.GetBuildMotor().GetAxis();
+        var total_print_height = 10;
 
         // TODO: Add dummy calibration move
         // Loop below runs 5 times, and each motor moves 2mm per loop
         // Therefore, calibration step for the powder motor is down 2*5=10mm
-        _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, powder_axis, BuildManager.CommandType.RelativeMove, -10);
+        _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, powder_axis, BuildManager.CommandType.RelativeMove, -(total_print_height + 2)); // add 2mm for test so we can also test homing after print
+        
+        // Move build motor down print height + plate thickness (6mm + 10mm)
+        var plate_thickness = 6; // about 6mm
+        _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, build_axis, BuildManager.CommandType.RelativeMove, -(total_print_height + plate_thickness));
 
         // Each motor should move 5 times in test
         for (var i = 0; i < 5; i++)
