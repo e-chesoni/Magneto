@@ -6,6 +6,7 @@ using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.Motor;
 using Magneto.Desktop.WinUI.Core.Helpers;
 using Magneto.Desktop.WinUI.Core.Models;
+using Magneto.Desktop.WinUI.Core.Models.BuildModels;
 using Magneto.Desktop.WinUI.Core.Models.Motor;
 using Magneto.Desktop.WinUI.Core.Services;
 using Magneto.Desktop.WinUI.Helpers;
@@ -16,6 +17,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Windows.Devices.SerialCommunication;
+using static Magneto.Desktop.WinUI.Core.Models.BuildModels.BuildManager;
 
 namespace Magneto.Desktop.WinUI.Views;
 
@@ -318,7 +320,7 @@ public sealed partial class TestPrintPage : Page
     /// or if the current test motor is null.
     /// </summary>
     /// <param name="motor">The StepperMotor to be homed.</param>
-    private void HomeMotorHelper(StepperMotor motor)
+    private async Task HomeMotorHelperAsync(StepperMotor motor)
     {
         var msg = "Using helper to home motors...";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
@@ -339,8 +341,10 @@ public sealed partial class TestPrintPage : Page
         }
         else
         {
+
             msg = "Current Test Motor is null.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            await DialogHelper.ShowContentDialog(this.Content.XamlRoot, "Error", "You must select a motor to home.");
         }
     }
 
@@ -442,6 +446,39 @@ public sealed partial class TestPrintPage : Page
 
     #region Motor Movement Buttons
 
+    private ControllerType GetControllerTypeHelper(string motorName)
+    {
+        switch(motorName)
+        {
+            case "sweep":
+                return ControllerType.SWEEP;
+            default: return ControllerType.BUILD;
+        }
+    }
+
+    private int GetMotorAxisHelper(string motorName)
+    {
+        if (MissionControl != null)
+        {
+            BuildManager bm = MissionControl.GetBuildManger();
+            switch (motorName)
+            {
+                case "build":
+                    return bm.GetBuildMotor().GetAxis();
+                case "powder":
+                    return bm.GetPowderMotor().GetAxis();
+                case "sweep":
+                    return bm.GetSweepMotor().GetAxis();
+                default: return bm.GetPowderMotor().GetAxis();
+            }
+        }
+        else
+        {
+            return -1;
+        }
+
+    }
+
     /// <summary>
     /// Moves the current test motor by a specified distance, which can be absolute or relative based on the parameter.
     /// This method handles validation of the motor request, opens the serial port, initiates the motor movement,
@@ -450,13 +487,19 @@ public sealed partial class TestPrintPage : Page
     /// <param name="isAbsolute">Determines whether the movement is absolute or relative. True for absolute, false for relative.</param>
     private async void MoveMotor(bool isAbsolute)
     {
+        // Get the build manager
+        BuildManager bm = MissionControl?.GetBuildManger();
+        
+        // Parse and log the movement type
         var movementType = isAbsolute ? "absolute" : "relative";
-        var msg = $"Request to move motor to an {movementType} position submitted...";
+        var msg = $"Request to move motor to an {movementType} position submitted.";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
+        // Exit if no motor is selected
         if (_currTestMotor == null)
         {
             MagnetoLogger.Log("Invalid motor request or Current Test Motor is null.", LogFactoryLogLevel.LogLevel.ERROR);
+            await DialogHelper.ShowContentDialog(this.Content.XamlRoot, "Error", $"No motor selected.");
             return;
         }
 
@@ -470,10 +513,17 @@ public sealed partial class TestPrintPage : Page
             // Get the name of the current motor
             var motorName = _currTestMotor.GetMotorName();
 
+            // Get the controller type
+            var ctrType = GetControllerTypeHelper(motorName);
+
+            // Get the motor axis
+            var motorAxis = GetMotorAxisHelper(motorName);
+
             // Null check for motor map
             if (_motorToPosTextBoxMap == null)
             {
                 MagnetoLogger.Log("Motor to Position TextBox map is not initialized.", LogFactoryLogLevel.LogLevel.ERROR);
+                await DialogHelper.ShowContentDialog(this.Content.XamlRoot, "Error", $"Internal Error. Try loading the page again.");
                 return;
             }
 
@@ -481,20 +531,35 @@ public sealed partial class TestPrintPage : Page
             {
                 if (_motorToPosTextBoxMap.TryGetValue(motorName, out var motor) && motor != null)
                 {
-                    if (double.TryParse(AbsDistTextBox.Text, out var distance))
+                    if (isAbsolute)
                     {
-                        if (isAbsolute)
-                            await motor.MoveMotorAbsAsync(distance);
+                        if (double.TryParse(AbsDistTextBox.Text, out var pos))
+                        {
+                            //await motor.MoveMotorAbsAsync(pos);
+                            bm.AddCommand(ctrType, motorAxis, CommandType.AbsoluteMove, pos);
+                            UpdateMotorPositionTextBox(motorName, motor); // TODO: Fix update--not working
+                        }
                         else
-                            await motor.MoveMotorRelAsync(distance);
-
-                        UpdateMotorPositionTextBox(motorName, motor);
+                        {
+                            await DialogHelper.ShowContentDialog(this.Content.XamlRoot, "Error", $"\"{AbsDistTextBox.Text}\" is not a valid position. Please make sure you entered a number in the textbox.");
+                            return;
+                        }
                     }
                     else
                     {
-                        await DialogHelper.ShowContentDialog(this.Content.XamlRoot, "Error", $"\"{AbsDistTextBox.Text}\" is not a valid distance. Please make sure you entered a number in the textbox.");
-                        return;
+                        if (double.TryParse(RelDistTextBox.Text, out var dist))
+                        {
+                            //await motor.MoveMotorRelAsync(dist);
+                            bm.AddCommand(ctrType, motorAxis, CommandType.RelativeMove, dist);
+                            UpdateMotorPositionTextBox(motorName, motor); // TODO: Fix update--not working
+                        }
+                        else
+                        {
+                            await DialogHelper.ShowContentDialog(this.Content.XamlRoot, "Error", $"\"{RelDistTextBox.Text}\" is not a valid distance. Please make sure you entered a number in the textbox.");
+                            return;
+                        }
                     }
+                    UpdateMotorPositionTextBox(motorName, motor); // TODO: Fix update--not working
                 }
                 else
                 {
@@ -571,7 +636,7 @@ public sealed partial class TestPrintPage : Page
 
         if (_currTestMotor != null)
         {
-            HomeMotorHelper(_currTestMotor);
+            HomeMotorHelperAsync(_currTestMotor);
         }
         else
         {
@@ -594,7 +659,7 @@ public sealed partial class TestPrintPage : Page
 
         if (_buildMotor != null)
         {
-            HomeMotorHelper(_buildMotor);
+            HomeMotorHelperAsync(_buildMotor);
         }
         else
         {
@@ -603,7 +668,7 @@ public sealed partial class TestPrintPage : Page
 
         if (_powderMotor != null)
         {
-            HomeMotorHelper(_powderMotor);
+            HomeMotorHelperAsync(_powderMotor);
         }
         else
         {
@@ -612,7 +677,7 @@ public sealed partial class TestPrintPage : Page
 
         if (_sweepMotor != null)
         {
-            HomeMotorHelper(_sweepMotor);
+            HomeMotorHelperAsync(_sweepMotor);
         }
         else
         {
