@@ -536,8 +536,7 @@ public sealed partial class TestPrintPage : Page
                         if (double.TryParse(AbsDistTextBox.Text, out var pos))
                         {
                             //await motor.MoveMotorAbsAsync(pos);
-                            bm.AddCommand(ctrType, motorAxis, CommandType.AbsoluteMove, pos);
-                            UpdateMotorPositionTextBox(motorName, motor); // TODO: Fix update--not working
+                            _ = bm.AddCommand(ctrType, motorAxis, CommandType.AbsoluteMove, pos);
                         }
                         else
                         {
@@ -550,8 +549,7 @@ public sealed partial class TestPrintPage : Page
                         if (double.TryParse(RelDistTextBox.Text, out var dist))
                         {
                             //await motor.MoveMotorRelAsync(dist);
-                            bm.AddCommand(ctrType, motorAxis, CommandType.RelativeMove, dist);
-                            UpdateMotorPositionTextBox(motorName, motor); // TODO: Fix update--not working
+                            _ = bm.AddCommand(ctrType, motorAxis, CommandType.RelativeMove, dist);
                         }
                         else
                         {
@@ -559,7 +557,18 @@ public sealed partial class TestPrintPage : Page
                             return;
                         }
                     }
-                    UpdateMotorPositionTextBox(motorName, motor); // TODO: Fix update--not working
+                    try
+                    {
+                        // Call AddCommand with CommandType.PositionQuery to get the motor's position
+                        double position = await bm.AddCommand(ctrType, motorAxis, CommandType.PositionQuery, 0);
+
+                        MagnetoLogger.Log($"Position of motor on axis {motorAxis} is {position}", LogFactoryLogLevel.LogLevel.SUCCESS);
+                    }
+                    catch (Exception ex)
+                    {
+                        MagnetoLogger.Log($"Failed to get motor position: {ex.Message}", LogFactoryLogLevel.LogLevel.ERROR);
+                    }
+                    UpdateMotorPositionTextBox(motorName, motor); // TODO: Fix update--running before new position is reached
                 }
                 else
                 {
@@ -588,6 +597,7 @@ public sealed partial class TestPrintPage : Page
     /// <param name="motor">The motor object whose position is to be retrieved and displayed.</param>
     private void UpdateMotorPositionTextBox(string motorName, StepperMotor motor)
     {
+        MagnetoLogger.Log("Updating motor position text box.", LogFactoryLogLevel.LogLevel.SUCCESS);
         var textBox = GetCorrespondingTextBox(motorName);
         if (textBox != null)
             textBox.Text = motor.GetCurrentPos().ToString();

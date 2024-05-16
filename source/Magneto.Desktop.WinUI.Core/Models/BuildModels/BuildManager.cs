@@ -99,6 +99,21 @@ public class BuildManager : ISubsciber, IStateMachine
         get; set;
     }
 
+    public struct MotorKey
+    {
+        public ControllerType ControllerType;
+        public int Axis;
+
+        public MotorKey(ControllerType controllerType, int axis)
+        {
+            ControllerType = controllerType;
+            Axis = axis;
+        }
+    }
+
+
+    //private Dictionary<int, TaskCompletionSource<double>> positionTasks = new Dictionary<int, TaskCompletionSource<double>>();
+    private Dictionary<MotorKey, TaskCompletionSource<double>> positionTasks = new Dictionary<MotorKey, TaskCompletionSource<double>>();
     private Queue<string> commandQueue = new Queue<string>();
     private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
     private bool isCommandProcessing = false;
@@ -160,6 +175,9 @@ public class BuildManager : ISubsciber, IStateMachine
         // TODO: Move to config file
         // Set default sweep distance
         SetSweepDist(MagnetoConfig.GetSweepDist());
+
+        // Subscribe to the PositionReported event
+        //PositionReported += HandlePositionReported;
 
         // Create a dance model
         danceModel = new DanceModel();
@@ -290,10 +308,19 @@ public class BuildManager : ISubsciber, IStateMachine
 
     #region Queue Management
 
-    public void AddCommand(ControllerType controllerType, int axis, CommandType cmdType, double dist)
+    public Task<double> AddCommand(ControllerType controllerType, int axis, CommandType cmdType, double dist)
     {
         var msg = "Adding Command to Queue. Locking commandQueue";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        TaskCompletionSource<double> tcs = null;
+        MotorKey key = new MotorKey(controllerType, axis);
+
+        if (cmdType == CommandType.PositionQuery)
+        {
+            tcs = new TaskCompletionSource<double>();
+            positionTasks[key] = tcs;
+        }
 
         lock (commandQueue)
         {
@@ -319,7 +346,10 @@ public class BuildManager : ISubsciber, IStateMachine
                 Task.Run(() => ProcessCommands());
             }
         }
+
+        return tcs?.Task ?? Task.FromResult(0.0);
     }
+
 
     private async Task ProcessCommands()
     {
@@ -336,6 +366,7 @@ public class BuildManager : ISubsciber, IStateMachine
 
             ControllerType controllerType = (ControllerType)Enum.Parse(typeof(ControllerType), command.Substring(0, 5));
             int axis = int.Parse(command.Substring(5, 1));
+            MotorKey key = new MotorKey(controllerType, axis);
             string motorCommand = command.Substring(6);
 
             // Based on the controller type, fetch the correct controller
@@ -352,18 +383,28 @@ public class BuildManager : ISubsciber, IStateMachine
                     StepperMotor motor = controller.GetMotorList().FirstOrDefault(m => m.GetID() % 10 == axis);
                     if (motor != null)
                     {
-                        msg = $"Found motor on axis: {axis}. Executing command: {motorCommand}.";
-                        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
-                        await ExecuteMotorCommand(motor, motorCommand);
+                        if (motorCommand.Contains("POS"))
+                        {
+                            double position = motor.GetCurrentPos();
+                            if (positionTasks.TryGetValue(key, out var tcs))
+                            {
+                                tcs.SetResult(position);
+                                positionTasks.Remove(key);
+                            }
+                        }
+                        else
+                        {
+                            msg = $"Found motor on axis: {axis}. Executing command: {motorCommand}.";
+                            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
+                            await ExecuteMotorCommand(motor, motorCommand);
+                        }
                     }
                     else
                     {
                         msg = $"No motor with Axis {axis} found.";
                         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
                     }
-
                 }
-                
             }
             else
             {
@@ -377,17 +418,13 @@ public class BuildManager : ISubsciber, IStateMachine
 
     private IController GetController(ControllerType type)
     {
-        switch (type)
+        return type switch
         {
-            case ControllerType.BUILD:
-                return buildController;
-            case ControllerType.SWEEP:
-                return sweepController;
-            case ControllerType.LASER:
-                return laserController;
-            default:
-                return null;
-        }
+            ControllerType.BUILD => buildController,
+            ControllerType.SWEEP => sweepController,
+            ControllerType.LASER => laserController,
+            _ => throw new ArgumentOutOfRangeException(nameof(type), $"Unsupported controller type: {type}")
+        };
     }
 
     private async Task ExecuteMotorCommand(StepperMotor motor, string motorCommand)
@@ -407,6 +444,7 @@ public class BuildManager : ISubsciber, IStateMachine
         else if (motorCommand.StartsWith("POS"))
         {
             // Handle position query
+            // TODO: Query motor directly to get position; remove POS from add command stream
         }
     }
 
