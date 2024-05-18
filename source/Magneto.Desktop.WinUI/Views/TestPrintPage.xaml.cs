@@ -16,8 +16,10 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using Newtonsoft.Json.Bson;
 using Windows.Devices.SerialCommunication;
 using static Magneto.Desktop.WinUI.Core.Models.BuildModels.BuildManager;
+using static Magneto.Desktop.WinUI.Views.TestPrintPage;
 
 namespace Magneto.Desktop.WinUI.Views;
 
@@ -85,6 +87,8 @@ public sealed partial class TestPrintPage : Page
         SetUpMotor("powder", MissionControl.GetPowderMotor(), out _powderMotor);
         SetUpMotor("build", MissionControl.GetBuildMotor(), out _buildMotor);
         SetUpMotor("sweep", MissionControl.GetSweepMotor(), out _sweepMotor);
+
+        //GetMotorPositions(); // TOOD: Fix--all positions are 0 on page load even if they're not...
     }
 
     private void SetUpMotor(string motorType, StepperMotor motor, out StepperMotor motorField)
@@ -409,9 +413,6 @@ public sealed partial class TestPrintPage : Page
     /// <param name="thisMotorSelected">A reference to a boolean flag indicating the selection status of this motor.</param>
     private void SelectMotorHelper(StepperMotor motor, TextBox positionTextBox, ref bool thisMotorSelected)
     {
-        // Clear position text box
-        positionTextBox.Text = "";
-
         _currTestMotor = motor;
         var msg = $"Setting current motor to {_currTestMotor.GetMotorName()} motor";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
@@ -430,38 +431,7 @@ public sealed partial class TestPrintPage : Page
         thisMotorSelected = !thisMotorSelected;
     }
 
-    #endregion
-
-    #region Select Motor Button Methods
-
-    /// <summary>
-    /// Event handler for clicking the 'Select Powder Motor' button.
-    /// Selects the powder motor as the current test motor and updates the UI accordingly.
-    /// Logs an error if the powder motor is null.
-    /// </summary>
-    /// <param name="sender">The object that raised the event.</param>
-    /// <param name="e">Event data for the click event.</param>
-    private void SelectPowderMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-    {
-        if (_powderMotor != null)
-        {
-            SelectMotorHelper(_powderMotor, PowderPositionTextBox, ref _powderMotorSelected);
-        }
-        else
-        {
-            var msg = "Powder Motor is null.";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-        }
-    }
-
-    /// <summary>
-    /// Event handler for clicking the 'Select Build Motor' button.
-    /// Selects the build motor as the current test motor and updates the UI accordingly.
-    /// Logs an error if the build motor is null.
-    /// </summary>
-    /// <param name="sender">The object that raised the event.</param>
-    /// <param name="e">Event data for the click event.</param>
-    private void SelectBuildMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    private void SelectBuildMotor()
     {
         if (_buildMotor != null)
         {
@@ -474,14 +444,20 @@ public sealed partial class TestPrintPage : Page
         }
     }
 
-    /// <summary>
-    /// Event handler for clicking the 'Select Sweep Motor' button.
-    /// Selects the sweep motor as the current test motor and updates the UI accordingly.
-    /// Logs an error if the sweep motor is null.
-    /// </summary>
-    /// <param name="sender">The object that raised the event.</param>
-    /// <param name="e">Event data for the click event.</param>
-    private void SelectSweepMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    private void SelectPowderMotor()
+    {
+        if (_powderMotor != null)
+        {
+            SelectMotorHelper(_powderMotor, PowderPositionTextBox, ref _powderMotorSelected);
+        }
+        else
+        {
+            var msg = "Powder Motor is null.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+        }
+    }
+
+    private void SelectSweepMotor()
     {
         if (_sweepMotor != null)
         {
@@ -494,13 +470,9 @@ public sealed partial class TestPrintPage : Page
         }
     }
 
-    #endregion
-
-    #region Motor Movement Buttons
-
     private ControllerType GetControllerTypeHelper(string motorName)
     {
-        switch(motorName)
+        switch (motorName)
         {
             case "sweep":
                 return ControllerType.SWEEP;
@@ -528,7 +500,6 @@ public sealed partial class TestPrintPage : Page
         {
             return -1;
         }
-
     }
 
     public (string motorName, ControllerType controllerType, int motorAxis) GetMotorDetailsHelper(StepperMotor motor)
@@ -545,22 +516,137 @@ public sealed partial class TestPrintPage : Page
         return (motorName, controllerType, motorAxis);
     }
 
+    #endregion
+
+    #region Select Motor Button Methods
+
     /// <summary>
-    /// Moves the current test motor by a specified distance, which can be absolute or relative based on the parameter.
-    /// This method handles validation of the motor request, opens the serial port, initiates the motor movement,
-    /// updates the UI with the motor's position, and handles any exceptions that might occur during the process.
+    /// Event handler for clicking the 'Select Build Motor' button.
+    /// Selects the build motor as the current test motor and updates the UI accordingly.
+    /// Logs an error if the build motor is null.
     /// </summary>
-    /// <param name="isAbsolute">Determines whether the movement is absolute or relative. True for absolute, false for relative.</param>
+    /// <param name="sender">The object that raised the event.</param>
+    /// <param name="e">Event data for the click event.</param>
+    private void SelectBuildMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        SelectBuildMotor();
+    }
+
+    /// <summary>
+    /// Event handler for clicking the 'Select Powder Motor' button.
+    /// Selects the powder motor as the current test motor and updates the UI accordingly.
+    /// Logs an error if the powder motor is null.
+    /// </summary>
+    /// <param name="sender">The object that raised the event.</param>
+    /// <param name="e">Event data for the click event.</param>
+    private void SelectPowderMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        SelectPowderMotor();
+    }
+
+    /// <summary>
+    /// Event handler for clicking the 'Select Sweep Motor' button.
+    /// Selects the sweep motor as the current test motor and updates the UI accordingly.
+    /// Logs an error if the sweep motor is null.
+    /// </summary>
+    /// <param name="sender">The object that raised the event.</param>
+    /// <param name="e">Event data for the click event.</param>
+    private void SelectSweepMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        SelectSweepMotor();
+    }
+
+    #endregion
+
+
+    #region Motor Movement Buttons
+
+    public struct MotorDetails
+    {
+        public string MotorName { get; }
+        public ControllerType ControllerType { get; }
+        public int MotorAxis { get; }
+
+        public MotorDetails(string motorName, ControllerType controllerType, int motorAxis)
+        {
+            MotorName = motorName;
+            ControllerType = controllerType;
+            MotorAxis = motorAxis;
+        }
+    }
+
+    private (bool isValid, MotorDetails? motorDetails) PrepareMotorOperation(StepperMotor motor)
+    {
+        if (motor == null)
+        {
+            MagnetoLogger.Log("Invalid motor request or motor is null.", LogFactoryLogLevel.LogLevel.ERROR);
+            _ = DialogHelper.ShowContentDialog(this.Content.XamlRoot, "Error", "No motor selected.");
+            return (false, null);
+        }
+
+        if (!MagnetoSerialConsole.OpenSerialPort(motor.GetPortName()))
+        {
+            MagnetoLogger.Log("Failed to open port.", LogFactoryLogLevel.LogLevel.ERROR);
+            _ = DialogHelper.ShowContentDialog(this.Content.XamlRoot, "Error", "Failed to open serial port.");
+            return (false, null);
+        }
+
+        string motorName = motor.GetMotorName();
+        ControllerType controllerType = GetControllerTypeHelper(motorName); // Assuming this method exists
+        int motorAxis = GetMotorAxisHelper(motorName); // Assuming this method exists
+
+        return (true, new MotorDetails(motorName, controllerType, motorAxis));
+    }
+
+
+    private async Task ExecuteMovementCommand(StepperMotor motor, bool isAbsolute, double value)
+    {
+        var bm = MissionControl.GetBuildManger();
+        //var (isValid, operationResult) = PrepareMotorOperation(motor);
+
+        var operationResult = PrepareMotorOperation(motor);
+
+        if (!operationResult.isValid || operationResult.motorDetails == null)
+        {
+            Console.WriteLine("Motor preparation failed or motor details not available.");
+            // Handle the error appropriately
+            return;
+        }
+        else
+        {
+            // Safe to access the ControllerType because motorDetails is confirmed to be not null
+            //ControllerType controllerType = operationResult.motorDetails.Value.ControllerType;
+
+            // Use the controllerType as needed in your application
+            //Console.WriteLine($"Controller Type: {controllerType}");
+            _movingMotorToTarget = true;
+            CommandType commandType = isAbsolute ? CommandType.AbsoluteMove : CommandType.RelativeMove;
+            ControllerType controllerType = operationResult.motorDetails.Value.ControllerType;
+            var motorAxis = operationResult.motorDetails.Value.MotorAxis;
+
+            // Ask for position to update text box below
+            var result = await bm.AddCommand(controllerType, motorAxis, commandType, value);
+
+            try
+            {
+                // Call AddCommand with CommandType.PositionQuery to get the motor's position
+                var position = await bm.AddCommand(controllerType, motorAxis, CommandType.PositionQuery, 0);
+
+                MagnetoLogger.Log($"Position of motor on axis {motorAxis} is {position}", LogFactoryLogLevel.LogLevel.SUCCESS);
+            }
+            catch (Exception ex)
+            {
+                MagnetoLogger.Log($"Failed to get motor position: {ex.Message}", LogFactoryLogLevel.LogLevel.ERROR);
+            }
+
+            // Update text box
+            UpdateMotorPositionTextBox(motor);
+            _movingMotorToTarget = false;
+        }
+    }
+
     private async void MoveMotor(bool isAbsolute)
     {
-        // Get the build manager
-        BuildManager? bm = MissionControl?.GetBuildManger();
-        
-        // Parse and log the movement type
-        var movementType = isAbsolute ? "absolute" : "relative";
-        var msg = $"Request to move motor to an {movementType} position submitted.";
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-
         // Exit if no motor is selected
         if (_currTestMotor == null)
         {
@@ -569,160 +655,48 @@ public sealed partial class TestPrintPage : Page
             return;
         }
 
-        if (MagnetoSerialConsole.OpenSerialPort(_currTestMotor.GetPortName()))
+        if (double.TryParse(AbsDistTextBox.Text, out var pos))
         {
-            MagnetoLogger.Log("Port Open!", LogFactoryLogLevel.LogLevel.SUCCESS);
-
-            // Used for button coloring
-            _movingMotorToTarget = true;
-
-            var motorDetails = GetMotorDetailsHelper(_currTestMotor);
-
-            // Null check for motor map
-            if (_motorToPosTextBoxMap == null)
-            {
-                MagnetoLogger.Log("Motor to Position TextBox map is not initialized.", LogFactoryLogLevel.LogLevel.ERROR);
-                await DialogHelper.ShowContentDialog(this.Content.XamlRoot, "Error", $"Internal Error. Try loading the page again.");
-                return;
-            }
-
-            try
-            {
-                if (_motorToPosTextBoxMap.TryGetValue(motorDetails.motorName, out var motor) && motor != null)
-                {
-                    if (isAbsolute)
-                    {
-                        if (double.TryParse(AbsDistTextBox.Text, out var pos))
-                        {
-                            _ = bm.AddCommand(motorDetails.controllerType, motorDetails.motorAxis, CommandType.AbsoluteMove, pos);
-                        }
-                        else
-                        {
-                            await DialogHelper.ShowContentDialog(this.Content.XamlRoot, "Error", $"\"{AbsDistTextBox.Text}\" is not a valid position. Please make sure you entered a number in the textbox.");
-                            return;
-                        }
-                    }
-                    else
-                    {
-                        if (double.TryParse(RelDistTextBox.Text, out var dist))
-                        {
-                            _ = bm.AddCommand(motorDetails.controllerType, motorDetails.motorAxis, CommandType.RelativeMove, dist);
-                        }
-                        else
-                        {
-                            await DialogHelper.ShowContentDialog(this.Content.XamlRoot, "Error", $"\"{RelDistTextBox.Text}\" is not a valid distance. Please make sure you entered a number in the textbox.");
-                            return;
-                        }
-                    }
-                    // Call try catch block to send command to get position to motor
-                    // (Required to update text box)
-                    try
-                    {
-                        // Call AddCommand with CommandType.PositionQuery to get the motor's position
-                        var position = await bm.AddCommand(motorDetails.controllerType, motorDetails.motorAxis, CommandType.PositionQuery, 0);
-
-                        MagnetoLogger.Log($"Position of motor on axis {motorDetails.motorAxis} is {position}", LogFactoryLogLevel.LogLevel.SUCCESS);
-                    }
-                    catch (Exception ex)
-                    {
-                        MagnetoLogger.Log($"Failed to get motor position: {ex.Message}", LogFactoryLogLevel.LogLevel.ERROR);
-                    }
-                    UpdateMotorPositionTextBox(motor);
-                }
-                else
-                {
-                    MagnetoLogger.Log($"Motor '{motorDetails.motorName}' not initialized or not found.", LogFactoryLogLevel.LogLevel.ERROR);
-                    await DialogHelper.ShowContentDialog(this.Content.XamlRoot, "Error", $"{motorDetails.motorName} motor is not connected");
-                }
-            }
-            catch (Exception ex)
-            {
-                MagnetoLogger.Log($"An exception occurred: {ex.Message}", LogFactoryLogLevel.LogLevel.ERROR);
-            }
-
-            _movingMotorToTarget = false;
-            UpdateButtonBackground(isAbsolute);
+            var distance = isAbsolute ? double.Parse(AbsDistTextBox.Text) : double.Parse(RelDistTextBox.Text);
+            await ExecuteMovementCommand(_currTestMotor, isAbsolute, distance);
         }
         else
         {
-            MagnetoLogger.Log("Port Closed.", LogFactoryLogLevel.LogLevel.ERROR);
+            await DialogHelper.ShowContentDialog(this.Content.XamlRoot, "Error", $"\"{AbsDistTextBox.Text}\" is not a valid position. Please make sure you entered a number in the textbox.");
+            return;
         }
     }
 
     private async void IncrementMotor(StepperMotor motor, bool increment)
     {
-        // Get the build manager
-        BuildManager? bm = MissionControl?.GetBuildManger();
-
-        // Parse and log the movement type
-        var movementType = increment ? "increment" : "decrement";
-        var msg = $"Request to {movementType} motor submitted.";
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-
-        // Exit if no motor is selected
-        if (motor == null)
+        TextBox textbox = GetIncrementTextBoxHelper(motor);
+        if (textbox == null || !double.TryParse(textbox.Text, out var dist))
         {
-            MagnetoLogger.Log("Invalid motor request or Current Test Motor is null.", LogFactoryLogLevel.LogLevel.ERROR);
-            await DialogHelper.ShowContentDialog(this.Content.XamlRoot, "Error", $"No motor selected.");
+            _ = DialogHelper.ShowContentDialog(this.Content.XamlRoot, "Error", "Invalid input in increment text box.");
             return;
         }
 
-        if (MagnetoSerialConsole.OpenSerialPort(motor.GetPortName()))
-        {
-            MagnetoLogger.Log("Port Open!", LogFactoryLogLevel.LogLevel.SUCCESS);
+        await ExecuteMovementCommand(motor, false, increment ? dist : -dist);
+    }
 
-            // Used for button coloring
-            _movingMotorToTarget = true;
 
-            var motorDetails = GetMotorDetailsHelper(motor);
-            var textbox = GetIncrementTextBoxHelper(motor);
 
-            if (textbox != null)
-            {
-                if (double.TryParse(textbox.Text, out var dist))
-                {
-                    if (increment)
-                    {
-                        _ = bm.AddCommand(motorDetails.controllerType, motorDetails.motorAxis, CommandType.RelativeMove, dist);
-                    }
-                    else
-                    {
-                        _ = bm.AddCommand(motorDetails.controllerType, motorDetails.motorAxis, CommandType.RelativeMove, -dist);
-                    }
-                }
-                else
-                {
-                    await DialogHelper.ShowContentDialog(this.Content.XamlRoot, "Error", $"\"{textbox.Text}\" is not a valid increment distance. Please make sure you entered a number in the text box.");
-                    return;
-                }
-            }
-            else
-            {
-                await DialogHelper.ShowContentDialog(this.Content.XamlRoot, "Error", $"Increment text box for {motor.GetMotorName()} is null. Please enter a value.");
-                return;
-            }
-            // Call try catch block to send command to get position to motor
-            // (Required to update text box)
-            try
-            {
-                // Call AddCommand with CommandType.PositionQuery to get the motor's position
-                var position = await bm.AddCommand(motorDetails.controllerType, motorDetails.motorAxis, CommandType.PositionQuery, 0);
+    /// <summary>
+    /// Event handler for the 'Move Motor Absolute' button click.
+    /// Initiates the process of moving the motor to an absolute position.
+    /// </summary>
+    private void MoveMotorAbsButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        MoveMotor(isAbsolute: true);
+    }
 
-                MagnetoLogger.Log($"Position of motor on axis {motorDetails.motorAxis} is {position}", LogFactoryLogLevel.LogLevel.SUCCESS);
-            }
-            catch (Exception ex)
-            {
-                MagnetoLogger.Log($"Failed to get motor position: {ex.Message}", LogFactoryLogLevel.LogLevel.ERROR);
-            }
-            UpdateMotorPositionTextBox(motor);
-
-            _movingMotorToTarget = false;
-            //UpdateButtonBackground(true); // TODO: Check how this is used/if it's being used
-        }
-        else
-        {
-            MagnetoLogger.Log("Port Closed.", LogFactoryLogLevel.LogLevel.ERROR);
-        }
+    /// <summary>
+    /// Event handler for the 'Move Motor Relative' button click.
+    /// Initiates the process of moving the motor to a position relative to its current position.
+    /// </summary>
+    private void MoveMotorRelativeButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        MoveMotor(isAbsolute: false);
     }
 
     /// <summary>
@@ -748,24 +722,6 @@ public sealed partial class TestPrintPage : Page
     {
         var button = isAbsolute ? MoveMotorAbsButton : MoveMotorRelativeButton;
         button.Background = _movingMotorToTarget ? new SolidColorBrush(Colors.Green) : new SolidColorBrush(Colors.DimGray);
-    }
-
-    /// <summary>
-    /// Event handler for the 'Move Motor Absolute' button click.
-    /// Initiates the process of moving the motor to an absolute position.
-    /// </summary>
-    private void MoveMotorAbsButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-    {
-        MoveMotor(isAbsolute: true);
-    }
-
-    /// <summary>
-    /// Event handler for the 'Move Motor Relative' button click.
-    /// Initiates the process of moving the motor to a position relative to its current position.
-    /// </summary>
-    private void MoveMotorRelativeButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-    {
-        MoveMotor(isAbsolute: false);
     }
 
     /// <summary>
@@ -902,11 +858,9 @@ public sealed partial class TestPrintPage : Page
         }
     }
 
-
-
     #endregion
 
-    // TODO: Show appropriate motor is selected (green) when incrementing/decrementing
+    #region Increment/Decrement Button Methods
 
     private void IncrBuild_Click(object sender, RoutedEventArgs e)
     {
@@ -915,6 +869,7 @@ public sealed partial class TestPrintPage : Page
         {
             IncrementMotor(_buildMotor, inrement);
         }
+        SelectBuildMotor();
     }
 
     private void DecrBuild_Click(object sender, RoutedEventArgs e)
@@ -924,6 +879,7 @@ public sealed partial class TestPrintPage : Page
         {
             IncrementMotor(_buildMotor, inrement);
         }
+        SelectBuildMotor();
     }
 
     private void IncrPowder_Click(object sender, RoutedEventArgs e)
@@ -933,6 +889,7 @@ public sealed partial class TestPrintPage : Page
         {
             IncrementMotor(_powderMotor, inrement);
         }
+        SelectPowderMotor();
     }
 
     private void DecrPowder_Click(object sender, RoutedEventArgs e)
@@ -942,6 +899,7 @@ public sealed partial class TestPrintPage : Page
         {
             IncrementMotor(_powderMotor, inrement);
         }
+        SelectPowderMotor();
     }
 
     private void IncrSweep_Click(object sender, RoutedEventArgs e)
@@ -951,6 +909,7 @@ public sealed partial class TestPrintPage : Page
         {
             IncrementMotor(_sweepMotor, inrement);
         }
+        SelectSweepMotor();
     }
 
     private void DecrSweep_Click(object sender, RoutedEventArgs e)
@@ -960,5 +919,8 @@ public sealed partial class TestPrintPage : Page
         {
             IncrementMotor(_sweepMotor, inrement);
         }
+        SelectSweepMotor();
     }
+
+    #endregion
 }
