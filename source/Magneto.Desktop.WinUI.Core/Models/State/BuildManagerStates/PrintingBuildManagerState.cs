@@ -91,6 +91,10 @@ public class PrintingBuildManagerState : IBuildManagerState
             _ = _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, build_axis, BuildManager.CommandType.RelativeMove, -2);
 
         }
+
+        // TODO: move build motor back to zero position (so we can remove build plate)
+
+        // TODO: add button to home build plate (audible)
     }
 
     public async Task Draw()
