@@ -59,10 +59,12 @@
                     Click="FindPrint_Click"></Button>
             <TextBlock Grid.Row="2" x:Name="FindPrintStatusTextBlock" HorizontalAlignment="Center" VerticalAlignment="Center" 
                        Text="Waiting for user to select print." FontSize="12" Margin="10"></TextBlock>
-            <Button Grid.Row="3" HorizontalAlignment="Center" Margin="10" Height="45" Width="175" Content="Go To Starting Position" IsEnabled="False"></Button>
+            <Button Grid.Row="3" x:Name="GoToStartingPositionButton" HorizontalAlignment="Center" Margin="10" Height="45" Width="175" Content="Go To Starting Position" 
+                    Click="GoToStartingPositionButton_Click" IsEnabled="False"></Button>
             <TextBlock Grid.Row="4" x:Name="StartingPositionStatusTextBlock" HorizontalAlignment="Center" VerticalAlignment="Center" 
                        Text="User must select print to determine starting position." FontSize="12" Margin="10"></TextBlock>
-            <Button Grid.Row="5" HorizontalAlignment="Center" Margin="10" Height="45" Width="175" Content="Calibrate Motors" IsEnabled="False"></Button>
+            <Button Grid.Row="5" x:Name="CalibrateMotorsButton" HorizontalAlignment="Center" Margin="10" Height="45" Width="175" Content="Calibrate Motors" 
+                    Click="CalibrateMotorsButton_Click" IsEnabled="False"></Button>
             <TextBlock Grid.Row="6" x:Name="CalibrateMotorsStatusTextBlock" HorizontalAlignment="Center" VerticalAlignment="Center" 
                        Text="User must select print to calibrate motors." FontSize="12" Margin="10"></TextBlock>
 
@@ -89,8 +91,8 @@
                        Text="Layer Thickness" FontSize="12" Margin="10"></TextBlock>
                 <TextBlock Grid.Column="5" x:Name="PrintLayerThicknessTextBlock" HorizontalAlignment="Left" VerticalAlignment="Center" 
                        Text="" FontSize="12" Margin="10"></TextBlock>
-
             </Grid>
+            
             <Button Grid.Row="8" x:Name="StartPrintButton" HorizontalAlignment="Center" Margin="10" Height="45" Width="175" Content="Start Print" IsEnabled="False"
                     Click="StartPrint_Click"></Button>
             <Button Grid.Row="9" HorizontalAlignment="Center" Margin="10" Height="45" Width="175" Content="Cancel Print" Background="Red"></Button>

@@ -10,6 +10,7 @@ using Magneto.Desktop.WinUI.Core.Models.BuildModels;
 using Magneto.Desktop.WinUI.Core.Models.Motor;
 using Magneto.Desktop.WinUI.Core.Services;
 using Magneto.Desktop.WinUI.Helpers;
+using Magneto.Desktop.WinUI.Popups;
 using Magneto.Desktop.WinUI.ViewModels;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
@@ -99,7 +100,7 @@ public sealed partial class TestPrintPage : Page
         if (MissionControl == null)
         {
             MagnetoLogger.Log("MissionControl is null. Unable to set up motors.", LogFactoryLogLevel.LogLevel.ERROR);
-            await DialogHelper.ShowContentDialog(this.Content.XamlRoot,"Error", "MissionControl is not Connected.");
+            await PopupInfo.ShowContentDialog(this.Content.XamlRoot,"Error", "MissionControl is not Connected.");
             return;
         }
 
@@ -428,14 +429,14 @@ public sealed partial class TestPrintPage : Page
             {
                 msg = "Current Test Motor is null.";
                 MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-                await DialogHelper.ShowContentDialog(this.Content.XamlRoot, "Error", "You must select a motor to home.");
+                await PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "You must select a motor to home.");
             }
         }
         else
         {
             msg = "BuildManager is null.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            await DialogHelper.ShowContentDialog(this.Content.XamlRoot, "Error", "Internal error. Try reloading the page.");
+            await PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Internal error. Try reloading the page.");
         }
         
     }
@@ -642,14 +643,14 @@ public sealed partial class TestPrintPage : Page
         if (motor == null)
         {
             MagnetoLogger.Log("Invalid motor request or motor is null.", LogFactoryLogLevel.LogLevel.ERROR);
-            _ = DialogHelper.ShowContentDialog(this.Content.XamlRoot, "Error", "No motor selected.");
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "No motor selected.");
             return (false, null);
         }
 
         if (!MagnetoSerialConsole.OpenSerialPort(motor.GetPortName()))
         {
             MagnetoLogger.Log("Failed to open port.", LogFactoryLogLevel.LogLevel.ERROR);
-            _ = DialogHelper.ShowContentDialog(this.Content.XamlRoot, "Error", "Failed to open serial port.");
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Failed to open serial port.");
             return (false, null);
         }
 
@@ -677,7 +678,7 @@ public sealed partial class TestPrintPage : Page
         if (MissionControl == null)
         {
             msg = "Failed to access mission control.";
-            await DialogHelper.ShowContentDialog(this.Content.XamlRoot, "Error", $"Mission control offline.");
+            await PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", $"Mission control offline.");
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             return;
         }
@@ -745,7 +746,7 @@ public sealed partial class TestPrintPage : Page
         if (_currTestMotor == null)
         {
             MagnetoLogger.Log("Invalid motor request or Current Test Motor is null.", LogFactoryLogLevel.LogLevel.ERROR);
-            await DialogHelper.ShowContentDialog(this.Content.XamlRoot, "Error", $"No motor selected.");
+            await PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", $"No motor selected.");
             return;
         }
 
@@ -756,7 +757,7 @@ public sealed partial class TestPrintPage : Page
         }
         else
         {
-            await DialogHelper.ShowContentDialog(this.Content.XamlRoot, "Error", $"\"{AbsDistTextBox.Text}\" is not a valid position. Please make sure you entered a number in the textbox.");
+            await PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", $"\"{AbsDistTextBox.Text}\" is not a valid position. Please make sure you entered a number in the textbox.");
             return;
         }
     }
@@ -771,7 +772,7 @@ public sealed partial class TestPrintPage : Page
         TextBox textbox = GetIncrementTextBoxHelper(motor);
         if (textbox == null || !double.TryParse(textbox.Text, out var dist))
         {
-            _ = DialogHelper.ShowContentDialog(this.Content.XamlRoot, "Error", "Invalid input in increment text box.");
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Invalid input in increment text box.");
             return;
         }
         // Take the absolute value of distance entered in text box

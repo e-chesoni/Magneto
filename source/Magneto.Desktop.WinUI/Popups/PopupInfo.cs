@@ -9,8 +9,8 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI;
 using Windows.UI;
 
-namespace Magneto.Desktop.WinUI.Helpers;
-public static class DialogHelper
+namespace Magneto.Desktop.WinUI.Popups;
+public static class PopupInfo
 {
     public static async Task ShowContentDialog(XamlRoot xamlRoot, string title, string message)
     {

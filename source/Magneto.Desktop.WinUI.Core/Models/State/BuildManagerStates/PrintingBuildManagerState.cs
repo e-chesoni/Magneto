@@ -68,11 +68,11 @@ public class PrintingBuildManagerState : IBuildManagerState
         // TODO: Add dummy calibration move
         // Loop below runs 5 times, and each motor moves 2mm per loop
         // Therefore, calibration step for the powder motor is down 2*5=10mm
-        _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, powder_axis, BuildManager.CommandType.RelativeMove, -(total_print_height + 2)); // add 2mm for test so we can also test homing after print
+        _ = _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, powder_axis, BuildManager.CommandType.RelativeMove, -(total_print_height + 2)); // add 2mm for test so we can also test homing after print
         
         // Move build motor down print height + plate thickness (6mm + 10mm)
         var plate_thickness = 6; // about 6mm
-        _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, build_axis, BuildManager.CommandType.RelativeMove, -(total_print_height + plate_thickness));
+        _ = _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, build_axis, BuildManager.CommandType.RelativeMove, -(total_print_height + plate_thickness));
 
         // Each motor should move 5 times in test
         for (var i = 0; i < 5; i++)
@@ -85,10 +85,10 @@ public class PrintingBuildManagerState : IBuildManagerState
             // REPEAT until all slices have been processed
 
             // After calibration, powder motor moves up slice thickness
-            _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, powder_axis, BuildManager.CommandType.RelativeMove, 2);
+            _ = _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, powder_axis, BuildManager.CommandType.RelativeMove, 2);
             
             // Build motor moves down slice thickness
-            _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, build_axis, BuildManager.CommandType.RelativeMove, -2);
+            _ = _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, build_axis, BuildManager.CommandType.RelativeMove, -2);
 
         }
     }
@@ -210,8 +210,8 @@ public class PrintingBuildManagerState : IBuildManagerState
         //await _BuildManagerSM.buildController.HomeMotors();
         //await _BuildManagerSM.sweepController.HomeMotors();
 
-        _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, powder_axis, BuildManager.CommandType.AbsoluteMove, 0);
-        _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, build_axis, BuildManager.CommandType.AbsoluteMove, 0);
+        _ = _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, powder_axis, BuildManager.CommandType.AbsoluteMove, 0);
+        _ = _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, build_axis, BuildManager.CommandType.AbsoluteMove, 0);
 
         // Return to idle state
         _BuildManagerSM.TransitionTo(new IdleBuildManagerState(_BuildManagerSM));

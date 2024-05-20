@@ -1,4 +1,5 @@
 ﻿using System.IO.Ports;
+using System.Runtime.ConstrainedExecution;
 using System.Xml.Linq;
 using Magneto.Desktop.WinUI.Core;
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
@@ -6,7 +7,9 @@ using Magneto.Desktop.WinUI.Core.Models;
 using Magneto.Desktop.WinUI.Core.Models.Image;
 using Magneto.Desktop.WinUI.Core.Models.Motor;
 using Magneto.Desktop.WinUI.Core.Services;
+using Magneto.Desktop.WinUI.Popups;
 using Magneto.Desktop.WinUI.ViewModels;
+using Magneto.Desktop.WinUI.Core.Services;
 
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
@@ -112,6 +115,9 @@ public sealed partial class PrintPage : Page
             MissionControl.SliceImage(); // TODO: IMAGE HANDLER references Magneto Config to control slice number: SliceImage calls SliceImage in build controller which calls ImageHandler
             StartPrintButton.IsEnabled = true;
 
+            // Enable go to start button
+            GoToStartingPositionButton.IsEnabled = true;
+
             // TODO: MOVE ME -- Populate after successful calibration
             PrintHeightTextBlock.Text = MissionControl.GetCurrentBuildHeight().ToString();
         }
@@ -179,5 +185,23 @@ public sealed partial class PrintPage : Page
         MissionControl.SetImageThickness(newThickness);
     }
 
+    private void GoToStartingPositionButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        var msg = $"Not yet implemented.";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
+        _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Warning", msg);
+
+        // Enable calibrate button
+        CalibrateMotorsButton.IsEnabled = true;
+    }
+
+    private void CalibrateMotorsButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        _ = PopupInteractive.ShowContentDialog(this.Content.XamlRoot, MissionControl, "Calibrate Motors", "Calibrate Motors");
+        //PopupInteractive popup = new PopupInteractive(MissionControl);
+        //_ = popup.ShowAsync();
+    }
+
     #endregion
+
 }
