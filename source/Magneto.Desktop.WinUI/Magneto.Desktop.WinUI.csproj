@@ -25,6 +25,9 @@
     <None Remove="Views\caret-up.png" />
   </ItemGroup>
   <ItemGroup>
+    <Page Remove="Popups\PopupInteractive.xaml" />
+  </ItemGroup>
+  <ItemGroup>
     <COMReference Include="SAMLIGHT_CLIENT_CTRL_EXLib">
       <WrapperTool>tlbimp</WrapperTool>
       <VersionMinor>6</VersionMinor>
@@ -70,6 +73,9 @@
   <ItemGroup>
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Popups\PopupInteractive.xaml">
+      <Generator>MSBuild:Compile</Generator>
     </None>
     <Page Update="TestWaveRunner.xaml">
       <Generator>MSBuild:Compile</Generator>

@@ -197,9 +197,7 @@ public sealed partial class PrintPage : Page
 
     private void CalibrateMotorsButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        _ = PopupInteractive.ShowContentDialog(this.Content.XamlRoot, MissionControl, "Calibrate Motors", "Calibrate Motors");
-        //PopupInteractive popup = new PopupInteractive(MissionControl);
-        //_ = popup.ShowAsync();
+        _ = PopupInteractiveHelper.ShowContentDialog(this.Content.XamlRoot, MissionControl, "Calibrate Motors", "Calibrate Motors Description");
     }
 
     #endregion

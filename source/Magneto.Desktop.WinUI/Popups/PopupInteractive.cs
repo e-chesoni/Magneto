@@ -1,30 +1,41 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Magneto.Desktop.WinUI.Core.Models;
-using Microsoft.UI.Xaml.Controls;
+﻿using Magneto.Desktop.WinUI.Core.Models;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Magneto.Desktop.WinUI.Popups
 {
-    public static class PopupInteractive
+    public class PopupInteractive : ContentDialog
     {
-        private static MissionControl _missionControl;
+        private MissionControl _missionControl;
 
-        public static async Task ShowContentDialog(XamlRoot xamlRoot, MissionControl mc, string title, string message)
+        public string DialogTitle
         {
-            var dialog = new ContentDialog
-            {
-                Title = title,
-                Content = message,
-                CloseButtonText = "Ok",
-                XamlRoot = xamlRoot,
-            };
+            get; set;
+        }
+        public string DialogMessage
+        {
+            get; set;
+        }
 
-            await dialog.ShowAsync();
+        public PopupInteractive(XamlRoot xamlRoot, MissionControl mc, string title, string message)
+        {
+            //InitializeComponent();
+            XamlRoot = xamlRoot; // Set the XamlRoot for the dialog
+            _missionControl = mc;
+
+            DialogTitle = title;
+            DialogMessage = message;
+            DataContext = this; // Set the DataContext for data binding
+        }
+
+        private void IncrementButton_Click(object sender, RoutedEventArgs e)
+        {
+            //_missionControl.Increment();
+        }
+
+        private void DecrementButton_Click(object sender, RoutedEventArgs e)
+        {
+            //_missionControl.Decrement();
         }
     }
-
 }
