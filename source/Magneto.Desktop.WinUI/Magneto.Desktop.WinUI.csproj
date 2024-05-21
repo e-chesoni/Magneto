@@ -20,12 +20,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="Assets\caret-down.svg" />
+    <None Remove="Popups\PopupInteractive.xaml" />
     <None Remove="TestWaveRunner.xaml" />
     <None Remove="Views\caret-down.png" />
     <None Remove="Views\caret-up.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Page Remove="Popups\PopupInteractive.xaml" />
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="SAMLIGHT_CLIENT_CTRL_EXLib">
@@ -74,9 +72,9 @@
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Popups\PopupInteractive.xaml">
+    <Page Update="Popups\PopupInteractive.xaml">
       <Generator>MSBuild:Compile</Generator>
-    </None>
+    </Page>
     <Page Update="TestWaveRunner.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

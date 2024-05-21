@@ -4,7 +4,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Magneto.Desktop.WinUI.Popups
 {
-    public class PopupInteractive : ContentDialog
+    public sealed partial class PopupInteractive : ContentDialog
     {
         private MissionControl _missionControl;
 
@@ -19,7 +19,7 @@ namespace Magneto.Desktop.WinUI.Popups
 
         public PopupInteractive(XamlRoot xamlRoot, MissionControl mc, string title, string message)
         {
-            //InitializeComponent();
+            InitializeComponent();
             XamlRoot = xamlRoot; // Set the XamlRoot for the dialog
             _missionControl = mc;
 
