@@ -202,4 +202,37 @@ public sealed partial class PrintPage : Page
 
     #endregion
 
+    private void HomeBuildMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        if (MissionControl != null)
+        {
+            var bm = MissionControl.GetBuildManger();
+            var build_axis = bm.buildController.GetBuildMotor().GetAxis();
+            bm.AddCommand(Core.Models.BuildModels.BuildManager.ControllerType.BUILD, build_axis, Core.Models.BuildModels.BuildManager.CommandType.AbsoluteMove, 0);
+        }
+        else
+        {
+            var msg = $"Mission control is null.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            msg = $"Unable to communicate with Mission Control. Try reloading the page.";
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", msg);
+        }
+    }
+
+    private void HomePowderMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        if (MissionControl != null)
+        {
+            var bm = MissionControl.GetBuildManger();
+            var powder_axis = bm.buildController.GetPowderMotor().GetAxis();
+            bm.AddCommand(Core.Models.BuildModels.BuildManager.ControllerType.BUILD, powder_axis, Core.Models.BuildModels.BuildManager.CommandType.AbsoluteMove, 0);
+        }
+        else
+        {
+            var msg = $"Mission control is null.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            msg = $"Unable to communicate with Mission Control. Try reloading the page.";
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", msg);
+        }
+    }
 }

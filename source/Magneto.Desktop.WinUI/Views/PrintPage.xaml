@@ -112,6 +112,7 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" 
                        Text="Build Plate" FontSize="16" Margin="10"></TextBlock>
@@ -138,6 +139,8 @@
                     <TextBlock Grid.Column="3" x:Name="BuildMotorDesiredPositionTextBlock"  HorizontalAlignment="Center" VerticalAlignment="Center" 
                                    Text="" FontSize="12" Margin="10"></TextBlock>
                 </Grid>
+                <Button Grid.Row="4" x:Name="HomeBuildMotorButton" HorizontalAlignment="Center" Margin="10" Height="45" Width="175" Content="Home Build Motor"
+                    Click="HomeBuildMotorButton_Click"></Button>
             </Grid>
 
             <Grid Grid.Column="1">
@@ -160,6 +163,7 @@
 
             <Grid Grid.Column="2">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
@@ -189,6 +193,8 @@
                     <TextBlock Grid.Column="3" x:Name="PowderMotorDesiredPositionTextBlock"  HorizontalAlignment="Center" VerticalAlignment="Center" 
                                    Text="" FontSize="12" Margin="10"></TextBlock>
                 </Grid>
+                <Button Grid.Row="4" x:Name="HomePowderMotorButton" HorizontalAlignment="Center" Margin="10" Height="45" Width="175" Content="Home Powder Motor"
+                    Click="HomePowderMotorButton_Click" IsEnabled="False"></Button>
             </Grid>
         </Grid>
     </Grid>

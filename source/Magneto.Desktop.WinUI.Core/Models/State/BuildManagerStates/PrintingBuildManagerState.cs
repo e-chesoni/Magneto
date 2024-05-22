@@ -61,6 +61,7 @@ public class PrintingBuildManagerState : IBuildManagerState
         // 5. start dance
         // INTERRUPT dance if cancel is clicked
 
+        var sweep_axis = _BuildManagerSM.sweepController.GetSweepMotor().GetAxis();
         var powder_axis = _BuildManagerSM.buildController.GetPowderMotor().GetAxis();
         var build_axis = _BuildManagerSM.buildController.GetBuildMotor().GetAxis();
         var total_print_height = 10;
@@ -84,17 +85,19 @@ public class PrintingBuildManagerState : IBuildManagerState
             // 4. move build down
             // REPEAT until all slices have been processed
 
+            // Perform sweep
+            _ = _BuildManagerSM.AddCommand(BuildManager.ControllerType.SWEEP, sweep_axis, BuildManager.CommandType.AbsoluteMove, 280); // Test 280 first; e.o.p is actually 283 (max travel is 284.5)
+            _ = _BuildManagerSM.AddCommand(BuildManager.ControllerType.SWEEP, sweep_axis, BuildManager.CommandType.AbsoluteMove, 0);
+
             // After calibration, powder motor moves up slice thickness
             _ = _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, powder_axis, BuildManager.CommandType.RelativeMove, 2);
             
             // Build motor moves down slice thickness
             _ = _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, build_axis, BuildManager.CommandType.RelativeMove, -2);
-
         }
 
-        // TODO: move build motor back to zero position (so we can remove build plate)
-
-        // TODO: add button to home build plate (audible)
+        // Move build motor back to zero position (so we can remove build plate)
+        _ = _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, build_axis, BuildManager.CommandType.AbsoluteMove, 0);
     }
 
     public async Task Draw()
