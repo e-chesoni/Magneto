@@ -11,6 +11,7 @@ using Magneto.Desktop.WinUI.Core.Models.Image;
 using Magneto.Desktop.WinUI.Core.Models.Motor;
 using Magneto.Desktop.WinUI.Core.Services;
 
+
 namespace Magneto.Desktop.WinUI.Core.Models.State.BuildManagerStates;
 public class PrintingBuildManagerState : IBuildManagerState
 {
@@ -96,12 +97,10 @@ public class PrintingBuildManagerState : IBuildManagerState
             _ = _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, build_axis, BuildManager.CommandType.RelativeMove, -2);
 
             // TODO: Set LASER_OPERATING flag to true
-            // TODO: TEMP--show laser marking popup?
-
 
             // TODO: While LASER_OPERATING flag = true, poll laser
-                // TODO: WaveRunner should be able to set LASER_OPERATING flag is true
-                // TODO: break loop when LASER_OPERATING flag is false
+            // TODO: WaveRunner should be able to set LASER_OPERATING flag is true
+            // TODO: break loop when LASER_OPERATING flag is false
 
         }
 
