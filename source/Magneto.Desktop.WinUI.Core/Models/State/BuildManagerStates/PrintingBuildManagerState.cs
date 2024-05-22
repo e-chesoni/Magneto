@@ -91,9 +91,17 @@ public class PrintingBuildManagerState : IBuildManagerState
 
             // After calibration, powder motor moves up slice thickness
             _ = _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, powder_axis, BuildManager.CommandType.RelativeMove, 2);
-            
+
             // Build motor moves down slice thickness
             _ = _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, build_axis, BuildManager.CommandType.RelativeMove, -2);
+
+            // TODO: Set LASER_OPERATING flag to true
+
+
+            // TODO: While LASER_OPERATING flag = true, poll laser
+                // TODO: WaveRunner should be able to set LASER_OPERATING flag is true
+                // TODO: break loop when LASER_OPERATING flag is false
+
         }
 
         // Move build motor back to zero position (so we can remove build plate)

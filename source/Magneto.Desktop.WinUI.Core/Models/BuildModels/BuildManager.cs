@@ -126,16 +126,6 @@ public class BuildManager : ISubsciber, IStateMachine
         LASER // Corresponds to Waverunner
     }
 
-    /// <summary>
-    /// Motor axis to get the status of a specific motor the controller as knowledge of
-    /// </summary>
-    public enum MotorAxis : ushort
-    {
-        BUILD_AXIS = 1,
-        POWDER_AXIS = 2,
-        SWEEP_AXIS = 1, // NOTE: Colloquially refereed to as powder motor or linear motor on occasion
-    }
-
     public enum CommandType
     {
         AbsoluteMove, // Corresponds to "MVA" for absolute movements
@@ -349,7 +339,6 @@ public class BuildManager : ISubsciber, IStateMachine
 
         return tcs?.Task ?? Task.FromResult(0.0);
     }
-
 
     private async Task ProcessCommands()
     {
