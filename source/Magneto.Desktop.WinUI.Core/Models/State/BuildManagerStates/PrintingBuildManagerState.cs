@@ -96,6 +96,7 @@ public class PrintingBuildManagerState : IBuildManagerState
             _ = _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, build_axis, BuildManager.CommandType.RelativeMove, -2);
 
             // TODO: Set LASER_OPERATING flag to true
+            // TODO: TEMP--show laser marking popup?
 
 
             // TODO: While LASER_OPERATING flag = true, poll laser

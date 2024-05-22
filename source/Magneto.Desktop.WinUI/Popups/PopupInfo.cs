@@ -1,49 +1,53 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.UI.Xaml.Controls;
+﻿using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI;
 using Windows.UI;
 
-namespace Magneto.Desktop.WinUI.Popups;
-public static class PopupInfo
+namespace Magneto.Desktop.WinUI.Popups
 {
-    public static async Task ShowContentDialog(XamlRoot xamlRoot, string title, string message)
+    public static class PopupInfo
     {
-        var dialog = new ContentDialog
+        private static ContentDialog _dialog;
+
+        public static async Task ShowContentDialog(XamlRoot xamlRoot, string title, string message)
         {
-            Title = title,
-            Content = message,
-            CloseButtonText = "Ok",
-            XamlRoot = xamlRoot,
-        };
+            _dialog = new ContentDialog
+            {
+                Title = title,
+                Content = message,
+                CloseButtonText = "Ok",
+                XamlRoot = xamlRoot,
+            };
 
-        await dialog.ShowAsync();
-    }
+            await _dialog.ShowAsync();
+        }
 
-    // TODO: Create custom dialog button
-    public static async Task ShowContentDialog(XamlRoot xamlRoot, string title, string message, Color backgroundColor, Color foregroundColor)
-    {
-        var dialog = new ContentDialog
+        public static async Task ShowContentDialog(XamlRoot xamlRoot, string title, string message, Color backgroundColor, Color foregroundColor)
         {
-            Title = title,
-            Content = message,
-            CloseButtonText = "Ok",
-            XamlRoot = xamlRoot,
-            Background = new SolidColorBrush(backgroundColor),
-            Foreground = new SolidColorBrush(foregroundColor)
-        };
+            _dialog = new ContentDialog
+            {
+                Title = title,
+                Content = message,
+                CloseButtonText = "Ok",
+                XamlRoot = xamlRoot,
+                Background = new SolidColorBrush(backgroundColor),
+                Foreground = new SolidColorBrush(foregroundColor)
+            };
 
-        // Customize button colors
-        dialog.CloseButtonStyle = new Style(typeof(Button));
-        dialog.CloseButtonStyle.Setters.Add(new Setter(Control.BackgroundProperty, new SolidColorBrush(Microsoft.UI.Colors.Gray)));
-        dialog.CloseButtonStyle.Setters.Add(new Setter(Control.ForegroundProperty, new SolidColorBrush(Microsoft.UI.Colors.Black)));
+            // Customize button colors
+            _dialog.CloseButtonStyle = new Style(typeof(Button));
+            _dialog.CloseButtonStyle.Setters.Add(new Setter(Control.BackgroundProperty, new SolidColorBrush(Microsoft.UI.Colors.Gray)));
+            _dialog.CloseButtonStyle.Setters.Add(new Setter(Control.ForegroundProperty, new SolidColorBrush(Microsoft.UI.Colors.Black)));
 
-        await dialog.ShowAsync();
+            await _dialog.ShowAsync();
+        }
+
+        // Method to hide the dialog
+        public static void HideContentDialog()
+        {
+            _dialog?.Hide();
+        }
     }
-
 }

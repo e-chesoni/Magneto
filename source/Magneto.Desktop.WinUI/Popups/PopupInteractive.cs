@@ -37,5 +37,11 @@ namespace Magneto.Desktop.WinUI.Popups
         {
             //_missionControl.Decrement();
         }
+
+        // Method to close the dialog
+        public void CloseDialog()
+        {
+            this.Hide();
+        }
     }
 }
