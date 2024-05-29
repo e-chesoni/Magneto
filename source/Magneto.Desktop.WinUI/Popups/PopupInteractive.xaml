@@ -9,9 +9,53 @@
     Title="{x:Bind DialogTitle}"
     PrimaryButtonText="Close">
 
-    <StackPanel>
-        <TextBlock Text="{x:Bind DialogMessage}" FontSize="16" Margin="10"/>
-        <Button Content="Increment" Click="IncrementButton_Click" Margin="10"/>
-        <Button Content="Decrement" Click="DecrementButton_Click" Margin="10"/>
-    </StackPanel>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                       Text="Build" FontSize="12" Margin="10"></TextBlock>
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="0" x:Name="IncrementBuildButton" Content="U" Height="30" Width="40" Margin="10" HorizontalAlignment="Center"
+                                    Background="DimGray" Click="IncrementBuildButton_Click">
+                    </Button>
+                    <Button Grid.Column="1" x:Name="DecrementBuildButton" Content="D" Height="30" Width="40" Margin="10" HorizontalAlignment="Center"
+                                    Background="DimGray" Click="DecrementBuildButton_Click">
+                    </Button>
+                </Grid>
+                <Grid Grid.Row="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Step" FontSize="12" Margin="10">
+                    </TextBlock>
+                    <TextBox Grid.Column="1" Grid.Row="3" x:Name="IncrBuildPositionTextBox" Width="50" Height ="20" Margin="10" Text="...">
+                    </TextBox>
+                </Grid>
+            </Grid>
+            
+            
+        </Grid>
+    </Grid>
+
 </ContentDialog>

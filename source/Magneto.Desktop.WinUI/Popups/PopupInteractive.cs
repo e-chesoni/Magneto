@@ -28,12 +28,12 @@ namespace Magneto.Desktop.WinUI.Popups
             DataContext = this; // Set the DataContext for data binding
         }
 
-        private void IncrementButton_Click(object sender, RoutedEventArgs e)
+        private void IncrementBuildButton_Click(object sender, RoutedEventArgs e)
         {
             //_missionControl.Increment();
         }
 
-        private void DecrementButton_Click(object sender, RoutedEventArgs e)
+        private void DecrementBuildButton_Click(object sender, RoutedEventArgs e)
         {
             //_missionControl.Decrement();
         }

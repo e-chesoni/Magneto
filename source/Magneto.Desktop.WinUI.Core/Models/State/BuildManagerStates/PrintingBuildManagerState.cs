@@ -110,7 +110,7 @@ public class PrintingBuildManagerState : IBuildManagerState
         _ = _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, build_axis, BuildManager.CommandType.AbsoluteMove, 0);
     }
 
-    public void Draw()
+    public async Task Draw()
     {
         var msg = "";
 
