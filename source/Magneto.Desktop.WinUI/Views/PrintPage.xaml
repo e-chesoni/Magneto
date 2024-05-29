@@ -95,9 +95,9 @@
             
             <Button Grid.Row="8" x:Name="StartPrintButton" HorizontalAlignment="Center" Margin="10" Height="45" Width="175" Content="Start Print" IsEnabled="False"
                     Click="StartPrint_Click"></Button>
-            <Button Grid.Row="9" HorizontalAlignment="Center" Margin="10" Height="45" Width="175" Content="Cancel Print" Background="Red"></Button>
+            <Button Grid.Row="9" x:Name="CancelPrintButton" HorizontalAlignment="Center" Margin="10" Height="45" Width="175" Content="Cancel Print" Background="Red"></Button>
             <Button Grid.Row="10" HorizontalAlignment="Center" Margin="10" Height="45" Width="175" Content="Home Motors"
-                    Click="HomeMotors_Click"></Button>
+                    Click="CancelPrintButton_Click"></Button>
         </Grid>
 
         <Grid Grid.Column="2" Grid.Row="1">

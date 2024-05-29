@@ -22,16 +22,18 @@ public class PrintingBuildManagerState : IBuildManagerState
         MagnetoLogger.Log("PrintingBuildManagerState::PrintingBuildManagerState", 
             Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
 
+        // Set state build manger to build manager passed in on initialization
         _BuildManagerSM = bm;
 
         // Set the build flag to resume
         _BuildManagerSM.build_flag = BuildManager.BuildFlag.RESUME;
 
+        // TODO: Test main draw method
         // Start drawing
-        //_ = Draw();
+        _ = Draw();
 
-        // TODO: Test build manager queue
-        _ = TestDraw();
+        // Draw method to test build manager queue implementation -- remove once og Draw has been vetted again
+        //_ = TestDraw();
     }
 
     public void Cancel()
@@ -108,69 +110,62 @@ public class PrintingBuildManagerState : IBuildManagerState
         _ = _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, build_axis, BuildManager.CommandType.AbsoluteMove, 0);
     }
 
-    public async Task Draw()
+    public void Draw()
     {
-        // TODO: Find a way to set flag using interrupts (if user wants to pause/cancel print)
         var msg = "";
 
         // TODO: MOVE TO CALIBRATE STATE: This should be only method in calibrate motors to start
-        // INFO: dance count = total slices. this number is obtained when user clicks "find print"
-        // In testing, the number of slices is set by ImageHandler
-        // ImageHandler references Magneto Config to get slice number
+        // INFO: Dance count = total slices. this number is obtained when user clicks "find print"
+        // INFO: In testing, the number of slices is set by ImageHandler
+        // INFO: ImageHandler references Magneto Config to get slice number
 
         // Get print height
-        var printHeight = MagnetoConfig.GetDefaultPrintThickness() * _BuildManagerSM.danceModel.dance.Count;
+        var print_height = MagnetoConfig.GetDefaultPrintThickness() * _BuildManagerSM.danceModel.dance.Count;
 
-        // Set the current print height on the build manager
-        // TODO: Why do you need to set the current height on the build manager?
-        // Is it every referenced?
-        // Could reference later to display height on print page
-        _BuildManagerSM.SetCurrentPrintHeight(printHeight);
+        // Get axes
+        var sweep_axis = _BuildManagerSM.sweepController.GetSweepMotor().GetAxis();
+        var powder_axis = _BuildManagerSM.buildController.GetPowderMotor().GetAxis();
+        var build_axis = _BuildManagerSM.buildController.GetBuildMotor().GetAxis();
+
+        // Set the current print height on the build manager so we can display on print page
+        _BuildManagerSM.SetCurrentPrintHeight(print_height);
 
         // Log print height
-        msg = $"Print Height: {printHeight}";
+        msg = $"Print Height: {print_height}";
         MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
 
         // Log number of print layers
         msg = $"Print layers: {_BuildManagerSM.danceModel.dance.Count}";
         MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
 
+        // Dance Routine:
+        // 1. move motors to calculated start position
+        // 2. open adjustment screen
+        // 3. allow user to adjust
+        // 4. once user clicks 'done' close adjustment screen
+        // 5. start dance
+        // INTERRUPT dance if cancel is clicked
+
+        // Move powder motor to start height
+        _ = _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, powder_axis, BuildManager.CommandType.RelativeMove, -(print_height + 2)); // add 2mm for test so we can also test homing after print
+
+        // Move build motor down print height + plate thickness (6mm + print height)
+        var plate_thickness = 6; // about 6mm
+        _ = _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, build_axis, BuildManager.CommandType.RelativeMove, -(print_height + plate_thickness));
+
         // TODO: Let user calibrate build start height
 
-        // Move build plate down to start position: total print height + build plate thickness
-        double build_plate_thickness = 5;
+        // Initialize layer counter for logs
+        var layer_ctr = 0;
 
-        // TODO: Change to controller.AddCommand(axis, moveType, dist);
-
-        //var a = _BuildManagerSM.buildController.GetBuildMotor().GetAxis();
-
-        await _BuildManagerSM.buildController.MoveMotorAbsAsync(_BuildManagerSM.buildController.GetBuildMotor(), -(build_plate_thickness + MagnetoConfig.GetDefaultPrintThickness()));
-
-        // Move powder motor down to start position
-        await _BuildManagerSM.buildController.MoveMotorAbsAsync(_BuildManagerSM.buildController.GetPowderMotor(), -printHeight);
-
-        // Sweep motor moves to starting position (home)
-        //_ = _BuildManagerSM.sweepController.MoveMotorAbsAsync(_BuildManagerSM.sweepController.GetSweepMotor(), _BuildManagerSM.sweepController.GetSweepMotor().GetHomePos());
-
-        // TODO: Let user calibrate
-
-        // TODO: Go to build print when user clicks 'Done' in calibrate state
-        
-        // Keep track of loop
-        var ctr = 0;
-
-        // Dance move = slice + shape
-        foreach(var move in _BuildManagerSM.danceModel.dance)
+        foreach(var move in _BuildManagerSM.danceModel.dance) // Dance move = slice + shape
         {
-            // Increment loop counter
-            ctr++;
+            layer_ctr++;
 
-            // Log loop count
-            msg = $"Executing print loop {ctr}";
+            msg = $"Printing layer {layer_ctr}";
             MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
             
-            // Get motor thickness from Pose.move
-            var thickness = move.thickness;
+            var thickness = move.thickness; // Get motor thickness from Pose.move
             msg = $"Layer Thickness: {thickness}";
             MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
             
@@ -179,22 +174,35 @@ public class PrintingBuildManagerState : IBuildManagerState
 
             switch (_BuildManagerSM.build_flag)
             {
-                case BuildManager.BuildFlag.RESUME:
-                    // TODO: Add artificial wait for draw before laser has been incorporated--will have to wait for user response (button) or timeout (abort)
-                    // TODO: Add pop-up for user to execute draw, and indicate draw is complete
+                case BuildManager.BuildFlag.RESUME: // Build flag is set to resume when Printing Build Manger State is initialized
+                    
+                    // dance loop:
+                    // 1. sweep
+                    // 2. run laser
+                    // 3. move powder up
+                    // 4. move build down
+                    // REPEAT until all slices have been processed
 
-                    _BuildManagerSM.laserController.Draw(slice); // this was in original code
+                    // Perform sweep
+                    _ = _BuildManagerSM.AddCommand(BuildManager.ControllerType.SWEEP, sweep_axis, BuildManager.CommandType.AbsoluteMove, 280); // Test 280 first; e.o.p is actually 283 (max travel is 284.5)
+                    _ = _BuildManagerSM.AddCommand(BuildManager.ControllerType.SWEEP, sweep_axis, BuildManager.CommandType.AbsoluteMove, 0);
 
-                    await _BuildManagerSM.buildController.MoveMotorRelAsync(_BuildManagerSM.buildController.GetBuildMotor(), -thickness);
+                    // After calibration, powder motor moves up slice thickness
+                    _ = _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, powder_axis, BuildManager.CommandType.RelativeMove, 2);
 
-                    await _BuildManagerSM.buildController.MoveMotorRelAsync(_BuildManagerSM.buildController.GetPowderMotor(), thickness);
+                    // Build motor moves down slice thickness
+                    _ = _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, build_axis, BuildManager.CommandType.RelativeMove, -2);
 
-                    // Sweep
-                    //await _BuildManagerSM.sweepController.MoveMotorAbsAsync(_BuildManagerSM.sweepController.GetSweepMotor(), _BuildManagerSM.GetSweepDist());
-                    //await _BuildManagerSM.sweepController.MoveMotorAbsAsync(_BuildManagerSM.sweepController.GetSweepMotor(), -_BuildManagerSM.GetSweepDist());
+                    // TODO: Add artificial wait for laser drawing (?)
+
+                    // TODO: Set LASER_OPERATING flag to true
+                    // TODO: While LASER_OPERATING flag = true, poll laser
+                    // TODO: WaveRunner should be able to set LASER_OPERATING flag is true
+                    // TODO: break loop when LASER_OPERATING flag is false
 
                     break;
 
+                // TODO: Test interrupts
                 case BuildManager.BuildFlag.PAUSE:
                     Pause();
                     break;
@@ -220,10 +228,6 @@ public class PrintingBuildManagerState : IBuildManagerState
 
         var powder_axis = _BuildManagerSM.buildController.GetPowderMotor().GetAxis();
         var build_axis = _BuildManagerSM.buildController.GetBuildMotor().GetAxis();
-
-        // Home motors
-        //await _BuildManagerSM.buildController.HomeMotors();
-        //await _BuildManagerSM.sweepController.HomeMotors();
 
         _ = _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, powder_axis, BuildManager.CommandType.AbsoluteMove, 0);
         _ = _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, build_axis, BuildManager.CommandType.AbsoluteMove, 0);

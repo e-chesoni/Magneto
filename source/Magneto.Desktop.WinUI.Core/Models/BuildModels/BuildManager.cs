@@ -111,8 +111,6 @@ public class BuildManager : ISubsciber, IStateMachine
         }
     }
 
-
-    //private Dictionary<int, TaskCompletionSource<double>> positionTasks = new Dictionary<int, TaskCompletionSource<double>>();
     private Dictionary<MotorKey, TaskCompletionSource<double>> positionTasks = new Dictionary<MotorKey, TaskCompletionSource<double>>();
     private Queue<string> commandQueue = new Queue<string>();
     private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();

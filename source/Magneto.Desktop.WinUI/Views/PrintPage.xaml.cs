@@ -14,6 +14,7 @@ using Magneto.Desktop.WinUI.Core.Services;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using static Magneto.Desktop.WinUI.Core.Models.Motor.StepperMotor;
+using static Magneto.Desktop.WinUI.Core.Models.BuildModels.BuildManager;
 
 namespace Magneto.Desktop.WinUI.Views;
 
@@ -234,5 +235,25 @@ public sealed partial class PrintPage : Page
             msg = $"Unable to communicate with Mission Control. Try reloading the page.";
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", msg);
         }
+    }
+
+    private void CancelPrintButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        var msg = "";
+        if (MissionControl != null)
+        {
+            var bm = MissionControl.GetBuildManger();
+            msg = $"Stopping print.";
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Print Canceled", msg);
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            bm.build_flag = BuildFlag.CANCEL;
+        }
+        else
+        {
+            msg = $"Mission control is null. Unable to cancel print.";
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", msg);
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+        }
+        
     }
 }
