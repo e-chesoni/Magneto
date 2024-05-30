@@ -49,12 +49,75 @@
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Step" FontSize="12" Margin="10">
                     </TextBlock>
-                    <TextBox Grid.Column="1" Grid.Row="3" x:Name="IncrBuildPositionTextBox" Width="50" Height ="20" Margin="10" Text="...">
+                    <TextBox Grid.Column="1" Grid.Row="3" x:Name="IncrementBuildPositionTextBox" Width="50" Height ="20" Margin="10" Text="...">
                     </TextBox>
                 </Grid>
             </Grid>
-            
-            
+
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                       Text="Powder" FontSize="12" Margin="10"></TextBlock>
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="0" x:Name="IncrementPowderButton" Content="U" Height="30" Width="40" Margin="10" HorizontalAlignment="Center"
+                                    Background="DimGray" Click="IncrementPowderButton_Click">
+                    </Button>
+                    <Button Grid.Column="1" x:Name="DecrementPowderButton" Content="D" Height="30" Width="40" Margin="10" HorizontalAlignment="Center"
+                                    Background="DimGray" Click="DecrementPowderButton_Click">
+                    </Button>
+                </Grid>
+                <Grid Grid.Row="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Step" FontSize="12" Margin="10">
+                    </TextBlock>
+                    <TextBox Grid.Column="1" Grid.Row="3" x:Name="IncrementPowderPositionTextBox" Width="50" Height ="20" Margin="10" Text="...">
+                    </TextBox>
+                </Grid>
+            </Grid>
+
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                       Text="Sweep" FontSize="12" Margin="10"></TextBlock>
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="0" x:Name="IncrementSweepButton" Content="U" Height="30" Width="40" Margin="10" HorizontalAlignment="Center"
+                                    Background="DimGray" Click="IncrementSweepButton_Click">
+                    </Button>
+                    <Button Grid.Column="1" x:Name="DecrementSweepButton" Content="D" Height="30" Width="40" Margin="10" HorizontalAlignment="Center"
+                                    Background="DimGray" Click="DecrementSweepButton_Click">
+                    </Button>
+                </Grid>
+                <Grid Grid.Row="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Step" FontSize="12" Margin="10">
+                    </TextBlock>
+                    <TextBox Grid.Column="1" Grid.Row="3" x:Name="IncrementSweepPositionTextBox" Width="50" Height ="20" Margin="10" Text="...">
+                    </TextBox>
+                </Grid>
+            </Grid>
+
         </Grid>
     </Grid>
 

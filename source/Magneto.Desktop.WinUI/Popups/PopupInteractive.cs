@@ -30,12 +30,32 @@ namespace Magneto.Desktop.WinUI.Popups
 
         private void IncrementBuildButton_Click(object sender, RoutedEventArgs e)
         {
-            //_missionControl.Increment();
+            //TODO: Implement
         }
 
         private void DecrementBuildButton_Click(object sender, RoutedEventArgs e)
         {
-            //_missionControl.Decrement();
+            //TODO: Implement
+        }
+
+        private void IncrementPowderButton_Click(object sender, RoutedEventArgs e)
+        {
+            //TODO: Implement
+        }
+
+        private void DecrementPowderButton_Click(object sender, RoutedEventArgs e)
+        {
+            //TODO: Implement
+        }
+
+        private void IncrementSweepButton_Click(object sender, RoutedEventArgs e)
+        {
+            //TODO: Implement
+        }
+
+        private void DecrementSweepButton_Click(object sender, RoutedEventArgs e)
+        {
+            //TODO: Implement
         }
 
         // Method to close the dialog
