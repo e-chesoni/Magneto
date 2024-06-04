@@ -86,6 +86,16 @@ public sealed partial class UtilitiesPage : Page
         Frame.Navigate(typeof(TestWaveRunner), MissionControl);
     }
 
+    /// <summary>
+    /// Pass Mission Control to Test Motors Page when button is clicked
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void NavigateToTestMotorsrPage_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        Frame.Navigate(typeof(TestMotorsPage), MissionControl);
+    }
+
     #endregion
 
 

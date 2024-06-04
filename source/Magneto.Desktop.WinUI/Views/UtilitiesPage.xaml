@@ -25,6 +25,7 @@
                 <Button Margin="10" Height="200" Width="200" Content="Cleaning" Click="NavigateToCleaningPage_Click"/>
                 <Button Margin="10" Height="200" Width="200" Content="Test Print" Click="NavigateToTestPrintPage_Click"/>
                 <Button Margin="10" Height="200" Width="200" Content="Test WaveRunner" Click="NavigateToTestWaveRunnerPage_Click"/>
+                <Button Margin="10" Height="200" Width="200" Content="Test Motors" Click="NavigateToTestMotorsrPage_Click"/>
             </StackPanel>
         </StackPanel>
     </Grid>

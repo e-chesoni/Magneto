@@ -21,6 +21,7 @@
   <ItemGroup>
     <None Remove="Assets\caret-down.svg" />
     <None Remove="Popups\PopupInteractive.xaml" />
+    <None Remove="TestMotorsPage.xaml" />
     <None Remove="TestWaveRunner.xaml" />
     <None Remove="Views\caret-down.png" />
     <None Remove="Views\caret-up.png" />
@@ -72,6 +73,9 @@
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <Page Update="TestMotorsPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Popups\PopupInteractive.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
