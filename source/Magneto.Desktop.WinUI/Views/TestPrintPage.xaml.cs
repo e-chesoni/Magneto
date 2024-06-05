@@ -51,12 +51,6 @@ public sealed partial class TestPrintPage : Page
 
     #endregion
 
-    #region Text Variables
-
-
-
-    #endregion
-
     #region Public Variables
 
     /// <summary>
@@ -131,38 +125,6 @@ public sealed partial class TestPrintPage : Page
         {
             motorField = null;
             MagnetoLogger.Log($"Unable to find {motorName} motor", LogFactoryLogLevel.LogLevel.ERROR);
-        }
-    }
-
-    // TODO: Get position of all motors on page load
-    private void GetMotorPositions()
-    {
-        var msg = "Getting motor positions";
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-
-        if (_buildMotor != null)
-        {
-            GetPositionHelper(_buildMotor);
-        }
-        else
-        {
-            MagnetoLogger.Log("Build Motor is null, cannot get position.", LogFactoryLogLevel.LogLevel.ERROR);
-        }
-        if (_powderMotor != null)
-        {
-            GetPositionHelper(_powderMotor);
-        }
-        else
-        {
-            MagnetoLogger.Log("Powder Motor is null, cannot get position.", LogFactoryLogLevel.LogLevel.ERROR);
-        }
-        if (_sweepMotor != null)
-        {
-            GetPositionHelper(_sweepMotor);
-        }
-        else
-        {
-            MagnetoLogger.Log("Sweep Motor is null, cannot get position.", LogFactoryLogLevel.LogLevel.ERROR);
         }
     }
 
@@ -260,6 +222,7 @@ public sealed partial class TestPrintPage : Page
         };
     }
 
+    /*
     /// <summary>
     /// Retrieves the corresponding TextBox control for a given motor name.
     /// </summary>
@@ -1044,7 +1007,86 @@ public sealed partial class TestPrintPage : Page
         var button = isAbsolute ? MoveMotorAbsButton : MoveMotorRelativeButton;
         button.Background = _movingMotorToTarget ? new SolidColorBrush(Colors.Green) : new SolidColorBrush(Colors.DimGray);
     }
-
+    */
     #endregion
 
+    private void UseDefaultJobButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void GetBuildMotorCurrentPositionButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void StepBuildMotorUpButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void StepBuildMotorDownButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void GetPowderMotorCurrentPositionButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void StepPowderMotorUpButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void StepPowderMotorDownButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void GetSweepMotorCurrentPositionButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void StepSweepMotorUpButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void StepSweepMotorDownButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void SweepButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void StopSweepButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void MarkButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void StopMarkButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void MoveToNextLayerStartPositionButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void ResetButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
 }
