@@ -5,6 +5,7 @@ using Magneto.Desktop.WinUI.ViewModels;
 
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+using Windows.UI.ViewManagement;
 
 namespace Magneto.Desktop.WinUI.Views;
 

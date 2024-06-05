@@ -93,6 +93,8 @@ public partial class App : Application
             services.AddTransient<MonitorPage>();
             services.AddTransient<TestPrintViewModel>();
             services.AddTransient<TestPrintPage>();
+            services.AddTransient<TestMotorsViewModel>();
+            services.AddTransient<TestMotorsPage>();
             services.AddTransient<CleaningViewModel>();
             services.AddTransient<CleaningPage>();
             services.AddTransient<PrintQueueViewModel>();

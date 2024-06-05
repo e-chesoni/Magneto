@@ -24,6 +24,7 @@ public class PageService : IPageService
         Configure<PrintQueueViewModel, PrintQueuePage>();
         Configure<CleaningViewModel, CleaningPage>();
         Configure<TestPrintViewModel, TestPrintPage>();
+        Configure<TestMotorsViewModel, TestMotorsPage>();
         Configure<MonitorViewModel, MonitorPage>();
         Configure<MonitorDetailViewModel, MonitorDetailPage>();
         Configure<LaserMonitorViewModel, LaserMonitorPage>();
