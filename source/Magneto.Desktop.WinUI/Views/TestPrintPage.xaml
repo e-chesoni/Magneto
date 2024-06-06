@@ -9,39 +9,16 @@
     <Grid x:Name="ContentArea">
         <Grid>
             <Grid.RowDefinitions>
+                <RowDefinition Height="18*"/>
+                <RowDefinition Height="3*"/>
+                <RowDefinition Height="18*"/>
+                <RowDefinition Height="18*"/>
+                <RowDefinition Height="24*"/>
+                <RowDefinition Height="12*"/>
+                <RowDefinition Height="12*"/>
                 <RowDefinition Height="*"/>
-                <RowDefinition Height="3*"/>
-                <RowDefinition Height="4*"/>
-                <RowDefinition Height="3*"/>
-                <RowDefinition Height="3*"/>
-                <RowDefinition Height="3*"/>
-                <RowDefinition Height="3*"/>
             </Grid.RowDefinitions>
-            <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="24" Text="Test Print Page"></TextBlock>
-            <Grid Grid.Row="1">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="2*"/>
-                </Grid.RowDefinitions>
-                <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="10" FontSize="16"
-                          Text="Select file for mark"></TextBlock>
-                <Grid Grid.Row="1">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Top">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBox Grid.Column="0" x:Name="JobFilePathTextBox" HorizontalAlignment="Right" Margin="10" Height="30"
-                            Text="Please type the full file path or use the default job file"></TextBox>
-                        <Button Grid.Column="1" x:Name="UseDefaultJobButton" HorizontalAlignment="Left" Margin="10" Height="30" Width="175" Content="Load Default Job"
-                            Click="UseDefaultJobButton_Click"></Button>
-                    </Grid>
-                </Grid>
-            </Grid>
-            <Grid Grid.Row="2">
+            <Grid Grid.Row="0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="3*"/>
@@ -70,7 +47,7 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12"
                                     Text="Current Position:"></TextBlock>
-                            <TextBox Grid.Column="1" x:Name="BuildMotorCurrentPositionTextBox" Height="30" Margin="10" Text=" "></TextBox>
+                            <TextBox Grid.Column="1" x:Name="BuildMotorCurrentPositionTextBox" Height="30" Margin="2" Text=" "></TextBox>
                             <Button Grid.Column="2" x:Name="GetBuildMotorCurrentPositionButton" HorizontalAlignment="Center" Height="30" Content="Get Position"
                                     Click="GetBuildMotorCurrentPositionButton_Click"></Button>
                         </Grid>
@@ -82,14 +59,14 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12"
                                     Text="Step:"></TextBlock>
-                            <TextBox Grid.Column="1" x:Name="BuildMotorStepTextBox" Height ="30" Margin="10" 
+                            <TextBox Grid.Column="1" x:Name="BuildMotorStepTextBox" Height ="30" Margin="2" 
                                     Text=" "></TextBox>
                             <Grid Grid.Column="2" HorizontalAlignment="Center">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <Button Grid.Column="0" x:Name="StepBuildMotorUpButton" HorizontalAlignment="Center" Height="30" Margin="10" Content="U"
+                                <Button Grid.Column="0" x:Name="StepBuildMotorUpButton" HorizontalAlignment="Center" Height="30" Margin="2" Content="U"
                                     Click="StepBuildMotorUpButton_Click"></Button>
                                 <Button Grid.Column="1" x:Name="StepBuildMotorDownButton" HorizontalAlignment="Center" Height="30" Content="D"
                                     Click="StepBuildMotorDownButton_Click"></Button>
@@ -113,7 +90,7 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12"
                                     Text="Current Position:"></TextBlock>
-                            <TextBox Grid.Column="1" x:Name="PowderMotorCurrentPositionTextBox" Height="30" Margin="10" Text=" "></TextBox>
+                            <TextBox Grid.Column="1" x:Name="PowderMotorCurrentPositionTextBox" Height="30" Margin="2" Text=" "></TextBox>
                             <Button Grid.Column="2" x:Name="GetPowderMotorCurrentPositionButton" HorizontalAlignment="Center" Height="30" Content="Get Position"
                                     Click="GetPowderMotorCurrentPositionButton_Click"></Button>
                         </Grid>
@@ -125,14 +102,14 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12"
                                     Text="Step:"></TextBlock>
-                            <TextBox Grid.Column="1" x:Name="PowderMotorStepTextBox" Height ="30" Margin="10" 
+                            <TextBox Grid.Column="1" x:Name="PowderMotorStepTextBox" Height ="30" Margin="2" 
                                     Text=" "></TextBox>
                             <Grid Grid.Column="2" HorizontalAlignment="Center">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <Button Grid.Column="0" x:Name="StepPowderMotorUpButton" HorizontalAlignment="Center" Height="30" Margin="10" Content="U"
+                                <Button Grid.Column="0" x:Name="StepPowderMotorUpButton" HorizontalAlignment="Center" Height="30" Margin="2" Content="U"
                                     Click="StepPowderMotorUpButton_Click"></Button>
                                 <Button Grid.Column="1" x:Name="StepPowderMotorDownButton" HorizontalAlignment="Center" Height="30" Content="D"
                                     Click="StepPowderMotorDownButton_Click"></Button>
@@ -156,7 +133,7 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12"
                                     Text="Current Position:"></TextBlock>
-                            <TextBox Grid.Column="1" x:Name="SweepMotorCurrentPositionTextBox" Height="30" Margin="10" Text=" "></TextBox>
+                            <TextBox Grid.Column="1" x:Name="SweepMotorCurrentPositionTextBox" Height="30" Margin="2" Text=" "></TextBox>
                             <Button Grid.Column="2" x:Name="GetSweepMotorCurrentPositionButton" HorizontalAlignment="Center" Height="30" Content="Get Position"
                                     Click="GetSweepMotorCurrentPositionButton_Click"></Button>
                         </Grid>
@@ -168,14 +145,14 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12"
                                     Text="Step:"></TextBlock>
-                            <TextBox Grid.Column="1" x:Name="SweepMotorStepTextBox" Height ="30" Margin="10" 
+                            <TextBox Grid.Column="1" x:Name="SweepMotorStepTextBox" Height ="30" Margin="2" 
                                     Text=" "></TextBox>
                             <Grid Grid.Column="2" HorizontalAlignment="Center">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <Button Grid.Column="0" x:Name="StepSweepMotorUpButton" HorizontalAlignment="Center" Height="30" Margin="10" Content="U"
+                                <Button Grid.Column="0" x:Name="StepSweepMotorUpButton" HorizontalAlignment="Center" Height="30" Margin="2" Content="U"
                                     Click="StepSweepMotorUpButton_Click"></Button>
                                 <Button Grid.Column="1" x:Name="StepSweepMotorDownButton" HorizontalAlignment="Center" Height="30" Content="D"
                                     Click="StepSweepMotorDownButton_Click"></Button>
@@ -185,21 +162,58 @@
 
                 </Grid>
             </Grid>
-            <Grid Grid.Row="3">
+            <Grid Grid.Row="2">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="2*"/>
+                    <RowDefinition Height="2*"/>
                 </Grid.RowDefinitions>
-                <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="10" FontSize="16"
-                          Text="Place powder on build plate"></TextBlock>
+                <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="2" FontSize="16"
+                          Text="Set Layer Thickness"></TextBlock>
                 <Grid Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <Button Grid.Column="0" x:Name="SweepButton" HorizontalAlignment="Right" Height="30" Margin="10" Content="Sweep"
+                    <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12"
+                                    Text="Set layer thickness:"></TextBlock>
+                    <TextBox Grid.Column="1" x:Name="SetLayerThicknessTextBox" Height ="30" Margin="2" 
+                                    Text=" "></TextBox>
+                    <Button Grid.Column="2" x:Name="UpdateLayerThicknessButton" HorizontalAlignment="Right" Height="30" Margin="2" Content="Update Layer Thickness"
+                                    Click="UpdateLayerThicknessButton_Click"></Button>
+                </Grid>
+                <Grid Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Top">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12"
+                        Text="Layer thickness:"></TextBlock>
+                    <TextBlock Grid.Column="1" x:Name="LayerThicknessTextBlock" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="12"></TextBlock>
+                </Grid>
+        </Grid>
+            <Grid Grid.Row="3">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="2*"/>
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="2" FontSize="16"
+                          Text="Sweep Powder"></TextBlock>
+                <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="2" FontSize="12"
+                          Text="Place powder onto the build plate"></TextBlock>
+                <Grid Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Top">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="0" x:Name="SweepButton" HorizontalAlignment="Right" Height="30" Margin="2" Content="Sweep"
                                     Click="SweepButton_Click"></Button>
-                    <Button Grid.Column="1" x:Name="StopSweepButton" HorizontalAlignment="Left" Height="30" Content="Stop Sweep"
+                    <Button Grid.Column="1" x:Name="HomeSweepButton" HorizontalAlignment="Center" Height="30" Margin="2" Content="Home Sweep Motor"
+                                    Click="HomeSweepButton_Click"></Button>
+                    <Button Grid.Column="2" x:Name="StopSweepButton" HorizontalAlignment="Left" Height="30" Content="Stop Sweep"
                                     Click="StopSweepButton_Click"></Button>
                 </Grid>
             </Grid>
@@ -207,18 +221,58 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="2*"/>
+                    <RowDefinition Height="2*"/>
+                    <RowDefinition Height="2*"/>
                 </Grid.RowDefinitions>
-                <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="10" FontSize="16"
-                          Text="Mark loaded job file"></TextBlock>
-                <Grid Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top">
+                <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="2" FontSize="16"
+                          Text="Mark"></TextBlock>
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10"
+                                   FontSize="12" Text="Search Directory"></TextBlock>
+                    <TextBox Grid.Column="1" x:Name="JobFileSearchDirectory" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                 Width="360" Margin="10"></TextBox>
+                    <Button Grid.Column="2" x:Name="UpdateDirectoryButton" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                Margin="10" Content="Update Directory" Click="UpdateDirectoryButton_Click"></Button>
+                </Grid>
+                <Grid Grid.Row="2" HorizontalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10"
+                                   FontSize="12" Text="File Name:"></TextBlock>
+                    <TextBox Grid.Column="1" x:Name="JobFileNameTextBox" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                 TextAlignment="Right" Width="150"  Margin="10"></TextBox>
+                    <Button Grid.Column="2" x:Name="GetJobButton" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                Margin="10" Content="Get Job" Click="GetJobButton_Click"></Button>
+                    <Button Grid.Column="3" x:Name="UseDefaultJobButton" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                Margin="10" Content="Use Default Job" Click="UseDefaultJobButton_Click"></Button>
+                </Grid>
+                <Grid Grid.Row="3">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <Button Grid.Column="0" x:Name="MarkButton" HorizontalAlignment="Right" Height="30" Margin="10" Content="Mark"
-                        Click="MarkButton_Click"></Button>
-                    <Button Grid.Column="1" x:Name="StopMarkButton" HorizontalAlignment="Left" Height="30" Content="Stop Mark"
-                        Click="StopMarkButton_Click"></Button>
+                    <Button Grid.Column="0" x:Name="ToggleRedPointerButton" HorizontalAlignment="Right" VerticalAlignment="Center" 
+                                Margin="10" Content="Toggle Red Pointer" Click="ToggleRedPointerButton_Click" IsEnabled="False"></Button>
+                    <TextBlock Grid.Column="1" x:Name="RedPointerInfoText" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10"
+                                   FontSize="12" Text="Red pointer must be off to Start Mark" Foreground="DarkGray"></TextBlock>
+                    <Button Grid.Column="2" x:Name="StartMarkButton" HorizontalAlignment="Right" VerticalAlignment="Center" 
+                                Margin="10" Content="Start Mark" Click="StartMarkButton_Click" IsEnabled="False"></Button>
+                    <TextBlock Grid.Column="3" x:Name="IsMarkingText" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10"
+                                   FontSize="12" Text="Waiting to Start Mark" Foreground="DarkGray"></TextBlock>
+                    <Button Grid.Column="4" x:Name="StopMarkButton" HorizontalAlignment="Left" VerticalAlignment="Center" 
+                                Margin="10" Content="Stop Mark" Click="StopMarkButton_Click_1"></Button>
                 </Grid>
             </Grid>
             <Grid Grid.Row="5">
@@ -226,9 +280,9 @@
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="2*"/>
                 </Grid.RowDefinitions>
-                <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="10" FontSize="16"
+                <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="2" FontSize="12"
                           Text="Move Build and Powder motors to next layer starting position"></TextBlock>
-                <Button Grid.Row="1" x:Name="MoveToNextLayerStartPositionButton" HorizontalAlignment="Center" VerticalAlignment="Top" Height="30" Margin="10" Content="Next Layer"
+                <Button Grid.Row="1" x:Name="MoveToNextLayerStartPositionButton" HorizontalAlignment="Center" VerticalAlignment="Top" Height="30" Margin="2" Content="Next Layer"
                         Click="MoveToNextLayerStartPositionButton_Click"></Button>
             </Grid>
             <Grid Grid.Row="6">
@@ -236,9 +290,9 @@
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="2*"/>
                 </Grid.RowDefinitions>
-                <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="10" FontSize="16"
+                <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="2" FontSize="12"
                           Text="Clear page to before starting another print"></TextBlock>
-                <Button Grid.Row="1" x:Name="ResetButton" HorizontalAlignment="Center" VerticalAlignment="Top" Height="30" Margin="10" Content="Reset"
+                <Button Grid.Row="1" x:Name="ResetButton" HorizontalAlignment="Center" VerticalAlignment="Top" Height="30" Margin="2" Content="Reset"
                         Click="ResetButton_Click"></Button>
             </Grid>
         </Grid>

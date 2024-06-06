@@ -101,7 +101,6 @@
                         <Button Grid.Column="3" x:Name="UseDefaultJobButton" HorizontalAlignment="Center" VerticalAlignment="Center" 
                                 Margin="10" Content="Use Default Job" Click="UseDefaultJobButton_Click"></Button>
                     </Grid>
-                    
                     <Grid Grid.Row="4">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>

@@ -1012,7 +1012,42 @@ public sealed partial class TestPrintPage : Page
 
     private void UseDefaultJobButton_Click(object sender, RoutedEventArgs e)
     {
+        string path_to_image = "c:/path/to/test_print.sjf";
+        var msg = "";
 
+        // TODO: Check if path is valid
+        var _validPath = true;
+
+        if (_validPath)
+        {
+            // Add dummy string to text box
+            // SelectedPrint is the name of the TextBox in PrintPage.xaml
+            //JobFilePathTextBox.Text = path_to_image;
+
+            // Put a new image on the build manager
+            MissionControl.CreateImageModel(path_to_image);
+
+            // TODO: Toast Message: Using default thickness of {} get from config
+            msg = "Setting every print layer's thickness to default thickness from MagnetoConfig";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
+            MissionControl.SetImageThickness(MissionControl.GetDefaultPrintLayerThickness());
+
+            // Slice image
+            MissionControl.SliceImage(); // TODO: IMAGE HANDLER references Magneto Config to control slice number: SliceImage calls SliceImage in build controller which calls ImageHandler
+            //StartPrintButton.IsEnabled = true;
+
+            // Enable go to start button
+            //GoToStartingPositionButton.IsEnabled = true;
+
+            // TODO: MOVE ME -- Populate after successful calibration
+            //PrintHeightTextBlock.Text = MissionControl.GetCurrentBuildHeight().ToString();
+        }
+        else
+        {
+            msg = "Cannot find print: Invalid file path.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            return;
+        }
     }
 
     private void GetBuildMotorCurrentPositionButton_Click(object sender, RoutedEventArgs e)
@@ -1086,6 +1121,41 @@ public sealed partial class TestPrintPage : Page
     }
 
     private void ResetButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void UpdateLayerThicknessButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void HomeSweepButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void UpdateDirectoryButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void GetJobButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void StartMarkButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void StopMarkButton_Click_1(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void ToggleRedPointerButton_Click(object sender, RoutedEventArgs e)
     {
 
     }
