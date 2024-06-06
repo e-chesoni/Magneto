@@ -10,12 +10,12 @@
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="18*"/>
-                <RowDefinition Height="3*"/>
-                <RowDefinition Height="18*"/>
-                <RowDefinition Height="18*"/>
-                <RowDefinition Height="24*"/>
-                <RowDefinition Height="12*"/>
-                <RowDefinition Height="12*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="14*"/>
+                <RowDefinition Height="14*"/>
+                <RowDefinition Height="20*"/>
+                <RowDefinition Height="14*"/>
+                <RowDefinition Height="14*"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <Grid Grid.Row="0">
@@ -232,12 +232,12 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10"
+                    <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="2"
                                    FontSize="12" Text="Search Directory"></TextBlock>
                     <TextBox Grid.Column="1" x:Name="JobFileSearchDirectory" HorizontalAlignment="Center" VerticalAlignment="Center" 
-                                 Width="360" Margin="10"></TextBox>
-                    <Button Grid.Column="2" x:Name="UpdateDirectoryButton" HorizontalAlignment="Center" VerticalAlignment="Center" 
-                                Margin="10" Content="Update Directory" Click="UpdateDirectoryButton_Click"></Button>
+                                 Width="360" Margin="2"></TextBox>
+                    <Button Grid.Column="2" x:Name="UpdateDirectoryButton" HorizontalAlignment="Left" VerticalAlignment="Center" 
+                                Margin="2" Content="Update Directory" Click="UpdateDirectoryButton_Click"></Button>
                 </Grid>
                 <Grid Grid.Row="2" HorizontalAlignment="Center">
                     <Grid.ColumnDefinitions>
@@ -246,14 +246,14 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10"
+                    <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="2"
                                    FontSize="12" Text="File Name:"></TextBlock>
                     <TextBox Grid.Column="1" x:Name="JobFileNameTextBox" HorizontalAlignment="Center" VerticalAlignment="Center" 
-                                 TextAlignment="Right" Width="150"  Margin="10"></TextBox>
+                                 TextAlignment="Right" Width="150"  Margin="2"></TextBox>
                     <Button Grid.Column="2" x:Name="GetJobButton" HorizontalAlignment="Center" VerticalAlignment="Center" 
-                                Margin="10" Content="Get Job" Click="GetJobButton_Click"></Button>
+                                Margin="2" Content="Get Job" Click="GetJobButton_Click"></Button>
                     <Button Grid.Column="3" x:Name="UseDefaultJobButton" HorizontalAlignment="Center" VerticalAlignment="Center" 
-                                Margin="10" Content="Use Default Job" Click="UseDefaultJobButton_Click"></Button>
+                                Margin="2" Content="Use Default Job" Click="UseDefaultJobButton_Click"></Button>
                 </Grid>
                 <Grid Grid.Row="3">
                     <Grid.ColumnDefinitions>
@@ -264,35 +264,41 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <Button Grid.Column="0" x:Name="ToggleRedPointerButton" HorizontalAlignment="Right" VerticalAlignment="Center" 
-                                Margin="10" Content="Toggle Red Pointer" Click="ToggleRedPointerButton_Click" IsEnabled="False"></Button>
-                    <TextBlock Grid.Column="1" x:Name="RedPointerInfoText" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10"
+                                Margin="2" Content="Toggle Red Pointer" Click="ToggleRedPointerButton_Click" IsEnabled="False"></Button>
+                    <TextBlock Grid.Column="1" x:Name="RedPointerInfoText" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="2"
                                    FontSize="12" Text="Red pointer must be off to Start Mark" Foreground="DarkGray"></TextBlock>
                     <Button Grid.Column="2" x:Name="StartMarkButton" HorizontalAlignment="Right" VerticalAlignment="Center" 
-                                Margin="10" Content="Start Mark" Click="StartMarkButton_Click" IsEnabled="False"></Button>
-                    <TextBlock Grid.Column="3" x:Name="IsMarkingText" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10"
+                                Margin="2" Content="Start Mark" Click="StartMarkButton_Click" IsEnabled="False"></Button>
+                    <TextBlock Grid.Column="3" x:Name="IsMarkingText" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="2"
                                    FontSize="12" Text="Waiting to Start Mark" Foreground="DarkGray"></TextBlock>
                     <Button Grid.Column="4" x:Name="StopMarkButton" HorizontalAlignment="Left" VerticalAlignment="Center" 
-                                Margin="10" Content="Stop Mark" Click="StopMarkButton_Click_1"></Button>
+                                Margin="2" Content="Stop Mark" Click="StopMarkButton_Click"></Button>
                 </Grid>
             </Grid>
             <Grid Grid.Row="5">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
                     <RowDefinition Height="2*"/>
                 </Grid.RowDefinitions>
-                <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="2" FontSize="12"
+                <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="2" FontSize="16"
+                          Text="Move to Next Layer"></TextBlock>
+                <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="2" FontSize="12"
                           Text="Move Build and Powder motors to next layer starting position"></TextBlock>
-                <Button Grid.Row="1" x:Name="MoveToNextLayerStartPositionButton" HorizontalAlignment="Center" VerticalAlignment="Top" Height="30" Margin="2" Content="Next Layer"
+                <Button Grid.Row="2" x:Name="MoveToNextLayerStartPositionButton" HorizontalAlignment="Center" VerticalAlignment="Top" Height="30" Margin="2" Content="Next Layer"
                         Click="MoveToNextLayerStartPositionButton_Click"></Button>
             </Grid>
             <Grid Grid.Row="6">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
                     <RowDefinition Height="2*"/>
                 </Grid.RowDefinitions>
-                <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="2" FontSize="12"
+                <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="2" FontSize="16"
+                          Text="Reset Test Print Page"></TextBlock>
+                <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="2" FontSize="12"
                           Text="Clear page to before starting another print"></TextBlock>
-                <Button Grid.Row="1" x:Name="ResetButton" HorizontalAlignment="Center" VerticalAlignment="Top" Height="30" Margin="2" Content="Reset"
+                <Button Grid.Row="2" x:Name="ResetButton" HorizontalAlignment="Center" VerticalAlignment="Top" Height="30" Margin="2" Content="Reset"
                         Click="ResetButton_Click"></Button>
             </Grid>
         </Grid>
