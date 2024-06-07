@@ -18,6 +18,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Newtonsoft.Json.Bson;
+using SAMLIGHT_CLIENT_CTRL_EXLib;
 using Windows.Devices.SerialCommunication;
 using static Magneto.Desktop.WinUI.Core.Models.BuildModels.BuildManager;
 using static Magneto.Desktop.WinUI.Views.TestPrintPage;
@@ -47,28 +48,23 @@ public sealed partial class TestPrintPage : Page
 
     private bool _movingMotorToTarget = false;
 
-    #endregion
-
-    #region Public Variables
-
-    /// <summary>
-    /// Central control that gets passed from page to page
-    /// </summary>
-    public MissionControl? MissionControl { get; set; }
-
-    /// <summary>
-    /// TestPrintViewModel view model
-    /// </summary>
-    public TestPrintViewModel ViewModel { get; }
-
     /// <summary>
     /// Struct for motor details
     /// </summary>
     public struct MotorDetails
     {
-        public string MotorName { get; }
-        public ControllerType ControllerType { get; }
-        public int MotorAxis { get; }
+        public string MotorName
+        {
+            get;
+        }
+        public ControllerType ControllerType
+        {
+            get;
+        }
+        public int MotorAxis
+        {
+            get;
+        }
 
         public MotorDetails(string motorName, ControllerType controllerType, int motorAxis)
         {
@@ -76,6 +72,95 @@ public sealed partial class TestPrintPage : Page
             ControllerType = controllerType;
             MotorAxis = motorAxis;
         }
+    }
+
+    #endregion
+
+
+    #region WaveRunner Variables
+
+    /// <summary>
+    /// WaveRunner client control interface
+    /// </summary>
+    private static readonly ScSamlightClientCtrlEx cci = new();
+
+    /// <summary>
+    /// Default job directory (to search for job files)
+    /// </summary>
+    private string _defaultJobDirectory
+    {
+        get; set;
+    }
+
+    /// <summary>
+    /// Default job file name
+    /// </summary>
+    private string _defaultJobName
+    {
+        get; set;
+    }
+
+    /// <summary>
+    /// Job directory (to search for files) -- can be defined by the user
+    /// </summary>
+    private string _jobDirectory
+    {
+        get; set;
+    }
+
+    /// <summary>
+    /// Full file path to entity
+    /// </summary>
+    private string? _fullJobFilePath
+    {
+        get; set;
+    }
+
+    private bool _redPointerEnabled
+    {
+        get; set;
+    }
+
+    /// <summary>
+    /// WaveRunner Execution statuses
+    /// </summary>
+    public enum ExecStatus
+    {
+        Success = 0,
+        Failure = -1,
+    }
+
+    /// <summary>
+    /// RedPointer Modes
+    /// </summary>
+    public enum RedPointerMode
+    {
+        IndividualOutline = 1,
+        TotalOutline = 2,
+        IndividualBorder = 3,
+        OnlyRedPointerEntities = 4,
+        OutermostBorder = 5
+    }
+
+    #endregion
+
+
+    #region Public Variables
+
+    /// <summary>
+    /// Central control that gets passed from page to page
+    /// </summary>
+    public MissionControl? MissionControl
+    {
+        get; set;
+    }
+
+    /// <summary>
+    /// TestPrintViewModel view model
+    /// </summary>
+    public TestPrintViewModel ViewModel
+    {
+        get;
     }
 
     #endregion
@@ -143,6 +228,15 @@ public sealed partial class TestPrintPage : Page
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
         MagnetoSerialConsole.LogAvailablePorts();
 
+        SetupMotors();
+        SetupWaveRunner();
+    }
+
+    private void SetupMotors()
+    {
+        var msg = "Setting up motor variables.";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
         // Get motor configurations
         var buildMotorConfig = MagnetoConfig.GetMotorByName("build");
         var sweepMotorConfig = MagnetoConfig.GetMotorByName("sweep");
@@ -167,6 +261,26 @@ public sealed partial class TestPrintPage : Page
                 MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
             }
         }
+    }
+
+    private void SetupWaveRunner()
+    {
+        var msg = "Setting up WaveRunner variables.";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        // Set Job Directory
+        _defaultJobDirectory = @"C:\Scanner Application\Scanner Software\jobfiles";
+        _jobDirectory = _defaultJobDirectory;
+        JobFileSearchDirectory.Text = _jobDirectory;
+
+        // Set Job File
+        _defaultJobName = "center_crosshair_OAT.sjf";
+        JobFileNameTextBox.Text = _defaultJobName;
+
+        // ASSUMPTION: Red pointer is off when application starts
+        // Have not found way to check red pointer status in SAMLight docs 
+        // Initialize red pointer to off
+        _redPointerEnabled = false;
     }
 
     #endregion
@@ -532,8 +646,17 @@ public sealed partial class TestPrintPage : Page
                 _movingMotorToTarget = false;
             }
         }
+    }
 
+    // TODO: Update these
+    private TextBox GetCorrespondingAbsMoveTextBox(StepperMotor motor)
+    {
+        return BuildMotorCurrentPositionTextBox;
+    }
 
+    private TextBox GetCorrespondingRelMoveTextBox(StepperMotor motor)
+    {
+        return BuildMotorCurrentPositionTextBox;
     }
 
     /// <summary>
@@ -545,8 +668,8 @@ public sealed partial class TestPrintPage : Page
         // Exit if no motor is selected
         if (motor == null)
         {
-            MagnetoLogger.Log("Invalid motor request or Current Test Motor is null.", LogFactoryLogLevel.LogLevel.ERROR);
-            await PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", $"No motor selected.");
+            LogAndDisplayMessage(LogFactoryLogLevel.LogLevel.ERROR, this.Content.XamlRoot, 
+                "Invalid motor request or Current Test Motor is null.", "No motor selected.");
             return;
         }
 
@@ -653,27 +776,158 @@ public sealed partial class TestPrintPage : Page
 
     #endregion
 
+
     #region Sweep Button Commands
 
     private void SweepButton_Click(object sender, RoutedEventArgs e)
     {
-
+        var isAbsolute = true;
+        if (_sweepMotor != null)
+        {
+            _ = ExecuteMovementCommand(_sweepMotor, isAbsolute, 280);
+        }
+        else
+        {
+            LogAndDisplayMessage(LogFactoryLogLevel.LogLevel.ERROR, this.Content.XamlRoot, "Could not find sweep motor.", "_sweepMotor is null");
+        }
     }
 
     private void HomeSweepButton_Click(object sender, RoutedEventArgs e)
     {
-
+        var isAbsolute = true;
+        if (_sweepMotor != null)
+        {
+            _ = ExecuteMovementCommand(_sweepMotor, isAbsolute, 0);
+        }
+        else
+        {
+            LogAndDisplayMessage(LogFactoryLogLevel.LogLevel.ERROR, this.Content.XamlRoot, "Could not find sweep motor.", "_sweepMotor is null");
+        }
     }
 
     private void StopSweepButton_Click(object sender, RoutedEventArgs e)
     {
-
+        var msg = "StopSweepButton_Click Method not implemented.";
+        LogAndDisplayMessage(LogFactoryLogLevel.LogLevel.ERROR, this.Content.XamlRoot, msg);
     }
 
     #endregion
 
 
     #region Marking Commands
+
+    private ExecStatus ValidateJob(string fullPath)
+    {
+        MagnetoLogger.Log("Getting job...", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        if (!Directory.Exists(_jobDirectory))
+        {
+            MagnetoLogger.Log("Directory does not exist. Cannot get job.", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
+            return ExecStatus.Failure;
+        }
+
+        if (!File.Exists(fullPath))
+        {
+            MagnetoLogger.Log($"File not found: {fullPath}", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
+            return ExecStatus.Failure;
+        }
+
+        return ExecStatus.Success;
+    }
+
+    public static int SetRedPointerMode(RedPointerMode mode)
+    {
+        // returns void
+        cci.ScSetLongValue((int)ScComSAMLightClientCtrlValueTypes.scComSAMLightClientCtrlLongValueTypeRedpointerMode, (int)mode);
+
+        // TODO: Replace once we figure out how to interact with error codes form SAM
+        return (int)ExecStatus.Success;
+    }
+
+    public int StartRedPointer()
+    {
+        LogMessage("Starting red pointer", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS);
+
+        if (cci.ScIsRunning() == 0)
+        {
+            LogMessage("Cannot Mark; WaveRunner is closed.", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR, "SAMLight not found");
+            StartMarkButton.IsEnabled = false;
+        }
+
+        LogMessage("Sending Objects!", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS); // Update UI with status
+
+        // load demo job file
+        cci.ScLoadJob(_fullJobFilePath, 1, 1, 0);
+
+        // returns void
+        cci.ScExecCommand((int)ScComSAMLightClientCtrlExecCommandConstants.scComSAMLightClientCtrlExecCommandRedPointerStart);
+
+        // TODO: Replace once we figure out how to interact with error codes form SAM
+        return (int)ExecStatus.Success;
+    }
+
+    public int StopRedPointer()
+    {
+        LogMessage("Stopping red pointer", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS);
+
+        // returns void
+        cci.ScExecCommand((int)ScComSAMLightClientCtrlExecCommandConstants.scComSAMLightClientCtrlExecCommandRedPointerStop);
+
+        // make sure laser does not mark when stopping red pointer
+        cci.ScStopMarking();
+
+        // TODO: Replace once we figure out how to interact with error codes form SAM
+        return (int)ExecStatus.Success;
+    }
+
+    public async Task<ExecStatus> MarkEntityAsync()
+    {
+        if (cci.ScIsRunning() == 0)
+        {
+            LogMessage("Cannot Mark; WaveRunner is closed.", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR, "SAMLight not found");
+            StartMarkButton.IsEnabled = false;
+            return ExecStatus.Failure;
+        }
+
+        LogMessage("Sending Objects!", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS); // Update UI with status
+
+        // load demo job file
+        cci.ScLoadJob(_fullJobFilePath, 1, 1, 0);
+
+        var msg = $"Loaded file at path: {_fullJobFilePath} for marking...";
+
+        MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.WARN);
+
+        try
+        {
+            // TODO: Test 1
+            cci.ScMarkEntityByName("", 0); // 0 returns control to the user immediately
+            LogMessage("Marking!", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.WARN, "SAMLight is Marking...");
+
+            // Wait for marking to complete
+            while (cci.ScIsMarking() != 0)
+            {
+                await Task.Delay(100); // Use a delay to throttle the loop for checking marking status
+            }
+
+            cci.ScStopMarking();
+            LogMessage("Done Marking", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS, "SAMLight is done marking.");
+            StartMarkButton.IsEnabled = true; // Allow retrying
+
+            return ExecStatus.Success;
+        }
+        catch (System.Runtime.InteropServices.COMException comEx)
+        {
+            LogMessage($"COM Exception: {comEx.Message}", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
+            StartMarkButton.IsEnabled = true; // Allow retrying
+            return ExecStatus.Failure;
+        }
+    }
+
+    #endregion
+
+
+    #region Marking Buttons
 
     private void UseDefaultJobButton_Click(object sender, RoutedEventArgs e)
     {
@@ -715,31 +969,77 @@ public sealed partial class TestPrintPage : Page
         }
     }
 
-
     private void UpdateDirectoryButton_Click(object sender, RoutedEventArgs e)
     {
-
+        LogAndDisplayMessage(LogFactoryLogLevel.LogLevel.VERBOSE, this.Content.XamlRoot, "Job directory updated.");
+        _jobDirectory = JobFileSearchDirectory.Text;
+        StartMarkButton.IsEnabled = false;
     }
 
     private void GetJobButton_Click(object sender, RoutedEventArgs e)
     {
+        var fullFilePath = Path.Combine(_jobDirectory, JobFileNameTextBox.Text);
 
+        if (ValidateJob(fullFilePath) == ExecStatus.Success)
+        {
+            _fullJobFilePath = fullFilePath; // Assuming _fullJobFilePath is a class member
+            StartMarkButton.IsEnabled = true;
+            ToggleRedPointerButton.IsEnabled = true;
+        }
+        else
+        {
+            StartMarkButton.IsEnabled = false;
+            ToggleRedPointerButton.IsEnabled = false;
+        }
     }
 
     private void ToggleRedPointerButton_Click(object sender, RoutedEventArgs e)
     {
+        _redPointerEnabled = !_redPointerEnabled;
 
+        if (_redPointerEnabled)
+        {
+            MagnetoLogger.Log("Starting Red Pointer", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS);
+            StartRedPointer();
+            ToggleRedPointerButton.Background = new SolidColorBrush(Colors.Red);
+            StartMarkButton.IsEnabled = false; // Assume job validation does not change.
+        }
+        else
+        {
+            MagnetoLogger.Log("Stopping Red Pointer", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS);
+            StopRedPointer();
+            ToggleRedPointerButton.Background = (SolidColorBrush)Microsoft.UI.Xaml.Application.Current.Resources["ButtonBackgroundThemeBrush"];
+            // Re-enable StartMarkButton only if _fullJobFilePath is still valid
+            StartMarkButton.IsEnabled = !string.IsNullOrEmpty(_fullJobFilePath) && File.Exists(_fullJobFilePath);
+        }
     }
 
 
     private void StartMarkButton_Click(object sender, RoutedEventArgs e)
     {
-
+        // File exists, proceed with marking
+        var msg = $"Starting mark for file: {_fullJobFilePath}";
+        MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
+        _ = MarkEntityAsync();
     }
 
     private void StopMarkButton_Click(object sender, RoutedEventArgs e)
     {
+        var msg = "";
 
+        if (cci.ScIsRunning() == 0)
+        {
+            msg = "SAMLight not found";
+            MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
+            return;
+        }
+
+        LogMessage("Stopping Mark", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS);
+
+        msg = "SAMLight is stopping mark";
+        MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.WARN);
+
+        cci.ScStopMarking();
     }
 
     #endregion
@@ -783,6 +1083,53 @@ public sealed partial class TestPrintPage : Page
         var textBox = GetCorrespondingTextBox(motorName);
         if (textBox != null)
             textBox.Text = motor.GetCurrentPos().ToString();
+    }
+
+    #endregion
+
+    #region Logging Methods
+    private string GetPopupMessageType(LogFactoryLogLevel.LogLevel LogLevel)
+    {
+        switch (LogLevel)
+        {
+            case LogFactoryLogLevel.LogLevel.DEBUG:
+                return "Debug";
+            case LogFactoryLogLevel.LogLevel.VERBOSE:
+                return "Info";
+            case LogFactoryLogLevel.LogLevel.WARN:
+                return "Warning";
+            case LogFactoryLogLevel.LogLevel.ERROR:
+                return "Error";
+            case LogFactoryLogLevel.LogLevel.SUCCESS:
+                return "Success";
+            default:
+                return "Unknown";
+        }
+    }
+
+    private async void LogAndDisplayMessage(LogFactoryLogLevel.LogLevel LogLevel, XamlRoot xamlRoot, string LogMessage, string PopupMessage)
+    {
+        var PopupMessageType = GetPopupMessageType(LogLevel);
+
+        MagnetoLogger.Log(LogMessage, LogLevel);
+        await PopupInfo.ShowContentDialog(xamlRoot, PopupMessageType, PopupMessage);
+    }
+
+    private async void LogAndDisplayMessage(LogFactoryLogLevel.LogLevel LogLevel, XamlRoot xamlRoot, string msg)
+    {
+        var PopupMessageType = GetPopupMessageType(LogLevel);
+
+        MagnetoLogger.Log(msg, LogLevel);
+        await PopupInfo.ShowContentDialog(xamlRoot, PopupMessageType, msg);
+    }
+
+    private void LogMessage(string uiMessage, Core.Contracts.Services.LogFactoryLogLevel.LogLevel logLevel, string logMessage = null)
+    {
+        // Update UI with the message
+        UpdateUITextHelper.UpdateUIText(IsMarkingText, uiMessage);
+
+        // Use the provided log level for logging
+        MagnetoLogger.Log(logMessage ?? uiMessage, logLevel);
     }
 
     #endregion
