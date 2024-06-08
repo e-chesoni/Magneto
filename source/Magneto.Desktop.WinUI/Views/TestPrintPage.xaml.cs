@@ -145,6 +145,13 @@ public sealed partial class TestPrintPage : Page
     #endregion
 
 
+    #region Layer Thickness Variables
+
+    private double _layerThickness;
+
+    #endregion
+
+
     #region Public Variables
 
     /// <summary>
@@ -230,6 +237,7 @@ public sealed partial class TestPrintPage : Page
 
         SetupMotors();
         SetupWaveRunner();
+        SetDefaultPrintSettings();
     }
 
     private void SetupMotors()
@@ -281,6 +289,11 @@ public sealed partial class TestPrintPage : Page
         // Have not found way to check red pointer status in SAMLight docs 
         // Initialize red pointer to off
         _redPointerEnabled = false;
+    }
+
+    private void SetDefaultPrintSettings()
+    {
+        _layerThickness = MagnetoConfig.GetDefaultPrintThickness();
     }
 
     #endregion
