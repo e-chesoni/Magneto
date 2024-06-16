@@ -187,10 +187,12 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12"
                         Text="Layer thickness:"></TextBlock>
-                    <TextBlock Grid.Column="1" x:Name="LayerThicknessTextBlock" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="12"></TextBlock>
+                    <TextBlock Grid.Column="1" x:Name="LayerThicknessTextBlock" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="2" FontSize="12"></TextBlock>
+                    <TextBlock Grid.Column="3" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="2" FontSize="12" Text="mm"></TextBlock>
                 </Grid>
         </Grid>
             <Grid Grid.Row="3">

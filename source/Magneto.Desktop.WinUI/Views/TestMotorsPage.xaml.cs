@@ -384,7 +384,6 @@ namespace Magneto.Desktop.WinUI
 
                     if (MagnetoSerialConsole.OpenSerialPort(currMotor.GetPortName()))
                     {
-                        //_ = motor.HomeMotor();
                         _ = _bm.AddCommand(motorDetails.controllerType, motorDetails.motorAxis, CommandType.AbsoluteMove, 0);
 
                         // Call try catch block to send command to get position to motor
@@ -715,8 +714,6 @@ namespace Magneto.Desktop.WinUI
                     _movingMotorToTarget = false;
                 }
             }
-
-
         }
 
         /// <summary>

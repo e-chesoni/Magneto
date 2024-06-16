@@ -172,6 +172,7 @@ public sealed partial class TestPrintPage : Page
 
     #endregion
 
+
     #region Test Page Setup
 
     /// <summary>
@@ -219,6 +220,7 @@ public sealed partial class TestPrintPage : Page
     }
 
     #endregion
+
 
     #region Constructor
 
@@ -294,9 +296,11 @@ public sealed partial class TestPrintPage : Page
     private void SetDefaultPrintSettings()
     {
         _layerThickness = MagnetoConfig.GetDefaultPrintThickness();
+        LayerThicknessTextBlock.Text = _layerThickness.ToString();
     }
 
     #endregion
+
 
     #region Navigation Methods
 
@@ -328,6 +332,7 @@ public sealed partial class TestPrintPage : Page
     }
 
     #endregion
+
 
     #region Dictionary Methods
 
@@ -423,6 +428,7 @@ public sealed partial class TestPrintPage : Page
     }
 
     #endregion
+
 
     #region Position Helper Methods
 
@@ -529,6 +535,7 @@ public sealed partial class TestPrintPage : Page
 
     #endregion
 
+
     #region Position Methods
 
     private void GetBuildMotorCurrentPositionButton_Click(object sender, RoutedEventArgs e)
@@ -539,6 +546,9 @@ public sealed partial class TestPrintPage : Page
         if (_buildMotor != null)
         {
             GetPositionHelper(_buildMotor);
+
+            //TODO: Update textbox with position
+
         }
         else
         {
@@ -557,6 +567,7 @@ public sealed partial class TestPrintPage : Page
     }
 
     #endregion
+
 
     #region Motor Movement Methods
 
@@ -695,6 +706,29 @@ public sealed partial class TestPrintPage : Page
         {
             await PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", $"\"{absTextBox.Text}\" is not a valid position. Please make sure you entered a number in the textbox.");
             return;
+        }
+    }
+
+    private void UniformMotorMove(bool isAbsolute, double dist)
+    {
+        if (_powderMotor != null)
+        {
+            if (_buildMotor != null)
+            {
+                // Move powder motor up print height
+                _ = ExecuteMovementCommand(_powderMotor, false, dist);
+
+                // Move build motor down print height
+                _ = ExecuteMovementCommand(_buildMotor, false, dist);
+            }
+            else
+            {
+                LogAndDisplayMessage(LogFactoryLogLevel.LogLevel.ERROR, this.XamlRoot, "Build Motor is null.", "Build motor is not connected.");
+            }
+        }
+        else
+        {
+            LogAndDisplayMessage(LogFactoryLogLevel.LogLevel.ERROR, this.XamlRoot, "Powder Motor is null.", "Powder motor is not connected.");
         }
     }
 
@@ -968,11 +1002,6 @@ public sealed partial class TestPrintPage : Page
             MissionControl.SliceImage(); // TODO: IMAGE HANDLER references Magneto Config to control slice number: SliceImage calls SliceImage in build controller which calls ImageHandler
             //StartPrintButton.IsEnabled = true;
 
-            // Enable go to start button
-            //GoToStartingPositionButton.IsEnabled = true;
-
-            // TODO: MOVE ME -- Populate after successful calibration
-            //PrintHeightTextBlock.Text = MissionControl.GetCurrentBuildHeight().ToString();
         }
         else
         {
@@ -1062,12 +1091,13 @@ public sealed partial class TestPrintPage : Page
 
     private void UpdateLayerThicknessButton_Click(object sender, RoutedEventArgs e)
     {
-
+        _layerThickness = int.Parse(SetLayerThicknessTextBox.Text);
+        LayerThicknessTextBlock.Text = _layerThickness.ToString();
     }
 
     private void MoveToNextLayerStartPositionButton_Click(object sender, RoutedEventArgs e)
     {
-
+        UniformMotorMove(false, _layerThickness);
     }
 
     #endregion
@@ -1077,10 +1107,14 @@ public sealed partial class TestPrintPage : Page
 
     private void ResetButton_Click(object sender, RoutedEventArgs e)
     {
+        UniformMotorMove(true, 0);
+
+        // TODO: Clear page settings to start new print
 
     }
 
     #endregion
+
 
     #region UI Update Methods
 
@@ -1100,6 +1134,7 @@ public sealed partial class TestPrintPage : Page
 
     #endregion
 
+    
     #region Logging Methods
     private string GetPopupMessageType(LogFactoryLogLevel.LogLevel LogLevel)
     {
