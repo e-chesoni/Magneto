@@ -991,15 +991,15 @@ public sealed partial class TestPrintPage : Page
             JobFileNameTextBox.Text = path_to_image;
 
             // Put a new image on the build manager
-            MissionControl.CreateImageModel(path_to_image);
+            MissionControl.CreateArtifactModel(path_to_image);
 
             // TODO: Toast Message: Using default thickness of {} get from config
             msg = "Setting every print layer's thickness to default thickness from MagnetoConfig";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
-            MissionControl.SetImageThickness(MissionControl.GetDefaultPrintLayerThickness());
+            MissionControl.SetArtifactThickness(MissionControl.GetDefaultPrintLayerThickness());
 
             // Slice image
-            MissionControl.SliceImage(); // TODO: IMAGE HANDLER references Magneto Config to control slice number: SliceImage calls SliceImage in build controller which calls ImageHandler
+            MissionControl.SliceArtifact(); // TODO: IMAGE HANDLER references Magneto Config to control slice number: SliceArtifact calls SliceArtifact in build controller which calls ImageHandler
             //StartPrintButton.IsEnabled = true;
 
         }

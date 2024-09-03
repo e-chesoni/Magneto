@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Magneto.Desktop.WinUI.Core.Models;
-using Magneto.Desktop.WinUI.Core.Models.Image;
+using Magneto.Desktop.WinUI.Core.Models.Artifact;
 
 namespace Magneto.Desktop.WinUI.Core.Contracts.Services.StateMachineServices;
 
@@ -13,7 +13,7 @@ namespace Magneto.Desktop.WinUI.Core.Contracts.Services.StateMachineServices;
 /// </summary>
 public interface IBuildManagerState
 {
-    void Start(ImageModel im);
+    void Start(ArtifactModel im);
 
     /// <summary>
     /// Method to handle a Draw command in current state

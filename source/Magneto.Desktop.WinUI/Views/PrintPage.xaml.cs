@@ -4,7 +4,7 @@ using System.Xml.Linq;
 using Magneto.Desktop.WinUI.Core;
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Models;
-using Magneto.Desktop.WinUI.Core.Models.Image;
+using Magneto.Desktop.WinUI.Core.Models.Artifact;
 using Magneto.Desktop.WinUI.Core.Models.Motor;
 using Magneto.Desktop.WinUI.Core.Services;
 using Magneto.Desktop.WinUI.Popups;
@@ -105,15 +105,15 @@ public sealed partial class PrintPage : Page
             SelectedPrint.Text = path_to_image;
 
             // Put a new image on the build manager
-            MissionControl.CreateImageModel(path_to_image);
+            MissionControl.CreateArtifactModel(path_to_image);
 
             // TODO: Toast Message: Using default thickness of {} get from config
             msg = "Setting every print layer's thickness to default thickness from MagnetoConfig";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
-            MissionControl.SetImageThickness(MissionControl.GetDefaultPrintLayerThickness());
+            MissionControl.SetArtifactThickness(MissionControl.GetDefaultPrintLayerThickness());
 
             // Slice image
-            MissionControl.SliceImage(); // TODO: IMAGE HANDLER references Magneto Config to control slice number: SliceImage calls SliceImage in build controller which calls ImageHandler
+            MissionControl.SliceArtifact(); // TODO: IMAGE HANDLER references Magneto Config to control slice number: SliceArtifact calls SliceArtifact in build controller which calls ImageHandler
             StartPrintButton.IsEnabled = true;
 
             // Enable go to start button
@@ -174,16 +174,16 @@ public sealed partial class PrintPage : Page
 
     private void IncrementThickness_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        var newThickness = MissionControl.GetImageThickness();
+        var newThickness = MissionControl.GetDefaultArtifactThickness();
         newThickness += 1;
-        MissionControl.SetImageThickness(newThickness);
+        MissionControl.SetArtifactThickness(newThickness);
     }
 
     private void DecrementThickness_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        var newThickness = MissionControl.GetImageThickness();
+        var newThickness = MissionControl.GetDefaultArtifactThickness();
         newThickness -= 1;
-        MissionControl.SetImageThickness(newThickness);
+        MissionControl.SetArtifactThickness(newThickness);
     }
 
     private void GoToStartingPositionButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)

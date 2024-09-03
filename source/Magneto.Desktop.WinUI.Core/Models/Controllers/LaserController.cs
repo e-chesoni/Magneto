@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Magneto.Desktop.WinUI.Core.Models.Image;
+using Magneto.Desktop.WinUI.Core.Models.Artifact;
 using Magneto.Desktop.WinUI.Core.Services;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.Controllers;
 
@@ -24,7 +24,7 @@ public class LaserController : IController
 
     internal void Draw(Slice slice)
     {
-        MagnetoLogger.Log("Laser is drawing slice...", Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
+        MagnetoLogger.Log("Placeholder for laser to draw current slice...", Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
     }
 
 }

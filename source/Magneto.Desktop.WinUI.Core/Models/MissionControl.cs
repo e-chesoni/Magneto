@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Models.BuildModels;
 using Magneto.Desktop.WinUI.Core.Models.Controllers;
-using Magneto.Desktop.WinUI.Core.Models.Image;
+using Magneto.Desktop.WinUI.Core.Models.Artifact;
 using Magneto.Desktop.WinUI.Core.Models.Motor;
 using Magneto.Desktop.WinUI.Core.Services;
 using static Magneto.Desktop.WinUI.Core.Models.Motor.StepperMotor;
@@ -65,13 +65,13 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     #region Initialization Methods
 
     /// <summary>
-    /// Generate an image model from a path to an image
+    /// Generate an artifact model from a path to an artifact
     /// </summary>
-    /// <param name="path_to_image"> File path to image </param>
-    public void CreateImageModel(string path_to_image)
+    /// <param name="path_to_artifact"> File path to artifact </param>
+    public void CreateArtifactModel(string path_to_artifact)
     {
-        _buildManager.imageModel = new ImageModel();
-        _buildManager.SetImagePath(path_to_image);
+        _buildManager.artifactModel = new ArtifactModel();
+        _buildManager.SetArtifactPath(path_to_artifact);
     }
 
     #endregion
@@ -127,10 +127,10 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     /// <summary>
     /// Get the layer thickness for the print from the build manager
     /// </summary>
-    /// <returns> double image layer thickness </returns>
-    public double GetImageThickness()
+    /// <returns> double artifact layer thickness </returns>
+    public double GetDefaultArtifactThickness()
     {
-        return _buildManager.GetImageThickness();
+        return _buildManager.GetDefaultArtifactThickness();
     }
 
     /// <summary>
@@ -150,15 +150,16 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
 
     #endregion
 
+
     #region Setters
 
     /// <summary>
     /// Set the layer thickness for the print on the build manager
     /// </summary>
     /// <param name="thickness"> Desired thickness </param>
-    public void SetImageThickness(double thickness)
+    public void SetArtifactThickness(double thickness)
     {
-        _buildManager.SetImageThickness(thickness);
+        _buildManager.SetArtifactThickness(thickness);
     }
 
     /// <summary>
@@ -172,15 +173,15 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
 
     #endregion
 
-    #region Operations Delegated to ImageManager
+    #region Operations Delegated to BuildManager
 
     /// <summary>
-    /// Slice an image on the build manager
+    /// Slice an artifact using build manager (resulting in a dance that gest stored on the build manager)
     /// </summary>
-    public void SliceImage()
+    public void SliceArtifact()
     {
-        // TODO: IMAGE HANDLER CONTROLS SLICE NUMBER (SliceImage calls ImageHandler method)
-        _buildManager.SliceImage();
+        // TODO: ARTIFACT HANDLER CONTROLS SLICE NUMBER (SliceArtifact calls ArtifactHandler method)
+        _buildManager.SliceArtifact();
     }
 
     #endregion
@@ -192,15 +193,15 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     /// </summary>
     public void StartPrint()
     {
-        if (_buildManager.imageModel.sliceStack.Count == 0) // TODO: FIX bm.imageModel is null error
+        if (_buildManager.artifactModel.sliceStack.Count == 0) // TODO: FIX bm.artifactModel is null error
         {
-            MagnetoLogger.Log("There are no slices on this image model. Are you sure you sliced it?",
+            MagnetoLogger.Log("There are no slices on this artifact model. Are you sure you sliced it?",
             LogFactoryLogLevel.LogLevel.ERROR);
         }
         else
         {
             // Call build manager to handle print
-            _buildManager.StartPrint(_buildManager.imageModel);
+            _buildManager.StartPrint(_buildManager.artifactModel);
         }
     }
 

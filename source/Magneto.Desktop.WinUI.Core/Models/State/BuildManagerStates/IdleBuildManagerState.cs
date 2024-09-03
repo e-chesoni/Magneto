@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Transactions;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.StateMachineServices;
 using Magneto.Desktop.WinUI.Core.Models.BuildModels;
-using Magneto.Desktop.WinUI.Core.Models.Image;
+using Magneto.Desktop.WinUI.Core.Models.Artifact;
 using Magneto.Desktop.WinUI.Core.Services;
 
 namespace Magneto.Desktop.WinUI.Core.Models.State.BuildManagerStates;
@@ -33,12 +33,12 @@ public class IdleBuildManagerState : IBuildManagerState
     }
     public void Start() => throw new NotImplementedException();
 
-    public void Start(ImageModel im)
+    public void Start(ArtifactModel im)
     {
         MagnetoLogger.Log("Starting...", Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
 
         // Get poses for print (each "pose" has a slice (shape to trace) and a thickness)
-        _BuildManagerSM.danceModel.GetPoseStack(im.sliceStack, im.thickness);
+        _BuildManagerSM.danceModel.GenerateDance(im.sliceStack, MagnetoConfig.GetDefaultPrintThickness());
 
         // TODO: Get max height from dance model
 

@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.StateMachineServices;
 using Magneto.Desktop.WinUI.Core.Models.BuildModels;
-using Magneto.Desktop.WinUI.Core.Models.Image;
+using Magneto.Desktop.WinUI.Core.Models.Artifact;
 using Magneto.Desktop.WinUI.Core.Services;
 
 namespace Magneto.Desktop.WinUI.Core.Models.State.BuildManagerStates;
@@ -39,7 +39,7 @@ public class CancelledBuildManagerState : IBuildManagerState
 
     public void Pause() => throw new NotImplementedException();
 
-    public void Start(ImageModel im) => throw new NotImplementedException();
+    public void Start(ArtifactModel im) => throw new NotImplementedException();
 
     public Task Draw() => throw new NotImplementedException();
 

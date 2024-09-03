@@ -44,7 +44,7 @@ public class MotorController : IMotorController
     #region Constructors
 
     /// <summary>
-    /// Constructor that accepts one stepper motor
+    /// If the constructor is only given one motor, assume this is the controller for the sweeper motor
     /// </summary>
     /// <param name="motor"></param> Motor to set on axis 1
     public MotorController(StepperMotor stepperMotor)
@@ -55,7 +55,7 @@ public class MotorController : IMotorController
     }
 
     /// <summary>
-    /// Constructor that accepts two stepper motors
+    /// If the constructor is given two motors, assume this is the controller for the build motors (powder + build)
     /// </summary>
     /// <param name="motor1"></param>
     /// <param name="motor2"></param>
@@ -69,6 +69,7 @@ public class MotorController : IMotorController
     }
 
     #endregion
+
 
     #region Getters
 
@@ -115,6 +116,9 @@ public class MotorController : IMotorController
     #endregion
 
 
+    // TODO: Decide if move motor commands should be issued to controller or directly to controller
+    // Currently, AddCommand -> ProcessCommand -> ExecuteCommand in BuildManager calls movement commands directly on a motor
+    // (THESE ARE NEVER USED--just referenced by inheritance)
     #region Movement Methods
 
     /// <summary>
@@ -127,12 +131,12 @@ public class MotorController : IMotorController
         MagnetoLogger.Log("Moving Motors (PLURAL)",
             LogFactoryLogLevel.LogLevel.VERBOSE);
 
-        // TODO: Thread blocking is not a great idea...
+        // TODO: Remove thread blocking (it is not a great idea...)
         // Find a more elegant way to handle running one motor at a time in the future
         foreach (var motor in _motorList)
         {
             await motor.MoveMotorAbsAsync(thickness);
-            Thread.Sleep(2000);
+            Thread.Sleep(2000); // Allow both motors time to get to desired position
         }
     }
 
@@ -230,7 +234,6 @@ public class MotorController : IMotorController
         }
     }
 
-    // USED IN PRINT SEQUENCE
     public async Task MoveMotorRelAsync(StepperMotor motor, double step)
     {
         var msg = "Moving Motor Relative";
@@ -249,6 +252,7 @@ public class MotorController : IMotorController
         }
     }
 
+    // TODO: UPDATE Done and Cancel states to use same homing method used in PrintingBuildState (it's NOT this one!)
     /// <summary>
     /// Home all attached motors
     /// (Return all attached motors to zero position)

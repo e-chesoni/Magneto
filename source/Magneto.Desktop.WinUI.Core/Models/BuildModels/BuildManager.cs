@@ -8,7 +8,7 @@ using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.Controllers;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.StateMachineServices;
 using Magneto.Desktop.WinUI.Core.Models.Controllers;
-using Magneto.Desktop.WinUI.Core.Models.Image;
+using Magneto.Desktop.WinUI.Core.Models.Artifact;
 using Magneto.Desktop.WinUI.Core.Models.Monitor;
 using Magneto.Desktop.WinUI.Core.Models.Motor;
 using Magneto.Desktop.WinUI.Core.Models.State.BuildManagerStates;
@@ -31,6 +31,7 @@ public class BuildManager : ISubsciber, IStateMachine
     private double _currentPrintHeight { get; set; }
 
     #endregion
+
 
     #region Public Variables
 
@@ -56,15 +57,16 @@ public class BuildManager : ISubsciber, IStateMachine
     public LaserController laserController { get; set; }
 
     /// <summary>
-    /// Image model is generated for each print
+    /// Artifact model is generated for each print
     /// </summary>
-    public ImageModel imageModel { get; set; }
+    public ArtifactModel artifactModel { get; set; }
 
     /// <summary>
-    /// Dance model generates consumable process of image model for print
+    /// Dance model generates consumable process of artifact model for print
     /// (Prepares slices by thickness for printing state)
     /// </summary>
     public DanceModel danceModel { get; set; }
+
 
     #region State Variables
 
@@ -133,6 +135,7 @@ public class BuildManager : ISubsciber, IStateMachine
 
     #endregion
 
+
     #region Constructor
 
     /// <summary>
@@ -156,7 +159,6 @@ public class BuildManager : ISubsciber, IStateMachine
         motorControllers.Add(buildController);
         motorControllers.Add(sweepController);
 
-        // TODO: Add motors to list
         foreach(var m in buildController.GetMotorList()) { _motorList.Add(m); }
         foreach (var n in sweepController.GetMotorList()) { _motorList.Add(n); }
 
@@ -175,6 +177,7 @@ public class BuildManager : ISubsciber, IStateMachine
     }
 
     #endregion
+
 
     #region Getters
 
@@ -230,26 +233,34 @@ public class BuildManager : ISubsciber, IStateMachine
         // Create temp list for motors
         List <StepperMotor> motors = new List<StepperMotor>();
 
+        // Go through all the motor controllers attached to the build manager
         foreach (var c in motorControllers)
         {
+            // Add each motor on controller to temporary motor list (created above)
             foreach (var m in c.GetMotorList()) { motors.Add(m); }
         }
 
+        // Find the stepper motor on the motor list that matches the given motorId
         StepperMotor motor = motors.FirstOrDefault(motor => motor.GetID() == motorId);
+
+        // TODO: Return 'ERROR' status if no motor is found
+
+        // Return the status of found motor
         return motor.GetStatus();
 
     }
 
     /// <summary>
-    /// Get the thickness of print layers on the image model
+    /// Get the thickness of print layers on the artifact model
     /// </summary>
     /// <returns></returns>
-    public double GetImageThickness()
+    public double GetDefaultArtifactThickness()
     {
-        return imageModel.thickness;
+        return MagnetoConfig.GetDefaultPrintThickness();
     }
 
     #endregion
+
 
     #region Setters
 
@@ -265,30 +276,30 @@ public class BuildManager : ISubsciber, IStateMachine
     }
 
     /// <summary>
-    /// Set the path to the image on the image model
+    /// Set the path to the artifact on the artifact model
     /// </summary>
     /// <param name="path"></param>
-    public void SetImagePath(string path)
+    public void SetArtifactPath(string path)
     {
-        imageModel.path_to_image = path;
+        artifactModel.path_to_artifact = path;
     }
 
     /// <summary>
-    /// Set the thickness of print layers on the image model
+    /// Set the thickness of print layers on the artifact model
     /// </summary>
-    /// <param name="tickness"></param>
-    public void SetImageThickness(double tickness)
+    /// <param name="thickness"></param>
+    public void SetArtifactThickness(double thickness)
     {
-        imageModel.thickness = tickness;
+        artifactModel.defaultThickness = thickness;
     }
 
     /// <summary>
-    /// Slice the image on the image model and store the stack of slices on the image model
+    /// Slice the artifact on the artifact model and store the stack of slices on the artifact model
     /// </summary>
-    public void SliceImage()
+    public void SliceArtifact()
     {
         // TODO: UPDATE in production. Currently uses default number of slices from Magneto Config
-        imageModel.sliceStack = ImageHandler.SliceImage(imageModel);
+        artifactModel.sliceStack = ArtifactHandler.SliceArtifact(artifactModel);
     }
 
     #endregion
@@ -335,6 +346,9 @@ public class BuildManager : ISubsciber, IStateMachine
             }
         }
 
+        // Ensures a task is always returns even if the task is null:
+        // Return the Task from the TaskCompletionSource if it's not null; 
+        // otherwise, return a completed Task<double> with a result of 0.0.
         return tcs?.Task ?? Task.FromResult(0.0);
     }
 
@@ -351,8 +365,8 @@ public class BuildManager : ISubsciber, IStateMachine
                 command = commandQueue.Dequeue();
             }
 
-            ControllerType controllerType = (ControllerType)Enum.Parse(typeof(ControllerType), command.Substring(0, 5));
-            int axis = int.Parse(command.Substring(5, 1));
+            ControllerType controllerType = (ControllerType)Enum.Parse(typeof(ControllerType), command.Substring(0,5));
+            int axis = int.Parse(command.Substring(5,1));
             MotorKey key = new MotorKey(controllerType, axis);
             string motorCommand = command.Substring(6);
 
@@ -366,7 +380,7 @@ public class BuildManager : ISubsciber, IStateMachine
                 {
                     var motorList = motorController.GetMotorList();
                     
-                    // Process motor list specific logic
+                    // Get the motor matching the extrapolated axis (above) from the controller
                     StepperMotor motor = controller.GetMotorList().FirstOrDefault(m => m.GetID() % 10 == axis);
                     if (motor != null)
                     {
@@ -416,7 +430,8 @@ public class BuildManager : ISubsciber, IStateMachine
 
     private async Task ExecuteMotorCommand(StepperMotor motor, string motorCommand)
     {
-        double value = double.Parse(motorCommand.Substring(3));
+        //double value = double.Parse(motorCommand.Substring(3));
+        double value = double.Parse(motorCommand[3..]); // TODO: test use of range operator (prettier code)
         var msg = $"Executing command {value}.";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
 
@@ -428,10 +443,10 @@ public class BuildManager : ISubsciber, IStateMachine
         {
             await motor.MoveMotorRelAsync(value);
         }
-        else if (motorCommand.StartsWith("POS"))
+        else
         {
-            // Handle position query
-            // TODO: Query motor directly to get position; remove POS from add command stream
+            msg = "Failed to execute motor command. Command not recognized.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
         }
     }
 
@@ -451,10 +466,10 @@ public class BuildManager : ISubsciber, IStateMachine
     /// <summary>
     /// Start a print
     /// </summary>
-    /// <param name="im"></param> Image model to print
-    public void StartPrint(ImageModel im)
+    /// <param name="am"></param> artifact model to print
+    public void StartPrint(ArtifactModel am)
     {
-        _state.Start(im);
+        _state.Start(am);
     }
 
     /// <summary>
@@ -474,7 +489,7 @@ public class BuildManager : ISubsciber, IStateMachine
     }
 
     /// <summary>
-    /// Cancel a print; image model will we destroyed
+    /// Cancel a print; artifact model will we destroyed
     /// </summary>
     public void Cancel()
     {

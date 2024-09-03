@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.StateMachineServices;
 using Magneto.Desktop.WinUI.Core.Models.BuildModels;
-using Magneto.Desktop.WinUI.Core.Models.Image;
+using Magneto.Desktop.WinUI.Core.Models.Artifact;
 using Magneto.Desktop.WinUI.Core.Services;
 
 namespace Magneto.Desktop.WinUI.Core.Models.State.BuildManagerStates;
@@ -13,7 +13,7 @@ public class PausedBuildManagerState : IBuildManagerState
 {
     private BuildManager _BuildManagerSM { get; set; }
 
-    public ImageModel ImageModel { get; set; }
+    public ArtifactModel ImageModel { get; set; }
 
     public PausedBuildManagerState(BuildManager bm)
     {
@@ -32,7 +32,7 @@ public class PausedBuildManagerState : IBuildManagerState
         MagnetoLogger.Log("Already Paused; Stay here.", Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
     }
 
-    public void Start(ImageModel im)
+    public void Start(ArtifactModel im)
     {
         MagnetoLogger.Log("Can't start paused print; try resuming!", Contracts.Services.LogFactoryLogLevel.LogLevel.WARN);
     }

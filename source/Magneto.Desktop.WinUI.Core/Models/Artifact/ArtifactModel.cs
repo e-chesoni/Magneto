@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Magneto.Desktop.WinUI.Core.Models.Image;
+namespace Magneto.Desktop.WinUI.Core.Models.Artifact;
 
 /// <summary>
 /// Wrapper for an image file
 /// </summary>
-public class ImageModel
+public class ArtifactModel
 {
     #region Public Variables
     /// <summary>
@@ -17,28 +17,26 @@ public class ImageModel
     /// </summary>
     public Stack<Slice> sliceStack;
 
-    /// <summary>
-    /// Desired thickness for the printing of this image model
-    /// </summary>
-    public double thickness = 0;
+    public double defaultThickness;
 
     /// <summary>
     /// Path to the image associated with this image model
     /// (Stored at time of construction)
     /// </summary>
-    public string path_to_image { get; set; }
+    public string path_to_artifact { get; set; }
 
     #endregion
 
     #region Constructor
 
     /// <summary>
-    /// Image model constructor
+    /// Artifact model constructor
     /// </summary>
-    public ImageModel()
+    public ArtifactModel()
     {
         // TODO: Get image from file path
         // TODO: Store image (not sure what file format to use)
+        defaultThickness = MagnetoConfig.GetDefaultPrintThickness();
     }
 
     #endregion

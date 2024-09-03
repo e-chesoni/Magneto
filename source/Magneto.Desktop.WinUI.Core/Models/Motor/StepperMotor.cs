@@ -174,9 +174,9 @@ public class StepperMotor : IStepperMotor
 
         // Extract ID from portName using regular expression
         var idString = Regex.Match(portName, @"\d+").Value + axis;
-        if (int.TryParse(idString, out var tempMotorId))
+        if (int.TryParse(idString, out var motorId))
         {
-            _motorId = tempMotorId;
+            _motorId = motorId;
             MagnetoLogger.Log($"Assigning ID: {_motorId} to motor", LogFactoryLogLevel.LogLevel.SUCCESS);
         }
         else
@@ -365,7 +365,9 @@ public class StepperMotor : IStepperMotor
         // Get the motors initial position
         var initialPos = await GetPosAsync();
 
-        // Calculate desired position
+        // Get the desired position
+        // This is unnecessary, but it makes it easier to compare to the relative move command (below)
+        // TODO: Remove unnecessary code when project moves to production
         var desiredPos = pos;
 
         // Log initial and desired position
@@ -400,29 +402,6 @@ public class StepperMotor : IStepperMotor
             MagnetoLogger.Log("Port Closed.", LogFactoryLogLevel.LogLevel.ERROR);
             return;
         }
-    }
-
-    /// <summary>
-    /// Asynchronously moves the motor to a specified position.
-    /// This method constructs and sends a command to move the motor, logs the action,
-    /// updates the calculated position, and awaits the completion of the movement.
-    /// </summary>
-    /// <param name="pos"></param>
-    /// <returns></returns>
-    private async Task PerformMotorMoveAsync(double pos)
-    {
-        var moveCmd = $"{_motorAxis}MVA{pos}";
-        MagnetoSerialConsole.SerialWrite(_motorPort, moveCmd);
-
-        _motorMoving = true;
-        MagnetoLogger.Log($"Moving motor on axis {_motorAxis} to position {pos}mm", LogFactoryLogLevel.LogLevel.VERBOSE);
-
-        _calculatedPos = pos;
-        MagnetoLogger.Log($"New calculated position: {_calculatedPos}", LogFactoryLogLevel.LogLevel.VERBOSE);
-
-        await CheckPosAsync(pos);
-
-        _motorMoving = false;
     }
 
     /// NOTE: The syntax to move a motor in relative to a position is:
@@ -516,6 +495,7 @@ public class StepperMotor : IStepperMotor
     {
         MagnetoLogger.Log($"Getting {_motorName} motor position...", LogFactoryLogLevel.LogLevel.VERBOSE);
 
+        // TODO: Test is this is still needed with newly implemented AddCommand method (uses locking)
         MagnetoSerialConsole.ClearTermRead();
         var positionRequest = $"{_motorAxis}POS?";
 
@@ -579,6 +559,8 @@ public class StepperMotor : IStepperMotor
         MagnetoLogger.Log("Failed to reach the desired position within the maximum number of attempts.", LogFactoryLogLevel.LogLevel.ERROR);
         return false;
     }
+
+    // TODO: Put this method in a helper
 
     /// <summary>
     /// Extracts a double value from a given string, assuming a specific format.

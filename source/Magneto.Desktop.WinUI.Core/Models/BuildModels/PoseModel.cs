@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Magneto.Desktop.WinUI.Core.Models.Image;
+using Magneto.Desktop.WinUI.Core.Models.Artifact;
 
 namespace Magneto.Desktop.WinUI.Core.Models.BuildModels;
 
@@ -27,17 +27,17 @@ public class PoseModel
     /// <summary>
     /// Tuple containing thickness and slice for this pose
     /// </summary>
-    public (double, Slice) Pose;
+    public (double thickness, Slice slice) Pose;
 
     #endregion
 
     #region Constructor
 
-    public PoseModel((double, Slice) pose)
+    public PoseModel((double thickness, Slice slice) pose)
     {
-        Pose = pose;
-        thickness = pose.Item1;
-        slice = pose.Item2;
+        //Pose = pose;
+        thickness = pose.thickness;
+        slice = pose.slice;
     }
 
     #endregion
