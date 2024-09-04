@@ -10,11 +10,11 @@ using Magneto.Desktop.WinUI.Core.Models.Artifact;
 using Magneto.Desktop.WinUI.Core.Services;
 
 namespace Magneto.Desktop.WinUI.Core.Models.State.BuildManagerStates;
-public class IdleBuildManagerState : IBuildManagerState
+public class IdleBuildState : IBuildManagerState
 {
     private BuildManager _BuildManagerSM;
 
-    public IdleBuildManagerState(BuildManager bm)
+    public IdleBuildState(BuildManager bm)
     {
         MagnetoLogger.Log("IdleBuildManagerState::IdleBuildManagerState", 
             Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
@@ -33,12 +33,12 @@ public class IdleBuildManagerState : IBuildManagerState
     }
     public void Start() => throw new NotImplementedException();
 
-    public void Start(ArtifactModel im)
+    public void Start(ArtifactModel am)
     {
         MagnetoLogger.Log("Starting...", Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
 
         // Get poses for print (each "pose" has a slice (shape to trace) and a thickness)
-        _BuildManagerSM.danceModel.GenerateDance(im.sliceStack, MagnetoConfig.GetDefaultPrintThickness());
+        _BuildManagerSM.danceModel.GenerateDance(am.sliceStack, MagnetoConfig.GetDefaultPrintThickness());
 
         // TODO: Get max height from dance model
 
@@ -54,7 +54,7 @@ public class IdleBuildManagerState : IBuildManagerState
 
         // TODO: Move transition to build state to execute in PowderLoadedState
         // Transition to print state
-        _BuildManagerSM.TransitionTo(new PrintingBuildManagerState(_BuildManagerSM));
+        _BuildManagerSM.TransitionTo(new PrintingBuildState(_BuildManagerSM));
     }
 
     public Task Draw()
@@ -85,6 +85,6 @@ public class IdleBuildManagerState : IBuildManagerState
         _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, build_axis, BuildManager.CommandType.AbsoluteMove, 0);
 
         // Return to idle state
-        _BuildManagerSM.TransitionTo(new IdleBuildManagerState(_BuildManagerSM));
+        _BuildManagerSM.TransitionTo(new IdleBuildState(_BuildManagerSM));
     }
 }

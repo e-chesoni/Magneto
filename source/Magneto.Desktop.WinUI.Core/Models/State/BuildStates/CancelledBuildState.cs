@@ -14,16 +14,18 @@ namespace Magneto.Desktop.WinUI.Core.Models.State.BuildManagerStates;
 /// Pass-through state; you should not be able to call anything in this state
 /// This class exist to process the cancel request
 /// </summary>
-public class CancelledBuildManagerState : IBuildManagerState
+public class CancelledBuildState : IBuildManagerState
 {
     private BuildManager _BuildManagerSM { get; set; }
 
-    public CancelledBuildManagerState(BuildManager bm)
+    public CancelledBuildState(BuildManager bm)
     {
         MagnetoLogger.Log("CancelledBuildManagerState::CancelledBuildManagerState",
             Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
 
         _BuildManagerSM = bm;
+        // TODO: Stop build
+        // Blocked by implementation of cancel motor move tasks in BuildManager
 
         // TODO: Process cancelled build
         // This is the British spelling. Get over it spell checker.
@@ -32,7 +34,7 @@ public class CancelledBuildManagerState : IBuildManagerState
         // Home motors
         _ = _BuildManagerSM.buildController.HomeMotors();
 
-        _BuildManagerSM.TransitionTo(new IdleBuildManagerState(_BuildManagerSM));
+        _BuildManagerSM.TransitionTo(new IdleBuildState(_BuildManagerSM));
     }
 
     public void Cancel() => throw new NotImplementedException();

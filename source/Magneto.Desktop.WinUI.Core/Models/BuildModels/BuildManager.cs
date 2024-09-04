@@ -173,7 +173,7 @@ public class BuildManager : ISubsciber, IStateMachine
         danceModel = new DanceModel();
 
         // Start in the idle state
-        TransitionTo(new IdleBuildManagerState(this));
+        TransitionTo(new IdleBuildState(this));
     }
 
     #endregion

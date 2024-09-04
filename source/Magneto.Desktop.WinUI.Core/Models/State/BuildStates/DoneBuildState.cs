@@ -13,15 +13,14 @@ namespace Magneto.Desktop.WinUI.Core.Models.State.BuildManagerStates;
 /// <summary>
 /// Processing state; user should not be able to invoke any functionality from this state
 /// </summary>
-public class DoneBuildManagerState : IBuildManagerState
+public class DoneBuildState : IBuildManagerState
 {
     private BuildManager _BuildManagerSM { get; set; }
 
-    public DoneBuildManagerState(BuildManager _bm)
+    public DoneBuildState(BuildManager _bm)
     {
-        MagnetoLogger.Log("DoneBuildManagerState::DoneBuildManagerState",
-            Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
-
+        var msg = "Build complete.";
+        MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
         _BuildManagerSM = _bm;
     }
 
@@ -34,10 +33,14 @@ public class DoneBuildManagerState : IBuildManagerState
     public async Task Homing()
     {
         // Home motors
-        await _BuildManagerSM.buildController.HomeMotors();
-        await _BuildManagerSM.sweepController.HomeMotors();
+        var powder_axis = _BuildManagerSM.buildController.GetPowderMotor().GetAxis();
+        var build_axis = _BuildManagerSM.buildController.GetBuildMotor().GetAxis();
+
+        // TODO: May want to change to await instead of _ (need to test)
+        _ = _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, powder_axis, BuildManager.CommandType.AbsoluteMove, 0);
+        _ = _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, build_axis, BuildManager.CommandType.AbsoluteMove, 0);
 
         // Return to idle state
-        _BuildManagerSM.TransitionTo(new IdleBuildManagerState(_BuildManagerSM));
+        _BuildManagerSM.TransitionTo(new IdleBuildState(_BuildManagerSM));
     }
 }

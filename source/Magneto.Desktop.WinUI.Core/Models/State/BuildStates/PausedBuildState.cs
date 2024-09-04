@@ -9,22 +9,22 @@ using Magneto.Desktop.WinUI.Core.Models.Artifact;
 using Magneto.Desktop.WinUI.Core.Services;
 
 namespace Magneto.Desktop.WinUI.Core.Models.State.BuildManagerStates;
-public class PausedBuildManagerState : IBuildManagerState
+public class PausedBuildState : IBuildManagerState
 {
     private BuildManager _BuildManagerSM { get; set; }
 
     public ArtifactModel ImageModel { get; set; }
 
-    public PausedBuildManagerState(BuildManager bm)
+    public PausedBuildState(BuildManager bm)
     {
-        MagnetoLogger.Log("PausedBuildManagerState::PausedBuildManagerState", 
-            Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
+        var msg = "Pausing build.";
+        MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
         _BuildManagerSM = bm;
     }
 
     public void Cancel()
     {
-        _BuildManagerSM.TransitionTo(new CancelledBuildManagerState(_BuildManagerSM));
+        _BuildManagerSM.TransitionTo(new CancelledBuildState(_BuildManagerSM));
     }
 
     public void Pause()
@@ -45,7 +45,7 @@ public class PausedBuildManagerState : IBuildManagerState
 
     public void Resume()
     {
-        _BuildManagerSM.TransitionTo(new PrintingBuildManagerState(_BuildManagerSM));
+        _BuildManagerSM.TransitionTo(new PrintingBuildState(_BuildManagerSM));
     }
 
     public void Done() => throw new NotImplementedException();
