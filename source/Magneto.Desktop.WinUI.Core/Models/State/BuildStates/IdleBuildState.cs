@@ -79,10 +79,13 @@ public class IdleBuildState : IBuildManagerState
     {
         var powder_axis = _BuildManagerSM.buildController.GetPowderMotor().GetAxis();
         var build_axis = _BuildManagerSM.buildController.GetBuildMotor().GetAxis();
+        var sweepAxis = _BuildManagerSM.sweepController.GetSweepMotor().GetAxis();
+
 
         // TODO: Fix absolute move command; doesn't seem to register
         await _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, powder_axis, BuildManager.CommandType.AbsoluteMove, 0);
         await _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, build_axis, BuildManager.CommandType.AbsoluteMove, 0);
+        await _BuildManagerSM.AddCommand(BuildManager.ControllerType.SWEEP, sweepAxis, BuildManager.CommandType.AbsoluteMove, _BuildManagerSM.sweepController.GetSweepMotor().GetHomePos());
 
         // Return to idle state
         _BuildManagerSM.TransitionTo(new IdleBuildState(_BuildManagerSM));

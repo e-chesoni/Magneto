@@ -152,9 +152,9 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <Button Grid.Column="0" x:Name="StepSweepMotorUpButton" HorizontalAlignment="Center" Height="30" Margin="2" Content="U"
+                                <Button Grid.Column="0" x:Name="StepSweepMotorUpButton" HorizontalAlignment="Center" Height="30" Margin="2" Content="L"
                                     Click="StepSweepMotorUpButton_Click"></Button>
-                                <Button Grid.Column="1" x:Name="StepSweepMotorDownButton" HorizontalAlignment="Center" Height="30" Content="D"
+                                <Button Grid.Column="1" x:Name="StepSweepMotorDownButton" HorizontalAlignment="Center" Height="30" Content="R"
                                     Click="StepSweepMotorDownButton_Click"></Button>
                             </Grid>
                         </Grid>
