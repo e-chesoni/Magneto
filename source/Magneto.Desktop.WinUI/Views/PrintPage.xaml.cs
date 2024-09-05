@@ -110,7 +110,7 @@ public sealed partial class PrintPage : Page
             // TODO: Toast Message: Using default thickness of {} get from config
             msg = "Setting every print layer's thickness to default thickness from MagnetoConfig";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
-            MissionControl.SetArtifactThickness(MissionControl.GetDefaultPrintLayerThickness());
+            MissionControl.SetArtifactThickness(MissionControl.GetDefaultArtifactThickness());
 
             // Slice image
             MissionControl.SliceArtifact(); // TODO: IMAGE HANDLER references Magneto Config to control slice number: SliceArtifact calls SliceArtifact in build controller which calls ImageHandler
@@ -120,7 +120,7 @@ public sealed partial class PrintPage : Page
             GoToStartingPositionButton.IsEnabled = true;
 
             // TODO: MOVE ME -- Populate after successful calibration
-            PrintHeightTextBlock.Text = MissionControl.GetCurrentBuildHeight().ToString();
+            PrintHeightTextBlock.Text = MissionControl.GetCurrentPrintHeight().ToString();
         }
         else
         {
@@ -133,31 +133,6 @@ public sealed partial class PrintPage : Page
     #endregion
 
     #region Button Methods
-
-    private void ConvertLevelText(string textBoxVal)
-    {
-        // Convert text box value
-        var val = Convert.ToDouble(textBoxVal);
-
-        if (val < 0)
-        {
-            val = (-1) * val;
-        }
-
-        MissionControl.SetBedLevelStep(val);
-    }
-
-    private void UpdateBedLevel(TextBox textbox)
-    {
-        if (string.IsNullOrEmpty(textbox.Text) || string.IsNullOrWhiteSpace(textbox.Text))
-        {
-            textbox.Text = MissionControl.GedBedLevelStep().ToString();
-        }
-        else
-        {
-            ConvertLevelText(textbox.Text);
-        }
-    }
 
     private void StartPrint_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {

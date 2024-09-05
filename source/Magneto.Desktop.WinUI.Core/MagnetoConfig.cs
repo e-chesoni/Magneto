@@ -37,7 +37,7 @@ public static class MagnetoConfig
 
     private static int _sweepDist = 220;
 
-    private static int _build_and_powder_port = 4;
+    private static int _buildPort = 4; // Build and powder motor are both on the build port
 
     private static int _sweep_port = 7;
 
@@ -47,7 +47,7 @@ public static class MagnetoConfig
         {
             new COMPortConfig()
             {
-                port = _build_and_powder_port,
+                port = _buildPort,
                 baudRate = 38400,
                 parity = "None",
                 dataBits = 8,
@@ -73,7 +73,7 @@ public static class MagnetoConfig
             new MagnetoMotorConfig()
             {
                 motorName = "powder",
-                COMPort = GetCOMPortName(GetCOMPort(_build_and_powder_port)),
+                COMPort = GetCOMPortName(GetCOMPort(_buildPort)),
                 axis = 2,
                 maxPos = 0,
                 minPos = -36,
@@ -83,7 +83,7 @@ public static class MagnetoConfig
             new MagnetoMotorConfig()
             {
                 motorName = "build",
-                COMPort = GetCOMPortName(GetCOMPort(_build_and_powder_port)),
+                COMPort = GetCOMPortName(GetCOMPort(_buildPort)),
                 axis = 1,
                 maxPos = 0,
                 minPos = -36,

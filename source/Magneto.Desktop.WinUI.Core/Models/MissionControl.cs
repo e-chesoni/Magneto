@@ -28,13 +28,8 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     /// </summary>
     private List<ISubsciber> _subscibers;
 
-    /// <summary>
-    /// Amount motor steps when bed level button is pushed up or down
-    /// Value is in mm
-    /// </summary>
-    private double _bedLevelStep { get; set; }
-
     #endregion
+
 
     #region Public Variables
 
@@ -45,6 +40,7 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     public string FriendlyMessage = "Hello from Mission Control!";
 
     #endregion
+
 
     #region Constructor
 
@@ -57,24 +53,24 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
         MagnetoLogger.Log("", LogFactoryLogLevel.LogLevel.VERBOSE);
 
         _buildManager = bm;
-        _bedLevelStep = 1; // mm
     }
 
     #endregion
+
 
     #region Initialization Methods
 
     /// <summary>
     /// Generate an artifact model from a path to an artifact
     /// </summary>
-    /// <param name="path_to_artifact"> File path to artifact </param>
+    /// <param name="path_to_artifact"> File path to artifact</param>
     public void CreateArtifactModel(string path_to_artifact)
     {
-        _buildManager.artifactModel = new ArtifactModel();
-        _buildManager.SetArtifactPath(path_to_artifact);
+        _buildManager.artifactModel = new ArtifactModel(path_to_artifact);
     }
 
     #endregion
+
 
     #region Getters
 
@@ -83,7 +79,11 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
         return _buildManager;
     }
 
-    public double GetCurrentBuildHeight()
+    /// <summary>
+    /// Get the total height of the current print
+    /// </summary>
+    /// <returns></returns>
+    public double GetCurrentPrintHeight()
     {
         return _buildManager.GetCurrentPrintHeight();
     }
@@ -133,20 +133,6 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
         return _buildManager.GetDefaultArtifactThickness();
     }
 
-    /// <summary>
-    /// Get step distance for bed leveling
-    /// </summary>
-    /// <returns></returns>
-    public double GedBedLevelStep()
-    {
-        return _bedLevelStep;
-    }
-
-    public double GetDefaultPrintLayerThickness()
-    {
-        return MagnetoConfig.GetDefaultPrintThickness();
-    }
-
 
     #endregion
 
@@ -162,16 +148,8 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
         _buildManager.SetArtifactThickness(thickness);
     }
 
-    /// <summary>
-    /// Set bed leveling step
-    /// </summary>
-    /// <param name="step"></param>
-    public void SetBedLevelStep(double step)
-    {
-        _bedLevelStep = step;
-    }
-
     #endregion
+
 
     #region Operations Delegated to BuildManager
 
@@ -184,10 +162,6 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
         _buildManager.SliceArtifact();
     }
 
-    #endregion
-
-    #region Operations Delegated to BuildManager
-
     /// <summary>
     /// Use the build manager to start a print
     /// </summary>
@@ -195,7 +169,8 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     {
         if (_buildManager.artifactModel.sliceStack.Count == 0) // TODO: FIX bm.artifactModel is null error
         {
-            MagnetoLogger.Log("There are no slices on this artifact model. Are you sure you sliced it?",
+            var msg = "There are no slices on this artifact model. Are you sure you sliced it?";
+            MagnetoLogger.Log(msg,
             LogFactoryLogLevel.LogLevel.ERROR);
         }
         else
@@ -239,10 +214,12 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
 
     #endregion
 
+
     #region Mediator Methods
     public int Mediate(object sender, string ev) => throw new NotImplementedException();
 
     #endregion
+
 
     #region Publisher Methods
 
@@ -270,6 +247,7 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     }
 
     #endregion
+
 
     #region Subscriber Methods
 

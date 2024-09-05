@@ -281,7 +281,7 @@ public class BuildManager : ISubsciber, IStateMachine
     /// <param name="path"></param>
     public void SetArtifactPath(string path)
     {
-        artifactModel.path_to_artifact = path;
+        artifactModel.pathToArtifact = path;
     }
 
     /// <summary>

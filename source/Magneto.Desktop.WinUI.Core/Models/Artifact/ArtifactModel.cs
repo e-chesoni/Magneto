@@ -23,11 +23,11 @@ public class ArtifactModel
     /// Path to the image associated with this image model
     /// (Stored at time of construction)
     /// </summary>
-    public string path_to_artifact { get; set; }
+    public string pathToArtifact { get; set; }
 
     #endregion
 
-    #region Constructor
+    #region Constructors
 
     /// <summary>
     /// Artifact model constructor
@@ -35,6 +35,19 @@ public class ArtifactModel
     public ArtifactModel()
     {
         // TODO: Get image from file path
+        // TODO: Store image (not sure what file format to use)
+        defaultThickness = MagnetoConfig.GetDefaultPrintThickness();
+    }
+
+    /// <summary>
+    /// Artifact model constructor that accepts a path to the artifact file
+    /// </summary>
+    /// <param name="path"> file path to the artifact </param>
+    public ArtifactModel(string filePath)
+    {
+        // TODO: Get image from file path
+        pathToArtifact = filePath;
+
         // TODO: Store image (not sure what file format to use)
         defaultThickness = MagnetoConfig.GetDefaultPrintThickness();
     }

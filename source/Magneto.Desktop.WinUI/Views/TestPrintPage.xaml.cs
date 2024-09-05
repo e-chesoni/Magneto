@@ -996,7 +996,7 @@ public sealed partial class TestPrintPage : Page
             // TODO: Toast Message: Using default thickness of {} get from config
             msg = "Setting every print layer's thickness to default thickness from MagnetoConfig";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
-            MissionControl.SetArtifactThickness(MissionControl.GetDefaultPrintLayerThickness());
+            MissionControl.SetArtifactThickness(MissionControl.GetDefaultArtifactThickness());
 
             // Slice image
             MissionControl.SliceArtifact(); // TODO: IMAGE HANDLER references Magneto Config to control slice number: SliceArtifact calls SliceArtifact in build controller which calls ImageHandler

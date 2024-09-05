@@ -194,6 +194,7 @@ namespace Magneto.Desktop.WinUI
 
         #endregion
 
+
         #region Navigation Methods
 
         /// <summary>
@@ -224,6 +225,7 @@ namespace Magneto.Desktop.WinUI
         }
 
         #endregion
+
 
         #region Dictionary Methods
 
@@ -571,6 +573,7 @@ namespace Magneto.Desktop.WinUI
         }
 
         #endregion
+
 
         #region Select Motor Button Methods
 
