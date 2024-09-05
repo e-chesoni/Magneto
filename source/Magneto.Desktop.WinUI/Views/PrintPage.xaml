@@ -95,9 +95,10 @@
             
             <Button Grid.Row="8" x:Name="StartPrintButton" HorizontalAlignment="Center" Margin="10" Height="45" Width="175" Content="Start Print" IsEnabled="False"
                     Click="StartPrint_Click"></Button>
-            <Button Grid.Row="9" x:Name="CancelPrintButton" HorizontalAlignment="Center" Margin="10" Height="45" Width="175" Content="Cancel Print" Background="Red"></Button>
+            <Button Grid.Row="9" x:Name="CancelPrintButton" HorizontalAlignment="Center" Margin="10" Height="45" Width="175" Content="Cancel Print" 
+                    Background="Red"></Button>
             <Button Grid.Row="10" HorizontalAlignment="Center" Margin="10" Height="45" Width="175" Content="Home Motors"
-                    Click="CancelPrintButton_Click"></Button>
+                    Click="HomeMotors_Click"></Button>
         </Grid>
 
         <Grid Grid.Column="2" Grid.Row="1">
@@ -194,7 +195,7 @@
                                    Text="" FontSize="12" Margin="10"></TextBlock>
                 </Grid>
                 <Button Grid.Row="4" x:Name="HomePowderMotorButton" HorizontalAlignment="Center" Margin="10" Height="45" Width="175" Content="Home Powder Motor"
-                    Click="HomePowderMotorButton_Click" IsEnabled="False"></Button>
+                    Click="HomePowderMotorButton_Click" IsEnabled="True"></Button>
             </Grid>
         </Grid>
     </Grid>

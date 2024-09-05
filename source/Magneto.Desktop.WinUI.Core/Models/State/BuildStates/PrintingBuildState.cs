@@ -19,9 +19,8 @@ public class PrintingBuildState : IBuildManagerState
 
     public PrintingBuildState(BuildManager bm)
     {
-        var msg = "Starting print.";
-        MagnetoLogger.Log(msg, 
-            Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
+        var msg = "Entered PrintingBuildState...";
+        MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
 
         // Set state build manger to build manager passed in on initialization
         _BuildManagerSM = bm;

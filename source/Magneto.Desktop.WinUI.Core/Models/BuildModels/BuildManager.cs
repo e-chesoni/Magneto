@@ -452,6 +452,7 @@ public class BuildManager : ISubsciber, IStateMachine
 
     #endregion
 
+
     #region State Machine Methods
 
     /// <summary>
@@ -505,6 +506,7 @@ public class BuildManager : ISubsciber, IStateMachine
     }
 
     #endregion
+
 
     #region Subscriber Methods
 

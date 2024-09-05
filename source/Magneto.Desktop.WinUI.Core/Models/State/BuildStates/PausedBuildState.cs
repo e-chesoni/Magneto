@@ -17,7 +17,7 @@ public class PausedBuildState : IBuildManagerState
 
     public PausedBuildState(BuildManager bm)
     {
-        var msg = "Pausing build.";
+        var msg = "Entered PausedBuildState...";
         MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
         _BuildManagerSM = bm;
     }

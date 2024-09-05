@@ -20,8 +20,8 @@ public class CancelledBuildState : IBuildManagerState
 
     public CancelledBuildState(BuildManager bm)
     {
-        MagnetoLogger.Log("CancelledBuildManagerState::CancelledBuildManagerState",
-            Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
+        var msg = "Entered CancelledBuildState...";
+        MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
 
         _BuildManagerSM = bm;
         // TODO: Stop build

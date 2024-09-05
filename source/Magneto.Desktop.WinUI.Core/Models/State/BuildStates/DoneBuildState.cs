@@ -19,7 +19,7 @@ public class DoneBuildState : IBuildManagerState
 
     public DoneBuildState(BuildManager _bm)
     {
-        var msg = "Build complete.";
+        var msg = "Entered DoneBuildState...";
         MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
         _BuildManagerSM = _bm;
     }

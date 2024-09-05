@@ -16,8 +16,8 @@ public class IdleBuildState : IBuildManagerState
 
     public IdleBuildState(BuildManager bm)
     {
-        MagnetoLogger.Log("IdleBuildManagerState::IdleBuildManagerState", 
-            Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
+        var msg = "Entered IdleBuildState...";
+        MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
         _BuildManagerSM = bm;
     }
 
@@ -81,8 +81,8 @@ public class IdleBuildState : IBuildManagerState
         var build_axis = _BuildManagerSM.buildController.GetBuildMotor().GetAxis();
 
         // TODO: Fix absolute move command; doesn't seem to register
-        _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, powder_axis, BuildManager.CommandType.AbsoluteMove, 0);
-        _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, build_axis, BuildManager.CommandType.AbsoluteMove, 0);
+        await _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, powder_axis, BuildManager.CommandType.AbsoluteMove, 0);
+        await _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, build_axis, BuildManager.CommandType.AbsoluteMove, 0);
 
         // Return to idle state
         _BuildManagerSM.TransitionTo(new IdleBuildState(_BuildManagerSM));

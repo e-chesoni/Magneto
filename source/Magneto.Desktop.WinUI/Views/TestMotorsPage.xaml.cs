@@ -384,30 +384,22 @@ namespace Magneto.Desktop.WinUI
                 {
                     var motorDetails = GetMotorDetailsHelper(currMotor);
 
-                    if (MagnetoSerialConsole.OpenSerialPort(currMotor.GetPortName()))
-                    {
-                        _ = _bm.AddCommand(motorDetails.controllerType, motorDetails.motorAxis, CommandType.AbsoluteMove, 0);
+                    _ = _bm.AddCommand(motorDetails.controllerType, motorDetails.motorAxis, CommandType.AbsoluteMove, 0);
 
-                        // Call try catch block to send command to get position to motor
-                        // (Required to update text box)
-                        try
-                        {
-                            // Call AddCommand with CommandType.PositionQuery to get the motor's position
-                            double position = await _bm.AddCommand(motorDetails.controllerType, motorDetails.motorAxis, CommandType.PositionQuery, 0);
-
-                            MagnetoLogger.Log($"Position of motor on axis {motorDetails.motorAxis} is {position}", LogFactoryLogLevel.LogLevel.SUCCESS);
-                        }
-                        catch (Exception ex)
-                        {
-                            MagnetoLogger.Log($"Failed to get motor position: {ex.Message}", LogFactoryLogLevel.LogLevel.ERROR);
-                        }
-                        UpdateMotorPositionTextBox(motor);
-                    }
-                    else
+                    // Call try catch block to send command to get position to motor
+                    // (Required to update text box)
+                    try
                     {
-                        msg = "Serial port not open.";
-                        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+                        // Call AddCommand with CommandType.PositionQuery to get the motor's position
+                        double position = await _bm.AddCommand(motorDetails.controllerType, motorDetails.motorAxis, CommandType.PositionQuery, 0);
+
+                        MagnetoLogger.Log($"Position of motor on axis {motorDetails.motorAxis} is {position}", LogFactoryLogLevel.LogLevel.SUCCESS);
                     }
+                    catch (Exception ex)
+                    {
+                        MagnetoLogger.Log($"Failed to get motor position: {ex.Message}", LogFactoryLogLevel.LogLevel.ERROR);
+                    }
+                    UpdateMotorPositionTextBox(motor);
                 }
                 else
                 {
@@ -883,6 +875,7 @@ namespace Magneto.Desktop.WinUI
             }
         }
 
+        // TODO: FIX ME -- currently you can only home one motor at a time. Trying to home all motors only homes one motor
         /// <summary>
         /// Event handler for the 'Home All Motors' button click.
         /// Initiates the homing process for all motors (build, powder, and sweep).
