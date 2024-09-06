@@ -1155,6 +1155,13 @@ public sealed partial class TestPrintPage : Page
         }
     }
 
+    /// <summary>
+    /// Log and Display if you want to have a different log and pop up message
+    /// </summary>
+    /// <param name="LogLevel"></param>
+    /// <param name="xamlRoot"></param>
+    /// <param name="LogMessage"></param>
+    /// <param name="PopupMessage"></param>
     private async void LogAndDisplayMessage(LogFactoryLogLevel.LogLevel LogLevel, XamlRoot xamlRoot, string LogMessage, string PopupMessage)
     {
         var PopupMessageType = GetPopupMessageType(LogLevel);
@@ -1163,6 +1170,12 @@ public sealed partial class TestPrintPage : Page
         await PopupInfo.ShowContentDialog(xamlRoot, PopupMessageType, PopupMessage);
     }
 
+    /// <summary>
+    /// Log and display the same message
+    /// </summary>
+    /// <param name="LogLevel"></param>
+    /// <param name="xamlRoot"></param>
+    /// <param name="msg"></param>
     private async void LogAndDisplayMessage(LogFactoryLogLevel.LogLevel LogLevel, XamlRoot xamlRoot, string msg)
     {
         var PopupMessageType = GetPopupMessageType(LogLevel);
@@ -1171,6 +1184,12 @@ public sealed partial class TestPrintPage : Page
         await PopupInfo.ShowContentDialog(xamlRoot, PopupMessageType, msg);
     }
 
+    /// <summary>
+    /// Update UI and log
+    /// </summary>
+    /// <param name="uiMessage"></param>
+    /// <param name="logLevel"></param>
+    /// <param name="logMessage"></param>
     private void LogMessage(string uiMessage, Core.Contracts.Services.LogFactoryLogLevel.LogLevel logLevel, string logMessage = null)
     {
         // Update UI with the message

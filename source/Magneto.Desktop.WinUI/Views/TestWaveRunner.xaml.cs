@@ -21,6 +21,7 @@ using Magneto.Desktop.WinUI.Helpers;
 using ABI.System;
 using static System.Net.Mime.MediaTypeNames;
 using Microsoft.UI;
+using Magneto.Desktop.WinUI.Popups;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -93,12 +94,12 @@ public sealed partial class TestWaveRunner : Page
     {
         InitializeComponent();
 
-        // Set Job Directory
+        // Set default job directory
         _defaultJobDirectory = @"C:\Scanner Application\Scanner Software\jobfiles";
         _jobDirectory = _defaultJobDirectory;
         JobFileSearchDirectory.Text = _jobDirectory;
 
-        // Set Job File
+        // Set default job file
         _defaultJobName = "center_crosshair_OAT.sjf";
         JobFileNameTextBox.Text = _defaultJobName;
 
@@ -157,8 +158,10 @@ public sealed partial class TestWaveRunner : Page
         // Check if the file exists
         if (!File.Exists(fileName))
         {
+            // TODO: Use Log & Display once it's extrapolated from TestPrintPage.xaml.cs
             var msg = $"Could not find: {fileName}";
             MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Warning", msg);
             return 0;
         }
         else
@@ -182,8 +185,11 @@ public sealed partial class TestWaveRunner : Page
         }
         catch (System.Exception exception)
         {
-            var msg = $"CCI Error! \n {Convert.ToString(exception)}";
-            MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
+            // TODO: Use Log & Display once it's extrapolated from TestPrintPage.xaml.cs
+            var logMsg = $"CCI Error! \n {Convert.ToString(exception)}";
+            var displayMsg = "Unable to say hello to waverunner. Is the application open?";
+            MagnetoLogger.Log(logMsg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Warning", displayMsg);
         }
     }
 
@@ -225,15 +231,20 @@ public sealed partial class TestWaveRunner : Page
     {
         MagnetoLogger.Log("Getting job...", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
 
+        // TODO: Use log & display for error messaging in future
         if (!Directory.Exists(_jobDirectory))
         {
-            MagnetoLogger.Log("Directory does not exist. Cannot get job.", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
+            var msg = "Directory does not exist. Cannot get job.";
+            MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Warning", msg);
             return ExecStatus.Failure;
         }
 
         if (!File.Exists(fullPath))
         {
-            MagnetoLogger.Log($"File not found: {fullPath}", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
+            var msg = $"File not found: {fullPath}";
+            MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Warning", msg);
             return ExecStatus.Failure;
         }
 
@@ -246,12 +257,16 @@ public sealed partial class TestWaveRunner : Page
 
         if (ValidateJob(fullFilePath) == ExecStatus.Success)
         {
-            _fullJobFilePath = fullFilePath; // Assuming _fullJobFilePath is a class member
+            // Enable toggle pointer and start mark buttons
+            _fullJobFilePath = fullFilePath;
+            // TODO: Add check to make sure wave runner is open & running ("say hi check")
+            // If it's not open, do not enable these buttons! Instead, display error pop up & log error
             StartMarkButton.IsEnabled = true;
             ToggleRedPointerButton.IsEnabled = true;
         }
         else
         {
+            // Make sure buttons are disabled; we can't mark what we can't find!
             StartMarkButton.IsEnabled = false;
             ToggleRedPointerButton.IsEnabled = false;
         }
@@ -274,6 +289,8 @@ public sealed partial class TestWaveRunner : Page
         }
     }
 
+
+    // TODO: Deprecated? Remove it not needed
     private void StartRedPointerButton_Click(object sender, RoutedEventArgs e)
     {
         // File exists, proceed with marking
@@ -291,7 +308,7 @@ public sealed partial class TestWaveRunner : Page
             MagnetoLogger.Log("Starting Red Pointer", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS);
             StartRedPointer();
             ToggleRedPointerButton.Background = new SolidColorBrush(Colors.Red);
-            StartMarkButton.IsEnabled = false; // Assume job validation does not change.
+            StartMarkButton.IsEnabled = false; // Disable start mark button (can't be enabled at same time as red pointer -- TODO: follow up with docs/tests to validate)
         }
         else
         {
@@ -337,7 +354,7 @@ public sealed partial class TestWaveRunner : Page
 
     public static int SetRedPointerMode(RedPointerMode mode)
     {
-        // returns void
+        // Returns void
         cci.ScSetLongValue((int)ScComSAMLightClientCtrlValueTypes.scComSAMLightClientCtrlLongValueTypeRedpointerMode, (int)mode);
 
         // TODO: Replace once we figure out how to interact with error codes form SAM
@@ -400,7 +417,6 @@ public sealed partial class TestWaveRunner : Page
 
         try
         {
-            // TODO: Test 1
             cci.ScMarkEntityByName("", 0); // 0 returns control to the user immediately
             LogMessage("Marking!", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.WARN, "SAMLight is Marking...");
 
@@ -429,6 +445,7 @@ public sealed partial class TestWaveRunner : Page
 
     #region Logging Methods
 
+    // TODO: integrate with log & display extrapolation from TestPrintPage.xaml.cs
     private void LogMessage(string uiMessage, Core.Contracts.Services.LogFactoryLogLevel.LogLevel logLevel, string logMessage = null)
     {
         // Update UI with the message
