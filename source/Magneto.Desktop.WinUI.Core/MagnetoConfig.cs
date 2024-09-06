@@ -77,7 +77,7 @@ public static class MagnetoConfig
                 axis = 2,
                 maxPos = 0,
                 minPos = -36,
-                homePos = 0,
+                homePos = -35, // NOTE: Powder home is 1mm above min pos, in case motor isn't able to perfectly reach abs pos (which causes MV cmd to get rejected)
                 velocity = 5, // mm/s^2
             },
             new MagnetoMotorConfig()

@@ -85,6 +85,11 @@ public class PrintingBuildState : IBuildManagerState
         // INTERRUPT dance if cancel is clicked
 
         // Move powder motor to start height
+        // TODO: TEST ME
+        // For now, home powder motor (to bottom)
+        // in production, user will adjust this to the desired start height for powder distribution
+        _ = _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, powderAxis, BuildManager.CommandType.AbsoluteMove, _BuildManagerSM.GetPowderMotor().GetHomePos());
+
         // TODO: Remove 2mm added for testing in production
         _ = _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, powderAxis, BuildManager.CommandType.RelativeMove, -(artifactHeight + 2)); // add 2mm for test so we can also test homing after print
 
@@ -119,7 +124,7 @@ public class PrintingBuildState : IBuildManagerState
 
                     // Perform sweep
                     _ = _BuildManagerSM.AddCommand(BuildManager.ControllerType.SWEEP, sweepAxis, BuildManager.CommandType.AbsoluteMove, 280); // Test 280 first; e.o.p is actually 283 (max travel is 284.5)
-                    _ = _BuildManagerSM.AddCommand(BuildManager.ControllerType.SWEEP, sweepAxis, BuildManager.CommandType.AbsoluteMove, 0);
+                    _ = _BuildManagerSM.AddCommand(BuildManager.ControllerType.SWEEP, sweepAxis, BuildManager.CommandType.AbsoluteMove, _BuildManagerSM.GetSweepMotor().GetHomePos()); // sweep home position is set when mission control is initialized (value est. in Magneto Config)
 
                     // Get current slice (to pass to laser controller in switch)
                     var slice = pose.slice;
@@ -131,10 +136,10 @@ public class PrintingBuildState : IBuildManagerState
                     // TODO: break loop when LASER_OPERATING flag is false
 
                     // After calibration, powder motor moves up slice thickness
-                    _ = _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, powderAxis, BuildManager.CommandType.RelativeMove, 2); // TODO: Update to use pose.thickness instead of magic number 2
+                    _ = _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, powderAxis, BuildManager.CommandType.RelativeMove, pose.thickness); // Currently uses default thickness set in IdleBuildState (value est. in Magneto Config)
 
                     // Build motor moves down slice thickness
-                    _ = _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, buildAxis, BuildManager.CommandType.RelativeMove, -2); // TODO: Update to use pose.thickness instead of magic number 2
+                    _ = _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, buildAxis, BuildManager.CommandType.RelativeMove, -pose.thickness); // TODO: test you don't need to add () to pose.thickness here...
 
                     break;
 
