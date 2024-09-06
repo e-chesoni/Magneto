@@ -384,7 +384,7 @@ namespace Magneto.Desktop.WinUI
                 {
                     var motorDetails = GetMotorDetailsHelper(currMotor);
 
-                    _ = _bm.AddCommand(motorDetails.controllerType, motorDetails.motorAxis, CommandType.AbsoluteMove, 0);
+                    _ = _bm.AddCommand(motorDetails.controllerType, motorDetails.motorAxis, CommandType.AbsoluteMove, currMotor.GetHomePos());
 
                     // Call try catch block to send command to get position to motor
                     // (Required to update text box)
