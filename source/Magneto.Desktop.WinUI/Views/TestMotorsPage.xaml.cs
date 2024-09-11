@@ -361,65 +361,6 @@ namespace Magneto.Desktop.WinUI
 
         #endregion
 
-
-        #region Homing Helper Methods
-
-        /// <summary>
-        /// Homes the specified StepperMotor if the current test motor is not null and the serial port can be opened.
-        /// Logs the action and any errors encountered during the process, such as failure to open the serial port
-        /// or if the current test motor is null.
-        /// </summary>
-        /// <param name="motor">The StepperMotor to be homed.</param>
-        private async Task HomeMotorHelperAsync(StepperMotor motor)
-        {
-            var msg = "Using helper to home motors...";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-
-            if (_bm != null)
-            {
-                var currMotor = _currTestMotor;
-
-
-                if (currMotor != null)
-                {
-                    var motorDetails = GetMotorDetailsHelper(currMotor);
-
-                    _ = _bm.AddCommand(motorDetails.controllerType, motorDetails.motorAxis, CommandType.AbsoluteMove, currMotor.GetHomePos());
-
-                    // Call try catch block to send command to get position to motor
-                    // (Required to update text box)
-                    try
-                    {
-                        // Call AddCommand with CommandType.PositionQuery to get the motor's position
-                        double position = await _bm.AddCommand(motorDetails.controllerType, motorDetails.motorAxis, CommandType.PositionQuery, 0);
-
-                        MagnetoLogger.Log($"Position of motor on axis {motorDetails.motorAxis} is {position}", LogFactoryLogLevel.LogLevel.SUCCESS);
-                    }
-                    catch (Exception ex)
-                    {
-                        MagnetoLogger.Log($"Failed to get motor position: {ex.Message}", LogFactoryLogLevel.LogLevel.ERROR);
-                    }
-                    UpdateMotorPositionTextBox(motor);
-                }
-                else
-                {
-                    msg = "Current Test Motor is null.";
-                    MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-                    await PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "You must select a motor to home.");
-                }
-            }
-            else
-            {
-                msg = "BuildManager is null.";
-                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-                await PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Internal error. Try reloading the page.");
-            }
-
-        }
-
-        #endregion
-
-
         #region Selection Helper Methods
 
         /// <summary>
@@ -852,6 +793,59 @@ namespace Magneto.Desktop.WinUI
 
 
         #region Homing Button Methods
+
+        /// <summary>
+        /// Homes the specified StepperMotor if the current test motor is not null and the serial port can be opened.
+        /// Logs the action and any errors encountered during the process, such as failure to open the serial port
+        /// or if the current test motor is null.
+        /// </summary>
+        /// <param name="motor">The StepperMotor to be homed.</param>
+        private async Task HomeMotorHelperAsync(StepperMotor motor)
+        {
+            var msg = "Using helper to home motors...";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+            if (_bm != null)
+            {
+                var currMotor = _currTestMotor;
+
+
+                if (currMotor != null)
+                {
+                    var motorDetails = GetMotorDetailsHelper(currMotor);
+
+                    _ = _bm.AddCommand(motorDetails.controllerType, motorDetails.motorAxis, CommandType.AbsoluteMove, currMotor.GetHomePos());
+
+                    // Call try catch block to send command to get position to motor
+                    // (Required to update text box)
+                    try
+                    {
+                        // Call AddCommand with CommandType.PositionQuery to get the motor's position
+                        double position = await _bm.AddCommand(motorDetails.controllerType, motorDetails.motorAxis, CommandType.PositionQuery, 0);
+
+                        MagnetoLogger.Log($"Position of motor on axis {motorDetails.motorAxis} is {position}", LogFactoryLogLevel.LogLevel.SUCCESS);
+                    }
+                    catch (Exception ex)
+                    {
+                        MagnetoLogger.Log($"Failed to get motor position: {ex.Message}", LogFactoryLogLevel.LogLevel.ERROR);
+                    }
+                    UpdateMotorPositionTextBox(motor);
+                }
+                else
+                {
+                    msg = "Current Test Motor is null.";
+                    MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+                    await PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "You must select a motor to home.");
+                }
+            }
+            else
+            {
+                msg = "BuildManager is null.";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+                await PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Internal error. Try reloading the page.");
+            }
+
+        }
 
         /// <summary>
         /// Event handler for the 'Home Motor' button click.
