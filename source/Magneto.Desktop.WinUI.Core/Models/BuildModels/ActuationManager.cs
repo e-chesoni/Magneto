@@ -20,7 +20,7 @@ namespace Magneto.Desktop.WinUI.Core.Models.BuildModels;
 /// <summary>
 /// Coordinates printing tasks across components
 /// </summary>
-public class BuildManager : ISubsciber, IStateMachine
+public class ActuationManager : ISubsciber, IStateMachine
 {
     #region Private Variables
 
@@ -144,10 +144,9 @@ public class BuildManager : ISubsciber, IStateMachine
     /// <param name="buildController"></param> Build Controller
     /// <param name="sweepController"></param> Sweep/Powder Distribution Controller
     /// <param name="laserController"></param> Laser Controller
-    public BuildManager(MotorController bc, MotorController sc, LaserController lc)
+    public ActuationManager(MotorController bc, MotorController sc, LaserController lc)
     {
-        MagnetoLogger.Log("",
-            LogFactoryLogLevel.LogLevel.VERBOSE);
+        MagnetoLogger.Log("", LogFactoryLogLevel.LogLevel.VERBOSE);
 
         buildController = bc;
         sweepController = sc;
@@ -165,9 +164,6 @@ public class BuildManager : ISubsciber, IStateMachine
         // TODO: Move to config file
         // Set default sweep distance
         SetSweepDist(MagnetoConfig.GetSweepDist());
-
-        // Subscribe to the PositionReported event
-        //PositionReported += HandlePositionReported;
 
         // Create a dance model
         danceModel = new DanceModel();

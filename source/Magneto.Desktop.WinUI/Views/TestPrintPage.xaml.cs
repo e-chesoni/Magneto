@@ -20,7 +20,7 @@ using Microsoft.UI.Xaml.Navigation;
 using Newtonsoft.Json.Bson;
 using SAMLIGHT_CLIENT_CTRL_EXLib;
 using Windows.Devices.SerialCommunication;
-using static Magneto.Desktop.WinUI.Core.Models.BuildModels.BuildManager;
+using static Magneto.Desktop.WinUI.Core.Models.BuildModels.ActuationManager;
 using static Magneto.Desktop.WinUI.Views.TestPrintPage;
 
 namespace Magneto.Desktop.WinUI.Views;
@@ -38,7 +38,7 @@ public sealed partial class TestPrintPage : Page
 
     private StepperMotor? _sweepMotor;
 
-    private BuildManager? _bm;
+    private ActuationManager? _bm;
 
     private bool _powderMotorSelected = false;
 

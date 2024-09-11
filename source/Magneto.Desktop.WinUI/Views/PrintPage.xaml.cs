@@ -14,7 +14,7 @@ using Magneto.Desktop.WinUI.Core.Services;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using static Magneto.Desktop.WinUI.Core.Models.Motor.StepperMotor;
-using static Magneto.Desktop.WinUI.Core.Models.BuildModels.BuildManager;
+using static Magneto.Desktop.WinUI.Core.Models.BuildModels.ActuationManager;
 
 namespace Magneto.Desktop.WinUI.Views;
 
@@ -184,7 +184,7 @@ public sealed partial class PrintPage : Page
         {
             var bm = MissionControl.GetBuildManger();
             var build_axis = bm.buildController.GetBuildMotor().GetAxis();
-            bm.AddCommand(Core.Models.BuildModels.BuildManager.ControllerType.BUILD, build_axis, Core.Models.BuildModels.BuildManager.CommandType.AbsoluteMove, 0);
+            bm.AddCommand(Core.Models.BuildModels.ActuationManager.ControllerType.BUILD, build_axis, Core.Models.BuildModels.ActuationManager.CommandType.AbsoluteMove, 0);
         }
         else
         {
@@ -201,7 +201,7 @@ public sealed partial class PrintPage : Page
         {
             var bm = MissionControl.GetBuildManger();
             var powder_axis = bm.buildController.GetPowderMotor().GetAxis();
-            bm.AddCommand(Core.Models.BuildModels.BuildManager.ControllerType.BUILD, powder_axis, Core.Models.BuildModels.BuildManager.CommandType.AbsoluteMove, 0);
+            bm.AddCommand(Core.Models.BuildModels.ActuationManager.ControllerType.BUILD, powder_axis, Core.Models.BuildModels.ActuationManager.CommandType.AbsoluteMove, 0);
         }
         else
         {

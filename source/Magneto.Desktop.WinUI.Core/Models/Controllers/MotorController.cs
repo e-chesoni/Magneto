@@ -117,7 +117,7 @@ public class MotorController : IMotorController
 
 
     // TODO: Decide if move motor commands should be issued to controller or directly to controller
-    // Currently, AddCommand -> ProcessCommand -> ExecuteCommand in BuildManager calls movement commands directly on a motor
+    // Currently, AddCommand -> ProcessCommand -> ExecuteCommand in ActuationManager calls movement commands directly on a motor
     // (THESE ARE NEVER USED--just referenced by inheritance)
     #region Movement Methods
 

@@ -11,11 +11,11 @@ using Magneto.Desktop.WinUI.Core.Services;
 namespace Magneto.Desktop.WinUI.Core.Models.State.BuildManagerStates;
 public class PausedBuildState : IBuildManagerState
 {
-    private BuildManager _BuildManagerSM { get; set; }
+    private ActuationManager _BuildManagerSM { get; set; }
 
     public ArtifactModel ImageModel { get; set; }
 
-    public PausedBuildState(BuildManager bm)
+    public PausedBuildState(ActuationManager bm)
     {
         var msg = "Entered PausedBuildState...";
         MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);

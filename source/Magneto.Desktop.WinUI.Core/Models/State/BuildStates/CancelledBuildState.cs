@@ -16,16 +16,16 @@ namespace Magneto.Desktop.WinUI.Core.Models.State.BuildManagerStates;
 /// </summary>
 public class CancelledBuildState : IBuildManagerState
 {
-    private BuildManager _BuildManagerSM { get; set; }
+    private ActuationManager _BuildManagerSM { get; set; }
 
-    public CancelledBuildState(BuildManager bm)
+    public CancelledBuildState(ActuationManager bm)
     {
         var msg = "Entered CancelledBuildState...";
         MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
 
         _BuildManagerSM = bm;
         // TODO: Stop build
-        // Blocked by implementation of cancel motor move tasks in BuildManager
+        // Blocked by implementation of cancel motor move tasks in ActuationManager
 
         // TODO: Process cancelled build
         // This is the British spelling. Get over it spell checker.

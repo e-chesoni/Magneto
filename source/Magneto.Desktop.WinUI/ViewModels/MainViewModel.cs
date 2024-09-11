@@ -61,7 +61,10 @@ public class MainViewModel : ObservableRecipient, INavigationAware
     /// <summary>
     /// build manager
     /// </summary>
-    private static BuildManager? _buildManager;
+    private static ActuationManager? _actuationManager;
+
+
+    private static MotorService? _motorService;
 
     /// <summary>
     /// Boolean to indicate whether to call InitializeMagneto when page loads
@@ -151,10 +154,13 @@ public class MainViewModel : ObservableRecipient, INavigationAware
         _laserController = new();
 
         // Set build manager
-        _buildManager = new BuildManager(_buildController, _sweepController, _laserController);
+        _actuationManager = new ActuationManager(_buildController, _sweepController, _laserController);
+
+        // Set motor service
+        _motorService = new MotorService(_actuationManager);
 
         // Set mission control
-        missionControl = new MissionControl(_buildManager);
+        missionControl = new MissionControl(_motorService);
     }
 
 

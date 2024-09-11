@@ -12,9 +12,9 @@ using Magneto.Desktop.WinUI.Core.Services;
 namespace Magneto.Desktop.WinUI.Core.Models.State.BuildManagerStates;
 public class IdleBuildState : IBuildManagerState
 {
-    private BuildManager _BuildManagerSM;
+    private ActuationManager _BuildManagerSM;
 
-    public IdleBuildState(BuildManager bm)
+    public IdleBuildState(ActuationManager bm)
     {
         var msg = "Entered IdleBuildState...";
         MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
@@ -82,9 +82,9 @@ public class IdleBuildState : IBuildManagerState
         var sweepAxis = _BuildManagerSM.sweepController.GetSweepMotor().GetAxis();
 
         //TODO: Test updated method for getting homing positions
-        await _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, powder_axis, BuildManager.CommandType.AbsoluteMove, _BuildManagerSM.buildController.GetPowderMotor().GetHomePos());
-        await _BuildManagerSM.AddCommand(BuildManager.ControllerType.BUILD, build_axis, BuildManager.CommandType.AbsoluteMove, _BuildManagerSM.buildController.GetBuildMotor().GetHomePos());
-        await _BuildManagerSM.AddCommand(BuildManager.ControllerType.SWEEP, sweepAxis, BuildManager.CommandType.AbsoluteMove, _BuildManagerSM.sweepController.GetSweepMotor().GetHomePos());
+        await _BuildManagerSM.AddCommand(ActuationManager.ControllerType.BUILD, powder_axis, ActuationManager.CommandType.AbsoluteMove, _BuildManagerSM.buildController.GetPowderMotor().GetHomePos());
+        await _BuildManagerSM.AddCommand(ActuationManager.ControllerType.BUILD, build_axis, ActuationManager.CommandType.AbsoluteMove, _BuildManagerSM.buildController.GetBuildMotor().GetHomePos());
+        await _BuildManagerSM.AddCommand(ActuationManager.ControllerType.SWEEP, sweepAxis, ActuationManager.CommandType.AbsoluteMove, _BuildManagerSM.sweepController.GetSweepMotor().GetHomePos());
 
         // Return to idle state
         _BuildManagerSM.TransitionTo(new IdleBuildState(_BuildManagerSM));

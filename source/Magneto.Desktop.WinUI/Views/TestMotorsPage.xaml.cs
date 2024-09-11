@@ -27,8 +27,9 @@ using Magneto.Desktop.WinUI.Core;
 using System.IO.Ports;
 using Magneto.Desktop.WinUI.Helpers;
 using Microsoft.UI;
-using static Magneto.Desktop.WinUI.Core.Models.BuildModels.BuildManager;
+using static Magneto.Desktop.WinUI.Core.Models.BuildModels.ActuationManager;
 using static Magneto.Desktop.WinUI.Views.TestPrintPage;
+using Magneto.Desktop.WinUI.Core.Contracts.Services.Motor;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -51,7 +52,7 @@ namespace Magneto.Desktop.WinUI
 
         private StepperMotor? _currTestMotor;
 
-        private BuildManager? _bm;
+        private ActuationManager? _bm;
 
         private bool _powderMotorSelected = false;
 
@@ -78,6 +79,7 @@ namespace Magneto.Desktop.WinUI
         {
             get;
         }
+
         public TestMotorsPage()
         {
             ViewModel = App.GetService<TestMotorsViewModel>();
@@ -111,7 +113,6 @@ namespace Magneto.Desktop.WinUI
                     MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
                 }
             }
-
         }
 
         #region Test Page Setup
@@ -238,11 +239,11 @@ namespace Magneto.Desktop.WinUI
         private void InitializeMotorMap()
         {
             _motorToPosTextBoxMap = new Dictionary<string, StepperMotor?>
-        {
-            { "build", _buildMotor },
-            { "powder", _powderMotor },
-            { "sweep", _sweepMotor }
-        };
+            {
+                { "build", _buildMotor },
+                { "powder", _powderMotor },
+                { "sweep", _sweepMotor }
+            };
         }
 
         /// <summary>
@@ -360,6 +361,7 @@ namespace Magneto.Desktop.WinUI
         }
 
         #endregion
+
 
         #region Selection Helper Methods
 
@@ -840,7 +842,7 @@ namespace Magneto.Desktop.WinUI
             }
             else
             {
-                msg = "BuildManager is null.";
+                msg = "ActuationManager is null.";
                 MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
                 await PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Internal error. Try reloading the page.");
             }

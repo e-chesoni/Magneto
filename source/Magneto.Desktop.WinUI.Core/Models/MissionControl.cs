@@ -15,13 +15,19 @@ namespace Magneto.Desktop.WinUI.Core.Models;
 public class MissionControl : IMediator, IPublisher, ISubsciber
 {
     #region Private Variables
-
+    
+    /// <summary>
+    /// Extracts common motor commands for pages
+    /// </summary>
+    public MotorService motorService
+    {
+        get; set;
+    }
+    
     /// <summary>
     /// Build manager to handle printing tasks
     /// </summary>
-    private BuildManager _buildManager { get; set; }
-
-    //private List<StepperMotor> _motorList { get; set; } = new List<StepperMotor>();
+    private ActuationManager _actuationManager { get; set; }
 
     /// <summary>
     /// A list of subscribers that want to receive notifications from Mission Control
@@ -48,11 +54,14 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     /// Mission control constructor
     /// </summary>
     /// <param name="bm"></param> Build manager
-    public MissionControl(BuildManager bm)
+    public MissionControl(MotorService ms)
     {
         MagnetoLogger.Log("", LogFactoryLogLevel.LogLevel.VERBOSE);
 
-        _buildManager = bm;
+        _actuationManager = ms.GetActuationManager();
+
+        // Set motor service for common page related motor stuff
+        motorService = ms;
     }
 
     #endregion
@@ -66,7 +75,7 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     /// <param name="path_to_artifact"> File path to artifact</param>
     public void CreateArtifactModel(string path_to_artifact)
     {
-        _buildManager.artifactModel = new ArtifactModel(path_to_artifact);
+        _actuationManager.artifactModel = new ArtifactModel(path_to_artifact);
     }
 
     #endregion
@@ -74,9 +83,9 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
 
     #region Getters
 
-    public BuildManager GetBuildManger()
+    public ActuationManager GetBuildManger()
     {
-        return _buildManager;
+        return _actuationManager;
     }
 
     /// <summary>
@@ -85,7 +94,7 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     /// <returns></returns>
     public double GetCurrentPrintHeight()
     {
-        return _buildManager.GetCurrentPrintHeight();
+        return _actuationManager.GetCurrentPrintHeight();
     }
 
     /// <summary>
@@ -94,7 +103,7 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     /// <returns>List of motors</returns>
     public List<StepperMotor> GetMotorList()
     {
-        return _buildManager.GetMotorList();
+        return _actuationManager.GetMotorList();
     }
 
     /// <summary>
@@ -103,7 +112,7 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     /// <returns></returns>
     public StepperMotor GetPowderMotor()
     {
-        return _buildManager.GetPowderMotor();
+        return _actuationManager.GetPowderMotor();
     }
 
     /// <summary>
@@ -112,7 +121,7 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     /// <returns></returns>
     public StepperMotor GetBuildMotor()
     {
-        return _buildManager.GetBuildMotor();
+        return _actuationManager.GetBuildMotor();
     }
 
     /// <summary>
@@ -121,7 +130,7 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     /// <returns></returns>
     public StepperMotor GetSweepMotor()
     {
-        return _buildManager.GetSweepMotor();
+        return _actuationManager.GetSweepMotor();
     }
 
     /// <summary>
@@ -130,7 +139,7 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     /// <returns> double artifact layer thickness </returns>
     public double GetDefaultArtifactThickness()
     {
-        return _buildManager.GetDefaultArtifactThickness();
+        return _actuationManager.GetDefaultArtifactThickness();
     }
 
 
@@ -145,7 +154,7 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     /// <param name="thickness"> Desired thickness </param>
     public void SetArtifactThickness(double thickness)
     {
-        _buildManager.SetArtifactThickness(thickness);
+        _actuationManager.SetArtifactThickness(thickness);
     }
 
     #endregion
@@ -159,7 +168,7 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     public void SliceArtifact()
     {
         // TODO: ARTIFACT HANDLER CONTROLS SLICE NUMBER (SliceArtifact calls ArtifactHandler method)
-        _buildManager.SliceArtifact();
+        _actuationManager.SliceArtifact();
     }
 
     /// <summary>
@@ -167,7 +176,7 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     /// </summary>
     public void StartPrint()
     {
-        if (_buildManager.artifactModel.sliceStack.Count == 0) // TODO: FIX bm.artifactModel is null error
+        if (_actuationManager.artifactModel.sliceStack.Count == 0) // TODO: FIX bm.artifactModel is null error
         {
             var msg = "There are no slices on this artifact model. Are you sure you sliced it?";
             MagnetoLogger.Log(msg,
@@ -176,7 +185,7 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
         else
         {
             // Call build manager to handle print
-            _buildManager.StartPrint(_buildManager.artifactModel);
+            _actuationManager.StartPrint(_actuationManager.artifactModel);
         }
     }
 
@@ -185,7 +194,7 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     /// </summary>
     public void PausePrint()
     {
-        _buildManager.Pause();
+        _actuationManager.Pause();
     }
 
     /// <summary>
@@ -193,7 +202,7 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     /// </summary>
     public void Resume()
     {
-        _buildManager.Resume();
+        _actuationManager.Resume();
     }
 
     /// <summary>
@@ -201,7 +210,7 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     /// </summary>
     public void CancelPrint()
     {
-        _buildManager.Cancel();
+        _actuationManager.Cancel();
     }
 
     /// <summary>
@@ -209,7 +218,7 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     /// </summary>
     public void HomeMotors()
     {
-        _buildManager.HomeMotors();
+        _actuationManager.HomeMotors();
     }
 
     #endregion
