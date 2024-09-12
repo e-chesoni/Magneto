@@ -30,6 +30,8 @@ using Microsoft.UI;
 using static Magneto.Desktop.WinUI.Core.Models.BuildModels.ActuationManager;
 using static Magneto.Desktop.WinUI.Views.TestPrintPage;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.Motor;
+using CommunityToolkit.WinUI.UI.Animations;
+using CommunityToolkit.WinUI.UI.Controls.TextToolbarSymbols;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -52,7 +54,7 @@ namespace Magneto.Desktop.WinUI
 
         private StepperMotor? _currTestMotor;
 
-        private ActuationManager? _bm;
+        private ActuationManager? _am;
 
         private bool _powderMotorSelected = false;
 
@@ -135,7 +137,7 @@ namespace Magneto.Desktop.WinUI
             SetUpMotor("build", MissionControl.GetBuildMotor(), out _buildMotor);
             SetUpMotor("sweep", MissionControl.GetSweepMotor(), out _sweepMotor);
 
-            _bm = MissionControl.GetBuildManger();
+            _am = MissionControl.GetBuildManger();
 
             //GetMotorPositions(); // TOOD: Fix--all positions are 0 on page load even if they're not...
         }
@@ -158,38 +160,6 @@ namespace Magneto.Desktop.WinUI
             {
                 motorField = null;
                 MagnetoLogger.Log($"Unable to find {motorName} motor", LogFactoryLogLevel.LogLevel.ERROR);
-            }
-        }
-
-        // TODO: Get position of all motors on page load
-        private void GetMotorPositions()
-        {
-            var msg = "Getting motor positions";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-
-            if (_buildMotor != null)
-            {
-                GetPositionHelper(_buildMotor);
-            }
-            else
-            {
-                MagnetoLogger.Log("Build Motor is null, cannot get position.", LogFactoryLogLevel.LogLevel.ERROR);
-            }
-            if (_powderMotor != null)
-            {
-                GetPositionHelper(_powderMotor);
-            }
-            else
-            {
-                MagnetoLogger.Log("Powder Motor is null, cannot get position.", LogFactoryLogLevel.LogLevel.ERROR);
-            }
-            if (_sweepMotor != null)
-            {
-                GetPositionHelper(_sweepMotor);
-            }
-            else
-            {
-                MagnetoLogger.Log("Sweep Motor is null, cannot get position.", LogFactoryLogLevel.LogLevel.ERROR);
             }
         }
 
@@ -234,11 +204,11 @@ namespace Magneto.Desktop.WinUI
         /// Initializes the dictionary mapping motor names to their corresponding StepperMotor objects.
         /// This map facilitates the retrieval of motor objects based on their names.
         /// </summary>
-        private Dictionary<string, StepperMotor?>? _motorToPosTextBoxMap;
+        private Dictionary<string, StepperMotor?>? _motorToPosTextMap;
 
         private void InitializeMotorMap()
         {
-            _motorToPosTextBoxMap = new Dictionary<string, StepperMotor?>
+            _motorToPosTextMap = new Dictionary<string, StepperMotor?>
             {
                 { "build", _buildMotor },
                 { "powder", _powderMotor },
@@ -332,7 +302,7 @@ namespace Magneto.Desktop.WinUI
         /// Logs an error if the serial port cannot be opened or if the corresponding text box for the motor is null.
         /// </summary>
         /// <param name="motor">The StepperMotor object whose position is to be retrieved and displayed.</param>
-        private async void GetPositionHelper(StepperMotor motor)
+        private async void GetPositionHelper(StepperMotor motor, TextBox textBox)
         {
             // Attempt to open the serial port
             if (MagnetoSerialConsole.OpenSerialPort(motor.GetPortName()))
@@ -346,7 +316,6 @@ namespace Magneto.Desktop.WinUI
                 // Get the motor's position
                 var pos = await motor.GetPosAsync();
 
-                var textBox = GetMotorPositionTextBoxHelper(motor);
                 if (textBox != null) // Full error checking in UITextHelper
                 {
                     UpdateUITextHelper.UpdateUIText(textBox, pos.ToString());
@@ -467,17 +436,17 @@ namespace Magneto.Desktop.WinUI
         /// <returns>Motor axis if request is successful; -1 if request failed</returns>
         private int GetMotorAxisHelper(string motorName)
         {
-            if (_bm != null)
+            if (_am != null)
             {
                 switch (motorName)
                 {
                     case "build":
-                        return _bm.GetBuildMotor().GetAxis();
+                        return _am.GetBuildMotor().GetAxis();
                     case "powder":
-                        return _bm.GetPowderMotor().GetAxis();
+                        return _am.GetPowderMotor().GetAxis();
                     case "sweep":
-                        return _bm.GetSweepMotor().GetAxis();
-                    default: return _bm.GetPowderMotor().GetAxis();
+                        return _am.GetSweepMotor().GetAxis();
+                    default: return _am.GetPowderMotor().GetAxis();
                 }
             }
             else
@@ -631,12 +600,12 @@ namespace Magneto.Desktop.WinUI
                     var motorAxis = operationResult.motorDetails.Value.MotorAxis;
 
                     // Ask for position to update text box below
-                    _ = await _bm.AddCommand(controllerType, motorAxis, commandType, value);
+                    _ = await _am.AddCommand(controllerType, motorAxis, commandType, value);
 
                     try
                     {
                         // Call AddCommand with CommandType.PositionQuery to get the motor's position
-                        var position = await _bm.AddCommand(controllerType, motorAxis, CommandType.PositionQuery, 0);
+                        var position = await _am.AddCommand(controllerType, motorAxis, CommandType.PositionQuery, 0);
 
                         MagnetoLogger.Log($"Position of motor on axis {motorAxis} is {position}", LogFactoryLogLevel.LogLevel.SUCCESS);
                     }
@@ -645,8 +614,7 @@ namespace Magneto.Desktop.WinUI
                         MagnetoLogger.Log($"Failed to get motor position: {ex.Message}", LogFactoryLogLevel.LogLevel.ERROR);
                     }
 
-                    // Update text box
-                    UpdateMotorPositionTextBox(motor);
+                    
 
                     // Update movement boolean
                     _movingMotorToTarget = false;
@@ -654,48 +622,24 @@ namespace Magneto.Desktop.WinUI
             }
         }
 
-        /// <summary>
-        /// Move motor method executes absolute and relative moves
-        /// </summary>
-        /// <param name="isAbsolute">Indicates whether move is absolute or relative</param>
-        private async void MoveMotor(bool isAbsolute)
+        // Move motor and execute move are separate to remove text box reading from execution of move
+
+        private async void MoveMotor(StepperMotor motor, TextBox textBox, bool moveIsAbs)
         {
             // Exit if no motor is selected
-            if (_currTestMotor == null)
+            if (motor == null)
             {
                 MagnetoLogger.Log("Invalid motor request or Current Test Motor is null.", LogFactoryLogLevel.LogLevel.ERROR);
                 await PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", $"No motor selected.");
                 return;
             }
 
-            /*
-            if (double.TryParse(AbsDistTextBox.Text, out var pos))
+            if (double.TryParse(textBox.Text, out _))
             {
-                //var distance = isAbsolute ? double.Parse(AbsDistTextBox.Text) : double.Parse(RelDistTextBox.Text);
-                //await ExecuteMovementCommand(_currTestMotor, isAbsolute, distance);
-            }
-            else
-            {
-                await PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", $"\"{AbsDistTextBox.Text}\" is not a valid position. Please make sure you entered a number in the textbox.");
-                return;
-            }
-            */
-        }
-
-        private async void MoveMotor(bool isAbsolute, TextBox textBox)
-        {
-            // Exit if no motor is selected
-            if (_currTestMotor == null)
-            {
-                MagnetoLogger.Log("Invalid motor request or Current Test Motor is null.", LogFactoryLogLevel.LogLevel.ERROR);
-                await PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", $"No motor selected.");
-                return;
-            }
-
-            if (double.TryParse(textBox.Text, out var pos))
-            {
-                var distance = isAbsolute ? double.Parse(textBox.Text) : double.Parse(textBox.Text);
-                await ExecuteMovementCommand(_currTestMotor, isAbsolute, distance);
+                var distance = moveIsAbs ? double.Parse(textBox.Text) : double.Parse(textBox.Text);
+                await ExecuteMovementCommand(motor, moveIsAbs, distance);
+                // Update text box
+                UpdateMotorPositionTextBox(motor);
             }
             else
             {
@@ -725,29 +669,8 @@ namespace Magneto.Desktop.WinUI
 
             // Execute move
             await ExecuteMovementCommand(motor, false, increment ? dist : -dist);
-        }
-
-        #endregion
-
-
-        #region Absolute/Relative Motor Movement Button Methods
-
-        /// <summary>
-        /// Event handler for the 'Move Motor Absolute' button click.
-        /// Initiates the process of moving the motor to an absolute position.
-        /// </summary>
-        private void MoveMotorAbsButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-        {
-            MoveMotor(isAbsolute: true);
-        }
-
-        /// <summary>
-        /// Event handler for the 'Move Motor Relative' button click.
-        /// Initiates the process of moving the motor to a position relative to its current position.
-        /// </summary>
-        private void MoveMotorRelativeButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-        {
-            MoveMotor(isAbsolute: false);
+            // Update text box
+            UpdateMotorPositionTextBox(motor);
         }
 
         #endregion
@@ -831,67 +754,32 @@ namespace Magneto.Desktop.WinUI
             var msg = "Using helper to home motors...";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
-            if (_bm != null)
+            if (_am != null)
             {
-                var currMotor = _currTestMotor;
 
+                var motorDetails = GetMotorDetailsHelper(motor);
 
-                if (currMotor != null)
+                _ = _am.AddCommand(motorDetails.controllerType, motorDetails.motorAxis, CommandType.AbsoluteMove, motor.GetHomePos());
+
+                // Call try catch block to send command to get position to motor
+                // (Required to update text box)
+                try
                 {
-                    var motorDetails = GetMotorDetailsHelper(currMotor);
-
-                    _ = _bm.AddCommand(motorDetails.controllerType, motorDetails.motorAxis, CommandType.AbsoluteMove, currMotor.GetHomePos());
-
-                    // Call try catch block to send command to get position to motor
-                    // (Required to update text box)
-                    try
-                    {
-                        // Call AddCommand with CommandType.PositionQuery to get the motor's position
-                        double position = await _bm.AddCommand(motorDetails.controllerType, motorDetails.motorAxis, CommandType.PositionQuery, 0);
-
-                        MagnetoLogger.Log($"Position of motor on axis {motorDetails.motorAxis} is {position}", LogFactoryLogLevel.LogLevel.SUCCESS);
-                    }
-                    catch (Exception ex)
-                    {
-                        MagnetoLogger.Log($"Failed to get motor position: {ex.Message}", LogFactoryLogLevel.LogLevel.ERROR);
-                    }
-                    UpdateMotorPositionTextBox(motor);
+                    // Call AddCommand with CommandType.PositionQuery to get the motor's position
+                    double position = await _am.AddCommand(motorDetails.controllerType, motorDetails.motorAxis, CommandType.PositionQuery, 0);
+                    MagnetoLogger.Log($"Position of motor on axis {motorDetails.motorAxis} is {position}", LogFactoryLogLevel.LogLevel.SUCCESS);
                 }
-                else
+                catch (Exception ex)
                 {
-                    msg = "Current Test Motor is null.";
-                    MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-                    await PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "You must select a motor to home.");
+                    MagnetoLogger.Log($"Failed to get motor position: {ex.Message}", LogFactoryLogLevel.LogLevel.ERROR);
                 }
+                UpdateMotorPositionTextBox(motor);
             }
             else
             {
                 msg = "ActuationManager is null.";
                 MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
                 await PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Internal error. Try reloading the page.");
-            }
-
-        }
-
-        /// <summary>
-        /// Event handler for the 'Home Motor' button click.
-        /// Initiates the homing process for the currently selected test motor.
-        /// Checks if the current test motor is not null before attempting to home.
-        /// Logs an error message if the current test motor is null.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void HomeMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-        {
-            MagnetoLogger.Log("Homing Motor.", LogFactoryLogLevel.LogLevel.VERBOSE);
-
-            if (_currTestMotor != null)
-            {
-                _ = HomeMotorHelperAsync(_currTestMotor);
-            }
-            else
-            {
-                MagnetoLogger.Log("Current Test Motor is null, cannot home motor.", LogFactoryLogLevel.LogLevel.ERROR);
             }
         }
 
@@ -956,7 +844,7 @@ namespace Magneto.Desktop.WinUI
 
             if (_buildMotor != null)
             {
-                GetPositionHelper(_buildMotor);
+                GetPositionHelper(_buildMotor, BuildPositionTextBox);
                 SelectBuildMotor();
             }
             else
@@ -979,7 +867,7 @@ namespace Magneto.Desktop.WinUI
 
             if (_powderMotor != null)
             {
-                GetPositionHelper(_powderMotor);
+                GetPositionHelper(_powderMotor, PowderPositionTextBox);
                 SelectPowderMotor();
             }
             else
@@ -1002,7 +890,7 @@ namespace Magneto.Desktop.WinUI
 
             if (_sweepMotor != null)
             {
-                GetPositionHelper(_sweepMotor);
+                GetPositionHelper(_sweepMotor, SweepPositionTextBox);
                 SelectSweepMotor();
             }
             else
@@ -1046,18 +934,47 @@ namespace Magneto.Desktop.WinUI
 
         private void AbsMoveBuildButton_Click(object sender, RoutedEventArgs e)
         {
-            MagnetoLogger.Log("Build abs move button clicked.", LogFactoryLogLevel.LogLevel.SUCCESS);
-            MoveMotor(true, BuildAbsMoveTextBox);
+            var msg = $"Build abs move button clicked.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
+            if (_buildMotor != null)
+            {
+                MoveMotor(_buildMotor, BuildAbsMoveTextBox, true);
+            }
+            else
+            {
+                msg = "Cannot move build motor. Motor is null.";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            }
         }
 
         private void AbsMovePowderButton_Click(object sender, RoutedEventArgs e)
         {
-
+            var msg = $"Powder abs move button clicked.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
+            if (_powderMotor != null)
+            {
+                MoveMotor(_powderMotor, PowderAbsMoveTextBox, true);
+            }
+            else
+            {
+                msg = "Cannot move powder motor. Motor is null.";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            }
         }
 
         private void AbsMoveSweepButton_Click(object sender, RoutedEventArgs e)
         {
-
+            var msg = $"Sweep abs move button clicked.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
+            if (_sweepMotor != null)
+            {
+                MoveMotor(_sweepMotor, SweepAbsMoveTextBox, true);
+            }
+            else
+            {
+                msg = "Cannot move sweep motor. Motor is null.";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            }
         }
 
         private void HomeBuildMotorButton_Click(object sender, RoutedEventArgs e)
@@ -1076,12 +993,26 @@ namespace Magneto.Desktop.WinUI
 
         private void HomePowderMotorButton_Click(object sender, RoutedEventArgs e)
         {
-
+            if (_powderMotor != null)
+            {
+                _ = HomeMotorHelperAsync(_powderMotor);
+            }
+            else
+            {
+                MagnetoLogger.Log("Cannot home powder motor: motor value is null.", LogFactoryLogLevel.LogLevel.ERROR);
+            }
         }
 
         private void HomeSweepMotorButton_Click(object sender, RoutedEventArgs e)
         {
-
+            if (_sweepMotor != null)
+            {
+                _ = HomeMotorHelperAsync(_sweepMotor);
+            }
+            else
+            {
+                MagnetoLogger.Log("Cannot home sweep motor: motor value is null.", LogFactoryLogLevel.LogLevel.ERROR);
+            }
         }
     }
 }
