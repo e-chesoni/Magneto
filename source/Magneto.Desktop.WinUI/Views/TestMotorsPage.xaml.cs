@@ -682,6 +682,28 @@ namespace Magneto.Desktop.WinUI
             */
         }
 
+        private async void MoveMotor(bool isAbsolute, TextBox textBox)
+        {
+            // Exit if no motor is selected
+            if (_currTestMotor == null)
+            {
+                MagnetoLogger.Log("Invalid motor request or Current Test Motor is null.", LogFactoryLogLevel.LogLevel.ERROR);
+                await PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", $"No motor selected.");
+                return;
+            }
+
+            if (double.TryParse(textBox.Text, out var pos))
+            {
+                var distance = isAbsolute ? double.Parse(textBox.Text) : double.Parse(textBox.Text);
+                await ExecuteMovementCommand(_currTestMotor, isAbsolute, distance);
+            }
+            else
+            {
+                await PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", $"\"{textBox.Text}\" is not a valid position. Please make sure you entered a number in the textbox.");
+                return;
+            }
+        }
+
         /// <summary>
         /// Move motor by incremental value obtained from increment text box
         /// </summary>
@@ -1022,14 +1044,10 @@ namespace Magneto.Desktop.WinUI
         */
         #endregion
 
-        private void AbsMoveSweepButton_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
         private void AbsMoveBuildButton_Click(object sender, RoutedEventArgs e)
         {
-
+            MagnetoLogger.Log("Build abs move button clicked.", LogFactoryLogLevel.LogLevel.SUCCESS);
+            MoveMotor(true, BuildAbsMoveTextBox);
         }
 
         private void AbsMovePowderButton_Click(object sender, RoutedEventArgs e)
@@ -1037,17 +1055,31 @@ namespace Magneto.Desktop.WinUI
 
         }
 
-        private void HomeSweepMotorButton_Click(object sender, RoutedEventArgs e)
+        private void AbsMoveSweepButton_Click(object sender, RoutedEventArgs e)
         {
 
         }
 
         private void HomeBuildMotorButton_Click(object sender, RoutedEventArgs e)
         {
+            MagnetoLogger.Log("Homing Motor.", LogFactoryLogLevel.LogLevel.VERBOSE);
 
+            if (_buildMotor != null)
+            {
+                _ = HomeMotorHelperAsync(_buildMotor);
+            }
+            else
+            {
+                MagnetoLogger.Log("Cannot home build motor: motor value is null.", LogFactoryLogLevel.LogLevel.ERROR);
+            }
         }
 
         private void HomePowderMotorButton_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void HomeSweepMotorButton_Click(object sender, RoutedEventArgs e)
         {
 
         }
