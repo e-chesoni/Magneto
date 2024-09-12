@@ -668,16 +668,18 @@ namespace Magneto.Desktop.WinUI
                 return;
             }
 
+            /*
             if (double.TryParse(AbsDistTextBox.Text, out var pos))
             {
-                var distance = isAbsolute ? double.Parse(AbsDistTextBox.Text) : double.Parse(RelDistTextBox.Text);
-                await ExecuteMovementCommand(_currTestMotor, isAbsolute, distance);
+                //var distance = isAbsolute ? double.Parse(AbsDistTextBox.Text) : double.Parse(RelDistTextBox.Text);
+                //await ExecuteMovementCommand(_currTestMotor, isAbsolute, distance);
             }
             else
             {
                 await PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", $"\"{AbsDistTextBox.Text}\" is not a valid position. Please make sure you entered a number in the textbox.");
                 return;
             }
+            */
         }
 
         /// <summary>
@@ -1011,13 +1013,43 @@ namespace Magneto.Desktop.WinUI
         /// Sets the color to green if the motor is moving, and to dim gray once the movement is completed.
         /// </summary>
         /// <param name="isAbsolute">Determines which button's background to update, based on whether the movement is absolute or relative.</param>
+        /*
         private void UpdateButtonBackground(bool isAbsolute)
         {
             var button = isAbsolute ? MoveMotorAbsButton : MoveMotorRelativeButton;
             button.Background = _movingMotorToTarget ? new SolidColorBrush(Colors.Green) : new SolidColorBrush(Colors.DimGray);
         }
-
+        */
         #endregion
 
+        private void AbsMoveSweepButton_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void AbsMoveBuildButton_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void AbsMovePowderButton_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void HomeSweepMotorButton_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void HomeBuildMotorButton_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void HomePowderMotorButton_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }
