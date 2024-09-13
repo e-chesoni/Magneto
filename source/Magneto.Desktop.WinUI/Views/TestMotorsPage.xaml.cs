@@ -216,119 +216,6 @@ namespace Magneto.Desktop.WinUI
             };
         }
 
-        /// <summary>
-        /// Retrieves the corresponding TextBox control for a given motor name.
-        /// </summary>
-        /// <param name="motorName">The name of the motor for which the corresponding TextBox is needed.</param>
-        /// <returns>The corresponding TextBox if found, otherwise null.</returns>
-        private TextBox? GetCorrespondingTextBox(string motorName)
-        {
-            return motorName switch
-            {
-                "build" => BuildPositionTextBox,
-                "powder" => PowderPositionTextBox,
-                "sweep" => SweepPositionTextBox,
-                _ => null
-            };
-        }
-
-        #endregion
-
-
-        #region TextBox Helper Methods
-
-        /// <summary>
-        /// Retrieves the corresponding TextBox for a given StepperMotor.
-        /// </summary>
-        /// <param name="motor">The StepperMotor for which the TextBox is needed.</param>
-        /// <returns>The corresponding TextBox if a valid motor name is provided, otherwise null.</returns>
-        private TextBox? GetMotorPositionTextBoxHelper(StepperMotor motor)
-        {
-            if (motor.GetMotorName() == "build")
-            {
-                return BuildPositionTextBox;
-            }
-            else if (motor.GetMotorName() == "powder")
-            {
-                return PowderPositionTextBox;
-            }
-            else if (motor.GetMotorName() == "sweep")
-            {
-                return SweepPositionTextBox;
-            }
-            else
-            {
-                var msg = "Invalid motor name given. Cannot get position.";
-                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Retrieves the corresponding increment TextBox for a given StepperMotor.
-        /// </summary>
-        /// <param name="motor">The StepperMotor for which the TextBox is needed.</param>
-        /// <returns>The corresponding TextBox if a valid motor name is provided, otherwise null.</returns>
-        private TextBox? GetIncrementTextBoxHelper(StepperMotor motor)
-        {
-            if (motor.GetMotorName() == "build")
-            {
-                return IncrBuildPositionTextBox;
-            }
-            else if (motor.GetMotorName() == "powder")
-            {
-                return IncrPowderPositionTextBox;
-            }
-            else if (motor.GetMotorName() == "sweep")
-            {
-                return IncrSweepPositionTextBox;
-            }
-            else
-            {
-                var msg = "Invalid motor name given. Cannot get position.";
-                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-                return null;
-            }
-        }
-
-        #endregion
-
-
-        #region Position Helper Methods
-
-        /// <summary>
-        /// Retrieves the position of a given StepperMotor and updates the corresponding text box with this position.
-        /// Opens the serial port associated with the motor, logs the action, and handles the UI update. 
-        /// Logs an error if the serial port cannot be opened or if the corresponding text box for the motor is null.
-        /// </summary>
-        /// <param name="motor">The StepperMotor object whose position is to be retrieved and displayed.</param>
-        private async void GetPositionHelper(StepperMotor motor, TextBox textBox)
-        {
-            // Attempt to open the serial port
-            if (MagnetoSerialConsole.OpenSerialPort(motor.GetPortName()))
-            {
-                MagnetoLogger.Log("Port Open!", LogFactoryLogLevel.LogLevel.SUCCESS);
-
-                // Log the action of getting the position
-                var msg = "Using StepperMotor to get position";
-                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-
-                // Get the motor's position
-                var pos = await motor.GetPosAsync();
-
-                if (textBox != null) // Full error checking in UITextHelper
-                {
-                    UpdateUITextHelper.UpdateUIText(textBox, pos.ToString());
-                }
-            }
-            else
-            {
-                // Log an error if the port could not be opened
-                var errorMsg = "Port Closed.";
-                MagnetoLogger.Log(errorMsg, LogFactoryLogLevel.LogLevel.ERROR);
-            }
-        }
-
         #endregion
 
 
@@ -430,50 +317,13 @@ namespace Magneto.Desktop.WinUI
         }
 
         /// <summary>
-        /// Helper to get motor axis
-        /// </summary>
-        /// <param name="motorName">Name of the motor for which to return the axis</param>
-        /// <returns>Motor axis if request is successful; -1 if request failed</returns>
-        private int GetMotorAxisHelper(string motorName)
-        {
-            if (_am != null)
-            {
-                switch (motorName)
-                {
-                    case "build":
-                        return _am.GetBuildMotor().GetAxis();
-                    case "powder":
-                        return _am.GetPowderMotor().GetAxis();
-                    case "sweep":
-                        return _am.GetSweepMotor().GetAxis();
-                    default: return _am.GetPowderMotor().GetAxis();
-                }
-            }
-            else
-            {
-                var msg = "Unable to get motor axis.";
-                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-                return -1;
-            }
-        }
-
-        /// <summary>
         /// Helper to get motor name, controller type, and motor axis given a motor
         /// </summary>
         /// <param name="motor"></param>
         /// <returns>Tuple containing motor name, controller type, and motor axis</returns>
         public (string motorName, ControllerType controllerType, int motorAxis) GetMotorDetailsHelper(StepperMotor motor)
         {
-            // Get the name of the current motor
-            var motorName = motor.GetMotorName();
-
-            // Get the controller type using a helper method
-            var controllerType = GetControllerTypeHelper(motorName);
-
-            // Get the motor axis using a helper method
-            var motorAxis = GetMotorAxisHelper(motorName);
-
-            return (motorName, controllerType, motorAxis);
+            return (motor.GetMotorName(), GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis());
         }
 
         #endregion
@@ -548,7 +398,7 @@ namespace Magneto.Desktop.WinUI
 
             // Get motor details based on motor name
             ControllerType controllerType = GetControllerTypeHelper(motorName);
-            var motorAxis = GetMotorAxisHelper(motorName);
+            var motorAxis = motor.GetAxis();
 
             return (true, new MotorDetails(motorName, controllerType, motorAxis));
         }
@@ -643,7 +493,7 @@ namespace Magneto.Desktop.WinUI
             }
             else
             {
-                await PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", $"\"{textBox.Text}\" is not a valid position. Please make sure you entered a number in the textbox.");
+                await PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", $"\"{textBox.Text}\" is not a valid position. Please make sure you entered a number in the text box.");
                 return;
             }
         }
@@ -653,22 +503,20 @@ namespace Magneto.Desktop.WinUI
         /// </summary>
         /// <param name="motor">Currently selected motor</param>
         /// <param name="increment">Indicates whether move is incremental (positive direction/up) or decremental (down) (true = increment)</param>
-        private async void IncrementMotor(StepperMotor motor, bool increment)
+        private async void IncrementMotor(StepperMotor motor, TextBox textBox, bool increment)
         {
-            TextBox textbox = GetIncrementTextBoxHelper(motor);
-            if (textbox == null || !double.TryParse(textbox.Text, out var dist))
+            if (textBox == null || !double.TryParse(textBox.Text, out var dist))
             {
                 _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Invalid input in increment text box.");
                 return;
             }
-            // Take the absolute value of distance entered in text box
-            dist = Math.Abs(dist);
 
             // Update text box value to absolute value so user knows
-            textbox.Text = dist.ToString();
+            textBox.Text = Math.Abs(dist).ToString();
 
             // Execute move
             await ExecuteMovementCommand(motor, false, increment ? dist : -dist);
+
             // Update text box
             UpdateMotorPositionTextBox(motor);
         }
@@ -683,7 +531,7 @@ namespace Magneto.Desktop.WinUI
             var inrement = true;
             if (_buildMotor != null)
             {
-                IncrementMotor(_buildMotor, inrement);
+                IncrementMotor(_buildMotor, IncrBuildPositionTextBox, inrement);
             }
             SelectBuildMotor();
         }
@@ -693,7 +541,7 @@ namespace Magneto.Desktop.WinUI
             var inrement = false;
             if (_buildMotor != null)
             {
-                IncrementMotor(_buildMotor, inrement);
+                IncrementMotor(_buildMotor, IncrBuildPositionTextBox, inrement);
             }
             SelectBuildMotor();
         }
@@ -703,7 +551,7 @@ namespace Magneto.Desktop.WinUI
             var inrement = true;
             if (_powderMotor != null)
             {
-                IncrementMotor(_powderMotor, inrement);
+                IncrementMotor(_powderMotor, IncrPowderPositionTextBox, inrement);
             }
             SelectPowderMotor();
         }
@@ -713,7 +561,7 @@ namespace Magneto.Desktop.WinUI
             var inrement = false;
             if (_powderMotor != null)
             {
-                IncrementMotor(_powderMotor, inrement);
+                IncrementMotor(_powderMotor, IncrPowderPositionTextBox, inrement);
             }
             SelectPowderMotor();
         }
@@ -723,7 +571,7 @@ namespace Magneto.Desktop.WinUI
             var inrement = true;
             if (_sweepMotor != null)
             {
-                IncrementMotor(_sweepMotor, inrement);
+                IncrementMotor(_sweepMotor, IncrSweepPositionTextBox, inrement);
             }
             SelectSweepMotor();
         }
@@ -733,7 +581,7 @@ namespace Magneto.Desktop.WinUI
             var inrement = false;
             if (_sweepMotor != null)
             {
-                IncrementMotor(_sweepMotor, inrement);
+                IncrementMotor(_sweepMotor, IncrSweepPositionTextBox, inrement);
             }
             SelectSweepMotor();
         }
@@ -837,15 +685,24 @@ namespace Magneto.Desktop.WinUI
         /// </summary>
         /// <param name="sender">The object that raised the event.</param>
         /// <param name="e">Event data for the click event.</param>
-        private void GetBuildPositionButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        private async void GetBuildPositionButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             var msg = "GetBuildPositionButton_Click Clicked...";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
             if (_buildMotor != null)
             {
-                GetPositionHelper(_buildMotor, BuildPositionTextBox);
-                SelectBuildMotor();
+                if (_buildMotor != null)
+                {
+                    var motorDetails = GetMotorDetailsHelper(_buildMotor);
+                    //double pos = await _am.AddCommand(motorDetails.controllerType, motorDetails.motorAxis, CommandType.PositionQuery, 0);
+                    var pos = await _buildMotor.GetPosAsync(); // TODO: figure out why AddCommand returns 0...
+                    if (BuildPositionTextBox != null) // Full error checking in UITextHelper
+                    {
+                        UpdateUITextHelper.UpdateUIText(BuildPositionTextBox, pos.ToString());
+                    }
+                    SelectBuildMotor();
+                }
             }
             else
             {
@@ -860,14 +717,20 @@ namespace Magneto.Desktop.WinUI
         /// </summary>
         /// <param name="sender">The object that raised the event.</param>
         /// <param name="e">Event data for the click event.</param>
-        private void GetPowderPositionButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        private async void GetPowderPositionButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             var msg = "GetPowderPositionButton_Click Clicked...";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
             if (_powderMotor != null)
             {
-                GetPositionHelper(_powderMotor, PowderPositionTextBox);
+                var motorDetails = GetMotorDetailsHelper(_powderMotor);
+                //var pos = await _am.AddCommand(motorDetails.controllerType, motorDetails.motorAxis, CommandType.PositionQuery, 0);
+                var pos = await _powderMotor.GetPosAsync(); // TODO: figure out why AddCommand returns 0...
+                if (PowderPositionTextBox != null) // Full error checking in UITextHelper
+                {
+                    UpdateUITextHelper.UpdateUIText(PowderPositionTextBox, pos.ToString());
+                }
                 SelectPowderMotor();
             }
             else
@@ -883,15 +746,24 @@ namespace Magneto.Desktop.WinUI
         /// </summary>
         /// <param name="sender">The object that raised the event.</param>
         /// <param name="e">Event data for the click event.</param>
-        private void GetSweepPositionButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        private async void GetSweepPositionButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             var msg = "GetSweepPositionButton_Click Clicked...";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
             if (_sweepMotor != null)
             {
-                GetPositionHelper(_sweepMotor, SweepPositionTextBox);
-                SelectSweepMotor();
+                if (_sweepMotor != null)
+                {
+                    var motorDetails = GetMotorDetailsHelper(_sweepMotor);
+                    //var pos = await _am.AddCommand(motorDetails.controllerType, motorDetails.motorAxis, CommandType.PositionQuery, 0);
+                    var pos = await _sweepMotor.GetPosAsync(); // TODO: figure out why AddCommand returns 0...
+                    if (SweepPositionTextBox != null) // Full error checking in UITextHelper
+                    {
+                        UpdateUITextHelper.UpdateUIText(SweepPositionTextBox, pos.ToString());
+                    }
+                    SelectSweepMotor();
+                }
             }
             else
             {
@@ -903,6 +775,22 @@ namespace Magneto.Desktop.WinUI
 
 
         #region UI Update Methods
+
+        /// <summary>
+        /// Retrieves the corresponding TextBox control for a given motor name.
+        /// </summary>
+        /// <param name="motorName">The name of the motor for which the corresponding TextBox is needed.</param>
+        /// <returns>The corresponding TextBox if found, otherwise null.</returns>
+        private TextBox? GetCorrespondingTextBox(string motorName)
+        {
+            return motorName switch
+            {
+                "build" => BuildPositionTextBox,
+                "powder" => PowderPositionTextBox,
+                "sweep" => SweepPositionTextBox,
+                _ => null
+            };
+        }
 
         /// <summary>
         /// Updates the text box associated with a given motor name with the motor's current position.

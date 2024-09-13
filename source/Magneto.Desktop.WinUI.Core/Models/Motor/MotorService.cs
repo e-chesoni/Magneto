@@ -140,20 +140,6 @@ public class MotorService
     public ActuationManager? GetBuildManager() => _actuationManager;
 
 
-    private async Task GetMotorPositionAfterMove((ControllerType controllerType, int motorAxis) motorDetails)
-    {
-        try
-        {
-            var position = await _actuationManager.AddCommand(motorDetails.controllerType, motorDetails.motorAxis, CommandType.PositionQuery, 0);
-            MagnetoLogger.Log($"Motor position: {position}");
-        }
-        catch (Exception ex)
-        {
-            MagnetoLogger.Log($"Failed to get motor position: {ex.Message}", LogFactoryLogLevel.LogLevel.ERROR);
-        }
-    }
-
-
     /// <summary>
     /// Helper to get controller type given motor name
     /// </summary>
@@ -166,34 +152,6 @@ public class MotorService
             case "sweep":
                 return ControllerType.SWEEP;
             default: return ControllerType.BUILD;
-        }
-    }
-
-    /// <summary>
-    /// Helper to get motor axis
-    /// </summary>
-    /// <param name="motorName">Name of the motor for which to return the axis</param>
-    /// <returns>Motor axis if request is successful; -1 if request failed</returns>
-    private int GetMotorAxisHelper(string motorName)
-    {
-        if (_actuationManager != null)
-        {
-            switch (motorName)
-            {
-                case "build":
-                    return _actuationManager.GetBuildMotor().GetAxis();
-                case "powder":
-                    return _actuationManager.GetPowderMotor().GetAxis();
-                case "sweep":
-                    return _actuationManager.GetSweepMotor().GetAxis();
-                default: return _actuationManager.GetPowderMotor().GetAxis();
-            }
-        }
-        else
-        {
-            var msg = "Unable to get motor axis.";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            return -1;
         }
     }
 
@@ -211,7 +169,7 @@ public class MotorService
         var controllerType = GetControllerTypeHelper(motorName);
 
         // Get the motor axis using a helper method
-        var motorAxis = GetMotorAxisHelper(motorName);
+        var motorAxis = motor.GetAxis();
 
         return (motorName, controllerType, motorAxis);
     }
@@ -246,7 +204,7 @@ public class MotorService
 
         // Get motor details based on motor name
         ControllerType controllerType = GetControllerTypeHelper(motorName);
-        var motorAxis = GetMotorAxisHelper(motorName);
+        var motorAxis = motor.GetAxis();
 
         return (true, new MotorDetails(motorName, controllerType, motorAxis));
     }
@@ -399,7 +357,6 @@ public class MotorService
     }
 
     #endregion
-
 
 }
 
