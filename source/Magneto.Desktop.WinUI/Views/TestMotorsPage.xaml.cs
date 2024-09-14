@@ -464,8 +464,6 @@ namespace Magneto.Desktop.WinUI
                         MagnetoLogger.Log($"Failed to get motor position: {ex.Message}", LogFactoryLogLevel.LogLevel.ERROR);
                     }
 
-                    
-
                     // Update movement boolean
                     _movingMotorToTarget = false;
                 }
@@ -526,64 +524,121 @@ namespace Magneto.Desktop.WinUI
 
         #region Increment/Decrement Button Methods
 
+        // TODO: Move to Motor service
+        private async Task<int> MoveMotorTest(StepperMotor motor, TextBox textBox, bool increment)
+        {
+            if (textBox == null || !double.TryParse(textBox.Text, out var value))
+            {
+                var msg = $"invalid input in {motor.GetMotorName} text box: {textBox.Text}";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+                return 0;
+            }
+            else
+            {
+                var dist = double.Parse(textBox.Text);
+                dist = increment ? dist : -dist;
+                await _am.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.RelativeMove, dist);
+                // NOTE: when called, you must await the return to get the integer value
+                // Otherwise returns some weird string
+                return 1;
+            }
+        }
+
+        private void SelectMotorHelper(StepperMotor motor)
+        {
+            switch (motor.GetMotorName())
+            {
+                case "build":
+                    SelectBuildMotor();
+                    break;
+                case "powder":
+                    SelectPowderMotor();
+                    break;
+                case "sweep":
+                    SelectSweepMotor();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private async void MoveMotorAndUpdateUI(StepperMotor motor, TextBox textBox, bool increment)
+        {
+            if (motor != null)
+            {
+                // Select build motor button
+                SelectMotorHelper(motor);
+
+                var res = await MoveMotorTest(motor, textBox, increment);
+
+                // If operation is successful, update text box
+                if (res == 1)
+                {
+                    UpdateMotorPositionTextBox(motor);
+                }
+                else
+                {
+                    _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Invalid input in increment text box.");
+                }
+            }
+            else
+            {
+                _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Cannot select motor. Motor is null.");
+            }
+        }
+
         private void IncrBuild_Click(object sender, RoutedEventArgs e)
         {
-            var inrement = true;
+            var increment = true;
             if (_buildMotor != null)
             {
-                IncrementMotor(_buildMotor, IncrBuildPositionTextBox, inrement);
+                MoveMotorAndUpdateUI(_buildMotor, IncrBuildPositionTextBox, increment);
             }
-            SelectBuildMotor();
         }
 
         private void DecrBuild_Click(object sender, RoutedEventArgs e)
         {
-            var inrement = false;
+            var increment = false;
             if (_buildMotor != null)
             {
-                IncrementMotor(_buildMotor, IncrBuildPositionTextBox, inrement);
+                MoveMotorAndUpdateUI(_buildMotor, IncrBuildPositionTextBox, increment);
             }
-            SelectBuildMotor();
         }
 
         private void IncrPowder_Click(object sender, RoutedEventArgs e)
         {
-            var inrement = true;
+            var increment = true;
             if (_powderMotor != null)
             {
-                IncrementMotor(_powderMotor, IncrPowderPositionTextBox, inrement);
+                MoveMotorAndUpdateUI(_powderMotor, IncrBuildPositionTextBox, increment);
             }
-            SelectPowderMotor();
         }
 
         private void DecrPowder_Click(object sender, RoutedEventArgs e)
         {
-            var inrement = false;
+            var increment = false;
             if (_powderMotor != null)
             {
-                IncrementMotor(_powderMotor, IncrPowderPositionTextBox, inrement);
+                MoveMotorAndUpdateUI(_powderMotor, IncrBuildPositionTextBox, increment);
             }
-            SelectPowderMotor();
         }
 
         private void IncrSweep_Click(object sender, RoutedEventArgs e)
         {
-            var inrement = true;
+            var increment = true;
             if (_sweepMotor != null)
             {
-                IncrementMotor(_sweepMotor, IncrSweepPositionTextBox, inrement);
+                MoveMotorAndUpdateUI(_sweepMotor, IncrBuildPositionTextBox, increment);
             }
-            SelectSweepMotor();
         }
 
         private void DecrSweep_Click(object sender, RoutedEventArgs e)
         {
-            var inrement = false;
+            var increment = false;
             if (_sweepMotor != null)
             {
-                IncrementMotor(_sweepMotor, IncrSweepPositionTextBox, inrement);
+                MoveMotorAndUpdateUI(_sweepMotor, IncrBuildPositionTextBox, increment);
             }
-            SelectSweepMotor();
         }
 
         #endregion
@@ -781,9 +836,9 @@ namespace Magneto.Desktop.WinUI
         /// </summary>
         /// <param name="motorName">The name of the motor for which the corresponding TextBox is needed.</param>
         /// <returns>The corresponding TextBox if found, otherwise null.</returns>
-        private TextBox? GetCorrespondingTextBox(string motorName)
+        private TextBox? GetCorrespondingTextBox(StepperMotor motor)
         {
-            return motorName switch
+            return motor.GetMotorName() switch
             {
                 "build" => BuildPositionTextBox,
                 "powder" => PowderPositionTextBox,
@@ -797,11 +852,23 @@ namespace Magneto.Desktop.WinUI
         /// </summary>
         /// <param name="motorName">Name of the motor whose position needs to be updated in the UI.</param>
         /// <param name="motor">The motor object whose position is to be retrieved and displayed.</param>
-        private void UpdateMotorPositionTextBox(StepperMotor motor)
+        private async void UpdateMotorPositionTextBox(StepperMotor motor)
         {
             MagnetoLogger.Log("Updating motor position text box.", LogFactoryLogLevel.LogLevel.SUCCESS);
-            var motorName = motor.GetMotorName();
-            var textBox = GetCorrespondingTextBox(motorName);
+            // Call position add command first so we can update motor position in UI
+            // TODO: WARNING -- this may cause issues when you decouple
+            try
+            {
+                // Call AddCommand with CommandType.PositionQuery to get the motor's position
+                var position = await _am.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.PositionQuery, 0);
+
+                MagnetoLogger.Log($"Position of motor on axis {_buildMotor.GetAxis()} is {position}", LogFactoryLogLevel.LogLevel.SUCCESS);
+            }
+            catch (Exception ex)
+            {
+                MagnetoLogger.Log($"Failed to get motor position: {ex.Message}", LogFactoryLogLevel.LogLevel.ERROR);
+            }
+            var textBox = GetCorrespondingTextBox(motor);
             if (textBox != null)
                 textBox.Text = motor.GetCurrentPos().ToString();
         }
