@@ -82,6 +82,12 @@ namespace Magneto.Desktop.WinUI
             get;
         }
 
+        /// <summary>
+        /// Initializes the dictionary mapping motor names to their corresponding StepperMotor objects.
+        /// This map facilitates the retrieval of motor objects based on their names.
+        /// </summary>
+        private Dictionary<string, StepperMotor?>? _motorToPosTextMap;
+
         public TestMotorsPage()
         {
             ViewModel = App.GetService<TestMotorsViewModel>();
@@ -117,7 +123,7 @@ namespace Magneto.Desktop.WinUI
             }
         }
 
-        #region Test Page Setup
+        #region Initialization Methods
 
         /// <summary>
         /// Sets up test motors for powder, build, and sweep operations by retrieving configurations 
@@ -137,7 +143,7 @@ namespace Magneto.Desktop.WinUI
             SetUpMotor("build", MissionControl.GetBuildMotor(), out _buildMotor);
             SetUpMotor("sweep", MissionControl.GetSweepMotor(), out _sweepMotor);
 
-            _am = MissionControl.GetBuildManger();
+            _am = MissionControl.GetActuationManger();
 
             //GetMotorPositions(); // TOOD: Fix--all positions are 0 on page load even if they're not...
         }
@@ -162,11 +168,6 @@ namespace Magneto.Desktop.WinUI
                 MagnetoLogger.Log($"Unable to find {motorName} motor", LogFactoryLogLevel.LogLevel.ERROR);
             }
         }
-
-        #endregion
-
-
-        #region Navigation Methods
 
         /// <summary>
         /// Handle page startup tasks
@@ -195,17 +196,6 @@ namespace Magneto.Desktop.WinUI
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
         }
 
-        #endregion
-
-
-        #region Dictionary Methods
-
-        /// <summary>
-        /// Initializes the dictionary mapping motor names to their corresponding StepperMotor objects.
-        /// This map facilitates the retrieval of motor objects based on their names.
-        /// </summary>
-        private Dictionary<string, StepperMotor?>? _motorToPosTextMap;
-
         private void InitializeMotorMap()
         {
             _motorToPosTextMap = new Dictionary<string, StepperMotor?>
@@ -214,86 +204,6 @@ namespace Magneto.Desktop.WinUI
                 { "powder", _powderMotor },
                 { "sweep", _sweepMotor }
             };
-        }
-
-        #endregion
-
-
-        #region Selection Helper Methods
-
-        /// <summary>
-        /// Selects the given StepperMotor as the current test motor, updates the UI to reflect this selection,
-        /// and toggles the selection status. Clears the position text box and updates the background color of motor selection buttons.
-        /// </summary>
-        /// <param name="motor">The StepperMotor to be selected as the current test motor.</param>
-        /// <param name="positionTextBox">The TextBox associated with the motor, to be cleared upon selection.</param>
-        /// <param name="thisMotorSelected">A reference to a boolean flag indicating the selection status of this motor.</param>
-        private void SelectMotorHelper(StepperMotor motor, TextBox positionTextBox, ref bool thisMotorSelected)
-        {
-            _currTestMotor = motor;
-            var msg = $"Setting current motor to {_currTestMotor.GetMotorName()} motor";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-
-            // Update button backgrounds and selection flags
-            SelectPowderMotorButton.Background = new SolidColorBrush(_powderMotor == motor ? Colors.Green : Colors.DimGray);
-            _powderMotorSelected = _powderMotor == motor;
-
-            SelectBuildMotorButton.Background = new SolidColorBrush(_buildMotor == motor ? Colors.Green : Colors.DimGray);
-            _buildMotorSelected = _buildMotor == motor;
-
-            SelectSweepMotorButton.Background = new SolidColorBrush(_sweepMotor == motor ? Colors.Green : Colors.DimGray);
-            _sweepMotorSelected = _sweepMotor == motor;
-
-            // Update the selection flag for this motor
-            thisMotorSelected = !thisMotorSelected;
-        }
-
-        /// <summary>
-        /// Wrapper for motor build motor selection code
-        /// </summary>
-        private void SelectBuildMotor()
-        {
-            if (_buildMotor != null)
-            {
-                SelectMotorHelper(_buildMotor, BuildPositionTextBox, ref _buildMotorSelected);
-            }
-            else
-            {
-                var msg = "Build Motor is null.";
-                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            }
-        }
-
-        /// <summary>
-        /// Wrapper for motor powder motor selection code
-        /// </summary>
-        private void SelectPowderMotor()
-        {
-            if (_powderMotor != null)
-            {
-                SelectMotorHelper(_powderMotor, PowderPositionTextBox, ref _powderMotorSelected);
-            }
-            else
-            {
-                var msg = "Powder Motor is null.";
-                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            }
-        }
-
-        /// <summary>
-        /// Wrapper for motor sweep motor selection code
-        /// </summary>
-        private void SelectSweepMotor()
-        {
-            if (_sweepMotor != null)
-            {
-                SelectMotorHelper(_sweepMotor, SweepPositionTextBox, ref _sweepMotorSelected);
-            }
-            else
-            {
-                var msg = "Sweep Motor is null.";
-                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            }
         }
 
         #endregion
@@ -329,42 +239,137 @@ namespace Magneto.Desktop.WinUI
         #endregion
 
 
-        #region Select Motor Button Methods
+        #region Select Motor Helper Methods
 
         /// <summary>
-        /// Event handler for clicking the 'Select Build Motor' button.
-        /// Selects the build motor as the current test motor and updates the UI accordingly.
-        /// Logs an error if the build motor is null.
+        /// Selects the given StepperMotor as the current test motor, updates the UI to reflect this selection,
+        /// and toggles the selection status. Clears the position text box and updates the background color of motor selection buttons.
         /// </summary>
-        /// <param name="sender">The object that raised the event.</param>
-        /// <param name="e">Event data for the click event.</param>
-        private void SelectBuildMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        /// <param name="motor">The StepperMotor to be selected as the current test motor.</param>
+        /// <param name="positionTextBox">The TextBox associated with the motor, to be cleared upon selection.</param>
+        /// <param name="thisMotorSelected">A reference to a boolean flag indicating the selection status of this motor.</param>
+        private void SelectMotorUIHelper(StepperMotor motor, TextBox positionTextBox, ref bool thisMotorSelected)
         {
-            SelectBuildMotor();
+            _currTestMotor = motor;
+            var msg = $"Setting current motor to {_currTestMotor.GetMotorName()} motor";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+            // Update button backgrounds and selection flags
+            SelectPowderMotorButton.Background = new SolidColorBrush(_powderMotor == motor ? Colors.Green : Colors.DimGray);
+            _powderMotorSelected = _powderMotor == motor;
+
+            SelectBuildMotorButton.Background = new SolidColorBrush(_buildMotor == motor ? Colors.Green : Colors.DimGray);
+            _buildMotorSelected = _buildMotor == motor;
+
+            SelectSweepMotorButton.Background = new SolidColorBrush(_sweepMotor == motor ? Colors.Green : Colors.DimGray);
+            _sweepMotorSelected = _sweepMotor == motor;
+
+            // Update the selection flag for this motor
+            thisMotorSelected = !thisMotorSelected;
         }
 
         /// <summary>
-        /// Event handler for clicking the 'Select Powder Motor' button.
-        /// Selects the powder motor as the current test motor and updates the UI accordingly.
-        /// Logs an error if the powder motor is null.
+        /// Wrapper for motor build motor selection code
         /// </summary>
-        /// <param name="sender">The object that raised the event.</param>
-        /// <param name="e">Event data for the click event.</param>
-        private void SelectPowderMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        private void SelectBuildMotor()
         {
-            SelectPowderMotor();
+            if (_buildMotor != null)
+            {
+                SelectMotorUIHelper(_buildMotor, BuildPositionTextBox, ref _buildMotorSelected);
+            }
+            else
+            {
+                var msg = "Build Motor is null.";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            }
         }
 
         /// <summary>
-        /// Event handler for clicking the 'Select Sweep Motor' button.
-        /// Selects the sweep motor as the current test motor and updates the UI accordingly.
-        /// Logs an error if the sweep motor is null.
+        /// Wrapper for motor powder motor selection code
         /// </summary>
-        /// <param name="sender">The object that raised the event.</param>
-        /// <param name="e">Event data for the click event.</param>
-        private void SelectSweepMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        private void SelectPowderMotor()
         {
-            SelectSweepMotor();
+            if (_powderMotor != null)
+            {
+                SelectMotorUIHelper(_powderMotor, PowderPositionTextBox, ref _powderMotorSelected);
+            }
+            else
+            {
+                var msg = "Powder Motor is null.";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            }
+        }
+
+        /// <summary>
+        /// Wrapper for motor sweep motor selection code
+        /// </summary>
+        private void SelectSweepMotor()
+        {
+            if (_sweepMotor != null)
+            {
+                SelectMotorUIHelper(_sweepMotor, SweepPositionTextBox, ref _sweepMotorSelected);
+            }
+            else
+            {
+                var msg = "Sweep Motor is null.";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            }
+        }
+
+        private void SelectMotorHelper(StepperMotor motor)
+        {
+            switch (motor.GetMotorName())
+            {
+                case "build":
+                    SelectBuildMotor();
+                    break;
+                case "powder":
+                    SelectPowderMotor();
+                    break;
+                case "sweep":
+                    SelectSweepMotor();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        #endregion
+
+
+        #region Move and Update UI Method
+
+        private async void MoveMotorAndUpdateUI(StepperMotor motor, TextBox textBox, bool moveIsAbs, bool increment)
+        {
+            var res = 0;
+            if (motor != null)
+            {
+                // Select build motor button
+                SelectMotorHelper(motor);
+
+                if (moveIsAbs)
+                {
+                    res = await MoveMotorAbs(motor, textBox);
+                }
+                else
+                {
+                    res = await MoveMotorRel(motor, textBox, increment);
+                }
+
+                // If operation is successful, update text box
+                if (res == 1)
+                {
+                    UpdateMotorPositionTextBox(motor);
+                }
+                else
+                {
+                    _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Invalid input in moveUp text box.");
+                }
+            }
+            else
+            {
+                _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Cannot select motor. Motor is null.");
+            }
         }
 
         #endregion
@@ -417,175 +422,80 @@ namespace Magneto.Desktop.WinUI
             }
         }
 
-        private void SelectMotorHelper(StepperMotor motor)
+        private void HandleAbsMove(StepperMotor motor, TextBox textBox)
         {
-            switch (motor.GetMotorName())
-            {
-                case "build":
-                    SelectBuildMotor();
-                    break;
-                case "powder":
-                    SelectPowderMotor();
-                    break;
-                case "sweep":
-                    SelectSweepMotor();
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        private async void MoveMotorAndUpdateUI(StepperMotor motor, TextBox textBox, bool moveIsAbs, bool increment)
-        {
-            var res = 0;
+            var msg = $"{motor.GetMotorName()} abs move button clicked.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
             if (motor != null)
             {
-                // Select build motor button
-                SelectMotorHelper(motor);
-
-                if (moveIsAbs)
-                {
-                    res = await MoveMotorAbs(motor, textBox);
-                }
-                else
-                {
-                    res = await MoveMotorRel(motor, textBox, increment);
-                }
-
-                // If operation is successful, update text box
-                if (res == 1)
-                {
-                    UpdateMotorPositionTextBox(motor);
-                }
-                else
-                {
-                    _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Invalid input in moveUp text box.");
-                }
+                var moveIsAbs = true;
+                var moveUp = true; // Does not matter what we put here; unused in absolute move
+                MoveMotorAndUpdateUI(motor, textBox, moveIsAbs, moveUp);
             }
             else
             {
-                _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Cannot select motor. Motor is null.");
+                msg = "Cannot move build motor. Motor is null.";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            }
+        }
+
+        private void HandleRelMove(StepperMotor motor, TextBox textBox, bool moveUp)
+        {
+            var moveIsAbs = false;
+            if (motor != null)
+            {
+                MoveMotorAndUpdateUI(motor, textBox, moveIsAbs, moveUp);
             }
         }
 
         private void IncrBuild_Click(object sender, RoutedEventArgs e)
         {
-            var moveIsAbs = false;
-            var moveUp = true;
-            if (_buildMotor != null)
-            {
-                MoveMotorAndUpdateUI(_buildMotor, IncrBuildPositionTextBox, moveIsAbs, moveUp);
-            }
+            HandleRelMove(_buildMotor, IncrBuildPositionTextBox, true);
         }
 
         private void DecrBuild_Click(object sender, RoutedEventArgs e)
         {
-            var moveIsAbs = false;
-            var moveUp = false;
-            if (_buildMotor != null)
-            {
-                MoveMotorAndUpdateUI(_buildMotor, IncrBuildPositionTextBox, moveIsAbs, moveUp);
-            }
+            HandleRelMove(_buildMotor, IncrBuildPositionTextBox, false);
         }
 
         private void IncrPowder_Click(object sender, RoutedEventArgs e)
         {
-            var moveIsAbs = false;
-            var moveUp = true;
-            if (_powderMotor != null)
-            {
-                MoveMotorAndUpdateUI(_powderMotor, IncrPowderPositionTextBox, moveIsAbs, moveUp);
-            }
+            HandleRelMove(_powderMotor, IncrPowderPositionTextBox, true);
         }
 
         private void DecrPowder_Click(object sender, RoutedEventArgs e)
         {
-            var moveIsAbs = false;
-            var moveUp = false;
-            if (_powderMotor != null)
-            {
-                MoveMotorAndUpdateUI(_powderMotor, IncrPowderPositionTextBox, moveIsAbs, moveUp);
-            }
+            HandleRelMove(_powderMotor, IncrPowderPositionTextBox, false);
         }
 
         private void IncrSweep_Click(object sender, RoutedEventArgs e)
         {
-            var moveIsAbs = false;
-            var moveUp = true;
-            if (_sweepMotor != null)
-            {
-                MoveMotorAndUpdateUI(_sweepMotor, IncrSweepPositionTextBox, moveIsAbs, moveUp);
-            }
+            HandleRelMove(_sweepMotor, IncrSweepPositionTextBox, true);
         }
 
         private void DecrSweep_Click(object sender, RoutedEventArgs e)
         {
-            var moveIsAbs = false;
-            var moveUp = false;
-            if (_sweepMotor != null)
-            {
-                MoveMotorAndUpdateUI(_sweepMotor, IncrSweepPositionTextBox, moveIsAbs, moveUp);
-            }
+            HandleRelMove(_sweepMotor, IncrSweepPositionTextBox, false);
         }
 
-        #endregion
-
-
-        #region Homing Button Methods
-
-        /// <summary>
-        /// Homes the specified StepperMotor if the current test motor is not null and the serial port can be opened.
-        /// Logs the action and any errors encountered during the process, such as failure to open the serial port
-        /// or if the current test motor is null.
-        /// </summary>
-        /// <param name="motor">The StepperMotor to be homed.</param>
-        private async Task HomeMotorHelperAsync(StepperMotor motor)
+        private void AbsMoveBuildButton_Click(object sender, RoutedEventArgs e)
         {
-            var msg = "Using helper to home motors...";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-
-            if (_am != null)
-            {
-
-                var motorDetails = GetMotorDetailsHelper(motor);
-
-                _ = _am.AddCommand(motorDetails.controllerType, motorDetails.motorAxis, CommandType.AbsoluteMove, motor.GetHomePos());
-
-                // Call try catch block to send command to get position to motor
-                // (Required to update text box)
-                try
-                {
-                    // Call AddCommand with CommandType.PositionQuery to get the motor's position
-                    double position = await _am.AddCommand(motorDetails.controllerType, motorDetails.motorAxis, CommandType.PositionQuery, 0);
-                    MagnetoLogger.Log($"Position of motor on axis {motorDetails.motorAxis} is {position}", LogFactoryLogLevel.LogLevel.SUCCESS);
-                }
-                catch (Exception ex)
-                {
-                    MagnetoLogger.Log($"Failed to get motor position: {ex.Message}", LogFactoryLogLevel.LogLevel.ERROR);
-                }
-                UpdateMotorPositionTextBox(motor);
-            }
-            else
-            {
-                msg = "ActuationManager is null.";
-                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-                await PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Internal error. Try reloading the page.");
-            }
+            HandleAbsMove(_buildMotor, BuildAbsMoveTextBox);
         }
 
-        // TODO: FIX ME -- currently you can only home one motor at a time. Trying to home all motors only homes one motor
-        /// <summary>
-        /// Event handler for the 'Home All Motors' button click.
-        /// Initiates the homing process for all motors (build, powder, and sweep).
-        /// Checks each motor for null before attempting to home and logs an error if any motor is null.
-        /// This ensures safe operation and provides clear feedback in case a motor object is missing.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void HomeAllMotorsButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        private void AbsMovePowderButton_Click(object sender, RoutedEventArgs e)
         {
-            var msg = "Homing all motors";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+            HandleAbsMove(_powderMotor, PowderAbsMoveTextBox);
+        }
+
+        private void AbsMoveSweepButton_Click(object sender, RoutedEventArgs e)
+        {
+            HandleAbsMove(_sweepMotor, SweepAbsMoveTextBox);
+        }
+
+        private void HomeBuildMotorButton_Click(object sender, RoutedEventArgs e)
+        {
+            MagnetoLogger.Log("Homing Motor.", LogFactoryLogLevel.LogLevel.VERBOSE);
 
             if (_buildMotor != null)
             {
@@ -593,26 +503,72 @@ namespace Magneto.Desktop.WinUI
             }
             else
             {
-                MagnetoLogger.Log("Build Motor is null, cannot home motor.", LogFactoryLogLevel.LogLevel.ERROR);
+                MagnetoLogger.Log("Cannot home build motor: motor value is null.", LogFactoryLogLevel.LogLevel.ERROR);
             }
+        }
 
+        private void HomePowderMotorButton_Click(object sender, RoutedEventArgs e)
+        {
             if (_powderMotor != null)
             {
                 _ = HomeMotorHelperAsync(_powderMotor);
             }
             else
             {
-                MagnetoLogger.Log("Powder Motor is null, cannot home motor.", LogFactoryLogLevel.LogLevel.ERROR);
+                MagnetoLogger.Log("Cannot home powder motor: motor value is null.", LogFactoryLogLevel.LogLevel.ERROR);
             }
+        }
 
+        private void HomeSweepMotorButton_Click(object sender, RoutedEventArgs e)
+        {
             if (_sweepMotor != null)
             {
                 _ = HomeMotorHelperAsync(_sweepMotor);
             }
             else
             {
-                MagnetoLogger.Log("Sweep Motor is null, cannot home motor.", LogFactoryLogLevel.LogLevel.ERROR);
+                MagnetoLogger.Log("Cannot home sweep motor: motor value is null.", LogFactoryLogLevel.LogLevel.ERROR);
             }
+        }
+
+        #endregion
+
+        #region Select Motor Button Methods
+
+        /// <summary>
+        /// Event handler for clicking the 'Select Build Motor' button.
+        /// Selects the build motor as the current test motor and updates the UI accordingly.
+        /// Logs an error if the build motor is null.
+        /// </summary>
+        /// <param name="sender">The object that raised the event.</param>
+        /// <param name="e">Event data for the click event.</param>
+        private void SelectBuildMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            SelectBuildMotor();
+        }
+
+        /// <summary>
+        /// Event handler for clicking the 'Select Powder Motor' button.
+        /// Selects the powder motor as the current test motor and updates the UI accordingly.
+        /// Logs an error if the powder motor is null.
+        /// </summary>
+        /// <param name="sender">The object that raised the event.</param>
+        /// <param name="e">Event data for the click event.</param>
+        private void SelectPowderMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            SelectPowderMotor();
+        }
+
+        /// <summary>
+        /// Event handler for clicking the 'Select Sweep Motor' button.
+        /// Selects the sweep motor as the current test motor and updates the UI accordingly.
+        /// Logs an error if the sweep motor is null.
+        /// </summary>
+        /// <param name="sender">The object that raised the event.</param>
+        /// <param name="e">Event data for the click event.</param>
+        private void SelectSweepMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            SelectSweepMotor();
         }
 
         #endregion
@@ -716,6 +672,93 @@ namespace Magneto.Desktop.WinUI
         #endregion
 
 
+        #region Homing Button Methods
+
+        /// <summary>
+        /// Homes the specified StepperMotor if the current test motor is not null and the serial port can be opened.
+        /// Logs the action and any errors encountered during the process, such as failure to open the serial port
+        /// or if the current test motor is null.
+        /// </summary>
+        /// <param name="motor">The StepperMotor to be homed.</param>
+        private async Task HomeMotorHelperAsync(StepperMotor motor)
+        {
+            var msg = "Using helper to home motors...";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+            if (_am != null)
+            {
+
+                var motorDetails = GetMotorDetailsHelper(motor);
+
+                _ = _am.AddCommand(motorDetails.controllerType, motorDetails.motorAxis, CommandType.AbsoluteMove, motor.GetHomePos());
+
+                // Call try catch block to send command to get position to motor
+                // (Required to update text box)
+                try
+                {
+                    // Call AddCommand with CommandType.PositionQuery to get the motor's position
+                    double position = await _am.AddCommand(motorDetails.controllerType, motorDetails.motorAxis, CommandType.PositionQuery, 0);
+                    MagnetoLogger.Log($"Position of motor on axis {motorDetails.motorAxis} is {position}", LogFactoryLogLevel.LogLevel.SUCCESS);
+                }
+                catch (Exception ex)
+                {
+                    MagnetoLogger.Log($"Failed to get motor position: {ex.Message}", LogFactoryLogLevel.LogLevel.ERROR);
+                }
+                UpdateMotorPositionTextBox(motor);
+            }
+            else
+            {
+                msg = "ActuationManager is null.";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+                await PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Internal error. Try reloading the page.");
+            }
+        }
+
+        // TODO: FIX ME -- currently you can only home one motor at a time. Trying to home all motors only homes one motor
+        /// <summary>
+        /// Event handler for the 'Home All Motors' button click.
+        /// Initiates the homing process for all motors (build, powder, and sweep).
+        /// Checks each motor for null before attempting to home and logs an error if any motor is null.
+        /// This ensures safe operation and provides clear feedback in case a motor object is missing.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void HomeAllMotorsButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            var msg = "Homing all motors";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+            if (_buildMotor != null)
+            {
+                _ = HomeMotorHelperAsync(_buildMotor);
+            }
+            else
+            {
+                MagnetoLogger.Log("Build Motor is null, cannot home motor.", LogFactoryLogLevel.LogLevel.ERROR);
+            }
+
+            if (_powderMotor != null)
+            {
+                _ = HomeMotorHelperAsync(_powderMotor);
+            }
+            else
+            {
+                MagnetoLogger.Log("Powder Motor is null, cannot home motor.", LogFactoryLogLevel.LogLevel.ERROR);
+            }
+
+            if (_sweepMotor != null)
+            {
+                _ = HomeMotorHelperAsync(_sweepMotor);
+            }
+            else
+            {
+                MagnetoLogger.Log("Sweep Motor is null, cannot home motor.", LogFactoryLogLevel.LogLevel.ERROR);
+            }
+        }
+
+        #endregion
+
+
         #region UI Update Methods
 
         /// <summary>
@@ -774,94 +817,5 @@ namespace Magneto.Desktop.WinUI
         */
         #endregion
 
-        private void AbsMoveBuildButton_Click(object sender, RoutedEventArgs e)
-        {
-            var msg = $"Build abs move button clicked.";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
-            if (_buildMotor != null)
-            {
-                //await MoveMotorAbs(_buildMotor, BuildAbsMoveTextBox);
-                var moveIsAbs = true;
-                var moveUp = true; // Does not matter what we put here; unused in absolute move
-                MoveMotorAndUpdateUI(_buildMotor, BuildAbsMoveTextBox, moveIsAbs, moveUp);
-            }
-            else
-            {
-                msg = "Cannot move build motor. Motor is null.";
-                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            }
-        }
-
-        private void AbsMovePowderButton_Click(object sender, RoutedEventArgs e)
-        {
-            var msg = $"Powder abs move button clicked.";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
-            if (_powderMotor != null)
-            {
-                var moveIsAbs = true;
-                var moveUp = true; // Does not matter what we put here; unused in absolute move
-                MoveMotorAndUpdateUI(_powderMotor, PowderAbsMoveTextBox, moveIsAbs, moveUp); ;
-            }
-            else
-            {
-                msg = "Cannot move powder motor. Motor is null.";
-                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            }
-        }
-
-        private void AbsMoveSweepButton_Click(object sender, RoutedEventArgs e)
-        {
-            var msg = $"Sweep abs move button clicked.";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
-            if (_sweepMotor != null)
-            {
-                var moveIsAbs = true;
-                var moveUp = true; // Does not matter what we put here; unused in absolute move
-                MoveMotorAndUpdateUI(_sweepMotor, SweepAbsMoveTextBox, moveIsAbs, moveUp);
-            }
-            else
-            {
-                msg = "Cannot move sweep motor. Motor is null.";
-                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            }
-        }
-
-        private void HomeBuildMotorButton_Click(object sender, RoutedEventArgs e)
-        {
-            MagnetoLogger.Log("Homing Motor.", LogFactoryLogLevel.LogLevel.VERBOSE);
-
-            if (_buildMotor != null)
-            {
-                _ = HomeMotorHelperAsync(_buildMotor);
-            }
-            else
-            {
-                MagnetoLogger.Log("Cannot home build motor: motor value is null.", LogFactoryLogLevel.LogLevel.ERROR);
-            }
-        }
-
-        private void HomePowderMotorButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (_powderMotor != null)
-            {
-                _ = HomeMotorHelperAsync(_powderMotor);
-            }
-            else
-            {
-                MagnetoLogger.Log("Cannot home powder motor: motor value is null.", LogFactoryLogLevel.LogLevel.ERROR);
-            }
-        }
-
-        private void HomeSweepMotorButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (_sweepMotor != null)
-            {
-                _ = HomeMotorHelperAsync(_sweepMotor);
-            }
-            else
-            {
-                MagnetoLogger.Log("Cannot home sweep motor: motor value is null.", LogFactoryLogLevel.LogLevel.ERROR);
-            }
-        }
     }
 }

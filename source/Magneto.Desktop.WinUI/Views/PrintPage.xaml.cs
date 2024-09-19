@@ -182,7 +182,7 @@ public sealed partial class PrintPage : Page
     {
         if (MissionControl != null)
         {
-            var bm = MissionControl.GetBuildManger();
+            var bm = MissionControl.GetActuationManger();
             var build_axis = bm.buildController.GetBuildMotor().GetAxis();
             bm.AddCommand(Core.Models.BuildModels.ActuationManager.ControllerType.BUILD, build_axis, Core.Models.BuildModels.ActuationManager.CommandType.AbsoluteMove, 0);
         }
@@ -199,7 +199,7 @@ public sealed partial class PrintPage : Page
     {
         if (MissionControl != null)
         {
-            var bm = MissionControl.GetBuildManger();
+            var bm = MissionControl.GetActuationManger();
             var powder_axis = bm.buildController.GetPowderMotor().GetAxis();
             bm.AddCommand(Core.Models.BuildModels.ActuationManager.ControllerType.BUILD, powder_axis, Core.Models.BuildModels.ActuationManager.CommandType.AbsoluteMove, 0);
         }
@@ -217,7 +217,7 @@ public sealed partial class PrintPage : Page
         var msg = "";
         if (MissionControl != null)
         {
-            var bm = MissionControl.GetBuildManger();
+            var bm = MissionControl.GetActuationManger();
             msg = $"Stopping print.";
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Print Canceled", msg);
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);

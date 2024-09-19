@@ -83,7 +83,7 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
 
     #region Getters
 
-    public ActuationManager GetBuildManger()
+    public ActuationManager GetActuationManger()
     {
         return _actuationManager;
     }

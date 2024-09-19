@@ -193,7 +193,7 @@ public sealed partial class TestPrintPage : Page
         SetUpMotor("build", MissionControl.GetBuildMotor(), out _buildMotor);
         SetUpMotor("sweep", MissionControl.GetSweepMotor(), out _sweepMotor);
 
-        _bm = MissionControl.GetBuildManger();
+        _bm = MissionControl.GetActuationManger();
 
         //GetMotorPositions(); // TOOD: Fix--all positions are 0 on page load even if they're not...
     }
