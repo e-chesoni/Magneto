@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO.Ports;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,20 +27,57 @@ public class MotorService
 
     public MotorService(ActuationManager am)
     {
+        // Set up event handers to communicate with motor controller ports
+        ConfigurePortEventHandlers();
+
         // Initialize motor set up for test page
-        SetUpTestMotors(am);
+        InitMotors(am);
 
         // Initialize motor map to simplify coordinated calls below
         // Make sure this happens AFTER motor setup
         InitializeMotorMap();
     }
 
-    private async void SetUpTestMotors(ActuationManager am)
+    #region Initial Setup
+
+    private void ConfigurePortEventHandlers()
+    {
+        var msg = "Requesting port access for motor service.";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
+        MagnetoSerialConsole.LogAvailablePorts();
+
+        // Get motor configurations
+        var buildMotorConfig = MagnetoConfig.GetMotorByName("build");
+        var sweepMotorConfig = MagnetoConfig.GetMotorByName("sweep");
+
+        // Get motor ports, ensuring that the motor configurations are not null
+        var buildPort = buildMotorConfig?.COMPort;
+        var sweepPort = sweepMotorConfig?.COMPort;
+
+        // Register event handlers on page
+        foreach (SerialPort port in MagnetoSerialConsole.GetAvailablePorts())
+        {
+            if (port.PortName.Equals(buildPort, StringComparison.OrdinalIgnoreCase))
+            {
+                MagnetoSerialConsole.AddEventHandler(port);
+                msg = $"Requesting addition of event handler for port {port.PortName}";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+            }
+            else if (port.PortName.Equals(sweepPort, StringComparison.OrdinalIgnoreCase))
+            {
+                MagnetoSerialConsole.AddEventHandler(port);
+                msg = $"Requesting addition of event handler for port {port.PortName}";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+            }
+        }
+    }
+
+    private async void InitMotors(ActuationManager am)
     {
         // Set up each motor individually using the passed-in parameters
-        SetUpMotor("powder", am.GetPowderMotor(), out _powderMotor);
-        SetUpMotor("build", am.GetBuildMotor(), out _buildMotor);
-        SetUpMotor("sweep", am.GetSweepMotor(), out _sweepMotor);
+        HandleMotorInit("powder", am.GetPowderMotor(), out _powderMotor);
+        HandleMotorInit("build", am.GetBuildMotor(), out _buildMotor);
+        HandleMotorInit("sweep", am.GetSweepMotor(), out _sweepMotor);
 
         // Since there's no _missionControl, you'll need to figure out how to get the BuildManager
         // if that's still necessary in this context.
@@ -49,7 +87,7 @@ public class MotorService
         // GetMotorPositions(); // TODO: Fix this if needed
     }
 
-    private void SetUpMotor(string motorName, StepperMotor motor, out StepperMotor motorField)
+    private void HandleMotorInit(string motorName, StepperMotor motor, out StepperMotor motorField)
     {
         if (motor != null)
         {
@@ -73,6 +111,8 @@ public class MotorService
                 { "sweep", _sweepMotor }
             };
     }
+
+    #endregion
 
     #region Getters
 
