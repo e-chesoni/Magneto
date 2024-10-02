@@ -17,14 +17,6 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     #region Private Variables
     
     /// <summary>
-    /// Extracts common motor commands for pages
-    /// </summary>
-    public MotorService motorService
-    {
-        get; set;
-    }
-    
-    /// <summary>
     /// Build manager to handle printing tasks
     /// </summary>
     private ActuationManager _actuationManager { get; set; }
@@ -54,14 +46,12 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     /// Mission control constructor
     /// </summary>
     /// <param name="bm"></param> Build manager
-    public MissionControl(MotorService ms)
+    public MissionControl(ActuationManager _am)
     {
         MagnetoLogger.Log("", LogFactoryLogLevel.LogLevel.VERBOSE);
 
-        _actuationManager = ms.GetActuationManager();
+        _actuationManager = _am;
 
-        // Set motor service for common page related motor stuff
-        motorService = ms;
     }
 
     #endregion

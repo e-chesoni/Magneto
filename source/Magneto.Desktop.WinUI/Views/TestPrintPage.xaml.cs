@@ -835,7 +835,7 @@ public sealed partial class TestPrintPage : Page
         }
         else
         {
-            LogAndDisplayMessage(LogFactoryLogLevel.LogLevel.ERROR, this.Content.XamlRoot, "Could not find sweep motor.", "_sweepMotor is null");
+            LogAndDisplayMessage(LogFactoryLogLevel.LogLevel.ERROR, this.Content.XamlRoot, "Could not find sweep motor.", "sweepMotor is null");
         }
     }
 
@@ -848,7 +848,7 @@ public sealed partial class TestPrintPage : Page
         }
         else
         {
-            LogAndDisplayMessage(LogFactoryLogLevel.LogLevel.ERROR, this.Content.XamlRoot, "Could not find sweep motor.", "_sweepMotor is null");
+            LogAndDisplayMessage(LogFactoryLogLevel.LogLevel.ERROR, this.Content.XamlRoot, "Could not find sweep motor.", "sweepMotor is null");
         }
     }
 

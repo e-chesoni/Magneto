@@ -20,12 +20,15 @@ namespace Magneto.Desktop.WinUI.Core.Models.Motor;
 public class MotorPageService
 {
     private ActuationManager? _actuationManager;
-    private StepperMotor? _powderMotor;
-    private StepperMotor? _buildMotor;
-    private StepperMotor? _sweepMotor;
-    private bool _powderMotorSelected = false;
+
+    public StepperMotor? buildMotor;
+    public StepperMotor? powderMotor;
+    public StepperMotor? sweepMotor;
+
     private bool _buildMotorSelected = false;
+    private bool _powderMotorSelected = false;
     private bool _sweepMotorSelected = false;
+    
     private bool _movingMotorToTarget = false;
 
     #region UI Variables
@@ -38,6 +41,14 @@ public class MotorPageService
     public TextBox powderPositionTextBox { get; set; }
     public TextBox sweepPositionTextBox { get; set; }
 
+    public TextBox incrBuildPositionTextBox { get; set; }
+    public TextBox incrPowderPositionTextBox { get; set; }
+    public TextBox incrSweepPositionTextBox { get; set; }
+
+    public TextBox buildAbsMoveTextBox { get; set; }
+    public TextBox powderAbsMoveTextBox { get; set; }
+    public TextBox sweepAbsMoveTextBox { get; set; }
+
     #endregion
 
     /// <summary>
@@ -47,7 +58,11 @@ public class MotorPageService
     private Dictionary<string, StepperMotor?>? _motorTextMap;
 
 
-    public MotorPageService(ActuationManager am, Button selectBuildButton, Button selectPowderButton, Button selectSweepButton, TextBox buildPosTextBox, TextBox powderPosTextBox, TextBox sweepPosTextBox)
+    public MotorPageService(ActuationManager am, 
+                            Button selectBuildButton, Button selectPowderButton, Button selectSweepButton, 
+                            TextBox buildPosTextBox, TextBox powderPosTextBox, TextBox sweepPosTextBox,
+                            TextBox incrBuildTextBox, TextBox incrPowderTextBox, TextBox incrSweepTextBox,
+                            TextBox buildAbsMoveTextBox, TextBox powderAbsMoveTextBox, TextBox sweepAbsMoveTextBox)
     {
         // Set up event handers to communicate with motor controller ports
         ConfigurePortEventHandlers();
@@ -68,6 +83,16 @@ public class MotorPageService
         buildPositionTextBox = buildPosTextBox;
         powderPositionTextBox = powderPosTextBox;
         sweepPositionTextBox = sweepPosTextBox;
+
+        // Set up increment text boxes
+        incrBuildPositionTextBox = incrBuildTextBox;
+        incrPowderPositionTextBox = incrPowderTextBox;
+        incrSweepPositionTextBox = incrSweepTextBox;
+
+        // Setup abs position text box
+        this.buildAbsMoveTextBox = buildAbsMoveTextBox;
+        this.powderAbsMoveTextBox = powderAbsMoveTextBox;
+        this.sweepAbsMoveTextBox = sweepAbsMoveTextBox;
     }
 
     #region Initial Setup
@@ -107,9 +132,9 @@ public class MotorPageService
     private async void InitMotors(ActuationManager am)
     {
         // Set up each motor individually using the passed-in parameters
-        HandleMotorInit("powder", am.GetPowderMotor(), out _powderMotor);
-        HandleMotorInit("build", am.GetBuildMotor(), out _buildMotor);
-        HandleMotorInit("sweep", am.GetSweepMotor(), out _sweepMotor);
+        HandleMotorInit("powder", am.GetPowderMotor(), out powderMotor);
+        HandleMotorInit("build", am.GetBuildMotor(), out buildMotor);
+        HandleMotorInit("sweep", am.GetSweepMotor(), out sweepMotor);
 
         // Since there's no _missionControl, you'll need to figure out how to get the BuildManager
         // if that's still necessary in this context.
@@ -138,9 +163,9 @@ public class MotorPageService
     {
         _motorTextMap = new Dictionary<string, StepperMotor?>
             {
-                { "build", _buildMotor },
-                { "powder", _powderMotor },
-                { "sweep", _sweepMotor }
+                { "build", buildMotor },
+                { "powder", powderMotor },
+                { "sweep", sweepMotor }
             };
     }
 
@@ -182,7 +207,7 @@ public class MotorPageService
 
     #region Motor Movement Methods
 
-    private async Task<int> MoveMotorAbs(StepperMotor motor, TextBox textBox)
+    public async Task<int> MoveMotorAbs(StepperMotor motor, TextBox textBox)
     {
         if (textBox == null || !double.TryParse(textBox.Text, out var value))
         {
@@ -198,7 +223,7 @@ public class MotorPageService
         }
     }
 
-    private async Task<int> MoveMotorRel(StepperMotor motor, TextBox textBox, bool moveUp)
+    public async Task<int> MoveMotorRel(StepperMotor motor, TextBox textBox, bool moveUp)
     {
         if (textBox == null || !double.TryParse(textBox.Text, out var value))
         {
@@ -226,7 +251,7 @@ public class MotorPageService
         }
     }
 
-    private async Task<int> HomeMotor(StepperMotor motor)
+    public async Task<int> HomeMotor(StepperMotor motor)
     {
         await _actuationManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.AbsoluteMove, motor.GetHomePos());
         UpdateMotorPositionTextBox(motor);
@@ -261,7 +286,7 @@ public class MotorPageService
         }
     }
 
-    private void HandleAbsMove(StepperMotor motor, TextBox textBox, XamlRoot xamlRoot)
+    public void HandleAbsMove(StepperMotor motor, TextBox textBox, XamlRoot xamlRoot)
     {
         var msg = $"{motor.GetMotorName()} abs move button clicked.";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
@@ -278,7 +303,7 @@ public class MotorPageService
         }
     }
 
-    private void HandleRelMove(StepperMotor motor, TextBox textBox, bool moveUp, XamlRoot xamlRoot)
+    public void HandleRelMove(StepperMotor motor, TextBox textBox, bool moveUp, XamlRoot xamlRoot)
     {
         var moveIsAbs = false;
         if (motor != null)
@@ -287,7 +312,7 @@ public class MotorPageService
         }
     }
 
-    private void HandleHomeMotor(StepperMotor motor, TextBox positionTextBox)
+    public void HandleHomeMotor(StepperMotor motor, TextBox positionTextBox)
     {
         MagnetoLogger.Log("Homing Motor.", LogFactoryLogLevel.LogLevel.VERBOSE);
 
@@ -313,17 +338,17 @@ public class MotorPageService
     /// <param name="motor">The StepperMotor to be selected as the current test motor.</param>
     /// <param name="positionTextBox">The TextBox associated with the motor, to be cleared upon selection.</param>
     /// <param name="thisMotorSelected">A reference to a boolean flag indicating the selection status of this motor.</param>
-    private void SelectMotorUIHelper(StepperMotor motor, ref bool thisMotorSelected)
+    public void SelectMotorUIHelper(StepperMotor motor, ref bool thisMotorSelected)
     {
         // Update button backgrounds and selection flags
-        selectPowderMotorButton.Background = new SolidColorBrush(_powderMotor == motor ? Colors.Green : Colors.DimGray);
-        _powderMotorSelected = _powderMotor == motor;
+        selectPowderMotorButton.Background = new SolidColorBrush(powderMotor == motor ? Colors.Green : Colors.DimGray);
+        _powderMotorSelected = powderMotor == motor;
 
-        selectBuildMotorButton.Background = new SolidColorBrush(_buildMotor == motor ? Colors.Green : Colors.DimGray);
-        _buildMotorSelected = _buildMotor == motor;
+        selectBuildMotorButton.Background = new SolidColorBrush(buildMotor == motor ? Colors.Green : Colors.DimGray);
+        _buildMotorSelected = buildMotor == motor;
 
-        selectSweepMotorButton.Background = new SolidColorBrush(_sweepMotor == motor ? Colors.Green : Colors.DimGray);
-        _sweepMotorSelected = _sweepMotor == motor;
+        selectSweepMotorButton.Background = new SolidColorBrush(sweepMotor == motor ? Colors.Green : Colors.DimGray);
+        _sweepMotorSelected = sweepMotor == motor;
 
         // Update the selection flag for this motor
         thisMotorSelected = !thisMotorSelected;
@@ -332,11 +357,11 @@ public class MotorPageService
     /// <summary>
     /// Wrapper for motor build motor selection code
     /// </summary>
-    private void SelectBuildMotor()
+    public void SelectBuildMotor()
     {
-        if (_buildMotor != null)
+        if (buildMotor != null)
         {
-            SelectMotorUIHelper(_buildMotor, ref _buildMotorSelected);
+            SelectMotorUIHelper(buildMotor, ref _buildMotorSelected);
         }
         else
         {
@@ -348,11 +373,11 @@ public class MotorPageService
     /// <summary>
     /// Wrapper for motor powder motor selection code
     /// </summary>
-    private void SelectPowderMotor()
+    public void SelectPowderMotor()
     {
-        if (_powderMotor != null)
+        if (powderMotor != null)
         {
-            SelectMotorUIHelper(_powderMotor, ref _powderMotorSelected);
+            SelectMotorUIHelper(powderMotor, ref _powderMotorSelected);
         }
         else
         {
@@ -364,11 +389,11 @@ public class MotorPageService
     /// <summary>
     /// Wrapper for motor sweep motor selection code
     /// </summary>
-    private void SelectSweepMotor()
+    public void SelectSweepMotor()
     {
-        if (_sweepMotor != null)
+        if (sweepMotor != null)
         {
-            SelectMotorUIHelper(_sweepMotor, ref _sweepMotorSelected);
+            SelectMotorUIHelper(sweepMotor, ref _sweepMotorSelected);
         }
         else
         {
@@ -377,7 +402,7 @@ public class MotorPageService
         }
     }
 
-    private void SelectMotorHelper(StepperMotor motor)
+    public void SelectMotorHelper(StepperMotor motor)
     {
         switch (motor.GetMotorName())
         {
@@ -399,7 +424,7 @@ public class MotorPageService
 
 
     #region Move and Update UI Method
-    private TextBox? GetMotorPositonTextBox(StepperMotor motor)
+    public TextBox? GetMotorPositonTextBox(StepperMotor motor)
     {
         return motor.GetMotorName() switch
         {
@@ -415,7 +440,7 @@ public class MotorPageService
     /// </summary>
     /// <param name="motorName">Name of the motor whose position needs to be updated in the UI.</param>
     /// <param name="motor">The motor object whose position is to be retrieved and displayed.</param>
-    private async void UpdateMotorPositionTextBox(StepperMotor motor)
+    public async void UpdateMotorPositionTextBox(StepperMotor motor)
     {
         MagnetoLogger.Log("Updating motor position text box.", LogFactoryLogLevel.LogLevel.SUCCESS);
         // Call position add command first so we can update motor position in UI
@@ -425,7 +450,7 @@ public class MotorPageService
             // Call AddCommand with CommandType.PositionQuery to get the motor's position
             var position = await _actuationManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.PositionQuery, 0);
 
-            MagnetoLogger.Log($"Position of motor on axis {_buildMotor.GetAxis()} is {position}", LogFactoryLogLevel.LogLevel.SUCCESS);
+            MagnetoLogger.Log($"Position of motor on axis {buildMotor.GetAxis()} is {position}", LogFactoryLogLevel.LogLevel.SUCCESS);
         }
         catch (Exception ex)
         {
@@ -436,7 +461,7 @@ public class MotorPageService
             textBox.Text = motor.GetCurrentPos().ToString();
     }
 
-    private async void MoveMotorAndUpdateUI(StepperMotor motor, TextBox textBox, bool moveIsAbs, bool increment, XamlRoot xamlRoot)
+    public async void MoveMotorAndUpdateUI(StepperMotor motor, TextBox textBox, bool moveIsAbs, bool increment, XamlRoot xamlRoot)
     {
         var res = 0;
         if (motor != null)
