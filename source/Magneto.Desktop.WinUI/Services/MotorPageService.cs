@@ -8,6 +8,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Models.BuildModels;
+using Magneto.Desktop.WinUI.Core.Models.Motor;
 using Magneto.Desktop.WinUI.Core.Services;
 using static Magneto.Desktop.WinUI.Core.Models.BuildModels.ActuationManager;
 using Microsoft.UI.Xaml.Controls;
@@ -15,8 +16,9 @@ using Magneto.Desktop.WinUI.Helpers;
 using Magneto.Desktop.WinUI.Popups;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI;
+using Magneto.Desktop.WinUI.Core;
 
-namespace Magneto.Desktop.WinUI.Core.Models.Motor;
+namespace Magneto.Desktop.WinUI;
 public class MotorPageService
 {
     private ActuationManager? _actuationManager;
