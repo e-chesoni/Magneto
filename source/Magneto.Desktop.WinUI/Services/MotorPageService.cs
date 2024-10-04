@@ -17,6 +17,7 @@ using Magneto.Desktop.WinUI.Popups;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI;
 using Magneto.Desktop.WinUI.Core;
+using CommunityToolkit.WinUI.UI.Controls.TextToolbarSymbols;
 
 namespace Magneto.Desktop.WinUI;
 public class MotorPageService
@@ -282,6 +283,11 @@ public class MotorPageService
             // Otherwise returns some weird string
             return 1;
         }
+    }
+
+    public void SweepLeft()
+    {
+        _actuationManager.AddCommand(GetControllerTypeHelper(sweepMotor.GetMotorName()), sweepMotor.GetAxis(), CommandType.AbsoluteMove, (sweepMotor.GetMaxPos() - 2)); // NOTE: Subtracting 2 from max position for tolerance...probs not needed in long run
     }
 
     public async Task<int> HomeMotor(StepperMotor motor)

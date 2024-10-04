@@ -243,7 +243,6 @@ public sealed partial class TestPrintPage : Page
 
         //SetupMotors();
         //SetupWaveRunner();
-        //SetDefaultPrintSettings();
     }
 
     private void InitMotorPageService()
@@ -315,7 +314,7 @@ public sealed partial class TestPrintPage : Page
     private void SetDefaultPrintSettings()
     {
         _layerThickness = MagnetoConfig.GetDefaultPrintThickness();
-        LayerThicknessTextBlock.Text = _layerThickness.ToString();
+        SetLayerThicknessTextBox.Text = _layerThickness.ToString();
     }
 
     #endregion
@@ -337,6 +336,7 @@ public sealed partial class TestPrintPage : Page
 
         InitMotorPageService();
         InitWaverunnerPageService();
+        SetDefaultPrintSettings();
 
         // Initialize motor set up for test page
         //SetUpTestMotors();
@@ -808,15 +808,7 @@ public sealed partial class TestPrintPage : Page
 
     private void SweepButton_Click(object sender, RoutedEventArgs e)
     {
-        var isAbsolute = true;
-        if (_sweepMotor != null)
-        {
-            _ = ExecuteMovementCommand(_sweepMotor, isAbsolute, 280);
-        }
-        else
-        {
-            LogAndDisplayMessage(LogFactoryLogLevel.LogLevel.ERROR, this.Content.XamlRoot, "Could not find sweep motor.", "sweepMotor is null");
-        }
+        _motorPageService.SweepLeft();
     }
 
     private void HomeSweepButton_Click(object sender, RoutedEventArgs e)
@@ -987,7 +979,7 @@ public sealed partial class TestPrintPage : Page
     private void UpdateLayerThicknessButton_Click(object sender, RoutedEventArgs e)
     {
         _layerThickness = int.Parse(SetLayerThicknessTextBox.Text);
-        LayerThicknessTextBlock.Text = _layerThickness.ToString();
+        SetLayerThicknessTextBox.Text = _layerThickness.ToString();
     }
 
     private void MoveToNextLayerStartPositionButton_Click(object sender, RoutedEventArgs e)

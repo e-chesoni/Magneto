@@ -163,7 +163,6 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="2*"/>
-                    <RowDefinition Height="2*"/>
                 </Grid.RowDefinitions>
                 <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="2" FontSize="16"
                           Text="Set Layer Thickness"></TextBlock>
@@ -172,26 +171,17 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12"
                                     Text="Set layer thickness:"></TextBlock>
                     <TextBox Grid.Column="1" x:Name="SetLayerThicknessTextBox" Height ="30" Margin="2" 
                                     Text=" "></TextBox>
-                    <Button Grid.Column="2" x:Name="UpdateLayerThicknessButton" HorizontalAlignment="Right" Height="30" Margin="2" Content="Update Layer Thickness"
+                    <TextBlock Grid.Column="2" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="2" FontSize="12" Text="mm"></TextBlock>
+                    <Button Grid.Column="3" x:Name="UpdateLayerThicknessButton" HorizontalAlignment="Right" Height="30" Margin="2" Content="Update Layer Thickness"
                                     Click="UpdateLayerThicknessButton_Click"></Button>
                 </Grid>
-                <Grid Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Top">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12"
-                        Text="Layer thickness:"></TextBlock>
-                    <TextBlock Grid.Column="1" x:Name="LayerThicknessTextBlock" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="2" FontSize="12"></TextBlock>
-                    <TextBlock Grid.Column="3" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="2" FontSize="12" Text="mm"></TextBlock>
-                </Grid>
-        </Grid>
+            </Grid>
             <Grid Grid.Row="3">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
