@@ -37,8 +37,7 @@
                             <RowDefinition Height="2*"/>
                             <RowDefinition Height="2*"/>
                         </Grid.RowDefinitions>
-                        <TextBlock Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12"
-                                    Text="Build Motor"></TextBlock>
+                        <Button Grid.Column="0" x:Name="SelectBuildMotorButton" HorizontalAlignment="Center" Height="30" Content="Build Motor" Click="SelectBuildMotorButton_Click"></Button>
                         <Grid Grid.Row="1">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="2*"/>
@@ -80,8 +79,7 @@
                             <RowDefinition Height="2*"/>
                             <RowDefinition Height="2*"/>
                         </Grid.RowDefinitions>
-                        <TextBlock Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12"
-                                    Text="Powder Motor"></TextBlock>
+                        <Button Grid.Column="0" x:Name="SelectPowderMotorButton" HorizontalAlignment="Center" Height="30" Content="Powder Motor" Click="SelectPowderMotorButton_Click"></Button>
                         <Grid Grid.Row="1">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="2*"/>
@@ -123,8 +121,7 @@
                             <RowDefinition Height="2*"/>
                             <RowDefinition Height="2*"/>
                         </Grid.RowDefinitions>
-                        <TextBlock Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12"
-                                    Text="Sweep Motor"></TextBlock>
+                        <Button Grid.Column="0" x:Name="SelectSweepMotorButton" HorizontalAlignment="Center" Height="30" Content="Sweep Motor" Click="SelectSweepMotorButton_Click"></Button>
                         <Grid Grid.Row="1">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="2*"/>

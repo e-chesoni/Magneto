@@ -97,6 +97,37 @@ public class MotorPageService
         this.sweepAbsMoveTextBox = sweepAbsMoveTextBox;
     }
 
+    public MotorPageService(ActuationManager am,
+                            Button selectBuildButton, Button selectPowderButton, Button selectSweepButton,
+                            TextBox buildPosTextBox, TextBox powderPosTextBox, TextBox sweepPosTextBox,
+                            TextBox incrBuildTextBox, TextBox incrPowderTextBox, TextBox incrSweepTextBox)
+    {
+        // Set up event handers to communicate with motor controller ports
+        ConfigurePortEventHandlers();
+
+        // Initialize motor set up for test page
+        InitMotors(am);
+
+        // Initialize motor map to simplify coordinated calls below
+        // Make sure this happens AFTER motor setup
+        InitializeMotorMap();
+
+        // Set up selection buttons
+        selectBuildMotorButton = selectBuildButton;
+        selectPowderMotorButton = selectPowderButton;
+        selectSweepMotorButton = selectSweepButton;
+
+        // Set up position text boxes
+        buildPositionTextBox = buildPosTextBox;
+        powderPositionTextBox = powderPosTextBox;
+        sweepPositionTextBox = sweepPosTextBox;
+
+        // Set up increment text boxes
+        incrBuildPositionTextBox = incrBuildTextBox;
+        incrPowderPositionTextBox = incrPowderTextBox;
+        incrSweepPositionTextBox = incrSweepTextBox;
+    }
+
     #region Initial Setup
 
     private void ConfigurePortEventHandlers()

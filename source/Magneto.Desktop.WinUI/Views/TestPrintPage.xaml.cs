@@ -11,6 +11,7 @@ using Magneto.Desktop.WinUI.Core.Models.Motor;
 using Magneto.Desktop.WinUI.Core.Services;
 using Magneto.Desktop.WinUI.Helpers;
 using Magneto.Desktop.WinUI.Popups;
+using Magneto.Desktop.WinUI.Services;
 using Magneto.Desktop.WinUI.ViewModels;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
@@ -222,6 +223,9 @@ public sealed partial class TestPrintPage : Page
     #endregion
 
 
+    private MotorPageService _motorPageService;
+    private WaverunnerPageService _waverunnerPageService;
+
     #region Constructor
 
     /// <summary>
@@ -237,9 +241,24 @@ public sealed partial class TestPrintPage : Page
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
         MagnetoSerialConsole.LogAvailablePorts();
 
-        SetupMotors();
-        SetupWaveRunner();
-        SetDefaultPrintSettings();
+        //SetupMotors();
+        //SetupWaveRunner();
+        //SetDefaultPrintSettings();
+    }
+
+    private void InitMotorPageService()
+    {
+        // TODO: Remove code above once MotorPageService has been vetted
+        _motorPageService = new MotorPageService(MissionControl.GetActuationManger(),
+                                                SelectBuildMotorButton, SelectPowderMotorButton, SelectSweepMotorButton,
+                                                BuildMotorCurrentPositionTextBox, PowderMotorCurrentPositionTextBox, SweepMotorCurrentPositionTextBox,
+                                                BuildMotorStepTextBox, PowderMotorStepTextBox, SweepMotorStepTextBox);
+    }
+
+    private void InitWaverunnerPageService()
+    {
+        _waverunnerPageService = new WaverunnerPageService(JobFileSearchDirectory, JobFileNameTextBox,
+                                                           ToggleRedPointerButton, StartMarkButton, IsMarkingText);
     }
 
     private void SetupMotors()
@@ -315,13 +334,16 @@ public sealed partial class TestPrintPage : Page
 
         // Set mission control after navigating to new page
         MissionControl = (MissionControl)e.Parameter;
-        
+
+        InitMotorPageService();
+        InitWaverunnerPageService();
+
         // Initialize motor set up for test page
-        SetUpTestMotors();
-        
+        //SetUpTestMotors();
+
         // Initialize motor map to simplify coordinated calls below
         // Make sure this happens AFTER motor setup
-        InitializeMotorMap();
+        //InitializeMotorMap();
 
         // Get motor positions
         //TODO: FIX ME -- mixes up motor positions
@@ -540,30 +562,17 @@ public sealed partial class TestPrintPage : Page
 
     private void GetBuildMotorCurrentPositionButton_Click(object sender, RoutedEventArgs e)
     {
-        var msg = "GetBuildMotorCurrentPositionButton Clicked...";
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-
-        if (_buildMotor != null)
-        {
-            GetPositionHelper(_buildMotor);
-
-            //TODO: Update textbox with position
-
-        }
-        else
-        {
-            MagnetoLogger.Log("Build Motor is null, cannot get position.", LogFactoryLogLevel.LogLevel.ERROR);
-        }
+        _motorPageService.HandleGetPosition(_motorPageService.buildMotor, _motorPageService.buildPositionTextBox);
     }
 
     private void GetPowderMotorCurrentPositionButton_Click(object sender, RoutedEventArgs e)
     {
-
+        _motorPageService.HandleGetPosition(_motorPageService.powderMotor, _motorPageService.powderPositionTextBox);
     }
 
     private void GetSweepMotorCurrentPositionButton_Click(object sender, RoutedEventArgs e)
     {
-
+        _motorPageService.HandleGetPosition(_motorPageService.sweepMotor, _motorPageService.sweepPositionTextBox);
     }
 
     #endregion
@@ -758,67 +767,38 @@ public sealed partial class TestPrintPage : Page
     #endregion
 
 
-    #region Absolute/Relative Motor Movement Button Methods
-
-
-
-    #endregion
-
-
     #region Step Motor Button Commands
 
     private void StepBuildMotorUpButton_Click(object sender, RoutedEventArgs e)
     {
-        var inrement = true;
-        if (_buildMotor != null)
-        {
-            StepMotor(_buildMotor, inrement);
-        }
+        MagnetoLogger.Log("step build up clicked", LogFactoryLogLevel.LogLevel.VERBOSE);
+        _motorPageService.HandleRelMove(_motorPageService.buildMotor, _motorPageService.incrBuildPositionTextBox, true, this.Content.XamlRoot);
     }
 
     private void StepBuildMotorDownButton_Click(object sender, RoutedEventArgs e)
     {
-        var inrement = false;
-        if (_buildMotor != null)
-        {
-            StepMotor(_buildMotor, inrement);
-        }
+        MagnetoLogger.Log("step build down clicked", LogFactoryLogLevel.LogLevel.VERBOSE);
+        _motorPageService.HandleRelMove(_motorPageService.buildMotor, _motorPageService.incrBuildPositionTextBox, false, this.Content.XamlRoot);
     }
 
     private void StepPowderMotorUpButton_Click(object sender, RoutedEventArgs e)
     {
-        var inrement = true;
-        if (_powderMotor != null)
-        {
-            StepMotor(_powderMotor, inrement);
-        }
+        _motorPageService.HandleRelMove(_motorPageService.powderMotor, _motorPageService.incrPowderPositionTextBox, true, this.Content.XamlRoot);
     }
 
     private void StepPowderMotorDownButton_Click(object sender, RoutedEventArgs e)
     {
-        var inrement = false;
-        if (_powderMotor != null)
-        {
-            StepMotor(_powderMotor, inrement);
-        }
+        _motorPageService.HandleRelMove(_motorPageService.powderMotor, _motorPageService.incrPowderPositionTextBox, false, this.Content.XamlRoot);
     }
 
     private void StepSweepMotorUpButton_Click(object sender, RoutedEventArgs e)
     {
-        var inrement = true;
-        if (_sweepMotor != null)
-        {
-            StepMotor(_sweepMotor, inrement);
-        }
+        _motorPageService.HandleRelMove(_motorPageService.sweepMotor, _motorPageService.incrSweepPositionTextBox, true, this.Content.XamlRoot);
     }
 
     private void StepSweepMotorDownButton_Click(object sender, RoutedEventArgs e)
     {
-        var inrement = false;
-        if (_sweepMotor != null)
-        {
-            StepMotor(_sweepMotor, inrement);
-        }
+        _motorPageService.HandleRelMove(_motorPageService.sweepMotor, _motorPageService.incrSweepPositionTextBox, false, this.Content.XamlRoot);
     }
 
     #endregion
@@ -841,15 +821,7 @@ public sealed partial class TestPrintPage : Page
 
     private void HomeSweepButton_Click(object sender, RoutedEventArgs e)
     {
-        var isAbsolute = true;
-        if (_sweepMotor != null)
-        {
-            _ = ExecuteMovementCommand(_sweepMotor, isAbsolute, 0);
-        }
-        else
-        {
-            LogAndDisplayMessage(LogFactoryLogLevel.LogLevel.ERROR, this.Content.XamlRoot, "Could not find sweep motor.", "sweepMotor is null");
-        }
+        _motorPageService.HandleHomeMotor(_motorPageService.sweepMotor, _motorPageService.sweepPositionTextBox);
     }
 
     private void StopSweepButton_Click(object sender, RoutedEventArgs e)
@@ -978,110 +950,33 @@ public sealed partial class TestPrintPage : Page
 
     private void UseDefaultJobButton_Click(object sender, RoutedEventArgs e)
     {
-        string path_to_image = "c:/path/to/test_print.sjf";
-        var msg = "";
-
-        // TODO: Check if path is valid
-        var _validPath = true;
-
-        if (_validPath)
-        {
-            // Add dummy string to text box
-            // SelectedPrint is the name of the TextBox in PrintPage.xaml
-            JobFileNameTextBox.Text = path_to_image;
-
-            // Put a new image on the build manager
-            MissionControl.CreateArtifactModel(path_to_image);
-
-            // TODO: Toast Message: Using default thickness of {} get from config
-            msg = "Setting every print layer's thickness to default thickness from MagnetoConfig";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
-            MissionControl.SetArtifactThickness(MissionControl.GetDefaultArtifactThickness());
-
-            // Slice image
-            MissionControl.SliceArtifact(); // TODO: IMAGE HANDLER references Magneto Config to control slice number: SliceArtifact calls SliceArtifact in build controller which calls ImageHandler
-            //StartPrintButton.IsEnabled = true;
-
-        }
-        else
-        {
-            msg = "Cannot find print: Invalid file path.";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            return;
-        }
+        _waverunnerPageService.UseDefaultJob();
     }
 
     private void UpdateDirectoryButton_Click(object sender, RoutedEventArgs e)
     {
-        LogAndDisplayMessage(LogFactoryLogLevel.LogLevel.VERBOSE, this.Content.XamlRoot, "Job directory updated.");
-        _jobDirectory = JobFileSearchDirectory.Text;
-        StartMarkButton.IsEnabled = false;
+        _waverunnerPageService.UpdateDirectory();
     }
 
     private void GetJobButton_Click(object sender, RoutedEventArgs e)
     {
-        var fullFilePath = Path.Combine(_jobDirectory, JobFileNameTextBox.Text);
-
-        if (ValidateJob(fullFilePath) == ExecStatus.Success)
-        {
-            _fullJobFilePath = fullFilePath; // Assuming _fullJobFilePath is a class member
-            StartMarkButton.IsEnabled = true;
-            ToggleRedPointerButton.IsEnabled = true;
-        }
-        else
-        {
-            StartMarkButton.IsEnabled = false;
-            ToggleRedPointerButton.IsEnabled = false;
-        }
+        _waverunnerPageService.GetJob(this.Content.XamlRoot);
     }
 
     private void ToggleRedPointerButton_Click(object sender, RoutedEventArgs e)
     {
-        _redPointerEnabled = !_redPointerEnabled;
-
-        if (_redPointerEnabled)
-        {
-            MagnetoLogger.Log("Starting Red Pointer", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS);
-            StartRedPointer();
-            ToggleRedPointerButton.Background = new SolidColorBrush(Colors.Red);
-            StartMarkButton.IsEnabled = false; // Assume job validation does not change.
-        }
-        else
-        {
-            MagnetoLogger.Log("Stopping Red Pointer", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS);
-            StopRedPointer();
-            ToggleRedPointerButton.Background = (SolidColorBrush)Microsoft.UI.Xaml.Application.Current.Resources["ButtonBackgroundThemeBrush"];
-            // Re-enable StartMarkButton only if _fullJobFilePath is still valid
-            StartMarkButton.IsEnabled = !string.IsNullOrEmpty(_fullJobFilePath) && File.Exists(_fullJobFilePath);
-        }
+        _waverunnerPageService.StartRedPointer();
     }
 
 
     private void StartMarkButton_Click(object sender, RoutedEventArgs e)
     {
-        // File exists, proceed with marking
-        var msg = $"Starting mark for file: {_fullJobFilePath}";
-        MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
-        _ = MarkEntityAsync();
+        _ = _waverunnerPageService.MarkEntityAsync();
     }
 
     private void StopMarkButton_Click(object sender, RoutedEventArgs e)
     {
-        var msg = "";
-
-        if (cci.ScIsRunning() == 0)
-        {
-            msg = "SAMLight not found";
-            MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
-            return;
-        }
-
-        LogMessage("Stopping Mark", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS);
-
-        msg = "SAMLight is stopping mark";
-        MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.WARN);
-
-        cci.ScStopMarking();
+        _waverunnerPageService.StopMark();
     }
 
     #endregion
@@ -1200,4 +1095,19 @@ public sealed partial class TestPrintPage : Page
     }
 
     #endregion
+
+    private void SelectPowderMotorButton_Click(object sender, RoutedEventArgs e)
+    {
+        _motorPageService.SelectBuildMotor();
+    }
+
+    private void SelectBuildMotorButton_Click(object sender, RoutedEventArgs e)
+    {
+        _motorPageService.SelectPowderMotor();
+    }
+
+    private void SelectSweepMotorButton_Click(object sender, RoutedEventArgs e)
+    {
+        _motorPageService.SelectSweepMotor();
+    }
 }
