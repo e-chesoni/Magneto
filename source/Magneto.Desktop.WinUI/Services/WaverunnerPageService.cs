@@ -135,13 +135,13 @@ public class WaverunnerPageService
     /// Test magneto connection to waverunner
     /// </summary>
     /// <returns>return 0 if successful; -1 if failed</returns>
-    public int TestWaverunnerConnection(XamlRoot xamlRoot)
+    public ExecStatus TestWaverunnerConnection(XamlRoot xamlRoot)
     {
         try
         {
             // Show hello world message box in SAMlight
             cci.ScExecCommand((int)ScComSAMLightClientCtrlExecCommandConstants.scComSAMLightClientCtrlExecCommandTest);
-            return 0;
+            return ExecStatus.Success;
         }
         catch (System.Exception exception)
         {
@@ -150,7 +150,7 @@ public class WaverunnerPageService
             var displayMsg = "Unable to say hello to waverunner. Is the application open?";
             MagnetoLogger.Log(logMsg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
             _ = PopupInfo.ShowContentDialog(xamlRoot, "Warning", displayMsg);
-            return -1;
+            return ExecStatus.Failure;
         }
     }
 
@@ -159,7 +159,7 @@ public class WaverunnerPageService
 
     #region Helper Functions
 
-    private void PrintDirectoryFiles(string targetDirectory)
+    private ExecStatus PrintDirectoryFiles(string targetDirectory)
     {
         var msg = "";
 
@@ -167,7 +167,7 @@ public class WaverunnerPageService
         {
             msg = "Directory does not exist. Cannot print files.";
             MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
-            return;
+            return ExecStatus.Failure;
         }
 
         // Get all file names in the directory
@@ -177,9 +177,11 @@ public class WaverunnerPageService
             msg = $"File: {fileName}";
             MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS);
         }
+
+        return ExecStatus.Success;
     }
 
-    private int FindJobDirectory()
+    private ExecStatus FindJobDirectory()
     {
         // Log the target directory
         var msg = $"Target Directory: {_jobDirectory}";
@@ -190,15 +192,15 @@ public class WaverunnerPageService
         {
             msg = "Directory does not exist. Cannot get job.";
             MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
-            return 0;
+            return ExecStatus.Failure;
         }
         else
         {
-            return 1;
+            return ExecStatus.Success;
         }
     }
 
-    private int FindFile(string fileName, XamlRoot xamlRoot)
+    private ExecStatus FindFile(string fileName, XamlRoot xamlRoot)
     {
         // Check if the file exists
         if (!File.Exists(fileName))
@@ -207,13 +209,13 @@ public class WaverunnerPageService
             var msg = $"Could not find: {fileName}";
             MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
             _ = PopupInfo.ShowContentDialog(xamlRoot, "Warning", msg);
-            return 0;
+            return ExecStatus.Failure;
         }
         else
         {
             var msg = $"Found file: {fileName}";
             MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS);
-            return 1;
+            return ExecStatus.Success;
         }
     }
 
@@ -223,11 +225,11 @@ public class WaverunnerPageService
     #region File Path Methods
 
     // TODO: put in a try/catch block in case update fails
-    public int UpdateDirectory()
+    public ExecStatus UpdateDirectory()
     {
         _jobDirectory = JobFileSearchDirectory.Text;
         StartMarkButton.IsEnabled = false;
-        return 0;
+        return ExecStatus.Success;
     }
 
     public ExecStatus ValidateJobPath(string fullPathToJob, XamlRoot xamlRoot)
@@ -254,7 +256,7 @@ public class WaverunnerPageService
         return ExecStatus.Success;
     }
 
-    public void GetJob(XamlRoot xamlRoot)
+    public ExecStatus GetJob(XamlRoot xamlRoot)
     {
         var fullFilePath = Path.Combine(_jobDirectory, JobFileNameTextBox.Text);
 
@@ -266,16 +268,18 @@ public class WaverunnerPageService
             // If it's not open, do not enable these buttons! Instead, display error pop up & log error
             StartMarkButton.IsEnabled = true;
             ToggleRedPointerButton.IsEnabled = true;
+            return ExecStatus.Success;
         }
         else
         {
             // Make sure buttons are disabled; we can't mark what we can't find!
             StartMarkButton.IsEnabled = false;
             ToggleRedPointerButton.IsEnabled = false;
+            return ExecStatus.Failure;
         }
     }
 
-    public void UseDefaultJob()
+    public ExecStatus UseDefaultJob()
     {
         // Update job file name
         JobFileNameTextBox.Text = _defaultJobName;
@@ -288,8 +292,9 @@ public class WaverunnerPageService
         {
             msg = "Directory does not exist. Cannot get job.";
             MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
-            return;
+            return ExecStatus.Success;
         }
+        else { return ExecStatus.Failure; }
     }
 
     #endregion
@@ -328,16 +333,16 @@ public class WaverunnerPageService
         //MessageBox.Show(mark_time_string, "Info", MessageBoxButtons.OK);
     }
 
-    public static int SetRedPointerMode(RedPointerMode mode)
+    public static ExecStatus SetRedPointerMode(RedPointerMode mode)
     {
         // Returns void
         cci.ScSetLongValue((int)ScComSAMLightClientCtrlValueTypes.scComSAMLightClientCtrlLongValueTypeRedpointerMode, (int)mode);
 
         // TODO: Replace once we figure out how to interact with error codes form SAM
-        return (int)ExecStatus.Success;
+        return ExecStatus.Success;
     }
 
-    public int StartRedPointer()
+    public ExecStatus StartRedPointer()
     {
         UpdateUIMarkStatusAndLogMessage("Starting red pointer", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS);
 
@@ -345,6 +350,7 @@ public class WaverunnerPageService
         {
             UpdateUIMarkStatusAndLogMessage("Cannot Mark; WaveRunner is closed.", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR, "SAMLight not found");
             StartMarkButton.IsEnabled = false;
+            return ExecStatus.Failure;
         }
 
         UpdateUIMarkStatusAndLogMessage("Sending Objects!", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS); // Update UI with status
@@ -356,7 +362,7 @@ public class WaverunnerPageService
         cci.ScExecCommand((int)ScComSAMLightClientCtrlExecCommandConstants.scComSAMLightClientCtrlExecCommandRedPointerStart);
 
         // TODO: Replace once we figure out how to interact with error codes form SAM
-        return (int)ExecStatus.Success;
+        return ExecStatus.Success;
     }
 
     public int ToggleRedPointer()
@@ -382,7 +388,7 @@ public class WaverunnerPageService
         }
     }
 
-    public int StopRedPointer()
+    public ExecStatus StopRedPointer()
     {
         UpdateUIMarkStatusAndLogMessage("Stopping red pointer", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS);
 
@@ -393,7 +399,7 @@ public class WaverunnerPageService
         cci.ScStopMarking();
 
         // TODO: Replace once we figure out how to interact with error codes form SAM
-        return (int)ExecStatus.Success;
+        return ExecStatus.Success;
     }
 
     public async Task<ExecStatus> MarkEntityAsync()
