@@ -387,11 +387,11 @@ public class StepperMotor : IStepperMotor
         {
             // If port is open:
             // Create move command
-            var moveCommand = $"{_motorAxis}MVA{pos}";
+            var motorCmd = $"{_motorAxis}MVA{pos}";
 
             // Send move command to motor port
-            MagnetoSerialConsole.SerialWrite(_motorPort, moveCommand);
-            MagnetoLogger.Log($"Moving {_motorName} motor on axis {_motorAxis} to {pos}mm. Command Sent: {moveCommand}", LogFactoryLogLevel.LogLevel.VERBOSE);
+            MagnetoSerialConsole.SerialWrite(_motorPort, motorCmd);
+            MagnetoLogger.Log($"Moving {_motorName} motor on axis {_motorAxis} to {pos}mm. Command Sent: {motorCmd}", LogFactoryLogLevel.LogLevel.VERBOSE);
 
             // Asynchronously wait until the desired position is reached
             await CheckPosAsync(desiredPos);
@@ -439,11 +439,11 @@ public class StepperMotor : IStepperMotor
         {
             // If port is open:
             // Create move command
-            var moveCommand = $"{_motorAxis}MVR{steps}";
+            var motorCmd = $"{_motorAxis}MVR{steps}";
 
             // Send move command to motor port
-            MagnetoSerialConsole.SerialWrite(_motorPort, moveCommand);
-            MagnetoLogger.Log($"Moving {_motorName} motor on axis {_motorAxis} {steps}mm relative to current position. Command Sent: {moveCommand}", LogFactoryLogLevel.LogLevel.VERBOSE);
+            MagnetoSerialConsole.SerialWrite(_motorPort, motorCmd);
+            MagnetoLogger.Log($"Moving {_motorName} motor on axis {_motorAxis} {steps}mm relative to current position. Command Sent: {motorCmd}", LogFactoryLogLevel.LogLevel.VERBOSE);
 
             // Asynchronously wait until the desired position is reached
             await CheckPosAsync(desiredPos);
@@ -460,9 +460,25 @@ public class StepperMotor : IStepperMotor
     /// EMERGENCY STOP: Stop motor
     /// </summary>
     /// <returns></returns> Returns -1 if stop command fails, 0 if move command is successful
-    public Task StopMotor()
+    public async Task StopMotor()
     {
-        throw new NotImplementedException();
+        // Check if serial port assigned to motor is open
+        if (MagnetoSerialConsole.OpenSerialPort(_motorPort))
+        {
+            // If port is open:
+            // Create move command
+            var motorCmd = $"{_motorAxis}STP";
+
+            // Send move command to motor port
+            MagnetoSerialConsole.SerialWrite(_motorPort, motorCmd);
+            MagnetoLogger.Log($"Stopping {_motorName} motor on axis {_motorAxis}. Command Sent: {motorCmd}", LogFactoryLogLevel.LogLevel.VERBOSE);
+        }
+        else
+        {
+            // If port is closed, log error and exit method
+            MagnetoLogger.Log("Port Closed.", LogFactoryLogLevel.LogLevel.ERROR);
+            return;
+        }
     }
 
     /// <summary>

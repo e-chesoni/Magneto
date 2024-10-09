@@ -130,6 +130,7 @@ public class ActuationManager : ISubsciber, IStateMachine
     {
         AbsoluteMove, // Corresponds to "MVA" for absolute movements
         RelativeMove, // Corresponds to "MVR" for relative movements
+        StopMotion,  // Corresponds to "STP" for request to stop motor
         PositionQuery // Corresponds to "POS?" for querying current position
     }
 
@@ -329,6 +330,9 @@ public class ActuationManager : ISubsciber, IStateMachine
                 case CommandType.RelativeMove:
                     command += $"MVR{dist}";
                     break;
+                case CommandType.StopMotion:
+                    command += "STP";
+                    break;
                 case CommandType.PositionQuery:
                     command += "POS?";
                     break;
@@ -431,7 +435,12 @@ public class ActuationManager : ISubsciber, IStateMachine
         var msg = $"Executing command {value}.";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
 
-        if (motorCommand.StartsWith("MVA"))
+        if (motorCommand.StartsWith("STP"))
+        {
+            MagnetoLogger.Log("Stopping motor", LogFactoryLogLevel.LogLevel.SUCCESS);
+            await motor.StopMotor();
+        }
+        else if (motorCommand.StartsWith("MVA"))
         {
             await motor.MoveMotorAbsAsync(value);
         }
