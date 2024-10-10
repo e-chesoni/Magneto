@@ -277,10 +277,29 @@ public class MotorPageService
             dist = moveUp ? dist : -dist;
 
             // Move motor
-            await _actuationManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.RelativeMove, dist);
-
             // NOTE: when called, you must await the return to get the integer value
             // Otherwise returns some weird string
+            await _actuationManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.RelativeMove, dist);
+
+            return 1;
+        }
+    }
+
+    public async Task<int> StopMotor(StepperMotor motor, TextBox textBox)
+    {
+        if (textBox == null || !double.TryParse(textBox.Text, out var value))
+        {
+            var msg = $"invalid input in {motor.GetMotorName} text box: {textBox.Text}";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            return 0;
+        }
+        else
+        {
+            // stop motor
+            // NOTE: when called, you must await the return to get the integer value
+            // Otherwise returns some weird string
+            await sweepMotor.StopMotor(); // do not go through actuator; 
+
             return 1;
         }
     }
@@ -524,7 +543,33 @@ public class MotorPageService
             }
             else
             {
-                _ = PopupInfo.ShowContentDialog(xamlRoot, "Error", "Invalid input in moveUp text box.");
+                _ = PopupInfo.ShowContentDialog(xamlRoot, "Error", "Failed to send command to motor.");
+            }
+        }
+        else
+        {
+            _ = PopupInfo.ShowContentDialog(xamlRoot, "Error", "Failed to select motor. Motor is null.");
+        }
+    }
+
+    public async void StopMotorAndUpdateUI(StepperMotor motor, TextBox textBox, XamlRoot xamlRoot)
+    {
+        var res = 0;
+        if (motor != null)
+        {
+            // Select build motor button
+            SelectMotorHelper(motor);
+
+            res = await StopMotor(motor, textBox);
+
+            // If operation is successful, update text box
+            if (res == 1)
+            {
+                UpdateMotorPositionTextBox(motor);
+            }
+            else
+            {
+                _ = PopupInfo.ShowContentDialog(xamlRoot, "Error", "Failed to send command to motor.");
             }
         }
         else

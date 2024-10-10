@@ -365,8 +365,7 @@ public sealed partial class TestPrintPage : Page
 
     private void StopSweepButton_Click(object sender, RoutedEventArgs e)
     {
-        var msg = "StopSweepButton_Click Method not implemented.";
-        LogAndDisplayMessage(LogFactoryLogLevel.LogLevel.ERROR, this.Content.XamlRoot, msg);
+        _motorPageService.GetActuationManager().HandleStopRequest(_motorPageService.sweepMotor); // TODO: FIX -- can call this directly, but since position is never reached, data logging gets stuck in endless loop
     }
 
     #endregion

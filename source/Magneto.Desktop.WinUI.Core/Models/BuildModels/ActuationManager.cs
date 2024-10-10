@@ -126,11 +126,11 @@ public class ActuationManager : ISubsciber, IStateMachine
         LASER // Corresponds to Waverunner
     }
 
+    // NOTE: Stop commands should not be added to queue; should be called directly
     public enum CommandType
     {
         AbsoluteMove, // Corresponds to "MVA" for absolute movements
         RelativeMove, // Corresponds to "MVR" for relative movements
-        StopMotion,  // Corresponds to "STP" for request to stop motor
         PositionQuery // Corresponds to "POS?" for querying current position
     }
 
@@ -301,6 +301,17 @@ public class ActuationManager : ISubsciber, IStateMachine
 
     #endregion
 
+    #region Stop request handler
+
+    public Task<double> HandleStopRequest(StepperMotor motor)
+    {
+        TaskCompletionSource<double> tcs = null;
+        motor.StopMotor();
+        return tcs?.Task ?? Task.FromResult(0.0);
+    }
+
+    #endregion
+
 
     #region Queue Management
 
@@ -329,9 +340,6 @@ public class ActuationManager : ISubsciber, IStateMachine
                     break;
                 case CommandType.RelativeMove:
                     command += $"MVR{dist}";
-                    break;
-                case CommandType.StopMotion:
-                    command += "STP";
                     break;
                 case CommandType.PositionQuery:
                     command += "POS?";
