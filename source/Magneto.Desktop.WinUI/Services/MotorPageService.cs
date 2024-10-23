@@ -296,6 +296,9 @@ public class MotorPageService
         // move build motor down by layer height
         await _actuationManager.AddCommand(GetControllerTypeHelper(buildMotor.GetMotorName()), buildMotor.GetAxis(), CommandType.RelativeMove, defaultLayerHeight);
 
+        // distribute powder
+        SweepLeft();
+
         return 1;
     }
 

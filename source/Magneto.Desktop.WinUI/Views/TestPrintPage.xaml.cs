@@ -511,4 +511,14 @@ public sealed partial class TestPrintPage : Page
     {
         _motorPageService.SelectSweepMotor();
     }
+
+    private void DisableLayerMoveButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void EnableLayerMoveButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
 }
