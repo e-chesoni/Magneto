@@ -240,9 +240,6 @@ public sealed partial class TestPrintPage : Page
         var msg = "Landed on Test Print Page";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
         MagnetoSerialConsole.LogAvailablePorts();
-
-        //SetupMotors();
-        //SetupWaveRunner();
     }
 
     private void InitMotorPageService()
@@ -417,7 +414,7 @@ public sealed partial class TestPrintPage : Page
 
     private void MoveToNextLayerStartPositionButton_Click(object sender, RoutedEventArgs e)
     {
-        // TODO: implement move to next layer
+        _motorPageService.MoveToNextLayer(_layerThickness);
     }
 
     #endregion

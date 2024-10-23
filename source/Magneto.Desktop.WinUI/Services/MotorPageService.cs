@@ -285,6 +285,20 @@ public class MotorPageService
         }
     }
 
+    public async Task<int> MoveToNextLayer(double defaultLayerHeight)
+    {
+        // move sweep motor home
+        await HomeMotor(sweepMotor);
+
+        // move powder motor down by layer height
+        await _actuationManager.AddCommand(GetControllerTypeHelper(powderMotor.GetMotorName()), powderMotor.GetAxis(), CommandType.RelativeMove, -defaultLayerHeight);
+
+        // move build motor down by layer height
+        await _actuationManager.AddCommand(GetControllerTypeHelper(buildMotor.GetMotorName()), buildMotor.GetAxis(), CommandType.RelativeMove, defaultLayerHeight);
+
+        return 1;
+    }
+
     public async Task<int> StopMotor(StepperMotor motor, TextBox textBox)
     {
         if (textBox == null || !double.TryParse(textBox.Text, out var value))
