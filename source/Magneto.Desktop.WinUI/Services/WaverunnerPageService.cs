@@ -101,7 +101,7 @@ public class WaverunnerPageService
 
     public Button StartMarkButton { get; set; }
 
-    public TextBlock IsMarkingText { get; set; }
+    public TextBlock? IsMarkingText { get; set; }
 
     #endregion
 
@@ -113,6 +113,30 @@ public class WaverunnerPageService
         this.ToggleRedPointerButton = toggleRedPointerButton;
         this.StartMarkButton = startMarkButton;
         this.IsMarkingText = isMarkingText;
+
+        // Set default job directory
+        _defaultJobDirectory = @"C:\Scanner Application\Scanner Software\jobfiles";
+        _jobDirectory = _defaultJobDirectory;
+        this.JobFileSearchDirectory.Text = _jobDirectory;
+
+        // Set default job file
+        _defaultJobName = "center_crosshair_OAT.sjf";
+        this.JobFileNameTextBox.Text = _defaultJobName;
+
+        // ASSUMPTION: Red pointer is off when application starts
+        // Have not found way to check red pointer status in SAMLight docs 
+        // Initialize red pointer to off
+        _redPointerEnabled = false;
+    }
+
+    public WaverunnerPageService(TextBox jobFileSearchDirectory, TextBox jobFileNameTextBox,
+                                 Button toggleRedPointerButton, Button startMarkButton)
+    {
+        this.JobFileSearchDirectory = jobFileSearchDirectory;
+        this.JobFileNameTextBox = jobFileNameTextBox;
+        this.ToggleRedPointerButton = toggleRedPointerButton;
+        this.StartMarkButton = startMarkButton;
+        this.IsMarkingText = null;
 
         // Set default job directory
         _defaultJobDirectory = @"C:\Scanner Application\Scanner Software\jobfiles";
@@ -479,7 +503,7 @@ public class WaverunnerPageService
     public void UpdateUIMarkStatusAndLogMessage(string uiMessage, Core.Contracts.Services.LogFactoryLogLevel.LogLevel logLevel, string logMessage = null)
     {
         // Update UI with the message
-        UpdateUITextHelper.UpdateUIText(IsMarkingText, uiMessage);
+        //UpdateUITextHelper.UpdateUIText(IsMarkingText, uiMessage);
 
         // Use the provided log level for logging
         MagnetoLogger.Log(logMessage ?? uiMessage, logLevel);

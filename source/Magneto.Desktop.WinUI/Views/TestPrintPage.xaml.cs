@@ -254,7 +254,7 @@ public sealed partial class TestPrintPage : Page
     private void InitWaverunnerPageService()
     {
         _waverunnerPageService = new WaverunnerPageService(JobFileSearchDirectory, JobFileNameTextBox,
-                                                           ToggleRedPointerButton, StartMarkButton, IsMarkingText);
+                                                           ToggleRedPointerButton, StartMarkButton);
     }
 
     private void SetDefaultPrintSettings()
@@ -489,7 +489,7 @@ public sealed partial class TestPrintPage : Page
     private void LogMessage(string uiMessage, Core.Contracts.Services.LogFactoryLogLevel.LogLevel logLevel, string logMessage = null)
     {
         // Update UI with the message
-        UpdateUITextHelper.UpdateUIText(IsMarkingText, uiMessage);
+        //UpdateUITextHelper.UpdateUIText(IsMarkingText, uiMessage);
 
         // Use the provided log level for logging
         MagnetoLogger.Log(logMessage ?? uiMessage, logLevel);
@@ -518,6 +518,11 @@ public sealed partial class TestPrintPage : Page
     }
 
     private void EnableLayerMoveButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void LockCalibrationSectionButton_Click(object sender, RoutedEventArgs e)
     {
 
     }
