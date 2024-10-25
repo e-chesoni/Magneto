@@ -348,19 +348,19 @@
                         <Grid Grid.Row="4">
                             <!-- Marking -->
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="3*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="2*"/>
                             </Grid.ColumnDefinitions>
                             <Button Grid.Column="0" x:Name="ToggleRedPointerButton" HorizontalAlignment="Right" VerticalAlignment="Center" 
                                     Content="Toggle Red Pointer" Click="ToggleRedPointerButton_Click" IsEnabled="False"></Button>
                             <TextBlock Grid.Column="1" x:Name="RedPointerInfoText" HorizontalAlignment="Center" VerticalAlignment="Center"
                                        FontSize="12" Text="Red pointer must be off to Start Mark" Foreground="DarkGray"></TextBlock>
-                            <Button Grid.Column="2" x:Name="StartMarkButton" HorizontalAlignment="Right" VerticalAlignment="Center" 
-                                    Margin="2" Content="Start Mark" Click="StartMarkButton_Click" IsEnabled="False"></Button>
-                            <Button Grid.Column="3" x:Name="StopMarkButton" HorizontalAlignment="Left" VerticalAlignment="Center" 
-                                    Margin="2" Content="Stop Mark" Click="StopMarkButton_Click"></Button>
+                            <Button Grid.Column="2" x:Name="StartMarkButton" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                    Content="Start Mark" Click="StartMarkButton_Click" IsEnabled="False"></Button>
+                            <Button Grid.Column="3" x:Name="StopMarkButton" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                    Content="Stop Mark" Click="StopMarkButton_Click"></Button>
                         </Grid>
 
                     </Grid>
