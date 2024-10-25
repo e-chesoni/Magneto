@@ -291,10 +291,10 @@ public class MotorPageService
         await HomeMotor(sweepMotor);
 
         // move powder motor down by layer height
-        await _actuationManager.AddCommand(GetControllerTypeHelper(powderMotor.GetMotorName()), powderMotor.GetAxis(), CommandType.RelativeMove, -defaultLayerHeight);
+        await _actuationManager.AddCommand(GetControllerTypeHelper(powderMotor.GetMotorName()), powderMotor.GetAxis(), CommandType.RelativeMove, defaultLayerHeight);
 
         // move build motor down by layer height
-        await _actuationManager.AddCommand(GetControllerTypeHelper(buildMotor.GetMotorName()), buildMotor.GetAxis(), CommandType.RelativeMove, defaultLayerHeight);
+        await _actuationManager.AddCommand(GetControllerTypeHelper(buildMotor.GetMotorName()), buildMotor.GetAxis(), CommandType.RelativeMove, -defaultLayerHeight);
 
         // distribute powder
         SweepLeft();
