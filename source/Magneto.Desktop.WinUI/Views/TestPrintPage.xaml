@@ -160,8 +160,8 @@
 
                     </Grid>
 
-                    <Button Grid.Row="2" x:Name="LockCalibrationSectionButton" HorizontalAlignment="Center" VerticalAlignment="Top" Height="30" Margin="2" Content="Lock Starting Positions"
-                            Click="LockCalibrationSectionButton_Click"></Button>
+                    <Button Grid.Row="2" x:Name="ToggleCalibrationPanelButtonLock" HorizontalAlignment="Center" VerticalAlignment="Top" Height="30" Margin="2" Content="Lock Calibration"
+                            Click="ToggleCalibrationPanelButtonLock_Click"></Button>
                 </Grid>
             </Border>
 
@@ -176,8 +176,9 @@
                     <Grid> <!-- Print Settings -->
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*"/>
+                            <RowDefinition Height="3*"/>
                             <RowDefinition Height="*"/>
-                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="2*"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
                         <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16"
@@ -187,6 +188,7 @@
                                 <RowDefinition Height="*"/>
                                 <RowDefinition Height="2*"/>
                                 <RowDefinition Height="2*"/>
+                                <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
                             <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="2" FontSize="16"
                               Text="Mark"></TextBlock>
@@ -198,10 +200,10 @@
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="2"
                                        FontSize="12" Text="Search Directory"></TextBlock>
-                                <TextBox Grid.Column="1" x:Name="JobFileSearchDirectory" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                <TextBox Grid.Column="1" x:Name="JobFileSearchDirectory" HorizontalAlignment="Center" VerticalAlignment="Center"
                                      Width="360" Margin="2"></TextBox>
                                 <Button Grid.Column="2" x:Name="UpdateDirectoryButton" HorizontalAlignment="Left" VerticalAlignment="Center" 
-                                    Margin="2" Content="Update Directory" Click="UpdateDirectoryButton_Click"></Button>
+                                    Margin="2" Content="Update" Click="UpdateDirectoryButton_Click"></Button>
                             </Grid>
                             <Grid Grid.Row="2" HorizontalAlignment="Center">
                                 <Grid.ColumnDefinitions>
@@ -215,20 +217,22 @@
                                 <TextBox Grid.Column="1" x:Name="JobFileNameTextBox" HorizontalAlignment="Center" VerticalAlignment="Center" 
                                      TextAlignment="Right" Width="150"  Margin="2"></TextBox>
                                 <Button Grid.Column="2" x:Name="GetJobButton" HorizontalAlignment="Center" VerticalAlignment="Center" 
-                                    Margin="2" Content="Get Job" Click="GetJobButton_Click"></Button>
+                                    Margin="2" Content="Update" Click="GetJobButton_Click"></Button>
                                 <Button Grid.Column="3" x:Name="UseDefaultJobButton" HorizontalAlignment="Center" VerticalAlignment="Center" 
                                     Margin="2" Content="Use Default Job" Click="UseDefaultJobButton_Click"></Button>
                             </Grid>
-
+                            <Button Grid.Row="3" x:Name="ToggleFileSettingsLockButton" HorizontalAlignment="Center" Height="30" Margin="2" Content="Lock File Settings"
+                                        Click="ToggleFileSettingsLockButton_Click"></Button>
                         </Grid>
-                        <Grid Grid.Row="2"> <!-- Layer Thickness -->
+                        <Grid Grid.Row="3"> <!-- Layer Thickness -->
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="*"/>
                                 <RowDefinition Height="2*"/>
+                                <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
-                            <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="2" FontSize="16"
+                            <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="2" FontSize="16"
                               Text="Set Layer Thickness"></TextBlock>
-                            <Grid Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top">
+                            <Grid Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="*"/>
@@ -240,9 +244,11 @@
                                 <TextBox Grid.Column="1" x:Name="SetLayerThicknessTextBox" Height ="30" Margin="2" 
                                         Text=" "></TextBox>
                                 <TextBlock Grid.Column="2" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="2" FontSize="12" Text="mm"></TextBlock>
-                                <Button Grid.Column="3" x:Name="UpdateLayerThicknessButton" HorizontalAlignment="Right" Height="30" Margin="2" Content="Update Layer Thickness"
+                                <Button Grid.Column="3" x:Name="UpdateLayerThicknessButton" HorizontalAlignment="Right" Height="30" Margin="2" Content="Update"
                                         Click="UpdateLayerThicknessButton_Click"></Button>
                             </Grid>
+                            <Button Grid.Row="2" x:Name="ToggleLayerSettingsLockButton" HorizontalAlignment="Center" Height="30" Margin="2" Content="Lock Layer Settings"
+                                        Click="ToggleLayerSettingsLockButton_Click"></Button>
                         </Grid>
                     </Grid>
                 </Border>
@@ -258,91 +264,138 @@
                         </Grid.RowDefinitions>
                         <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16"
                               Text="Print"></TextBlock>
-                        <TextBlock Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="12"
-                              Text="Printing:"></TextBlock>
-                        <TextBlock Grid.Row="2" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="12"
-                              Text="Layer Height:"></TextBlock>
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="4*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" HorizontalAlignment="Left" FontSize="12" Margin="2"
+                                    Text="Printing:"></TextBlock>
+                            <TextBlock Grid.Column="1" x:Name="CurrentJobToPrint" HorizontalAlignment="Center"></TextBlock>
+                        </Grid>
+                        <Grid Grid.Row="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="4*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" HorizontalAlignment="Left" FontSize="12" Margin="2"
+                                    Text="Layer Thickness:"></TextBlock>
+                            <TextBlock Grid.Column="1" x:Name="CurrentLayerThickness" HorizontalAlignment="Center"></TextBlock>
+                        </Grid>
+                        
                         <Grid Grid.Row="3">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="1*"/>
                                 <ColumnDefinition Width="2*"/>
                             </Grid.ColumnDefinitions>
-                        
-                            <Grid Grid.Column="0"> <!-- Enable Layer Move -->
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="*"/>
-                                    <RowDefinition Height="*"/>
-                                </Grid.RowDefinitions>
-                                <Button Grid.Row="0" x:Name="EnableLayerMoveButton" VerticalAlignment="Top" HorizontalAlignment="Center" Height="50" Content="Enable Layer Move"
+                            <Border Grid.Column="0" BorderBrush="Gray" BorderThickness="2" CornerRadius="5" Padding="5">
+                                <Grid Grid.Column="0">  <!-- Enable Layer Move -->
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <Button Grid.Row="0" x:Name="EnableLayerMoveButton" VerticalAlignment="Top" HorizontalAlignment="Center" Height="50" Content="Enable Layer Move"
                                         Click="EnableLayerMoveButton_Click"></Button>
-                                <Button Grid.Row="2" x:Name="MoveToNextLayerStartPositionButton" HorizontalAlignment="Center" VerticalAlignment="Top" Height="30" Margin="2" Content="Next Layer"
+                                    <Button Grid.Row="2" x:Name="MoveToNextLayerStartPositionButton" HorizontalAlignment="Center" VerticalAlignment="Top" Height="30" Margin="2" Content="Next Layer"
                                     Click="MoveToNextLayerStartPositionButton_Click"></Button>
-                            </Grid>
-                        
-                            <Grid Grid.Column="1"> <!-- Disable Layer Move -->
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="2*"/>
-                                    <RowDefinition Height="5*"/>
-                                    <RowDefinition Height="2*"/>
-                                    <RowDefinition Height="2*"/>
-                                </Grid.RowDefinitions>
-                                <Button Grid.Row="0" x:Name="DisableLayerMoveButton" VerticalAlignment="Top" HorizontalAlignment="Center" Height="50" Content="Disable Layer Move"
+                                </Grid>
+                            </Border>
+                            <Border Grid.Column="1" BorderBrush="Gray" BorderThickness="2" CornerRadius="5" Padding="5">
+                                <Grid Grid.Column="1"> <!-- Disable Layer Move -->
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="2*"/>
+                                        <RowDefinition Height="5*"/>
+                                        <RowDefinition Height="2*"/>
+                                        <RowDefinition Height="2*"/>
+                                    </Grid.RowDefinitions>
+                                    <Button Grid.Row="0" x:Name="DisableLayerMoveButton" VerticalAlignment="Top" HorizontalAlignment="Center" Height="50" Content="Disable Layer Move"
                                         Click="DisableLayerMoveButton_Click"></Button>
-                                <Grid Grid.Row="1">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Grid Grid.Column="0">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="*"/>
-                                            <RowDefinition Height="*"/>
-                                            <RowDefinition Height="*"/>
-                                        </Grid.RowDefinitions>
-                                        <Button Grid.Row="0"  HorizontalAlignment="Center" Height="30" Content="Build"></Button>
-                                        <Button Grid.Row="2"  HorizontalAlignment="Center" Height="30" Content="Stop"></Button>
-                                    </Grid>
-                                    <Grid Grid.Column="1">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="*"/>
-                                            <RowDefinition Height="*"/>
-                                            <RowDefinition Height="*"/>
-                                        </Grid.RowDefinitions>
-                                        <Button Grid.Row="0"  HorizontalAlignment="Center" Height="30" Content="Powder"></Button>
-                                        <Button Grid.Row="2"  HorizontalAlignment="Center" Height="30" Content="Stop"></Button>
-                                    </Grid>
-                                    <Grid Grid.Column="2">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="*"/>
-                                            <RowDefinition Height="*"/>
-                                            <RowDefinition Height="*"/>
-                                        </Grid.RowDefinitions>
-                                        <Button Grid.Row="0"  HorizontalAlignment="Center" Height="30" Content="Sweep"></Button>
-                                        <Grid Grid.Row="1">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="*"/>
-                                            </Grid.ColumnDefinitions>
-                                            <Button Grid.Column="0" x:Name="SweepLeftButton" HorizontalAlignment="Right" Height="30" Margin="2" Content="Left"
+                                    <Grid Grid.Row="1">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" BorderBrush="Gray" BorderThickness="2" CornerRadius="5" Padding="5">
+                                            <Grid Grid.Column="0">
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="*"/>
+                                                    <RowDefinition Height="*"/>
+                                                    <RowDefinition Height="*"/>
+                                                </Grid.RowDefinitions>
+                                                <Button Grid.Row="0"  HorizontalAlignment="Center" Height="30" Content="Build"></Button>
+                                                <Grid Grid.Row="1">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="3*"/>
+                                                        <ColumnDefinition Width="2*"/>
+                                                        <ColumnDefinition Width="2*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBox Grid.Column="0" Width="20"></TextBox>
+                                                    <Button Grid.Column="1" x:Name="IncrementBuildButton" HorizontalAlignment="Center" Height="30" Margin="1" Content="U"
+                                                            Click="IncrementBuildButton_Click"></Button>
+                                                    <Button Grid.Column="2" x:Name="DecrementBuildButton" HorizontalAlignment="Center" Height="30" Margin="1" Content="D"
+                                                            Click="DecrementBuildButton_Click"></Button>
+                                                </Grid>
+                                                <Button Grid.Row="2"  HorizontalAlignment="Center" Height="30" Content="Stop"></Button>
+                                            </Grid>
+                                        </Border>
+                                        <Border Grid.Column="1" BorderBrush="Gray" BorderThickness="2" CornerRadius="5" Padding="5">
+                                            <Grid Grid.Column="1">
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="*"/>
+                                                    <RowDefinition Height="*"/>
+                                                    <RowDefinition Height="*"/>
+                                                </Grid.RowDefinitions>
+                                                <Button Grid.Row="0"  HorizontalAlignment="Center" Height="30" Content="Powder"></Button>
+                                                <Grid Grid.Row="1">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="3*"/>
+                                                        <ColumnDefinition Width="2*"/>
+                                                        <ColumnDefinition Width="2*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBox Grid.Column="0" Width="20"></TextBox>
+                                                    <Button Grid.Column="1" x:Name="IncrementPowderButton" HorizontalAlignment="Center" Height="30" Margin="1" Content="U"
+                                                            Click="IncrementPowderButton_Click"></Button>
+                                                    <Button Grid.Column="2" x:Name="DecrementPowderButton" HorizontalAlignment="Center" Height="30" Margin="1" Content="D"
+                                                            Click="DecrementPowderButton_Click"></Button>
+                                                </Grid>
+                                                <Button Grid.Row="2"  HorizontalAlignment="Center" Height="30" Content="Stop"></Button>
+                                            </Grid>
+                                        </Border>
+                                        <Border Grid.Column="2" BorderBrush="Gray" BorderThickness="2" CornerRadius="5" Padding="5">
+                                            <Grid Grid.Column="2">
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="*"/>
+                                                    <RowDefinition Height="*"/>
+                                                    <RowDefinition Height="*"/>
+                                                </Grid.RowDefinitions>
+                                                <Button Grid.Row="0"  HorizontalAlignment="Center" Height="30" Content="Sweep"></Button>
+                                                <Grid Grid.Row="1">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Button Grid.Column="0" x:Name="SweepLeftButton" HorizontalAlignment="Right" Height="30" Margin="2" Content="Left"
                                                 Click="SweepLeftButton_Click"></Button>
-                                            <Button Grid.Column="1" x:Name="SweepRightButton" HorizontalAlignment="Center" Height="30" Margin="2" Content="Right"
+                                                    <Button Grid.Column="1" x:Name="SweepRightButton" HorizontalAlignment="Center" Height="30" Margin="2" Content="Right"
                                                 Click="SweepRightButton_Click"></Button>
-                                        </Grid>
-                                        <Button Grid.Row="2" x:Name="StopSweepButton" HorizontalAlignment="Center" Height="30" Content="Stop"
-                                        Click="StopSweepButton_Click"></Button>
+                                                </Grid>
+                                                <Button Grid.Row="2" x:Name="StopSweepButton" HorizontalAlignment="Center" Height="30" Content="Stop"
+                                                        Click="StopSweepButton_Click"></Button>
+                                            </Grid>
+                                        </Border>
                                     </Grid>
+                                    <Grid Grid.Row="2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Button Grid.Column="0"  HorizontalAlignment="Center" Height="50" Content="Stop All Motors"></Button>
+                                        <Button Grid.Column="1"  HorizontalAlignment="Center" Height="50" Content="Home All Motors"></Button>
+                                    </Grid>
+
                                 </Grid>
-                                <Grid Grid.Row="2">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Button Grid.Column="0"  HorizontalAlignment="Center" Height="50" Content="Stop All Motors"></Button>
-                                    <Button Grid.Column="1"  HorizontalAlignment="Center" Height="50" Content="Home All Motors"></Button>
-                                </Grid>
-                            
-                            </Grid>
+                            </Border>
                         </Grid>
 
                         <Grid Grid.Row="4">

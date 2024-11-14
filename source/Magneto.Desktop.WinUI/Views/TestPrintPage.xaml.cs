@@ -49,6 +49,14 @@ public sealed partial class TestPrintPage : Page
 
     private bool _movingMotorToTarget = false;
 
+    private bool _calibrationPanelEnabled = true;
+
+    private bool _fileSettingsSectionEnabled = true;
+
+    private bool _layerSettingsSectionEnabled = true;
+
+    private bool _printPanelEnabled = true;
+
     /// <summary>
     /// Struct for motor details
     /// </summary>
@@ -220,6 +228,8 @@ public sealed partial class TestPrintPage : Page
         }
     }
 
+    // TODO: Lock settings and print panels by default
+
     #endregion
 
 
@@ -236,6 +246,8 @@ public sealed partial class TestPrintPage : Page
     {
         ViewModel = App.GetService<TestPrintViewModel>();
         InitializeComponent();
+        ToggleFileSettingSectionHelper();
+        ToggleLayerSectionHelper();
 
         var msg = "Landed on Test Print Page";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
@@ -383,6 +395,7 @@ public sealed partial class TestPrintPage : Page
     private void GetJobButton_Click(object sender, RoutedEventArgs e)
     {
         _waverunnerPageService.GetJob(this.Content.XamlRoot);
+        CurrentJobToPrint.Text = Path.Combine(JobFileSearchDirectory.Text, JobFileNameTextBox.Text);
     }
 
     private void ToggleRedPointerButton_Click(object sender, RoutedEventArgs e)
@@ -408,8 +421,8 @@ public sealed partial class TestPrintPage : Page
 
     private void UpdateLayerThicknessButton_Click(object sender, RoutedEventArgs e)
     {
-        _layerThickness = int.Parse(SetLayerThicknessTextBox.Text);
-        SetLayerThicknessTextBox.Text = _layerThickness.ToString();
+        _layerThickness = (double)Math.Round(double.Parse(SetLayerThicknessTextBox.Text), 3);
+        CurrentLayerThickness.Text = _layerThickness.ToString() + " mm";
     }
 
     private void MoveToNextLayerStartPositionButton_Click(object sender, RoutedEventArgs e)
@@ -522,8 +535,126 @@ public sealed partial class TestPrintPage : Page
 
     }
 
-    private void LockCalibrationSectionButton_Click(object sender, RoutedEventArgs e)
+    private void ToggleCalibrationPanelButtonLock_Click(object sender, RoutedEventArgs e)
+    {
+        if (_calibrationPanelEnabled)
+        {
+            SelectBuildMotorButton.IsEnabled = false;
+            BuildMotorCurrentPositionTextBox.IsEnabled = false;
+            GetBuildMotorCurrentPositionButton.IsEnabled = false;
+            BuildMotorStepTextBox.IsEnabled = false;
+            StepBuildMotorUpButton.IsEnabled = false;
+            StepBuildMotorDownButton.IsEnabled = false;
+
+            SelectPowderMotorButton.IsEnabled = false;
+            PowderMotorCurrentPositionTextBox.IsEnabled = false;
+            GetPowderMotorCurrentPositionButton.IsEnabled = false;
+            PowderMotorStepTextBox.IsEnabled = false;
+            StepPowderMotorUpButton.IsEnabled = false;
+            StepPowderMotorDownButton.IsEnabled = false;
+
+            SelectSweepMotorButton.IsEnabled = false;
+            SweepMotorCurrentPositionTextBox.IsEnabled = false;
+            GetSweepMotorCurrentPositionButton.IsEnabled = false;
+            SweepMotorStepTextBox.IsEnabled = false;
+            StepSweepMotorUpButton.IsEnabled = false;
+            StepSweepMotorDownButton.IsEnabled = false;
+
+            ToggleCalibrationPanelButtonLock.Content = "Unlock Calibration";
+        } else {
+            SelectBuildMotorButton.IsEnabled = true;
+            BuildMotorCurrentPositionTextBox.IsEnabled = true;
+            GetBuildMotorCurrentPositionButton.IsEnabled = true;
+            BuildMotorStepTextBox.IsEnabled = true;
+            StepBuildMotorUpButton.IsEnabled = true;
+            StepPowderMotorDownButton.IsEnabled = true;
+
+            SelectPowderMotorButton.IsEnabled = true;
+            PowderMotorCurrentPositionTextBox.IsEnabled = true;
+            GetPowderMotorCurrentPositionButton.IsEnabled = true;
+            PowderMotorStepTextBox.IsEnabled = true;
+            StepPowderMotorUpButton.IsEnabled = true;
+            StepPowderMotorDownButton.IsEnabled = true;
+
+            SelectSweepMotorButton.IsEnabled = true;
+            SweepMotorCurrentPositionTextBox.IsEnabled = true;
+            GetSweepMotorCurrentPositionButton.IsEnabled = true;
+            SweepMotorStepTextBox.IsEnabled = true;
+            StepSweepMotorUpButton.IsEnabled = true;
+            StepSweepMotorDownButton.IsEnabled = true;
+
+            ToggleCalibrationPanelButtonLock.Content = "Lock Calibration";
+        }
+
+        _calibrationPanelEnabled = !_calibrationPanelEnabled;
+    }
+
+    private void ToggleFileSettingSectionHelper()
+    {
+        if (_fileSettingsSectionEnabled)
+        {
+            JobFileSearchDirectory.IsEnabled = false;
+            UpdateDirectoryButton.IsEnabled = false;
+            JobFileNameTextBox.IsEnabled = false;
+            GetJobButton.IsEnabled = false;
+            UseDefaultJobButton.IsEnabled = false;
+            _fileSettingsSectionEnabled = false;
+            ToggleFileSettingsLockButton.Content = "Unlock File Settings";
+        } else {
+            JobFileSearchDirectory.IsEnabled = true;
+            UpdateDirectoryButton.IsEnabled = true;
+            JobFileNameTextBox.IsEnabled = true;
+            GetJobButton.IsEnabled = true;
+            UseDefaultJobButton.IsEnabled = true;
+            _fileSettingsSectionEnabled = true;
+            ToggleFileSettingsLockButton.Content = "Lock File Settings";
+        }
+    }
+
+    private void ToggleLayerSectionHelper()
+    {
+        if (_layerSettingsSectionEnabled)
+        {
+            SetLayerThicknessTextBox.IsEnabled = false;
+            UpdateLayerThicknessButton.IsEnabled = false;
+            _layerSettingsSectionEnabled = false;
+            ToggleLayerSettingsLockButton.Content = "Unlock Layer Settings";
+        } else {
+            SetLayerThicknessTextBox.IsEnabled = true;
+            UpdateLayerThicknessButton.IsEnabled = true;
+            _layerSettingsSectionEnabled = true;
+            ToggleLayerSettingsLockButton.Content = "Lock Layer Settings";
+        }
+    }
+
+    private void IncrementBuildButton_Click(object sender, RoutedEventArgs e)
     {
 
     }
+
+    private void DecrementBuildButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void IncrementPowderButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void DecrementPowderButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void ToggleLayerSettingsLockButton_Click(object sender, RoutedEventArgs e)
+    {
+        ToggleLayerSectionHelper();
+    }
+
+    private void ToggleFileSettingsLockButton_Click(object sender, RoutedEventArgs e)
+    {
+        ToggleFileSettingSectionHelper();
+    }
+
 }
