@@ -160,8 +160,17 @@
 
                     </Grid>
 
-                    <Button Grid.Row="2" x:Name="ToggleCalibrationPanelButtonLock" HorizontalAlignment="Center" VerticalAlignment="Top" Height="30" Margin="2" Content="Lock Calibration"
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0" x:Name="StopAllMotorsInCalibrationPanelButton" HorizontalAlignment="Right" VerticalAlignment="Top" Height="30" Margin="2" Background="Red" Content="E-Stop"
+                            Click="StopAllMotorsInCalibrationPanelButton_Click"></Button>
+                        <Button Grid.Column="1" x:Name="ToggleCalibrationPanelButtonLock" HorizontalAlignment="Left" VerticalAlignment="Top" Height="30" Margin="2" Content="Lock Calibration"
                             Click="ToggleCalibrationPanelButtonLock_Click"></Button>
+                    </Grid>
+                    
                 </Grid>
             </Border>
 
@@ -294,7 +303,7 @@
                                         <RowDefinition Height="*"/>
                                         <RowDefinition Height="*"/>
                                     </Grid.RowDefinitions>
-                                    <Button Grid.Row="0" x:Name="EnableLayerMoveButton" VerticalAlignment="Top" HorizontalAlignment="Center" Height="50" Content="Enable Layer Move"
+                                    <Button Grid.Row="0" x:Name="EnableLayerMoveButton" VerticalAlignment="Top" HorizontalAlignment="Center" Height="50" Content="Use Layer Move"
                                         Click="EnableLayerMoveButton_Click"></Button>
                                     <Button Grid.Row="2" x:Name="MoveToNextLayerStartPositionButton" HorizontalAlignment="Center" VerticalAlignment="Top" Height="30" Margin="2" Content="Next Layer"
                                     Click="MoveToNextLayerStartPositionButton_Click"></Button>
@@ -308,8 +317,8 @@
                                         <RowDefinition Height="2*"/>
                                         <RowDefinition Height="2*"/>
                                     </Grid.RowDefinitions>
-                                    <Button Grid.Row="0" x:Name="DisableLayerMoveButton" VerticalAlignment="Top" HorizontalAlignment="Center" Height="50" Content="Disable Layer Move"
-                                        Click="DisableLayerMoveButton_Click"></Button>
+                                    <Button Grid.Row="0" x:Name="EnableManualMoveButton" VerticalAlignment="Top" HorizontalAlignment="Center" Height="50" Content="Use Manual Moves"
+                                        Click="EnableManualMoveButton_Click"></Button>
                                     <Grid Grid.Row="1">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
@@ -390,8 +399,8 @@
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
-                                        <Button Grid.Column="0"  HorizontalAlignment="Center" Height="50" Content="Stop All Motors"></Button>
-                                        <Button Grid.Column="1"  HorizontalAlignment="Center" Height="50" Content="Home All Motors"></Button>
+                                        <Button Grid.Column="0" x:Name="StopAllMotorsInPrintButton" HorizontalAlignment="Center" Height="50" Background="Red" Content="E-Stop" Click="StopAllMotorsInPrintButton_Click" ></Button>
+                                        <Button Grid.Column="1" x:Name="HomeAllMotorsButton" HorizontalAlignment="Center" Height="50" Content="Home All Motors" Click="HomeAllMotorsButton_Click"></Button>
                                     </Grid>
 
                                 </Grid>

@@ -248,6 +248,7 @@ public sealed partial class TestPrintPage : Page
         InitializeComponent();
         ToggleFileSettingSectionHelper();
         ToggleLayerSectionHelper();
+        LockPrintManager();
 
         var msg = "Landed on Test Print Page";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
@@ -395,8 +396,13 @@ public sealed partial class TestPrintPage : Page
 
     private void GetJobButton_Click(object sender, RoutedEventArgs e)
     {
+        // TODO: If job is invalid, need to wipe it from print manager (invalidate ready to print)
         _waverunnerPageService.GetJob(this.Content.XamlRoot);
         CurrentJobToPrint.Text = Path.Combine(JobFileSearchDirectory.Text, JobFileNameTextBox.Text);
+        if (ValidateReadyToPrint())
+        {
+            UnlockPrintManager();
+        }
     }
 
     private void ToggleRedPointerButton_Click(object sender, RoutedEventArgs e)
@@ -422,8 +428,13 @@ public sealed partial class TestPrintPage : Page
 
     private void UpdateLayerThicknessButton_Click(object sender, RoutedEventArgs e)
     {
+        // TODO: If layer thickness is invalid, need to wipe it from print manager (invalidate ready to print)
         _layerThickness = (double)Math.Round(double.Parse(SetLayerThicknessTextBox.Text), 3);
         CurrentLayerThickness.Text = _layerThickness.ToString() + " mm";
+        if (ValidateReadyToPrint())
+        {
+            UnlockPrintManager();
+        }
     }
 
     private void MoveToNextLayerStartPositionButton_Click(object sender, RoutedEventArgs e)
@@ -432,6 +443,19 @@ public sealed partial class TestPrintPage : Page
     }
 
     #endregion
+
+    private bool ValidateReadyToPrint()
+    {
+        if (!string.IsNullOrWhiteSpace(CurrentJobToPrint.Text) && !string.IsNullOrEmpty(CurrentLayerThickness.Text))
+        {
+            // Lock settings
+            LockFileSettingSection();
+            LockLayerSection();
+            return true;
+        } else {
+            return false;
+        }
+    }
 
 
     #region Reset Button Commands
@@ -541,16 +565,6 @@ public sealed partial class TestPrintPage : Page
         _motorPageService.motorSelectHelper.SelectMotorInPrint(_motorPageService.sweepMotor);
     }
 
-    private void DisableLayerMoveButton_Click(object sender, RoutedEventArgs e)
-    {
-
-    }
-
-    private void EnableLayerMoveButton_Click(object sender, RoutedEventArgs e)
-    {
-        
-    }
-
     private void ToggleCalibrationPanelButtonLock_Click(object sender, RoutedEventArgs e)
     {
         if (_calibrationPanelEnabled)
@@ -605,42 +619,122 @@ public sealed partial class TestPrintPage : Page
         _calibrationPanelEnabled = !_calibrationPanelEnabled;
     }
 
+    public void LockFileSettingSection()
+    {
+        JobFileSearchDirectory.IsEnabled = false;
+        UpdateDirectoryButton.IsEnabled = false;
+        JobFileNameTextBox.IsEnabled = false;
+        GetJobButton.IsEnabled = false;
+        UseDefaultJobButton.IsEnabled = false;
+        _fileSettingsSectionEnabled = false;
+        ToggleFileSettingsLockButton.Content = "Unlock File Settings";
+    }
+
+    public void UnlockFileSettingSection()
+    {
+        JobFileSearchDirectory.IsEnabled = true;
+        UpdateDirectoryButton.IsEnabled = true;
+        JobFileNameTextBox.IsEnabled = true;
+        GetJobButton.IsEnabled = true;
+        UseDefaultJobButton.IsEnabled = true;
+        _fileSettingsSectionEnabled = true;
+        ToggleFileSettingsLockButton.Content = "Lock File Settings";
+    }
+
     private void ToggleFileSettingSectionHelper()
     {
         if (_fileSettingsSectionEnabled)
         {
-            JobFileSearchDirectory.IsEnabled = false;
-            UpdateDirectoryButton.IsEnabled = false;
-            JobFileNameTextBox.IsEnabled = false;
-            GetJobButton.IsEnabled = false;
-            UseDefaultJobButton.IsEnabled = false;
-            _fileSettingsSectionEnabled = false;
-            ToggleFileSettingsLockButton.Content = "Unlock File Settings";
+            LockFileSettingSection();
         } else {
-            JobFileSearchDirectory.IsEnabled = true;
-            UpdateDirectoryButton.IsEnabled = true;
-            JobFileNameTextBox.IsEnabled = true;
-            GetJobButton.IsEnabled = true;
-            UseDefaultJobButton.IsEnabled = true;
-            _fileSettingsSectionEnabled = true;
-            ToggleFileSettingsLockButton.Content = "Lock File Settings";
+            UnlockFileSettingSection();
         }
+    }
+
+    private void LockLayerSection()
+    {
+        SetLayerThicknessTextBox.IsEnabled = false;
+        UpdateLayerThicknessButton.IsEnabled = false;
+        _layerSettingsSectionEnabled = false;
+        ToggleLayerSettingsLockButton.Content = "Unlock Layer Settings";
+    }
+
+    private void UnLockLayerSection()
+    {
+        SetLayerThicknessTextBox.IsEnabled = true;
+        UpdateLayerThicknessButton.IsEnabled = true;
+        _layerSettingsSectionEnabled = true;
+        ToggleLayerSettingsLockButton.Content = "Lock Layer Settings";
     }
 
     private void ToggleLayerSectionHelper()
     {
         if (_layerSettingsSectionEnabled)
         {
-            SetLayerThicknessTextBox.IsEnabled = false;
-            UpdateLayerThicknessButton.IsEnabled = false;
-            _layerSettingsSectionEnabled = false;
-            ToggleLayerSettingsLockButton.Content = "Unlock Layer Settings";
+            LockLayerSection();
         } else {
-            SetLayerThicknessTextBox.IsEnabled = true;
-            UpdateLayerThicknessButton.IsEnabled = true;
-            _layerSettingsSectionEnabled = true;
-            ToggleLayerSettingsLockButton.Content = "Lock Layer Settings";
+            UnLockLayerSection();
         }
+    }
+
+    private void LockPrintManager()
+    {
+        // Layer Move Buttons
+        EnableLayerMoveButton.IsEnabled = false;
+        MoveToNextLayerStartPositionButton.IsEnabled = false;
+
+
+        // Manual Move Buttons
+        EnableManualMoveButton.IsEnabled = false;
+
+        SelectBuildInPrintButton.IsEnabled = false;
+        IncrementBuildButton.IsEnabled = false;
+        DecrementBuildButton.IsEnabled = false;
+
+        SelectPowderInPrintButton.IsEnabled = false;
+        IncrementPowderButton.IsEnabled = false;
+        DecrementPowderButton.IsEnabled = false;
+
+        SelectSweepInPrintButton.IsEnabled = false;
+        SweepLeftButton.IsEnabled = false;
+        SweepRightButton.IsEnabled = false;
+
+        HomeAllMotorsButton.IsEnabled = false;
+    }
+
+    private void UnlockPrintManager()
+    {
+        // Layer Move Buttons
+        EnableLayerMoveButton.IsEnabled = true;
+        MoveToNextLayerStartPositionButton.IsEnabled = true;
+
+
+        // Manual Move Buttons
+        EnableManualMoveButton.IsEnabled = true;
+
+        SelectBuildInPrintButton.IsEnabled = true;
+        IncrementBuildButton.IsEnabled = true;
+        DecrementBuildButton.IsEnabled = true;
+
+        SelectPowderInPrintButton.IsEnabled = true;
+        IncrementPowderButton.IsEnabled = true;
+        DecrementPowderButton.IsEnabled = true;
+
+        SelectSweepInPrintButton.IsEnabled = true;
+        SweepLeftButton.IsEnabled = true;
+        SweepRightButton.IsEnabled = true;
+
+        HomeAllMotorsButton.IsEnabled = true;
+    }
+
+    private void EnableLayerMoveButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void EnableManualMoveButton_Click(object sender, RoutedEventArgs e)
+    {
+
     }
 
     private void IncrementBuildButton_Click(object sender, RoutedEventArgs e)
@@ -666,10 +760,43 @@ public sealed partial class TestPrintPage : Page
     private void ToggleLayerSettingsLockButton_Click(object sender, RoutedEventArgs e)
     {
         ToggleLayerSectionHelper();
+        if (_layerSettingsSectionEnabled || _fileSettingsSectionEnabled)
+        {
+            LockPrintManager();
+        }
+        else if (!_layerSettingsSectionEnabled && !_fileSettingsSectionEnabled)
+        {
+            ValidateReadyToPrint();
+        }
     }
 
     private void ToggleFileSettingsLockButton_Click(object sender, RoutedEventArgs e)
     {
         ToggleFileSettingSectionHelper();
+        if (_layerSettingsSectionEnabled || _fileSettingsSectionEnabled)
+        {
+            LockPrintManager();
+        }
+        else if (!_layerSettingsSectionEnabled && !_fileSettingsSectionEnabled)
+        {
+            ValidateReadyToPrint();
+        }
     }
+
+    private void StopAllMotorsInCalibrationPanelButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void HomeAllMotorsButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void StopAllMotorsInPrintButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    
 }
