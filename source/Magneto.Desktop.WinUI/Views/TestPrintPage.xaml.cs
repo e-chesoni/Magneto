@@ -540,6 +540,7 @@ public sealed partial class TestPrintPage : Page
     {
         _motorPageService.motorSelectHelper.SelectMotorInPrint(_motorPageService.sweepMotor);
     }
+
     private void DisableLayerMoveButton_Click(object sender, RoutedEventArgs e)
     {
 

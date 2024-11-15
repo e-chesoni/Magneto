@@ -71,7 +71,6 @@ public class MotorSelectHelper
     {
         if (motor != null)
         {
-            //SelectMotorUIHelper(buildMotor, ref _buildMotorSelected);
             SelectMotorUIHelper(motor, calibrationSelectMotorBtnGrp);
         }
         else
@@ -86,7 +85,6 @@ public class MotorSelectHelper
     {
         if (motor != null)
         {
-            //SelectMotorUIInPrintHelper(buildMotor, ref _buildMotorSelected);
             SelectMotorUIHelper(motor, printSelectMotorBtnGrp);
 
         }
