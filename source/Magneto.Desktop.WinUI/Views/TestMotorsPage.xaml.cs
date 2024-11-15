@@ -254,7 +254,7 @@ namespace Magneto.Desktop.WinUI
         /// <param name="e">Event data for the click event.</param>
         private void SelectBuildMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            _motorPageService.SelectBuildMotor();
+            _motorPageService.motorSelectHelper.SelectMotor(_motorPageService.buildMotor);
         }
 
         /// <summary>
@@ -266,7 +266,7 @@ namespace Magneto.Desktop.WinUI
         /// <param name="e">Event data for the click event.</param>
         private void SelectPowderMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            _motorPageService.SelectPowderMotor();
+            _motorPageService.motorSelectHelper.SelectMotor(_motorPageService.powderMotor);
         }
 
         /// <summary>
@@ -278,7 +278,7 @@ namespace Magneto.Desktop.WinUI
         /// <param name="e">Event data for the click event.</param>
         private void SelectSweepMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            _motorPageService.SelectSweepMotor();
+            _motorPageService.motorSelectHelper.SelectMotor(_motorPageService.sweepMotor);
         }
 
         #endregion

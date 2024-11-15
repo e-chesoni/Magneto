@@ -323,7 +323,7 @@
                                                     <RowDefinition Height="*"/>
                                                     <RowDefinition Height="*"/>
                                                 </Grid.RowDefinitions>
-                                                <Button Grid.Row="0"  x:Name="SelectBuildInPrintButton" HorizontalAlignment="Center" Height="30" Content="Build"></Button>
+                                                <Button Grid.Row="0"  x:Name="SelectBuildInPrintButton" HorizontalAlignment="Center" Height="30" Content="Build" Click="SelectBuildInPrintButton_Click"></Button>
                                                 <Grid Grid.Row="1">
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="3*"/>
@@ -346,7 +346,7 @@
                                                     <RowDefinition Height="*"/>
                                                     <RowDefinition Height="*"/>
                                                 </Grid.RowDefinitions>
-                                                <Button Grid.Row="0"  x:Name="SelectPowderInPrintButton" HorizontalAlignment="Center" Height="30" Content="Powder"></Button>
+                                                <Button Grid.Row="0"  x:Name="SelectPowderInPrintButton" HorizontalAlignment="Center" Height="30" Content="Powder" Click="SelectPowderInPrintButton_Click"></Button>
                                                 <Grid Grid.Row="1">
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="3*"/>
@@ -369,7 +369,7 @@
                                                     <RowDefinition Height="*"/>
                                                     <RowDefinition Height="*"/>
                                                 </Grid.RowDefinitions>
-                                                <Button Grid.Row="0" x:Name="SelectSweepInPrintButton" HorizontalAlignment="Center" Height="30" Content="Sweep"></Button>
+                                                <Button Grid.Row="0" x:Name="SelectSweepInPrintButton" HorizontalAlignment="Center" Height="30" Content="Sweep" Click="SelectSweepInPrintButton_Click"></Button>
                                                 <Grid Grid.Row="1">
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="*"/>

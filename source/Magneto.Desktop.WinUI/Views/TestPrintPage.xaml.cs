@@ -511,21 +511,35 @@ public sealed partial class TestPrintPage : Page
 
     #endregion
 
-    private void SelectPowderMotorButton_Click(object sender, RoutedEventArgs e)
-    {
-        _motorPageService.SelectBuildMotor();
-    }
-
     private void SelectBuildMotorButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.SelectPowderMotor();
+        _motorPageService.motorSelectHelper.SelectMotor(_motorPageService.buildMotor);
+    }
+
+    private void SelectPowderMotorButton_Click(object sender, RoutedEventArgs e)
+    {
+        _motorPageService.motorSelectHelper.SelectMotor(_motorPageService.powderMotor);
     }
 
     private void SelectSweepMotorButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.SelectSweepMotor();
+        _motorPageService.motorSelectHelper.SelectMotor(_motorPageService.sweepMotor);
     }
 
+    private void SelectBuildInPrintButton_Click(object sender, RoutedEventArgs e)
+    {
+        _motorPageService.motorSelectHelper.SelectMotorInPrint(_motorPageService.buildMotor);
+    }
+
+    private void SelectPowderInPrintButton_Click(object sender, RoutedEventArgs e)
+    {
+        _motorPageService.motorSelectHelper.SelectMotorInPrint(_motorPageService.powderMotor);
+    }
+
+    private void SelectSweepInPrintButton_Click(object sender, RoutedEventArgs e)
+    {
+        _motorPageService.motorSelectHelper.SelectMotorInPrint(_motorPageService.sweepMotor);
+    }
     private void DisableLayerMoveButton_Click(object sender, RoutedEventArgs e)
     {
 
@@ -657,5 +671,4 @@ public sealed partial class TestPrintPage : Page
     {
         ToggleFileSettingSectionHelper();
     }
-
 }
