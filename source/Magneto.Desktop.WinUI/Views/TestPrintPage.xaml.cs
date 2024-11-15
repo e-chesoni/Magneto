@@ -259,6 +259,7 @@ public sealed partial class TestPrintPage : Page
         // TODO: Remove code above once MotorPageService has been vetted
         _motorPageService = new MotorPageService(MissionControl.GetActuationManger(),
                                                 SelectBuildMotorButton, SelectPowderMotorButton, SelectSweepMotorButton,
+                                                SelectBuildInPrintButton, SelectPowderInPrintButton, SelectSweepInPrintButton,
                                                 BuildMotorCurrentPositionTextBox, PowderMotorCurrentPositionTextBox, SweepMotorCurrentPositionTextBox,
                                                 BuildMotorStepTextBox, PowderMotorStepTextBox, SweepMotorStepTextBox);
     }
@@ -532,7 +533,7 @@ public sealed partial class TestPrintPage : Page
 
     private void EnableLayerMoveButton_Click(object sender, RoutedEventArgs e)
     {
-
+        
     }
 
     private void ToggleCalibrationPanelButtonLock_Click(object sender, RoutedEventArgs e)
@@ -629,22 +630,22 @@ public sealed partial class TestPrintPage : Page
 
     private void IncrementBuildButton_Click(object sender, RoutedEventArgs e)
     {
-
+        _motorPageService.HandleRelMoveInSitu(_motorPageService.buildMotor, BuildMotorStepInPrintTextBox, true, this.Content.XamlRoot);
     }
 
     private void DecrementBuildButton_Click(object sender, RoutedEventArgs e)
     {
-
+        _motorPageService.HandleRelMoveInSitu(_motorPageService.buildMotor, BuildMotorStepInPrintTextBox, false, this.Content.XamlRoot);
     }
 
     private void IncrementPowderButton_Click(object sender, RoutedEventArgs e)
     {
-
+        _motorPageService.HandleRelMoveInSitu(_motorPageService.powderMotor, PowderMotorStepInPrintTextBox, true, this.Content.XamlRoot);
     }
 
     private void DecrementPowderButton_Click(object sender, RoutedEventArgs e)
     {
-
+        _motorPageService.HandleRelMoveInSitu(_motorPageService.powderMotor, PowderMotorStepInPrintTextBox, false, this.Content.XamlRoot);
     }
 
     private void ToggleLayerSettingsLockButton_Click(object sender, RoutedEventArgs e)

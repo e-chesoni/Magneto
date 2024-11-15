@@ -323,14 +323,14 @@
                                                     <RowDefinition Height="*"/>
                                                     <RowDefinition Height="*"/>
                                                 </Grid.RowDefinitions>
-                                                <Button Grid.Row="0"  HorizontalAlignment="Center" Height="30" Content="Build"></Button>
+                                                <Button Grid.Row="0"  x:Name="SelectBuildInPrintButton" HorizontalAlignment="Center" Height="30" Content="Build"></Button>
                                                 <Grid Grid.Row="1">
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="3*"/>
                                                         <ColumnDefinition Width="2*"/>
                                                         <ColumnDefinition Width="2*"/>
                                                     </Grid.ColumnDefinitions>
-                                                    <TextBox Grid.Column="0" Width="20"></TextBox>
+                                                    <TextBox Grid.Column="0" x:Name="BuildMotorStepInPrintTextBox" Width="20"></TextBox>
                                                     <Button Grid.Column="1" x:Name="IncrementBuildButton" HorizontalAlignment="Center" Height="30" Margin="1" Content="U"
                                                             Click="IncrementBuildButton_Click"></Button>
                                                     <Button Grid.Column="2" x:Name="DecrementBuildButton" HorizontalAlignment="Center" Height="30" Margin="1" Content="D"
@@ -346,14 +346,14 @@
                                                     <RowDefinition Height="*"/>
                                                     <RowDefinition Height="*"/>
                                                 </Grid.RowDefinitions>
-                                                <Button Grid.Row="0"  HorizontalAlignment="Center" Height="30" Content="Powder"></Button>
+                                                <Button Grid.Row="0"  x:Name="SelectPowderInPrintButton" HorizontalAlignment="Center" Height="30" Content="Powder"></Button>
                                                 <Grid Grid.Row="1">
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="3*"/>
                                                         <ColumnDefinition Width="2*"/>
                                                         <ColumnDefinition Width="2*"/>
                                                     </Grid.ColumnDefinitions>
-                                                    <TextBox Grid.Column="0" Width="20"></TextBox>
+                                                    <TextBox Grid.Column="0" x:Name="PowderMotorStepInPrintTextBox" Width="20"></TextBox>
                                                     <Button Grid.Column="1" x:Name="IncrementPowderButton" HorizontalAlignment="Center" Height="30" Margin="1" Content="U"
                                                             Click="IncrementPowderButton_Click"></Button>
                                                     <Button Grid.Column="2" x:Name="DecrementPowderButton" HorizontalAlignment="Center" Height="30" Margin="1" Content="D"
@@ -369,7 +369,7 @@
                                                     <RowDefinition Height="*"/>
                                                     <RowDefinition Height="*"/>
                                                 </Grid.RowDefinitions>
-                                                <Button Grid.Row="0"  HorizontalAlignment="Center" Height="30" Content="Sweep"></Button>
+                                                <Button Grid.Row="0" x:Name="SelectSweepInPrintButton" HorizontalAlignment="Center" Height="30" Content="Sweep"></Button>
                                                 <Grid Grid.Row="1">
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="*"/>

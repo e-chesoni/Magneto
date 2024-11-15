@@ -40,6 +40,10 @@ public class MotorPageService
     public Button selectPowderMotorButton { get; set; }
     public Button selectSweepMotorButton { get; set; }
 
+    public Button selectBuildMotorInPrintButton { get; set; }
+    public Button selectPowderMotorInPrintButton { get; set; }
+    public Button selectSweepMotorInPrintButton { get; set; }
+
     public TextBox buildPositionTextBox { get; set; }
     public TextBox powderPositionTextBox { get; set; }
     public TextBox sweepPositionTextBox { get; set; }
@@ -100,6 +104,7 @@ public class MotorPageService
 
     public MotorPageService(ActuationManager am,
                             Button selectBuildButton, Button selectPowderButton, Button selectSweepButton,
+                            Button selectBuildInPrintButton, Button selectPowderInPrintButton, Button selectSweepInPrintButton,
                             TextBox buildPosTextBox, TextBox powderPosTextBox, TextBox sweepPosTextBox,
                             TextBox incrBuildTextBox, TextBox incrPowderTextBox, TextBox incrSweepTextBox)
     {
@@ -117,6 +122,11 @@ public class MotorPageService
         selectBuildMotorButton = selectBuildButton;
         selectPowderMotorButton = selectPowderButton;
         selectSweepMotorButton = selectSweepButton;
+
+        // Set up inSitu buttons
+        selectBuildMotorInPrintButton = selectBuildInPrintButton;
+        selectPowderMotorInPrintButton = selectPowderInPrintButton;
+        selectSweepMotorInPrintButton = selectSweepInPrintButton;
 
         // Set up position text boxes
         buildPositionTextBox = buildPosTextBox;
@@ -387,6 +397,17 @@ public class MotorPageService
         }
     }
 
+    public void HandleRelMoveInSitu(StepperMotor motor, TextBox textBox, bool moveUp, XamlRoot xamlRoot)
+    {
+        var moveIsAbs = false;
+        var inSitu = true;
+
+        if (motor != null)
+        {
+            MoveMotorAndUpdateUI(motor, textBox, moveIsAbs, moveUp, inSitu, xamlRoot);
+        }
+    }
+
     public void HandleHomeMotor(StepperMotor motor, TextBox positionTextBox)
     {
         MagnetoLogger.Log("Homing Motor.", LogFactoryLogLevel.LogLevel.VERBOSE);
@@ -416,13 +437,29 @@ public class MotorPageService
     public void SelectMotorUIHelper(StepperMotor motor, ref bool thisMotorSelected)
     {
         // Update button backgrounds and selection flags
-        selectPowderMotorButton.Background = new SolidColorBrush(powderMotor == motor ? Colors.Green : Colors.DimGray);
-        _powderMotorSelected = powderMotor == motor;
-
         selectBuildMotorButton.Background = new SolidColorBrush(buildMotor == motor ? Colors.Green : Colors.DimGray);
         _buildMotorSelected = buildMotor == motor;
 
+        selectPowderMotorButton.Background = new SolidColorBrush(powderMotor == motor ? Colors.Green : Colors.DimGray);
+        _powderMotorSelected = powderMotor == motor;
+
         selectSweepMotorButton.Background = new SolidColorBrush(sweepMotor == motor ? Colors.Green : Colors.DimGray);
+        _sweepMotorSelected = sweepMotor == motor;
+
+        // Update the selection flag for this motor
+        thisMotorSelected = !thisMotorSelected;
+    }
+
+    public void SelectMotorUIInPrintHelper(StepperMotor motor, ref bool thisMotorSelected)
+    {
+        // Update button backgrounds and selection flags
+        selectBuildMotorInPrintButton.Background = new SolidColorBrush(buildMotor == motor ? Colors.Green : Colors.DimGray);
+        _buildMotorSelected = buildMotor == motor;
+
+        selectPowderMotorInPrintButton.Background = new SolidColorBrush(powderMotor == motor ? Colors.Green : Colors.DimGray);
+        _powderMotorSelected = powderMotor == motor;
+
+        selectSweepMotorInPrintButton.Background = new SolidColorBrush(sweepMotor == motor ? Colors.Green : Colors.DimGray);
         _sweepMotorSelected = sweepMotor == motor;
 
         // Update the selection flag for this motor
@@ -477,6 +514,51 @@ public class MotorPageService
         }
     }
 
+    public void SelectBuildMotorInPrint()
+    {
+        if (buildMotor != null)
+        {
+            SelectMotorUIInPrintHelper(buildMotor, ref _buildMotorSelected);
+        }
+        else
+        {
+            var msg = "Build Motor is null.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+        }
+    }
+
+    /// <summary>
+    /// Wrapper for motor powder motor selection code
+    /// </summary>
+    public void SelectPowderMotorInPrint()
+    {
+        if (powderMotor != null)
+        {
+            SelectMotorUIInPrintHelper(powderMotor, ref _powderMotorSelected);
+        }
+        else
+        {
+            var msg = "Powder Motor is null.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+        }
+    }
+
+    /// <summary>
+    /// Wrapper for motor sweep motor selection code
+    /// </summary>
+    public void SelectSweepMotorInPrint()
+    {
+        if (sweepMotor != null)
+        {
+            SelectMotorUIInPrintHelper(sweepMotor, ref _sweepMotorSelected);
+        }
+        else
+        {
+            var msg = "Sweep Motor is null.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+        }
+    }
+
     public void SelectMotorHelper(StepperMotor motor)
     {
         switch (motor.GetMotorName())
@@ -489,6 +571,24 @@ public class MotorPageService
                 break;
             case "sweep":
                 SelectSweepMotor();
+                break;
+            default:
+                break;
+        }
+    }
+
+    public void SelectMotorInPrintHelper(StepperMotor motor)
+    {
+        switch (motor.GetMotorName())
+        {
+            case "build":
+                SelectBuildMotorInPrint();
+                break;
+            case "powder":
+                SelectPowderMotorInPrint();
+                break;
+            case "sweep":
+                SelectSweepMotorInPrint();
                 break;
             default:
                 break;
@@ -543,6 +643,46 @@ public class MotorPageService
         {
             // Select build motor button
             SelectMotorHelper(motor);
+
+            if (moveIsAbs)
+            {
+                res = await MoveMotorAbs(motor, textBox);
+            }
+            else
+            {
+                res = await MoveMotorRel(motor, textBox, increment);
+            }
+
+            // If operation is successful, update text box
+            if (res == 1)
+            {
+                UpdateMotorPositionTextBox(motor);
+            }
+            else
+            {
+                _ = PopupInfo.ShowContentDialog(xamlRoot, "Error", "Failed to send command to motor.");
+            }
+        }
+        else
+        {
+            _ = PopupInfo.ShowContentDialog(xamlRoot, "Error", "Failed to select motor. Motor is null.");
+        }
+    }
+
+    public async void MoveMotorAndUpdateUI(StepperMotor motor, TextBox textBox, bool moveIsAbs, bool increment, bool inSitu, XamlRoot xamlRoot)
+    {
+        var res = 0;
+        if (motor != null)
+        {
+            // Select build motor button
+            if (inSitu)
+            {
+                SelectMotorInPrintHelper(motor);
+            }
+            else
+            {
+                SelectMotorHelper(motor);
+            }
 
             if (moveIsAbs)
             {
