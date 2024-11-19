@@ -160,27 +160,25 @@ public sealed partial class TestPrintPage : Page
 
     #endregion
 
+    private MotorPageService _motorPageService;
+    private WaverunnerPageService _waverunnerPageService;
+
 
     #region Public Variables
 
     /// <summary>
     /// Central control that gets passed from page to page
     /// </summary>
-    public MissionControl? MissionControl
-    {
-        get; set;
-    }
+    public MissionControl? MissionControl { get; set; }
 
     /// <summary>
     /// TestPrintViewModel view model
     /// </summary>
-    public TestPrintViewModel ViewModel
-    {
-        get;
-    }
+    public TestPrintViewModel ViewModel { get; }
 
     #endregion
-
+    private MotorSelectHelper.UIControlGroup _calibrateMotorUIControlGroup { get; set; }
+    private MotorSelectHelper.UIControlGroup _inPrintMotorUIControlGroup { get; set; }
 
     #region Test Page Setup
 
@@ -232,10 +230,6 @@ public sealed partial class TestPrintPage : Page
 
     #endregion
 
-
-    private MotorPageService _motorPageService;
-    private WaverunnerPageService _waverunnerPageService;
-
     #region Constructor
 
     /// <summary>
@@ -257,7 +251,17 @@ public sealed partial class TestPrintPage : Page
 
     private void InitMotorPageService()
     {
-        // TODO: Remove code above once MotorPageService has been vetted
+        // TODO: need to add stop buttons to calibrate and update initialization here (currently using stop buttons from in print to test)
+        _calibrateMotorUIControlGroup = new MotorSelectHelper.UIControlGroup(SelectBuildMotorButton, SelectPowderMotorButton, SelectSweepMotorButton,
+                                                                             BuildMotorCurrentPositionTextBox, PowderMotorCurrentPositionTextBox, SweepMotorCurrentPositionTextBox,
+                                                                             GetBuildMotorCurrentPositionButton, GetPowderMotorCurrentPositionButton, GetSweepMotorCurrentPositionButton,
+                                                                             BuildMotorStepTextBox, PowderMotorStepTextBox, SweepMotorStepTextBox,
+                                                                             StepBuildMotorUpButton, StepBuildMotorDownButton, StepPowderMotorUpButton, StepPowderMotorDownButton, StepPowderMotorUpButton, StepPowderMotorDownButton,
+                                                                             StopBuildMotorButton, StopPowderMotorButton, StopSweepButton,
+                                                                             HomeAllMotorsButton, StopAllMotorsInCalibrationPanelButton
+                                                                             );
+        _inPrintMotorUIControlGroup = new MotorSelectHelper.UIControlGroup(SelectBuildInPrintButton, SelectPowderInPrintButton, SelectSweepInPrintButton);
+
         _motorPageService = new MotorPageService(MissionControl.GetActuationManger(),
                                                 SelectBuildMotorButton, SelectPowderMotorButton, SelectSweepMotorButton,
                                                 SelectBuildInPrintButton, SelectPowderInPrintButton, SelectSweepInPrintButton,
@@ -569,6 +573,8 @@ public sealed partial class TestPrintPage : Page
     {
         if (_calibrationPanelEnabled)
         {
+            _motorPageService.motorSelectHelper.DisableUIControlGroup(_calibrateMotorUIControlGroup);
+            /*
             SelectBuildMotorButton.IsEnabled = false;
             BuildMotorCurrentPositionTextBox.IsEnabled = false;
             GetBuildMotorCurrentPositionButton.IsEnabled = false;
@@ -589,7 +595,7 @@ public sealed partial class TestPrintPage : Page
             SweepMotorStepTextBox.IsEnabled = false;
             StepSweepMotorUpButton.IsEnabled = false;
             StepSweepMotorDownButton.IsEnabled = false;
-
+            */
             ToggleCalibrationPanelButtonLock.Content = "Unlock Calibration";
         } else {
             SelectBuildMotorButton.IsEnabled = true;
@@ -798,5 +804,13 @@ public sealed partial class TestPrintPage : Page
 
     }
 
-    
+    private void StopBuildMotorButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void StopPowderMotorButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
 }

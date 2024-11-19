@@ -345,7 +345,7 @@
                                                     <Button Grid.Column="2" x:Name="DecrementBuildButton" HorizontalAlignment="Center" Height="30" Margin="1" Content="D"
                                                             Click="DecrementBuildButton_Click"></Button>
                                                 </Grid>
-                                                <Button Grid.Row="2"  HorizontalAlignment="Center" Height="30" Content="Stop"></Button>
+                                                <Button Grid.Row="2" x:Name="StopBuildMotorButton" HorizontalAlignment="Center" Height="30" Content="Stop" Click="StopBuildMotorButton_Click"></Button>
                                             </Grid>
                                         </Border>
                                         <Border Grid.Column="1" BorderBrush="Gray" BorderThickness="2" CornerRadius="5" Padding="5">
@@ -368,7 +368,7 @@
                                                     <Button Grid.Column="2" x:Name="DecrementPowderButton" HorizontalAlignment="Center" Height="30" Margin="1" Content="D"
                                                             Click="DecrementPowderButton_Click"></Button>
                                                 </Grid>
-                                                <Button Grid.Row="2"  HorizontalAlignment="Center" Height="30" Content="Stop"></Button>
+                                                <Button Grid.Row="2" x:Name="StopPowderMotorButton" HorizontalAlignment="Center" Height="30" Content="Stop" Click="StopPowderMotorButton_Click"></Button>
                                             </Grid>
                                         </Border>
                                         <Border Grid.Column="2" BorderBrush="Gray" BorderThickness="2" CornerRadius="5" Padding="5">

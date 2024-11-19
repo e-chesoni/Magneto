@@ -40,9 +40,13 @@ public class MotorPageService
     public Button selectPowderMotorButton { get; set; }
     public Button selectSweepMotorButton { get; set; }
 
-    public Button selectBuildMotorInPrintButton { get; set; }
-    public Button selectPowderMotorInPrintButton { get; set; }
-    public Button selectSweepMotorInPrintButton { get; set; }
+    //public Button getBuildMotorCurrentPositionButton { get; set; }
+    //public Button getPowderMotorCurrentPositionButton { get; set; }
+    //public Button getSweepMotorCurrentPositionButton { get; set; }
+
+    //public Button selectBuildMotorInPrintButton { get; set; }
+    //public Button selectPowderMotorInPrintButton { get; set; }
+    //public Button selectSweepMotorInPrintButton { get; set; }
 
     public TextBox buildPositionTextBox { get; set; }
     public TextBox powderPositionTextBox { get; set; }
@@ -85,12 +89,7 @@ public class MotorPageService
         // Make sure this happens AFTER motor setup
         InitializeMotorMap();
 
-        // Set up selection buttons
-        selectBuildMotorButton = selectBuildButton;
-        selectPowderMotorButton = selectPowderButton;
-        selectSweepMotorButton = selectSweepButton;
-
-        motorSelectHelper = new MotorSelectHelper(new MotorSelectHelper.ButtonGroup(selectBuildButton, selectPowderButton, selectSweepButton));
+        motorSelectHelper = new MotorSelectHelper(new MotorSelectHelper.UIControlGroup(selectBuildButton, selectPowderButton, selectSweepButton));
 
         // Set up position text boxes
         buildPositionTextBox = buildPosTextBox;
@@ -108,7 +107,6 @@ public class MotorPageService
         this.sweepAbsMoveTextBox = sweepAbsMoveTextBox;
     }
 
-    // Print page ctor
     public MotorPageService(ActuationManager am,
                             Button selectBuildButton, Button selectPowderButton, Button selectSweepButton,
                             Button selectBuildInPrintButton, Button selectPowderInPrintButton, Button selectSweepInPrintButton,
@@ -125,18 +123,8 @@ public class MotorPageService
         // Make sure this happens AFTER motor setup
         InitializeMotorMap();
 
-        // Set up selection buttons
-        selectBuildMotorButton = selectBuildButton;
-        selectPowderMotorButton = selectPowderButton;
-        selectSweepMotorButton = selectSweepButton;
-
-        // Set up inSitu buttons
-        selectBuildMotorInPrintButton = selectBuildInPrintButton;
-        selectPowderMotorInPrintButton = selectPowderInPrintButton;
-        selectSweepMotorInPrintButton = selectSweepInPrintButton;
-
-        motorSelectHelper = new MotorSelectHelper(new MotorSelectHelper.ButtonGroup(selectBuildButton, selectPowderButton, selectSweepButton),
-                                                    new MotorSelectHelper.ButtonGroup(selectBuildInPrintButton, selectPowderInPrintButton, selectSweepInPrintButton));
+        motorSelectHelper = new MotorSelectHelper(new MotorSelectHelper.UIControlGroup(selectBuildButton, selectPowderButton, selectSweepButton),
+                                                    new MotorSelectHelper.UIControlGroup(selectBuildInPrintButton, selectPowderInPrintButton, selectSweepInPrintButton));
 
         // Set up position text boxes
         buildPositionTextBox = buildPosTextBox;
@@ -147,6 +135,36 @@ public class MotorPageService
         incrBuildPositionTextBox = incrBuildTextBox;
         incrPowderPositionTextBox = incrPowderTextBox;
         incrSweepPositionTextBox = incrSweepTextBox;
+    }
+
+    public MotorPageService(ActuationManager am,
+                            MotorSelectHelper.UIControlGroup calibrateCtlGrp,
+                            MotorSelectHelper.UIControlGroup inPrintCtlGrp)
+    {
+        // Set up event handers to communicate with motor controller ports
+        ConfigurePortEventHandlers();
+
+        // Initialize motor set up for test page
+        InitMotors(am);
+
+        // Initialize motor map to simplify coordinated calls below
+        // Make sure this happens AFTER motor setup
+        InitializeMotorMap();
+
+        //MotorSelectHelper.UIControlGroup calibrateCtlGrp = new MotorSelectHelper.UIControlGroup(selectBuildButton, selectPowderButton, selectSweepButton);
+        //MotorSelectHelper.UIControlGroup inPrintCtlGrp = new MotorSelectHelper.UIControlGroup(selectBuildInPrintButton, selectPowderInPrintButton, selectSweepInPrintButton);
+
+        motorSelectHelper = new MotorSelectHelper(calibrateCtlGrp, inPrintCtlGrp);
+
+        // Set up position text boxes
+        buildPositionTextBox = calibrateCtlGrp.buildPositionTextBox;
+        powderPositionTextBox = calibrateCtlGrp.powderPositionTextBox;
+        sweepPositionTextBox = calibrateCtlGrp.sweepPositionTextBox;
+
+        // Set up increment text boxes
+        incrBuildPositionTextBox = calibrateCtlGrp.buildStepTextBox;
+        incrPowderPositionTextBox = calibrateCtlGrp.powderStepTextBox;
+        incrSweepPositionTextBox = calibrateCtlGrp.sweepStepTextBox;
     }
 
     #region Initial Setup
