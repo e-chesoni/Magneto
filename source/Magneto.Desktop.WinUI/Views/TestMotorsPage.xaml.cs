@@ -78,6 +78,8 @@ namespace Magneto.Desktop.WinUI
         /// </summary>
         public TestMotorsViewModel ViewModel { get; }
 
+        private PrintUIControlGroupHelper.MotorUIControlGroup _calibrateMotorUIControlGroup { get; set; }
+
         public TestMotorsPage()
         {
             ViewModel = App.GetService<TestMotorsViewModel>();
@@ -92,12 +94,11 @@ namespace Magneto.Desktop.WinUI
 
         private void InitMotorPageService()
         {
-            // TODO: Remove code above once MotorPageService has been vetted
-            _motorPageService = new MotorPageService(MissionControl.GetActuationManger(),
-                                                    SelectBuildMotorButton, SelectPowderMotorButton, SelectSweepMotorButton,
-                                                    BuildPositionTextBox, PowderPositionTextBox, SweepPositionTextBox,
-                                                    IncrBuildPositionTextBox, IncrPowderPositionTextBox, IncrSweepPositionTextBox,
-                                                    BuildAbsMoveTextBox, PowderAbsMoveTextBox, SweepAbsMoveTextBox);
+            _calibrateMotorUIControlGroup = new PrintUIControlGroupHelper.MotorUIControlGroup(SelectBuildMotorButton, SelectPowderMotorButton, SelectSweepMotorButton,
+                                                                                              BuildPositionTextBox, PowderPositionTextBox, SweepPositionTextBox,
+                                                                                              IncrBuildPositionTextBox, IncrPowderPositionTextBox, IncrSweepPositionTextBox,
+                                                                                              BuildAbsMoveTextBox, PowderAbsMoveTextBox, SweepAbsMoveTextBox);
+            _motorPageService = new MotorPageService(MissionControl.GetActuationManger(), _calibrateMotorUIControlGroup);
         }
 
         /// <summary>
@@ -126,62 +127,62 @@ namespace Magneto.Desktop.WinUI
 
         private void IncrBuild_Click(object sender, RoutedEventArgs e)
         {
-            _motorPageService.HandleRelMove(_motorPageService.buildMotor, _motorPageService.incrBuildPositionTextBox, true, this.Content.XamlRoot);
+            _motorPageService.HandleRelMove(_motorPageService.buildMotor, _motorPageService.GetBuildStepTextBox(), true, this.Content.XamlRoot);
         }
 
         private void DecrBuild_Click(object sender, RoutedEventArgs e)
         {
-            _motorPageService.HandleRelMove(_motorPageService.buildMotor, _motorPageService.incrBuildPositionTextBox, false, this.Content.XamlRoot);
+            _motorPageService.HandleRelMove(_motorPageService.buildMotor, _motorPageService.GetBuildStepTextBox(), false, this.Content.XamlRoot);
         }
 
         private void IncrPowder_Click(object sender, RoutedEventArgs e)
         {
-            _motorPageService.HandleRelMove(_motorPageService.powderMotor, _motorPageService.incrPowderPositionTextBox, true, this.Content.XamlRoot);
+            _motorPageService.HandleRelMove(_motorPageService.powderMotor, _motorPageService.GetPowderStepTextBox(), true, this.Content.XamlRoot);
         }
 
         private void DecrPowder_Click(object sender, RoutedEventArgs e)
         {
-            _motorPageService.HandleRelMove(_motorPageService.powderMotor, _motorPageService.incrPowderPositionTextBox, false, this.Content.XamlRoot);
+            _motorPageService.HandleRelMove(_motorPageService.powderMotor, _motorPageService.GetPowderStepTextBox(), false, this.Content.XamlRoot);
         }
 
         private void IncrSweep_Click(object sender, RoutedEventArgs e)
         {
-            _motorPageService.HandleRelMove(_motorPageService.sweepMotor, _motorPageService.incrSweepPositionTextBox, true, this.Content.XamlRoot);
+            _motorPageService.HandleRelMove(_motorPageService.sweepMotor, _motorPageService.GetSweepStepTextBox(), true, this.Content.XamlRoot);
         }
 
         private void DecrSweep_Click(object sender, RoutedEventArgs e)
         {
-            _motorPageService.HandleRelMove(_motorPageService.sweepMotor, _motorPageService.incrSweepPositionTextBox, false, this.Content.XamlRoot);
+            _motorPageService.HandleRelMove(_motorPageService.sweepMotor, _motorPageService.GetSweepStepTextBox(), false, this.Content.XamlRoot);
         }
 
         private void AbsMoveBuildButton_Click(object sender, RoutedEventArgs e)
         {
-            _motorPageService.HandleAbsMove(_motorPageService.buildMotor, _motorPageService.buildAbsMoveTextBox, this.Content.XamlRoot);
+            _motorPageService.HandleAbsMove(_motorPageService.buildMotor, _motorPageService.GetBuildAbsMoveTextBox(), this.Content.XamlRoot);
         }
 
         private void AbsMovePowderButton_Click(object sender, RoutedEventArgs e)
         {
-            _motorPageService.HandleAbsMove(_motorPageService.powderMotor, _motorPageService.powderAbsMoveTextBox, this.Content.XamlRoot);
+            _motorPageService.HandleAbsMove(_motorPageService.powderMotor, _motorPageService.GetPowderAbsMoveTextBox(), this.Content.XamlRoot);
         }
 
         private void AbsMoveSweepButton_Click(object sender, RoutedEventArgs e)
         {
-            _motorPageService.HandleAbsMove(_motorPageService.sweepMotor, _motorPageService.sweepAbsMoveTextBox, this.Content.XamlRoot);
+            _motorPageService.HandleAbsMove(_motorPageService.sweepMotor, _motorPageService.GetSweepAbsMoveTextBox(), this.Content.XamlRoot);
         }
 
         private void HomeBuildMotorButton_Click(object sender, RoutedEventArgs e)
         {
-            _motorPageService.HandleHomeMotor(_motorPageService.buildMotor, _motorPageService.buildPositionTextBox);
+            _motorPageService.HandleHomeMotor(_motorPageService.buildMotor, _motorPageService.GetBuildPositionTextBox());
         }
 
         private void HomePowderMotorButton_Click(object sender, RoutedEventArgs e)
         {
-            _motorPageService.HandleHomeMotor(_motorPageService.powderMotor, _motorPageService.powderPositionTextBox);
+            _motorPageService.HandleHomeMotor(_motorPageService.powderMotor, _motorPageService.GetPowderPositionTextBox());
         }
 
         private void HomeSweepMotorButton_Click(object sender, RoutedEventArgs e)
         {
-            _motorPageService.HandleHomeMotor(_motorPageService.sweepMotor, _motorPageService.sweepPositionTextBox);
+            _motorPageService.HandleHomeMotor(_motorPageService.sweepMotor, _motorPageService.GetSweepPositionTextBox());
         }
 
         /// <summary>
@@ -199,7 +200,7 @@ namespace Magneto.Desktop.WinUI
 
             if (_motorPageService.buildMotor != null)
             {
-                _motorPageService.HandleHomeMotor(_motorPageService.buildMotor, _motorPageService.buildPositionTextBox);
+                _motorPageService.HandleHomeMotor(_motorPageService.buildMotor, _motorPageService.GetBuildPositionTextBox());
             }
             else
             {
@@ -208,7 +209,7 @@ namespace Magneto.Desktop.WinUI
 
             if (_motorPageService.powderMotor != null)
             {
-                _motorPageService.HandleHomeMotor(_motorPageService.powderMotor,_motorPageService.powderPositionTextBox);
+                _motorPageService.HandleHomeMotor(_motorPageService.powderMotor,_motorPageService.GetPowderPositionTextBox());
             }
             else
             {
@@ -217,7 +218,7 @@ namespace Magneto.Desktop.WinUI
 
             if (_motorPageService.sweepMotor != null)
             {
-                _motorPageService.HandleHomeMotor(_motorPageService.sweepMotor, _motorPageService.sweepPositionTextBox);
+                _motorPageService.HandleHomeMotor(_motorPageService.sweepMotor, _motorPageService.GetSweepPositionTextBox());
             }
             else
             {
@@ -281,7 +282,7 @@ namespace Magneto.Desktop.WinUI
         private async void GetBuildPositionButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             //HandleGetPosition(_buildMotor, BuildPositionTextBox);
-            _motorPageService.HandleGetPosition(_motorPageService.buildMotor, _motorPageService.buildPositionTextBox);
+            _motorPageService.HandleGetPosition(_motorPageService.buildMotor, _motorPageService.GetBuildPositionTextBox());
         }
 
         /// <summary>
@@ -293,7 +294,7 @@ namespace Magneto.Desktop.WinUI
         /// <param name="e">Event data for the click event.</param>
         private async void GetPowderPositionButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            _motorPageService.HandleGetPosition(_motorPageService.powderMotor, _motorPageService.powderPositionTextBox);
+            _motorPageService.HandleGetPosition(_motorPageService.powderMotor, _motorPageService.GetPowderPositionTextBox());
         }
 
         /// <summary>
@@ -306,7 +307,7 @@ namespace Magneto.Desktop.WinUI
         private async void GetSweepPositionButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             //HandleGetPosition(_sweepMotor, SweepPositionTextBox);
-            _motorPageService.HandleGetPosition(_motorPageService.sweepMotor, _motorPageService.sweepPositionTextBox);
+            _motorPageService.HandleGetPosition(_motorPageService.sweepMotor, _motorPageService.GetSweepPositionTextBox());
         }
 
         #endregion

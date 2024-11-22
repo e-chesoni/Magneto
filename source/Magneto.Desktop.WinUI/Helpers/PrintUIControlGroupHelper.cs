@@ -12,13 +12,13 @@ using Microsoft.UI.Xaml.Media;
 using static Magneto.Desktop.WinUI.MotorPageService;
 
 namespace Magneto.Desktop.WinUI.Helpers;
-public class MotorSelectHelper
+public class PrintUIControlGroupHelper
 {
-    public struct UIControlGroup
+    public struct MotorUIControlGroup
     {
-        public Button selectBuildButton { get; set; }
-        public Button selectPowderButton { get; set; }
-        public Button selectSweepButton { get; set; }
+        public Button? selectBuildButton { get; set; } = null;
+        public Button? selectPowderButton { get; set; } = null;
+        public Button? selectSweepButton { get; set; } = null; 
 
         public TextBox? buildPositionTextBox { get; set; } = null;
         public TextBox? powderPositionTextBox { get; set; } = null;
@@ -42,13 +42,17 @@ public class MotorSelectHelper
         public Button? stopBuildMotorButton { get; set; } = null;
         public Button? stopPowderMotorButton { get; set; } = null;
         public Button? stopSweepMotorButton { get; set; } = null;
-        
+
+        public TextBox? buildAbsMoveTextBox { get; set; } = null;
+        public TextBox? powderAbsMoveTextBox { get; set; } = null;
+        public TextBox? sweepAbsMoveTextBox { get; set; } = null;
+
         public Button? homeAllMotorsButton { get; set; } = null;
         public Button? stopAllMotorsButton { get; set; } = null;
 
         public IEnumerable<object> controlEnumerable;
 
-        public UIControlGroup(Button selectBuildBtn, Button selectPowderBtn, Button selectSweepBtn)
+        public MotorUIControlGroup(Button selectBuildBtn, Button selectPowderBtn, Button selectSweepBtn)
         {
             selectBuildButton = selectBuildBtn;
             selectPowderButton = selectPowderBtn;
@@ -62,7 +66,30 @@ public class MotorSelectHelper
             };
         }
 
-        public UIControlGroup(Button selectBuildBtn, Button selectPowderBtn, Button selectSweepBtn,
+        public MotorUIControlGroup(Button selectBuildBtn, Button selectPowderBtn, Button selectSweepBtn,
+                                   TextBox buildPosTB, TextBox powderPosTB, TextBox sweepPosTB,
+                                   TextBox buildStepTB, TextBox powderStepTB, TextBox sweepStepTB,
+                                   TextBox buildAbsMoveTB, TextBox powderAbsMoveTB, TextBox sweepAbsMoveTB)
+        {
+            selectBuildButton = selectBuildBtn;
+            selectPowderButton = selectPowderBtn;
+            selectSweepButton = selectSweepBtn;
+
+            buildPositionTextBox = buildPosTB;
+            powderPositionTextBox = powderPosTB;
+            sweepPositionTextBox = sweepPosTB;
+
+            buildStepTextBox = buildStepTB;
+            powderStepTextBox = powderStepTB;
+            sweepStepTextBox = sweepStepTB;
+
+            // TODO: add abs move text boxes here and above
+            buildAbsMoveTextBox = buildAbsMoveTB;
+            powderAbsMoveTextBox = powderAbsMoveTB;
+            sweepAbsMoveTextBox = sweepAbsMoveTB;
+        }
+
+        public MotorUIControlGroup(Button selectBuildBtn, Button selectPowderBtn, Button selectSweepBtn,
                             TextBox buildPosTB, TextBox powderPosTB, TextBox sweepPosTB,
                             Button getBuildPosBtn, Button getPowderPosBtn, Button getSweepPosBtn,
                             TextBox buildStepTB, TextBox powderStepTB, TextBox sweepStepTB,
@@ -111,23 +138,43 @@ public class MotorSelectHelper
                 homeAllMotorsButton // NOTE: NEVER add e-stop to list (list can disable all buttons and e-stop should never be disabled)
             };
         }
-
-
     }
 
-    public UIControlGroup calibrationSelectMotorBtnGrp { get; set;}
-
-    public UIControlGroup printSelectMotorBtnGrp { get; set;}
-
-    public MotorSelectHelper(UIControlGroup calibrationSelectMotorBtnGrp)
+    public struct PrintSettingsUIControlGroup
     {
-        this.calibrationSelectMotorBtnGrp = calibrationSelectMotorBtnGrp;
+        public IEnumerable<object> controlEnumerable;
+        public PrintSettingsUIControlGroup(IEnumerable<object> controls)
+        {
+            controlEnumerable = controls;
+        }
     }
 
-    public MotorSelectHelper(UIControlGroup calibrationSelectMotorBtnGrp, UIControlGroup printSelectMotorBtnGrp)
+
+    public MotorUIControlGroup calibrateMotorControlGroup { get; set; }
+
+    public MotorUIControlGroup printMotorControlGroup { get; set; }
+
+    public PrintSettingsUIControlGroup settingsControlGroup{ get; set; }
+
+    public PrintSettingsUIControlGroup layerControlGroup { get; set; }
+
+    public PrintUIControlGroupHelper(MotorUIControlGroup calibrationSelectMotorBtnGrp)
     {
-        this.calibrationSelectMotorBtnGrp = calibrationSelectMotorBtnGrp;
-        this.printSelectMotorBtnGrp = printSelectMotorBtnGrp;
+        this.calibrateMotorControlGroup = calibrationSelectMotorBtnGrp;
+    }
+
+    public PrintUIControlGroupHelper(MotorUIControlGroup calibrateMotorControlGroup, MotorUIControlGroup printMotorControlGroup)
+    {
+        this.calibrateMotorControlGroup = calibrateMotorControlGroup;
+        this.printMotorControlGroup = printMotorControlGroup;
+    }
+
+    public PrintUIControlGroupHelper(MotorUIControlGroup calibrateMotorControlGroup, MotorUIControlGroup printMotorControlGroup, PrintSettingsUIControlGroup settingsControlGroup, PrintSettingsUIControlGroup layerControlGroup)
+    {
+        this.calibrateMotorControlGroup = calibrateMotorControlGroup;
+        this.printMotorControlGroup = printMotorControlGroup;
+        this.settingsControlGroup = settingsControlGroup;
+        this.layerControlGroup = layerControlGroup;
     }
 
     #region Select Motor Helper Methods
@@ -139,7 +186,7 @@ public class MotorSelectHelper
     /// <param name="motor">The StepperMotor to be selected as the current test motor.</param>
     /// <param name="positionTextBox">The TextBox associated with the motor, to be cleared upon selection.</param>
     /// <param name="thisMotorSelected">A reference to a boolean flag indicating the selection status of this motor.</param>
-    public void SelectMotorUIHelper(StepperMotor motor, UIControlGroup buttonGrp)
+    public void SelectMotorUIHelper(StepperMotor motor, MotorUIControlGroup buttonGrp)
     {
         // Update button backgrounds and selection flags
         buttonGrp.selectBuildButton.Background = new SolidColorBrush(motor.GetMotorName() == "build" ? Colors.Green : Colors.DimGray);
@@ -158,7 +205,7 @@ public class MotorSelectHelper
     {
         if (motor != null)
         {
-            SelectMotorUIHelper(motor, calibrationSelectMotorBtnGrp);
+            SelectMotorUIHelper(motor, calibrateMotorControlGroup);
         }
         else
         {
@@ -172,7 +219,7 @@ public class MotorSelectHelper
     {
         if (motor != null)
         {
-            SelectMotorUIHelper(motor, printSelectMotorBtnGrp);
+            SelectMotorUIHelper(motor, printMotorControlGroup);
 
         }
         else
@@ -182,7 +229,7 @@ public class MotorSelectHelper
         }
     }
 
-    public void EnableUIControlGroup(UIControlGroup controlGrp)
+    public void EnableUIControlGroup(MotorUIControlGroup controlGrp)
     {
         foreach (var control in controlGrp.controlEnumerable)
         {
@@ -193,7 +240,7 @@ public class MotorSelectHelper
         }
     }
 
-    public void DisableUIControlGroup(UIControlGroup controlGrp)
+    public void DisableUIControlGroup(MotorUIControlGroup controlGrp)
     {
         foreach (var control in controlGrp.controlEnumerable)
         {

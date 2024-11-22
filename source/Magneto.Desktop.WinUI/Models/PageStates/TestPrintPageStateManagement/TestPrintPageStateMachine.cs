@@ -200,8 +200,8 @@ public class TestPrintPageStateMachine
 
     #endregion
 
-    private MotorSelectHelper.UIControlGroup _calibrateMotorUIControlGroup { get; set; }
-    private MotorSelectHelper.UIControlGroup _inPrintMotorUIControlGroup { get; set; }
+    private PrintUIControlGroupHelper.MotorUIControlGroup _calibrateMotorUIControlGroup { get; set; }
+    private PrintUIControlGroupHelper.MotorUIControlGroup _inPrintMotorUIControlGroup { get; set; }
 
     #region Test Page Setup
 
@@ -281,65 +281,19 @@ public class TestPrintPageStateMachine
 
     #region Lock, Unlock, and Toggle Helpers
 
-    private void ToggleCalibrationPanelButtonLock_Click(object sender, RoutedEventArgs e)
+    private void EnableCalibrationPanel()
     {
-        if (_calibrationPanelEnabled)
-        {
-            // TODO: Update button calls to go through page service and button groups
-            // TODO: update button groups to include increment and decrement buttons for easy access
-            _motorPageService.selectBuildMotorButton.IsEnabled = false;
-            _motorPageService.buildPositionTextBox.IsEnabled = false;
-            //_motorPageService.getBuildMotorCurrentPositionButton.IsEnabled = false;
-
-            _motorPageService.incrBuildPositionTextBox.IsEnabled = false;
-            //_motorPageService.motorSelectHelper.calibrationSelectMotorBtnGrp.
-            StepBuildMotorUpButton.IsEnabled = false;
-            StepBuildMotorDownButton.IsEnabled = false;
-
-            SelectPowderMotorButton.IsEnabled = false;
-            PowderMotorCurrentPositionTextBox.IsEnabled = false;
-            GetPowderMotorCurrentPositionButton.IsEnabled = false;
-            PowderMotorStepTextBox.IsEnabled = false;
-            StepPowderMotorUpButton.IsEnabled = false;
-            StepPowderMotorDownButton.IsEnabled = false;
-
-            SelectSweepMotorButton.IsEnabled = false;
-            SweepMotorCurrentPositionTextBox.IsEnabled = false;
-            GetSweepMotorCurrentPositionButton.IsEnabled = false;
-            SweepMotorStepTextBox.IsEnabled = false;
-            StepSweepMotorUpButton.IsEnabled = false;
-            StepSweepMotorDownButton.IsEnabled = false;
-
-            ToggleCalibrationPanelLockButton.Content = "Unlock Calibration";
-        }
-        else
-        {
-            SelectBuildMotorButton.IsEnabled = true;
-            BuildMotorCurrentPositionTextBox.IsEnabled = true;
-            GetBuildMotorCurrentPositionButton.IsEnabled = true;
-            BuildMotorStepTextBox.IsEnabled = true;
-            StepBuildMotorUpButton.IsEnabled = true;
-            StepPowderMotorDownButton.IsEnabled = true;
-
-            SelectPowderMotorButton.IsEnabled = true;
-            PowderMotorCurrentPositionTextBox.IsEnabled = true;
-            GetPowderMotorCurrentPositionButton.IsEnabled = true;
-            PowderMotorStepTextBox.IsEnabled = true;
-            StepPowderMotorUpButton.IsEnabled = true;
-            StepPowderMotorDownButton.IsEnabled = true;
-
-            SelectSweepMotorButton.IsEnabled = true;
-            SweepMotorCurrentPositionTextBox.IsEnabled = true;
-            GetSweepMotorCurrentPositionButton.IsEnabled = true;
-            SweepMotorStepTextBox.IsEnabled = true;
-            StepSweepMotorUpButton.IsEnabled = true;
-            StepSweepMotorDownButton.IsEnabled = true;
-
-            ToggleCalibrationPanelLockButton.Content = "Lock Calibration";
-        }
-
-        _calibrationPanelEnabled = !_calibrationPanelEnabled;
+        _motorPageService.motorSelectHelper.EnableUIControlGroup(_motorPageService.motorSelectHelper.calibrateMotorControlGroup);
+        ToggleCalibrationPanelLockButton.Content = "Unlock Calibration";
     }
+
+    private void DisableCalibrationPanel()
+    {
+        _motorPageService.motorSelectHelper.DisableUIControlGroup(_motorPageService.motorSelectHelper.calibrateMotorControlGroup);
+        ToggleCalibrationPanelLockButton.Content = "Lock Calibration";
+    }
+
+
 
     public void LockFileSettingSection()
     {
@@ -349,6 +303,8 @@ public class TestPrintPageStateMachine
         GetJobButton.IsEnabled = false;
         UseDefaultJobButton.IsEnabled = false;
         _fileSettingsSectionEnabled = false;
+
+
         ToggleFileSettingsLockButton.Content = "Unlock File Settings";
     }
 

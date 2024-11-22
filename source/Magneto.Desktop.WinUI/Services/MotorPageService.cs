@@ -28,43 +28,7 @@ public class MotorPageService
     public StepperMotor? powderMotor;
     public StepperMotor? sweepMotor;
 
-    private bool _buildMotorSelected = false;
-    private bool _powderMotorSelected = false;
-    private bool _sweepMotorSelected = false;
-    
-    private bool _movingMotorToTarget = false;
-
-    #region UI Variables
-
-    public Button selectBuildMotorButton { get; set; }
-    public Button selectPowderMotorButton { get; set; }
-    public Button selectSweepMotorButton { get; set; }
-
-    //public Button getBuildMotorCurrentPositionButton { get; set; }
-    //public Button getPowderMotorCurrentPositionButton { get; set; }
-    //public Button getSweepMotorCurrentPositionButton { get; set; }
-
-    //public Button selectBuildMotorInPrintButton { get; set; }
-    //public Button selectPowderMotorInPrintButton { get; set; }
-    //public Button selectSweepMotorInPrintButton { get; set; }
-
-    public TextBox buildPositionTextBox { get; set; }
-    public TextBox powderPositionTextBox { get; set; }
-    public TextBox sweepPositionTextBox { get; set; }
-
-    public TextBox incrBuildPositionTextBox { get; set; }
-    public TextBox incrPowderPositionTextBox { get; set; }
-    public TextBox incrSweepPositionTextBox { get; set; }
-
-    public TextBox buildAbsMoveTextBox { get; set; }
-    public TextBox powderAbsMoveTextBox { get; set; }
-    public TextBox sweepAbsMoveTextBox { get; set; }
-
-    public MotorSelectHelper motorSelectHelper { get; set; }
-
-
-
-    #endregion
+    public PrintUIControlGroupHelper motorSelectHelper { get; set; }
 
     /// <summary>
     /// Initializes the dictionary mapping motor names to their corresponding StepperMotor objects.
@@ -72,12 +36,8 @@ public class MotorPageService
     /// </summary>
     private Dictionary<string, StepperMotor?>? _motorTextMap;
 
-
-    public MotorPageService(ActuationManager am, 
-                            Button selectBuildButton, Button selectPowderButton, Button selectSweepButton, 
-                            TextBox buildPosTextBox, TextBox powderPosTextBox, TextBox sweepPosTextBox,
-                            TextBox incrBuildTextBox, TextBox incrPowderTextBox, TextBox incrSweepTextBox,
-                            TextBox buildAbsMoveTextBox, TextBox powderAbsMoveTextBox, TextBox sweepAbsMoveTextBox)
+    public MotorPageService(ActuationManager am,
+                            PrintUIControlGroupHelper.MotorUIControlGroup calibrateCtlGrp)
     {
         // Set up event handers to communicate with motor controller ports
         ConfigurePortEventHandlers();
@@ -89,29 +49,17 @@ public class MotorPageService
         // Make sure this happens AFTER motor setup
         InitializeMotorMap();
 
-        motorSelectHelper = new MotorSelectHelper(new MotorSelectHelper.UIControlGroup(selectBuildButton, selectPowderButton, selectSweepButton));
-
-        // Set up position text boxes
-        buildPositionTextBox = buildPosTextBox;
-        powderPositionTextBox = powderPosTextBox;
-        sweepPositionTextBox = sweepPosTextBox;
-
-        // Set up increment text boxes
-        incrBuildPositionTextBox = incrBuildTextBox;
-        incrPowderPositionTextBox = incrPowderTextBox;
-        incrSweepPositionTextBox = incrSweepTextBox;
+        motorSelectHelper = new PrintUIControlGroupHelper(calibrateCtlGrp);
 
         // Setup abs position text box
-        this.buildAbsMoveTextBox = buildAbsMoveTextBox;
-        this.powderAbsMoveTextBox = powderAbsMoveTextBox;
-        this.sweepAbsMoveTextBox = sweepAbsMoveTextBox;
+        //this.buildAbsMoveTextBox = calibrateCtlGrp.buildAbsMoveTextBox;
+        //this.powderAbsMoveTextBox = calibrateCtlGrp.powderAbsMoveTextBox;
+        //this.sweepAbsMoveTextBox = calibrateCtlGrp.sweepAbsMoveTextBox;
     }
 
     public MotorPageService(ActuationManager am,
-                            Button selectBuildButton, Button selectPowderButton, Button selectSweepButton,
-                            Button selectBuildInPrintButton, Button selectPowderInPrintButton, Button selectSweepInPrintButton,
-                            TextBox buildPosTextBox, TextBox powderPosTextBox, TextBox sweepPosTextBox,
-                            TextBox incrBuildTextBox, TextBox incrPowderTextBox, TextBox incrSweepTextBox)
+                            PrintUIControlGroupHelper.MotorUIControlGroup calibrateCtlGrp,
+                            PrintUIControlGroupHelper.MotorUIControlGroup inPrintCtlGrp)
     {
         // Set up event handers to communicate with motor controller ports
         ConfigurePortEventHandlers();
@@ -123,48 +71,17 @@ public class MotorPageService
         // Make sure this happens AFTER motor setup
         InitializeMotorMap();
 
-        motorSelectHelper = new MotorSelectHelper(new MotorSelectHelper.UIControlGroup(selectBuildButton, selectPowderButton, selectSweepButton),
-                                                    new MotorSelectHelper.UIControlGroup(selectBuildInPrintButton, selectPowderInPrintButton, selectSweepInPrintButton));
+        motorSelectHelper = new PrintUIControlGroupHelper(calibrateCtlGrp, inPrintCtlGrp);
 
         // Set up position text boxes
-        buildPositionTextBox = buildPosTextBox;
-        powderPositionTextBox = powderPosTextBox;
-        sweepPositionTextBox = sweepPosTextBox;
+        //buildPositionTextBox = calibrateCtlGrp.buildPositionTextBox;
+        //powderPositionTextBox = calibrateCtlGrp.powderPositionTextBox;
+        //sweepPositionTextBox = calibrateCtlGrp.sweepPositionTextBox;
 
         // Set up increment text boxes
-        incrBuildPositionTextBox = incrBuildTextBox;
-        incrPowderPositionTextBox = incrPowderTextBox;
-        incrSweepPositionTextBox = incrSweepTextBox;
-    }
-
-    public MotorPageService(ActuationManager am,
-                            MotorSelectHelper.UIControlGroup calibrateCtlGrp,
-                            MotorSelectHelper.UIControlGroup inPrintCtlGrp)
-    {
-        // Set up event handers to communicate with motor controller ports
-        ConfigurePortEventHandlers();
-
-        // Initialize motor set up for test page
-        InitMotors(am);
-
-        // Initialize motor map to simplify coordinated calls below
-        // Make sure this happens AFTER motor setup
-        InitializeMotorMap();
-
-        //MotorSelectHelper.UIControlGroup calibrateCtlGrp = new MotorSelectHelper.UIControlGroup(selectBuildButton, selectPowderButton, selectSweepButton);
-        //MotorSelectHelper.UIControlGroup inPrintCtlGrp = new MotorSelectHelper.UIControlGroup(selectBuildInPrintButton, selectPowderInPrintButton, selectSweepInPrintButton);
-
-        motorSelectHelper = new MotorSelectHelper(calibrateCtlGrp, inPrintCtlGrp);
-
-        // Set up position text boxes
-        buildPositionTextBox = calibrateCtlGrp.buildPositionTextBox;
-        powderPositionTextBox = calibrateCtlGrp.powderPositionTextBox;
-        sweepPositionTextBox = calibrateCtlGrp.sweepPositionTextBox;
-
-        // Set up increment text boxes
-        incrBuildPositionTextBox = calibrateCtlGrp.buildStepTextBox;
-        incrPowderPositionTextBox = calibrateCtlGrp.powderStepTextBox;
-        incrSweepPositionTextBox = calibrateCtlGrp.sweepStepTextBox;
+        //incrBuildPositionTextBox = calibrateCtlGrp.buildStepTextBox;
+        //incrPowderPositionTextBox = calibrateCtlGrp.powderStepTextBox;
+        //incrSweepPositionTextBox = calibrateCtlGrp.sweepStepTextBox;
     }
 
     #region Initial Setup
@@ -244,11 +161,57 @@ public class MotorPageService
     #endregion
 
     #region Getters
-
     public ActuationManager GetActuationManager()
     {
         return _actuationManager;
     }
+
+    public TextBox GetBuildPositionTextBox()
+    {
+        return motorSelectHelper.calibrateMotorControlGroup.buildPositionTextBox;
+    }
+
+    public TextBox GetPowderPositionTextBox()
+    {
+        return motorSelectHelper.calibrateMotorControlGroup.powderPositionTextBox;
+    }
+
+    public TextBox GetSweepPositionTextBox()
+    {
+        return motorSelectHelper.calibrateMotorControlGroup.sweepPositionTextBox;
+    }
+
+    public TextBox GetBuildStepTextBox()
+    {
+        return motorSelectHelper.calibrateMotorControlGroup.buildStepTextBox;
+    }
+
+    public TextBox GetPowderStepTextBox()
+    {
+        return motorSelectHelper.calibrateMotorControlGroup.powderStepTextBox;
+    }
+
+    public TextBox GetSweepStepTextBox()
+    {
+        return motorSelectHelper.calibrateMotorControlGroup.sweepStepTextBox;
+    }
+
+    public TextBox GetBuildAbsMoveTextBox()
+    {
+        return motorSelectHelper.calibrateMotorControlGroup.buildAbsMoveTextBox;
+    }
+
+    public TextBox GetPowderAbsMoveTextBox()
+    {
+        return motorSelectHelper.calibrateMotorControlGroup.powderAbsMoveTextBox;
+    }
+
+    public TextBox GetSweepAbsMoveTextBox()
+    {
+        return motorSelectHelper.calibrateMotorControlGroup.sweepAbsMoveTextBox;
+    }
+
+
 
     /// <summary>
     /// Helper to get controller type given motor name
@@ -453,15 +416,14 @@ public class MotorPageService
 
     #endregion
 
-
     #region Move and Update UI Method
     public TextBox? GetMotorPositonTextBox(StepperMotor motor)
     {
         return motor.GetMotorName() switch
         {
-            "build" => buildPositionTextBox,
-            "powder" => powderPositionTextBox,
-            "sweep" => sweepPositionTextBox,
+            "build" => motorSelectHelper.calibrateMotorControlGroup.buildPositionTextBox,
+            "powder" => motorSelectHelper.calibrateMotorControlGroup.powderPositionTextBox,
+            "sweep" => motorSelectHelper.calibrateMotorControlGroup.sweepPositionTextBox,
             _ => null
         };
     }
