@@ -18,6 +18,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI;
 using Magneto.Desktop.WinUI.Core;
 using CommunityToolkit.WinUI.UI.Controls.TextToolbarSymbols;
+using Magneto.Desktop.WinUI.Models.UIControl;
 
 namespace Magneto.Desktop.WinUI;
 public class MotorPageService
@@ -28,7 +29,7 @@ public class MotorPageService
     public StepperMotor? powderMotor;
     public StepperMotor? sweepMotor;
 
-    public PrintUIControlGroupHelper motorSelectHelper { get; set; }
+    public PrintUIControlGroupHelper printUiControlGroupHelper { get; set; }
 
     /// <summary>
     /// Initializes the dictionary mapping motor names to their corresponding StepperMotor objects.
@@ -37,7 +38,7 @@ public class MotorPageService
     private Dictionary<string, StepperMotor?>? _motorTextMap;
 
     public MotorPageService(ActuationManager am,
-                            PrintUIControlGroupHelper.MotorUIControlGroup calibrateCtlGrp)
+                            MotorUIControlGroup calibrateCtlGrp)
     {
         // Set up event handers to communicate with motor controller ports
         ConfigurePortEventHandlers();
@@ -49,17 +50,12 @@ public class MotorPageService
         // Make sure this happens AFTER motor setup
         InitializeMotorMap();
 
-        motorSelectHelper = new PrintUIControlGroupHelper(calibrateCtlGrp);
-
-        // Setup abs position text box
-        //this.buildAbsMoveTextBox = calibrateCtlGrp.buildAbsMoveTextBox;
-        //this.powderAbsMoveTextBox = calibrateCtlGrp.powderAbsMoveTextBox;
-        //this.sweepAbsMoveTextBox = calibrateCtlGrp.sweepAbsMoveTextBox;
+        printUiControlGroupHelper = new PrintUIControlGroupHelper(calibrateCtlGrp);
     }
 
     public MotorPageService(ActuationManager am,
-                            PrintUIControlGroupHelper.MotorUIControlGroup calibrateCtlGrp,
-                            PrintUIControlGroupHelper.MotorUIControlGroup inPrintCtlGrp)
+                            MotorUIControlGroup calibrateCtlGrp,
+                            MotorUIControlGroup inPrintCtlGrp)
     {
         // Set up event handers to communicate with motor controller ports
         ConfigurePortEventHandlers();
@@ -71,17 +67,22 @@ public class MotorPageService
         // Make sure this happens AFTER motor setup
         InitializeMotorMap();
 
-        motorSelectHelper = new PrintUIControlGroupHelper(calibrateCtlGrp, inPrintCtlGrp);
+        printUiControlGroupHelper = new PrintUIControlGroupHelper(calibrateCtlGrp, inPrintCtlGrp);
+    }
 
-        // Set up position text boxes
-        //buildPositionTextBox = calibrateCtlGrp.buildPositionTextBox;
-        //powderPositionTextBox = calibrateCtlGrp.powderPositionTextBox;
-        //sweepPositionTextBox = calibrateCtlGrp.sweepPositionTextBox;
+    public MotorPageService(ActuationManager am, PrintUIControlGroupHelper printCtlGrpHelper)
+    {
+        // Set up event handers to communicate with motor controller ports
+        ConfigurePortEventHandlers();
 
-        // Set up increment text boxes
-        //incrBuildPositionTextBox = calibrateCtlGrp.buildStepTextBox;
-        //incrPowderPositionTextBox = calibrateCtlGrp.powderStepTextBox;
-        //incrSweepPositionTextBox = calibrateCtlGrp.sweepStepTextBox;
+        // Initialize motor set up for test page
+        InitMotors(am);
+
+        // Initialize motor map to simplify coordinated calls below
+        // Make sure this happens AFTER motor setup
+        InitializeMotorMap();
+
+        printUiControlGroupHelper = new PrintUIControlGroupHelper(printCtlGrpHelper.calibrateMotorControlGroup, printCtlGrpHelper.printMotorControlGroup);
     }
 
     #region Initial Setup
@@ -168,50 +169,48 @@ public class MotorPageService
 
     public TextBox GetBuildPositionTextBox()
     {
-        return motorSelectHelper.calibrateMotorControlGroup.buildPositionTextBox;
+        return printUiControlGroupHelper.calibrateMotorControlGroup.buildPositionTextBox;
     }
 
     public TextBox GetPowderPositionTextBox()
     {
-        return motorSelectHelper.calibrateMotorControlGroup.powderPositionTextBox;
+        return printUiControlGroupHelper.calibrateMotorControlGroup.powderPositionTextBox;
     }
 
     public TextBox GetSweepPositionTextBox()
     {
-        return motorSelectHelper.calibrateMotorControlGroup.sweepPositionTextBox;
+        return printUiControlGroupHelper.calibrateMotorControlGroup.sweepPositionTextBox;
     }
 
     public TextBox GetBuildStepTextBox()
     {
-        return motorSelectHelper.calibrateMotorControlGroup.buildStepTextBox;
+        return printUiControlGroupHelper.calibrateMotorControlGroup.buildStepTextBox;
     }
 
     public TextBox GetPowderStepTextBox()
     {
-        return motorSelectHelper.calibrateMotorControlGroup.powderStepTextBox;
+        return printUiControlGroupHelper.calibrateMotorControlGroup.powderStepTextBox;
     }
 
     public TextBox GetSweepStepTextBox()
     {
-        return motorSelectHelper.calibrateMotorControlGroup.sweepStepTextBox;
+        return printUiControlGroupHelper.calibrateMotorControlGroup.sweepStepTextBox;
     }
 
     public TextBox GetBuildAbsMoveTextBox()
     {
-        return motorSelectHelper.calibrateMotorControlGroup.buildAbsMoveTextBox;
+        return printUiControlGroupHelper.calibrateMotorControlGroup.buildAbsMoveTextBox;
     }
 
     public TextBox GetPowderAbsMoveTextBox()
     {
-        return motorSelectHelper.calibrateMotorControlGroup.powderAbsMoveTextBox;
+        return printUiControlGroupHelper.calibrateMotorControlGroup.powderAbsMoveTextBox;
     }
 
     public TextBox GetSweepAbsMoveTextBox()
     {
-        return motorSelectHelper.calibrateMotorControlGroup.sweepAbsMoveTextBox;
+        return printUiControlGroupHelper.calibrateMotorControlGroup.sweepAbsMoveTextBox;
     }
-
-
 
     /// <summary>
     /// Helper to get controller type given motor name
@@ -353,7 +352,7 @@ public class MotorPageService
                 {
                     UpdateUITextHelper.UpdateUIText(textBox, pos.ToString());
                 }
-                motorSelectHelper.SelectMotor(motor);
+                printUiControlGroupHelper.SelectMotor(motor);
             }
         }
         else
@@ -406,7 +405,7 @@ public class MotorPageService
         if (motor != null)
         {
             _ = HomeMotor(motor);
-            motorSelectHelper.SelectMotor(motor);
+            printUiControlGroupHelper.SelectMotor(motor);
         }
         else
         {
@@ -421,9 +420,9 @@ public class MotorPageService
     {
         return motor.GetMotorName() switch
         {
-            "build" => motorSelectHelper.calibrateMotorControlGroup.buildPositionTextBox,
-            "powder" => motorSelectHelper.calibrateMotorControlGroup.powderPositionTextBox,
-            "sweep" => motorSelectHelper.calibrateMotorControlGroup.sweepPositionTextBox,
+            "build" => printUiControlGroupHelper.calibrateMotorControlGroup.buildPositionTextBox,
+            "powder" => printUiControlGroupHelper.calibrateMotorControlGroup.powderPositionTextBox,
+            "sweep" => printUiControlGroupHelper.calibrateMotorControlGroup.sweepPositionTextBox,
             _ => null
         };
     }
@@ -460,7 +459,7 @@ public class MotorPageService
         if (motor != null)
         {
             // Select build motor button
-            motorSelectHelper.SelectMotor(motor);
+            printUiControlGroupHelper.SelectMotor(motor);
 
             if (moveIsAbs)
             {
@@ -495,11 +494,11 @@ public class MotorPageService
             // Select build motor button
             if (inSitu)
             {
-                motorSelectHelper.SelectMotorInPrint(motor);
+                printUiControlGroupHelper.SelectMotorInPrint(motor);
             }
             else
             {
-                motorSelectHelper.SelectMotor(motor);
+                printUiControlGroupHelper.SelectMotor(motor);
             }
 
             if (moveIsAbs)
@@ -533,7 +532,7 @@ public class MotorPageService
         if (motor != null)
         {
             // Select build motor button
-            motorSelectHelper.SelectMotor(motor);
+            printUiControlGroupHelper.SelectMotor(motor);
 
             res = await StopMotor(motor, textBox);
 

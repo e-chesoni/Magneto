@@ -10,6 +10,7 @@ using Magneto.Desktop.WinUI.Core.Models.BuildModels;
 using Magneto.Desktop.WinUI.Core.Models.Motor;
 using Magneto.Desktop.WinUI.Core.Services;
 using Magneto.Desktop.WinUI.Helpers;
+using Magneto.Desktop.WinUI.Models.UIControl;
 using Magneto.Desktop.WinUI.Popups;
 using Magneto.Desktop.WinUI.Services;
 using Magneto.Desktop.WinUI.ViewModels;
@@ -48,14 +49,6 @@ public sealed partial class TestPrintPage : Page
     private bool _sweepMotorSelected = false;
 
     private bool _movingMotorToTarget = false;
-
-    private bool _calibrationPanelEnabled = true;
-
-    private bool _fileSettingsSectionEnabled = true;
-
-    private bool _layerSettingsSectionEnabled = true;
-
-    private bool _printPanelEnabled = true;
 
     /// <summary>
     /// Struct for motor details
@@ -177,8 +170,21 @@ public sealed partial class TestPrintPage : Page
     public TestPrintViewModel ViewModel { get; }
 
     #endregion
-    private PrintUIControlGroupHelper.MotorUIControlGroup _calibrateMotorUIControlGroup { get; set; }
-    private PrintUIControlGroupHelper.MotorUIControlGroup _inPrintMotorUIControlGroup { get; set; }
+
+    private MotorUIControlGroup _calibrateMotorUIControlGroup { get; set; }
+    private MotorUIControlGroup _inPrintMotorUIControlGroup { get; set; }
+    private PrintSettingsUIControlGroup _printSettingsUIControlGroup { get; set; }
+    private PrintSettingsUIControlGroup _layerSettingsUIControlGroup { get; set; }
+
+    private PrintUIControlGroupHelper _printControlGroupHelper { get; set; }
+
+    private bool _calibrationPanelEnabled = true;
+
+    private bool _fileSettingsSectionEnabled = true;
+
+    private bool _layerSettingsSectionEnabled = true;
+
+    private bool _printPanelEnabled = true;
 
     #region Test Page Setup
 
@@ -240,8 +246,6 @@ public sealed partial class TestPrintPage : Page
     {
         ViewModel = App.GetService<TestPrintViewModel>();
         InitializeComponent();
-        ToggleFileSettingSectionHelper();
-        ToggleLayerSectionHelper();
         LockPrintManager();
 
         var msg = "Landed on Test Print Page";
@@ -251,25 +255,40 @@ public sealed partial class TestPrintPage : Page
 
     private void InitMotorPageService()
     {
+        // create button groups for easy control
         // TODO: need to add stop buttons to calibrate and update initialization here (currently using stop buttons from in print to test)
-        _calibrateMotorUIControlGroup = new PrintUIControlGroupHelper.MotorUIControlGroup(SelectBuildMotorButton, SelectPowderMotorButton, SelectSweepMotorButton,
+        _calibrateMotorUIControlGroup = new MotorUIControlGroup(SelectBuildMotorButton, SelectPowderMotorButton, SelectSweepMotorButton,
                                                                              BuildMotorCurrentPositionTextBox, PowderMotorCurrentPositionTextBox, SweepMotorCurrentPositionTextBox,
                                                                              GetBuildMotorCurrentPositionButton, GetPowderMotorCurrentPositionButton, GetSweepMotorCurrentPositionButton,
                                                                              BuildMotorStepTextBox, PowderMotorStepTextBox, SweepMotorStepTextBox,
                                                                              StepBuildMotorUpButton, StepBuildMotorDownButton, StepPowderMotorUpButton, StepPowderMotorDownButton, StepSweepMotorUpButton, StepSweepMotorDownButton,
-                                                                             StopBuildMotorButton, StopPowderMotorButton, StopSweepButton,
+                                                                             StopBuildMotorInCalibrateButton, StopPowderMotorInCalibrateButton, StopSweepMotorInCalibrateButton,
                                                                              HomeAllMotorsButton, StopAllMotorsInCalibrationPanelButton
                                                                              );
-        _inPrintMotorUIControlGroup = new PrintUIControlGroupHelper.MotorUIControlGroup(SelectBuildInPrintButton, SelectPowderInPrintButton, SelectSweepInPrintButton);
-        _motorPageService = new MotorPageService(MissionControl.GetActuationManger(), _calibrateMotorUIControlGroup, _inPrintMotorUIControlGroup);
 
-        /*
-        _motorPageService = new MotorPageService(MissionControl.GetActuationManger(),
-                                                SelectBuildMotorButton, SelectPowderMotorButton, SelectSweepMotorButton,
-                                                SelectBuildInPrintButton, SelectPowderInPrintButton, SelectSweepInPrintButton,
-                                                BuildMotorCurrentPositionTextBox, PowderMotorCurrentPositionTextBox, SweepMotorCurrentPositionTextBox,
-                                                BuildMotorStepTextBox, PowderMotorStepTextBox, SweepMotorStepTextBox);
-        */
+        _inPrintMotorUIControlGroup = new MotorUIControlGroup(SelectBuildInPrintButton, SelectPowderInPrintButton, SelectSweepInPrintButton,
+                                                                                        BuildMotorCurrentPositionTextBox, PowderMotorCurrentPositionTextBox, SweepMotorCurrentPositionTextBox,
+                                                                                        BuildMotorStepInPrintTextBox, PowderMotorStepTextBox, SweepMotorStepTextBox,
+                                                                                        IncrementBuildButton, DecrementBuildButton, IncrementPowderButton, DecrementPowderButton, SweepLeftButton, SweepRightButton,
+                                                                                        StopBuildMotorButton, StopPowderMotorButton, StopSweepButton,
+                                                                                        HomeAllMotorsButton, StopAllMotorsInCalibrationPanelButton);
+
+
+
+        var printSettingsControls = new List<object> { JobFileSearchDirectory.IsEnabled, UpdateDirectoryButton.IsEnabled, JobFileNameTextBox.IsEnabled, GetJobButton.IsEnabled, UseDefaultJobButton.IsEnabled };
+
+        _printSettingsUIControlGroup = new PrintSettingsUIControlGroup(printSettingsControls);
+
+        var layersettingsControls = new List<object> { SetLayerThicknessTextBox, UpdateLayerThicknessButton};
+
+        _layerSettingsUIControlGroup = new PrintSettingsUIControlGroup(layersettingsControls);
+
+        _printControlGroupHelper = new PrintUIControlGroupHelper(_calibrateMotorUIControlGroup, _inPrintMotorUIControlGroup, _printSettingsUIControlGroup, _layerSettingsUIControlGroup);
+
+        //_printControlGroupHelper = new PrintUIControlGroupHelper();
+
+        _motorPageService = new MotorPageService(MissionControl.GetActuationManger(), _printControlGroupHelper);
+
     }
 
     private void InitWaverunnerPageService()
@@ -383,7 +402,7 @@ public sealed partial class TestPrintPage : Page
 
     private void StopSweepButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.GetActuationManager().HandleStopRequest(_motorPageService.sweepMotor); // TODO: FIX -- can call this directly, but since position is never reached, data logging gets stuck in endless loop
+        _motorPageService.GetActuationManager().HandleStopRequest(_motorPageService.sweepMotor);
     }
 
     #endregion
@@ -544,43 +563,43 @@ public sealed partial class TestPrintPage : Page
 
     private void SelectBuildMotorButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.motorSelectHelper.SelectMotor(_motorPageService.buildMotor);
+        _motorPageService.printUiControlGroupHelper.SelectMotor(_motorPageService.buildMotor);
     }
 
     private void SelectPowderMotorButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.motorSelectHelper.SelectMotor(_motorPageService.powderMotor);
+        _motorPageService.printUiControlGroupHelper.SelectMotor(_motorPageService.powderMotor);
     }
 
     private void SelectSweepMotorButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.motorSelectHelper.SelectMotor(_motorPageService.sweepMotor);
+        _motorPageService.printUiControlGroupHelper.SelectMotor(_motorPageService.sweepMotor);
     }
 
     private void SelectBuildInPrintButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.motorSelectHelper.SelectMotorInPrint(_motorPageService.buildMotor);
+        _motorPageService.printUiControlGroupHelper.SelectMotorInPrint(_motorPageService.buildMotor);
     }
 
     private void SelectPowderInPrintButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.motorSelectHelper.SelectMotorInPrint(_motorPageService.powderMotor);
+        _motorPageService.printUiControlGroupHelper.SelectMotorInPrint(_motorPageService.powderMotor);
     }
 
     private void SelectSweepInPrintButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.motorSelectHelper.SelectMotorInPrint(_motorPageService.sweepMotor);
+        _motorPageService.printUiControlGroupHelper.SelectMotorInPrint(_motorPageService.sweepMotor);
     }
 
     private void EnableCalibrationPanel()
     {
-        _motorPageService.motorSelectHelper.DisableUIControlGroup(_calibrateMotorUIControlGroup);
+        _motorPageService.printUiControlGroupHelper.DisableUIControlGroup(_calibrateMotorUIControlGroup);
         ToggleCalibrationPanelButtonLock.Content = "Unlock Calibration";
     }
 
     private void DisableCalibrationPanel()
     {
-        _motorPageService.motorSelectHelper.EnableUIControlGroup(_calibrateMotorUIControlGroup);
+        _motorPageService.printUiControlGroupHelper.EnableUIControlGroup(_calibrateMotorUIControlGroup);
         ToggleCalibrationPanelButtonLock.Content = "Lock Calibration";
     }
 
@@ -597,23 +616,13 @@ public sealed partial class TestPrintPage : Page
 
     public void LockFileSettingSection()
     {
-        JobFileSearchDirectory.IsEnabled = false;
-        UpdateDirectoryButton.IsEnabled = false;
-        JobFileNameTextBox.IsEnabled = false;
-        GetJobButton.IsEnabled = false;
-        UseDefaultJobButton.IsEnabled = false;
-        _fileSettingsSectionEnabled = false;
+        _motorPageService.printUiControlGroupHelper.DisableUIControlGroup(_layerSettingsUIControlGroup);
         ToggleFileSettingsLockButton.Content = "Unlock File Settings";
     }
 
     public void UnlockFileSettingSection()
     {
-        JobFileSearchDirectory.IsEnabled = true;
-        UpdateDirectoryButton.IsEnabled = true;
-        JobFileNameTextBox.IsEnabled = true;
-        GetJobButton.IsEnabled = true;
-        UseDefaultJobButton.IsEnabled = true;
-        _fileSettingsSectionEnabled = true;
+        _motorPageService.printUiControlGroupHelper.EnableUIControlGroup(_layerSettingsUIControlGroup);
         ToggleFileSettingsLockButton.Content = "Lock File Settings";
     }
 
@@ -703,6 +712,49 @@ public sealed partial class TestPrintPage : Page
         HomeAllMotorsButton.IsEnabled = true;
     }
 
+    #region Helpers
+    private void HomeMotorsHelper()
+    {
+
+        var msg = "Homing all motors";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        if (_motorPageService.buildMotor != null)
+        {
+            _motorPageService.HandleHomeMotor(_motorPageService.buildMotor, _motorPageService.GetBuildPositionTextBox());
+        }
+        else
+        {
+            MagnetoLogger.Log("Build Motor is null, cannot home motor.", LogFactoryLogLevel.LogLevel.ERROR);
+        }
+
+        if (_motorPageService.powderMotor != null)
+        {
+            _motorPageService.HandleHomeMotor(_motorPageService.powderMotor, _motorPageService.GetPowderPositionTextBox());
+        }
+        else
+        {
+            MagnetoLogger.Log("Powder Motor is null, cannot home motor.", LogFactoryLogLevel.LogLevel.ERROR);
+        }
+
+        if (_motorPageService.sweepMotor != null)
+        {
+            _motorPageService.HandleHomeMotor(_motorPageService.sweepMotor, _motorPageService.GetSweepPositionTextBox());
+        }
+        else
+        {
+            MagnetoLogger.Log("Sweep Motor is null, cannot home motor.", LogFactoryLogLevel.LogLevel.ERROR);
+        }
+    }
+
+    private void StopMotorsHelper()
+    {
+        _motorPageService.GetActuationManager().HandleStopRequest(_motorPageService.buildMotor);
+        _motorPageService.GetActuationManager().HandleStopRequest(_motorPageService.powderMotor);
+        _motorPageService.GetActuationManager().HandleStopRequest(_motorPageService.sweepMotor);
+    }
+    #endregion
+
     private void EnableLayerMoveButton_Click(object sender, RoutedEventArgs e)
     {
 
@@ -761,26 +813,46 @@ public sealed partial class TestPrintPage : Page
 
     private void StopAllMotorsInCalibrationPanelButton_Click(object sender, RoutedEventArgs e)
     {
-
+        StopMotorsHelper();
     }
 
     private void HomeAllMotorsButton_Click(object sender, RoutedEventArgs e)
     {
-
+        HomeMotorsHelper();
     }
 
     private void StopAllMotorsInPrintButton_Click(object sender, RoutedEventArgs e)
     {
-
+        StopMotorsHelper();
     }
 
     private void StopBuildMotorButton_Click(object sender, RoutedEventArgs e)
     {
-
+        _motorPageService.GetActuationManager().HandleStopRequest(_motorPageService.buildMotor);
     }
 
     private void StopPowderMotorButton_Click(object sender, RoutedEventArgs e)
     {
+        _motorPageService.GetActuationManager().HandleStopRequest(_motorPageService.powderMotor);
+    }
 
+    private void StopBuildMotorInCalibrateButton_Click(object sender, RoutedEventArgs e)
+    {
+        _motorPageService.GetActuationManager().HandleStopRequest(_motorPageService.buildMotor);
+    }
+
+    private void StopPowderMotorInCalibrateButton_Click(object sender, RoutedEventArgs e)
+    {
+        _motorPageService.GetActuationManager().HandleStopRequest(_motorPageService.powderMotor);
+    }
+
+    private void StopSweepMotorInCalibrateButton_Click(object sender, RoutedEventArgs e)
+    {
+        _motorPageService.GetActuationManager().HandleStopRequest(_motorPageService.sweepMotor);
+    }
+
+    private void HomeAllMotorsInCalibrationPanelButton_Click(object sender, RoutedEventArgs e)
+    {
+        HomeMotorsHelper();
     }
 }

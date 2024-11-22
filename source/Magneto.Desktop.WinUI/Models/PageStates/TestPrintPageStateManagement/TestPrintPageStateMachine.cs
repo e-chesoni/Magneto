@@ -17,6 +17,7 @@ using static Magneto.Desktop.WinUI.Core.Models.BuildModels.ActuationManager;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml;
 using Magneto.Desktop.WinUI.Helpers;
+using Magneto.Desktop.WinUI.Models.UIControl;
 
 namespace Magneto.Desktop.WinUI.Models.PageStates.TestPrintPageStateManagement;
 public class TestPrintPageStateMachine
@@ -200,8 +201,8 @@ public class TestPrintPageStateMachine
 
     #endregion
 
-    private PrintUIControlGroupHelper.MotorUIControlGroup _calibrateMotorUIControlGroup { get; set; }
-    private PrintUIControlGroupHelper.MotorUIControlGroup _inPrintMotorUIControlGroup { get; set; }
+    private MotorUIControlGroup _calibrateMotorUIControlGroup { get; set; }
+    private MotorUIControlGroup _inPrintMotorUIControlGroup { get; set; }
 
     #region Test Page Setup
 
@@ -283,13 +284,13 @@ public class TestPrintPageStateMachine
 
     private void EnableCalibrationPanel()
     {
-        _motorPageService.motorSelectHelper.EnableUIControlGroup(_motorPageService.motorSelectHelper.calibrateMotorControlGroup);
+        _motorPageService.printUiControlGroupHelper.EnableUIControlGroup(_motorPageService.printUiControlGroupHelper.calibrateMotorControlGroup);
         ToggleCalibrationPanelLockButton.Content = "Unlock Calibration";
     }
 
     private void DisableCalibrationPanel()
     {
-        _motorPageService.motorSelectHelper.DisableUIControlGroup(_motorPageService.motorSelectHelper.calibrateMotorControlGroup);
+        _motorPageService.printUiControlGroupHelper.DisableUIControlGroup(_motorPageService.printUiControlGroupHelper.calibrateMotorControlGroup);
         ToggleCalibrationPanelLockButton.Content = "Lock Calibration";
     }
 
