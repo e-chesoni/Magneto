@@ -120,7 +120,7 @@ public class WaverunnerPageService
         this.JobFileSearchDirectory.Text = _jobDirectory;
 
         // Set default job file
-        _defaultJobName = "center_crosshair_OAT.sjf";
+        _defaultJobName = "steel-3D-test-11-22-24.sjf";
         this.JobFileNameTextBox.Text = _defaultJobName;
 
         // ASSUMPTION: Red pointer is off when application starts
@@ -152,6 +152,17 @@ public class WaverunnerPageService
         // Initialize red pointer to off
         _redPointerEnabled = false;
     }
+
+    #region Setters
+
+
+    public void SetDefaultJobFileName(string defaultFileNameJob)
+    {
+        _defaultJobName = defaultFileNameJob;
+        JobFileNameTextBox.Text = defaultFileNameJob;
+    }
+
+    #endregion
 
     #region Connectivity Test Methods
 

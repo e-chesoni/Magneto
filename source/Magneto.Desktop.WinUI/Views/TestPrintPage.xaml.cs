@@ -295,6 +295,9 @@ public sealed partial class TestPrintPage : Page
     {
         _waverunnerPageService = new WaverunnerPageService(JobFileSearchDirectory, JobFileNameTextBox,
                                                            ToggleRedPointerButton, StartMarkButton);
+
+        // Set default job file
+        _waverunnerPageService.SetDefaultJobFileName("steel-3D-test-11-22-24.sjf");
     }
 
     private void SetDefaultPrintSettings()
@@ -854,5 +857,45 @@ public sealed partial class TestPrintPage : Page
     private void HomeAllMotorsInCalibrationPanelButton_Click(object sender, RoutedEventArgs e)
     {
         HomeMotorsHelper();
+    }
+
+    private void MoveBuildToAbsPositionButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void MovePowderToAbsPositionButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void MoveSweepToAbsPositionButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void StopSingleLayerMoveButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void MarkInPrintButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void StopMarkInPrintButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void ReturnSweepInPrintButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void StopReturnSweepInPrintButton_Click(object sender, RoutedEventArgs e)
+    {
+
     }
 }
