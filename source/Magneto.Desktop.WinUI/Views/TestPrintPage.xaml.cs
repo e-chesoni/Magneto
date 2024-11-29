@@ -151,6 +151,8 @@ public sealed partial class TestPrintPage : Page
 
     private double _layerThickness;
 
+    private double _desiredPrintHeight;
+
     #endregion
 
     private MotorPageService _motorPageService;
@@ -302,7 +304,9 @@ public sealed partial class TestPrintPage : Page
 
     private void SetDefaultPrintSettings()
     {
-        _layerThickness = MagnetoConfig.GetDefaultPrintThickness();
+        _layerThickness = 0.08; // set default layer height to be 0.08mm based on first steel print
+        _desiredPrintHeight = 5; // set defaut print height to be mm
+        DesiredPrintHeightTextBox.Text = _desiredPrintHeight.ToString();
         SetLayerThicknessTextBox.Text = _layerThickness.ToString();
     }
 
@@ -620,13 +624,13 @@ public sealed partial class TestPrintPage : Page
     public void LockFileSettingSection()
     {
         _motorPageService.printUiControlGroupHelper.DisableUIControlGroup(_layerSettingsUIControlGroup);
-        ToggleFileSettingsLockButton.Content = "Unlock File Settings";
+        //ToggleFileSettingsLockButton.Content = "Unlock File Settings";
     }
 
     public void UnlockFileSettingSection()
     {
         _motorPageService.printUiControlGroupHelper.EnableUIControlGroup(_layerSettingsUIControlGroup);
-        ToggleFileSettingsLockButton.Content = "Lock File Settings";
+        //ToggleFileSettingsLockButton.Content = "Lock File Settings";
     }
 
     private void ToggleFileSettingSectionHelper()
@@ -644,7 +648,7 @@ public sealed partial class TestPrintPage : Page
         SetLayerThicknessTextBox.IsEnabled = false;
         UpdateLayerThicknessButton.IsEnabled = false;
         _layerSettingsSectionEnabled = false;
-        ToggleLayerSettingsLockButton.Content = "Unlock Layer Settings";
+        //ToggleLayerSettingsLockButton.Content = "Unlock Layer Settings";
     }
 
     private void UnLockLayerSection()
@@ -652,7 +656,7 @@ public sealed partial class TestPrintPage : Page
         SetLayerThicknessTextBox.IsEnabled = true;
         UpdateLayerThicknessButton.IsEnabled = true;
         _layerSettingsSectionEnabled = true;
-        ToggleLayerSettingsLockButton.Content = "Lock Layer Settings";
+        //ToggleLayerSettingsLockButton.Content = "Lock Layer Settings";
     }
 
     private void ToggleLayerSectionHelper()
@@ -788,32 +792,6 @@ public sealed partial class TestPrintPage : Page
         _motorPageService.HandleRelMoveInSitu(_motorPageService.powderMotor, PowderMotorStepInPrintTextBox, false, this.Content.XamlRoot);
     }
 
-    private void ToggleLayerSettingsLockButton_Click(object sender, RoutedEventArgs e)
-    {
-        ToggleLayerSectionHelper();
-        if (_layerSettingsSectionEnabled || _fileSettingsSectionEnabled)
-        {
-            LockPrintManager();
-        }
-        else if (!_layerSettingsSectionEnabled && !_fileSettingsSectionEnabled)
-        {
-            ValidateReadyToPrint();
-        }
-    }
-
-    private void ToggleFileSettingsLockButton_Click(object sender, RoutedEventArgs e)
-    {
-        ToggleFileSettingSectionHelper();
-        if (_layerSettingsSectionEnabled || _fileSettingsSectionEnabled)
-        {
-            LockPrintManager();
-        }
-        else if (!_layerSettingsSectionEnabled && !_fileSettingsSectionEnabled)
-        {
-            ValidateReadyToPrint();
-        }
-    }
-
     private void StopAllMotorsInCalibrationPanelButton_Click(object sender, RoutedEventArgs e)
     {
         StopMotorsHelper();
@@ -895,6 +873,11 @@ public sealed partial class TestPrintPage : Page
     }
 
     private void StopReturnSweepInPrintButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void UpdateDesiredPrintHeightButton_Click(object sender, RoutedEventArgs e)
     {
 
     }
