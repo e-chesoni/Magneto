@@ -180,6 +180,10 @@ public sealed partial class TestPrintPage : Page
 
     private PrintUIControlGroupHelper _printControlGroupHelper { get; set; }
 
+    private double _totalPrintHeight { get; set; }
+
+    private double _totalLayersToPrint { get; set; }
+
     private bool _calibrationPanelEnabled = true;
 
     private bool _fileSettingsSectionEnabled = true;
@@ -277,7 +281,7 @@ public sealed partial class TestPrintPage : Page
 
 
 
-        var printSettingsControls = new List<object> { JobFileSearchDirectory.IsEnabled, UpdateDirectoryButton.IsEnabled, JobFileNameTextBox.IsEnabled, GetJobButton.IsEnabled, UseDefaultJobButton.IsEnabled };
+        var printSettingsControls = new List<object> { JobFileSearchDirectoryTextBox.IsEnabled, UpdateDirectoryButton.IsEnabled, JobFileNameTextBox.IsEnabled, GetJobButton.IsEnabled, UseDefaultJobButton.IsEnabled };
 
         _printSettingsUIControlGroup = new PrintSettingsUIControlGroup(printSettingsControls);
 
@@ -295,7 +299,7 @@ public sealed partial class TestPrintPage : Page
 
     private void InitWaverunnerPageService()
     {
-        _waverunnerPageService = new WaverunnerPageService(JobFileSearchDirectory, JobFileNameTextBox,
+        _waverunnerPageService = new WaverunnerPageService(JobFileSearchDirectoryTextBox, JobFileNameTextBox,
                                                            ToggleRedPointerButton, StartMarkButton);
 
         // Set default job file
@@ -425,13 +429,15 @@ public sealed partial class TestPrintPage : Page
     private void UpdateDirectoryButton_Click(object sender, RoutedEventArgs e)
     {
         _waverunnerPageService.UpdateDirectory();
+        CurrentPrintDirectory.Text = JobFileSearchDirectoryTextBox.Text;
     }
 
     private void GetJobButton_Click(object sender, RoutedEventArgs e)
     {
         // TODO: If job is invalid, need to wipe it from print manager (invalidate ready to print)
         _waverunnerPageService.GetJob(this.Content.XamlRoot);
-        CurrentJobToPrint.Text = Path.Combine(JobFileSearchDirectory.Text, JobFileNameTextBox.Text);
+
+        CurrentJobFile.Text = JobFileNameTextBox.Text;
         if (ValidateReadyToPrint())
         {
             UnlockPrintManager();
@@ -462,7 +468,7 @@ public sealed partial class TestPrintPage : Page
     private void UpdateLayerThicknessButton_Click(object sender, RoutedEventArgs e)
     {
         // TODO: If layer thickness is invalid, need to wipe it from print manager (invalidate ready to print)
-        _layerThickness = (double)Math.Round(double.Parse(SetLayerThicknessTextBox.Text), 3);
+        _layerThickness = Math.Round(double.Parse(SetLayerThicknessTextBox.Text), 3);
         CurrentLayerThickness.Text = _layerThickness.ToString() + " mm";
         if (ValidateReadyToPrint())
         {
@@ -479,7 +485,8 @@ public sealed partial class TestPrintPage : Page
 
     private bool ValidateReadyToPrint()
     {
-        if (!string.IsNullOrWhiteSpace(CurrentJobToPrint.Text) && !string.IsNullOrEmpty(CurrentLayerThickness.Text))
+        var currJobToPrint = Path.Combine(JobFileSearchDirectoryTextBox.Text, JobFileNameTextBox.Text);
+        if (!string.IsNullOrWhiteSpace(currJobToPrint) && !string.IsNullOrEmpty(CurrentLayerThickness.Text))
         {
             // Lock settings
             LockFileSettingSection();
@@ -879,6 +886,9 @@ public sealed partial class TestPrintPage : Page
 
     private void UpdateDesiredPrintHeightButton_Click(object sender, RoutedEventArgs e)
     {
+        _totalPrintHeight = Math.Round(double.Parse(DesiredPrintHeightTextBox.Text), 3);
+        CurrentTotalPrintHeight.Text = _totalPrintHeight.ToString() + " mm";
+        _totalLayersToPrint = (int)Math.Ceiling(_totalPrintHeight / _layerThickness); // rounds up to complete final layer
 
     }
 }

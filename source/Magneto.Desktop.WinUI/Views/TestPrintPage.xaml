@@ -256,7 +256,7 @@
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="2"
                                        FontSize="12" Text="Search Directory"></TextBlock>
-                                <TextBox Grid.Column="1" x:Name="JobFileSearchDirectory" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                <TextBox Grid.Column="1" x:Name="JobFileSearchDirectoryTextBox" HorizontalAlignment="Center" VerticalAlignment="Center"
                                      Width="360" Margin="2"></TextBox>
                                 <Button Grid.Column="2" x:Name="UpdateDirectoryButton" HorizontalAlignment="Left" VerticalAlignment="Center" 
                                     Margin="2" Content="Update" Click="UpdateDirectoryButton_Click"></Button>
@@ -359,6 +359,9 @@
                             <RowDefinition Height="2*"/>
                             <RowDefinition Height="1*"/>
                             <RowDefinition Height="1*"/>
+                            <RowDefinition Height="1*"/>
+                            <RowDefinition Height="1*"/>
+                            <RowDefinition Height="1*"/>
                             <RowDefinition Height="7*"/>
                             <RowDefinition Height="1*"/>
                         </Grid.RowDefinitions>
@@ -367,36 +370,58 @@
                         <Grid Grid.Row="1">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="4*"/>
+                                <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" HorizontalAlignment="Left" FontSize="12" Margin="2"
-                                    Text="Printing:"></TextBlock>
-                            <TextBlock Grid.Column="1" x:Name="CurrentJobToPrint" HorizontalAlignment="Center"></TextBlock>
+                            <TextBlock Grid.Column="0" HorizontalAlignment="Left" FontSize="12" Margin="2" Text="Print Directory: "></TextBlock>
+                            <TextBlock Grid.Column="1" x:Name="CurrentPrintDirectory" HorizontalAlignment="Left" Margin="2"></TextBlock>
                         </Grid>
                         <Grid Grid.Row="2">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="4*"/>
+                                <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" HorizontalAlignment="Left" FontSize="12" Margin="2"
-                                    Text="Layer Thickness:"></TextBlock>
+                            <TextBlock Grid.Column="0" HorizontalAlignment="Left" FontSize="12" Margin="2" Text="Job file: "></TextBlock>
+                            <TextBlock Grid.Column="1" x:Name="CurrentJobFile" HorizontalAlignment="Left" Margin="2"></TextBlock>
+                        </Grid>
+                        <Grid Grid.Row="4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="3*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="3*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" HorizontalAlignment="Left" FontSize="12" Margin="2" Text="Current layer thickness: "></TextBlock>
                             <TextBlock Grid.Column="1" x:Name="CurrentLayerThickness" HorizontalAlignment="Center"></TextBlock>
+                            <TextBlock Grid.Column="2" HorizontalAlignment="Left" FontSize="12" Margin="2" Text="Current total print height: "></TextBlock>
+                            <TextBlock Grid.Column="3" x:Name="CurrentTotalPrintHeight" HorizontalAlignment="Center"></TextBlock>
+                        </Grid>
+                        <Grid Grid.Row="5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="3*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="3*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" HorizontalAlignment="Left" FontSize="12" Margin="2" Text="Printing layer: "></TextBlock>
+                            <TextBlock Grid.Column="1" x:Name="PrintingCurrntLayer" HorizontalAlignment="Center"></TextBlock>
+                            <TextBlock Grid.Column="2" HorizontalAlignment="Left" FontSize="12" Margin="2" Text="Remaining layers to print: "></TextBlock>
+                            <TextBlock Grid.Column="3" x:Name="RemainingLayersToPrint" HorizontalAlignment="Center"></TextBlock>
                         </Grid>
                         
-                        <Grid Grid.Row="3">
+                        <Grid Grid.Row="6">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="1*"/>
                                 <ColumnDefinition Width="2*"/>
                             </Grid.ColumnDefinitions>
                             <Border Grid.Column="0" BorderBrush="Gray" BorderThickness="2" CornerRadius="5" Padding="5">
-                                <Grid Grid.Column="0">  <!-- Enable Layer Move -->
+                                <Grid Grid.Column="0">  <!-- Layer Move -->
                                     <Grid.RowDefinitions>
-                                        <RowDefinition Height="2*"/>
-                                        <RowDefinition Height="2*"/>
-                                        <RowDefinition Height="2*"/>
-                                        <RowDefinition Height="2*"/>
                                         <RowDefinition Height="*"/>
-                                        <RowDefinition Height="3*"/>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="*"/>
                                     </Grid.RowDefinitions>
                                     <Button Grid.Row="0" x:Name="EnableLayerMoveButton" VerticalAlignment="Top" HorizontalAlignment="Center" Height="50" Content="Move by Layer"
                                         Click="EnableLayerMoveButton_Click"></Button>
@@ -406,7 +431,7 @@
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
                                         <Button Grid.Column="0" x:Name="MoveToNextLayerStartPositionButton" HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Margin="2" Content="Next Layer" Click="MoveToNextLayerStartPositionButton_Click"></Button>
-                                        <Button Grid.Column="1" x:Name="StopSingleLayerMoveButton" HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Margin="2" Content="Stop" Click="StopSingleLayerMoveButton_Click"></Button>
+                                        <Button Grid.Column="1" x:Name="StopSingleLayerMoveButton" HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Margin="2" Background="Red" Content="Stop" Click="StopSingleLayerMoveButton_Click"></Button>
                                     </Grid>
                                     <Grid Grid.Row="2">
                                         <Grid.ColumnDefinitions>
@@ -414,7 +439,7 @@
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
                                         <Button Grid.Column="0" x:Name="MarkInPrintButton" HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Margin="2" Content="Mark" Click="MarkInPrintButton_Click"></Button>
-                                        <Button Grid.Column="1" x:Name="StopMarkInPrintButton" HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Margin="2" Content="Stop" Click="StopMarkInPrintButton_Click"></Button>
+                                        <Button Grid.Column="1" x:Name="StopMarkInPrintButton" HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Margin="2" Background="Red" Content="Stop" Click="StopMarkInPrintButton_Click"></Button>
                                     </Grid>
                                     <Grid Grid.Row="3">
                                         <Grid.ColumnDefinitions>
@@ -422,36 +447,30 @@
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
                                         <Button Grid.Column="0" x:Name="ReturnSweepInPrintButton" HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Margin="2" Content="Return Sweep" Click="ReturnSweepInPrintButton_Click"></Button>
-                                        <Button Grid.Column="1" x:Name="StopReturnSweepInPrintButton" HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Margin="2" Content="Stop" Click="StopReturnSweepInPrintButton_Click"></Button>
+                                        <Button Grid.Column="1" x:Name="StopReturnSweepInPrintButton" HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Margin="2" Background="Red" Content="Stop" Click="StopReturnSweepInPrintButton_Click"></Button>
+                                    </Grid>
+                                    <Grid Grid.Row="4">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Text="Print "></TextBlock>
+                                        <TextBox Grid.Column="1" x:Name="MultiLayerPrintInputTextBox" VerticalAlignment="Center" Width="5"></TextBox>
+                                        <TextBlock Grid.Column="2" VerticalAlignment="Center" Text=" layers"></TextBlock>
                                     </Grid>
                                     <Grid Grid.Row="5">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="*"/>
-                                            <RowDefinition Height="*"/>
-                                        </Grid.RowDefinitions>
-                                        <Grid Grid.Row="0">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="*"/>
-                                            </Grid.ColumnDefinitions>
-                                            <TextBlock Grid.Column="0" HorizontalAlignment="Right" Text="Print"></TextBlock>
-                                            <TextBox Grid.Column="1" x:Name="MultiLayerPrintInputTextBox"></TextBox>
-                                            <TextBlock Grid.Column="2" Text="layers"></TextBlock>
-                                        </Grid>
-                                        <Grid Grid.Row="1">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="*"/>
-                                            </Grid.ColumnDefinitions>
-                                            <Button Grid.Column="0" x:Name="StartMultiLayerMoveButton" HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Margin="2" Content="Start"></Button>
-                                            <Button Grid.Column="1" x:Name="StopMultiLayerMoveButton" HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Margin="2" Content="Stop"></Button>
-                                        </Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Button Grid.Column="0" x:Name="StartMultiLayerMoveButton" HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Margin="2" Content="Start"></Button>
+                                        <Button Grid.Column="1" x:Name="StopMultiLayerMoveButton" HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Margin="2" Background="Red" Content="Stop"></Button>
                                     </Grid>
                                 </Grid>
                             </Border>
                             <Border Grid.Column="1" BorderBrush="Gray" BorderThickness="2" CornerRadius="5" Padding="5">
-                                <Grid Grid.Column="1"> <!-- Disable Layer Move -->
+                                <Grid Grid.Column="1"> <!-- Manual Move -->
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="2*"/>
                                         <RowDefinition Height="5*"/>
