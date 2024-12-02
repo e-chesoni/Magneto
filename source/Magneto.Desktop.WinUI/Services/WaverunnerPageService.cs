@@ -31,39 +31,24 @@ public class WaverunnerPageService
     /// <summary>
     /// Default job directory (to search for job files)
     /// </summary>
-    private string _defaultJobDirectory
-    {
-        get; set;
-    }
+    private string _defaultJobDirectory { get; set; }
 
     /// <summary>
     /// Default job file name
     /// </summary>
-    private string _defaultJobName
-    {
-        get; set;
-    }
+    private string _defaultJobName { get; set; }
 
     /// <summary>
     /// Job directory (to search for files) -- can be defined by the user
     /// </summary>
-    private string _jobDirectory
-    {
-        get; set;
-    }
+    private string _jobDirectory { get; set; }
 
     /// <summary>
     /// Full file path to entity
     /// </summary>
-    private string? _fullJobFilePath
-    {
-        get; set;
-    }
+    private string? _fullJobFilePath { get; set; }
 
-    private bool _redPointerEnabled
-    {
-        get; set;
-    }
+    private bool _redPointerEnabled { get; set; }
 
 
     #region Enumerators
