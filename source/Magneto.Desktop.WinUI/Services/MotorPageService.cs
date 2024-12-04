@@ -398,7 +398,22 @@ public class MotorPageService
         }
     }
 
-    public void HandleHomeMotor(StepperMotor motor, TextBox positionTextBox)
+    public void HandleHomeMotorAndUpdateTextBox(StepperMotor motor, TextBox positionTextBox)
+    {
+        MagnetoLogger.Log("Homing Motor.", LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        if (motor != null)
+        {
+            _ = HomeMotor(motor);
+            printUiControlGroupHelper.SelectMotor(motor);
+        }
+        else
+        {
+            MagnetoLogger.Log($"Cannot home {motor.GetMotorName()} motor: motor value is null.", LogFactoryLogLevel.LogLevel.ERROR);
+        }
+    }
+
+    public void HandleHomeMotor(StepperMotor motor)
     {
         MagnetoLogger.Log("Homing Motor.", LogFactoryLogLevel.LogLevel.VERBOSE);
 

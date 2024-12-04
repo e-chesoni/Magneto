@@ -173,17 +173,17 @@ namespace Magneto.Desktop.WinUI
 
         private void HomeBuildMotorButton_Click(object sender, RoutedEventArgs e)
         {
-            _motorPageService.HandleHomeMotor(_motorPageService.buildMotor, _motorPageService.GetBuildPositionTextBox());
+            _motorPageService.HandleHomeMotorAndUpdateTextBox(_motorPageService.buildMotor, _motorPageService.GetBuildPositionTextBox());
         }
 
         private void HomePowderMotorButton_Click(object sender, RoutedEventArgs e)
         {
-            _motorPageService.HandleHomeMotor(_motorPageService.powderMotor, _motorPageService.GetPowderPositionTextBox());
+            _motorPageService.HandleHomeMotorAndUpdateTextBox(_motorPageService.powderMotor, _motorPageService.GetPowderPositionTextBox());
         }
 
         private void HomeSweepMotorButton_Click(object sender, RoutedEventArgs e)
         {
-            _motorPageService.HandleHomeMotor(_motorPageService.sweepMotor, _motorPageService.GetSweepPositionTextBox());
+            _motorPageService.HandleHomeMotorAndUpdateTextBox(_motorPageService.sweepMotor, _motorPageService.GetSweepPositionTextBox());
         }
 
         /// <summary>
@@ -201,7 +201,7 @@ namespace Magneto.Desktop.WinUI
 
             if (_motorPageService.buildMotor != null)
             {
-                _motorPageService.HandleHomeMotor(_motorPageService.buildMotor, _motorPageService.GetBuildPositionTextBox());
+                _motorPageService.HandleHomeMotorAndUpdateTextBox(_motorPageService.buildMotor, _motorPageService.GetBuildPositionTextBox());
             }
             else
             {
@@ -210,7 +210,7 @@ namespace Magneto.Desktop.WinUI
 
             if (_motorPageService.powderMotor != null)
             {
-                _motorPageService.HandleHomeMotor(_motorPageService.powderMotor,_motorPageService.GetPowderPositionTextBox());
+                _motorPageService.HandleHomeMotorAndUpdateTextBox(_motorPageService.powderMotor,_motorPageService.GetPowderPositionTextBox());
             }
             else
             {
@@ -219,7 +219,7 @@ namespace Magneto.Desktop.WinUI
 
             if (_motorPageService.sweepMotor != null)
             {
-                _motorPageService.HandleHomeMotor(_motorPageService.sweepMotor, _motorPageService.GetSweepPositionTextBox());
+                _motorPageService.HandleHomeMotorAndUpdateTextBox(_motorPageService.sweepMotor, _motorPageService.GetSweepPositionTextBox());
             }
             else
             {

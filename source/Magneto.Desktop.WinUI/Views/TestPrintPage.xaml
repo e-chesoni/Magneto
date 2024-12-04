@@ -194,9 +194,8 @@
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
-                                        <Button Grid.Column="0" x:Name="StepSweepMotorUpButton" HorizontalAlignment="Center" Height="30" Margin="2" Content="L"
-                                            Click="StepSweepMotorUpButton_Click"></Button>
-                                        <Button Grid.Column="1" x:Name="StepSweepMotorDownButton" HorizontalAlignment="Center" Height="30" Content="R" Click="StepSweepMotorDownButton_Click"></Button>
+                                        <Button Grid.Column="0" x:Name="StepSweepMotorLeftInCalibrateButton" HorizontalAlignment="Center" Height="30" Margin="2" Content="L" Click="StepSweepMotorLeftInCalibrateButton_Click"></Button>
+                                        <Button Grid.Column="1" x:Name="StepSweepMotorRightInCalibrateButton" HorizontalAlignment="Center" Height="30" Content="R" Click="StepSweepMotorRightInCalibrateButton_Click"></Button>
                                     </Grid>
                                 </Grid>
                                 <Button Grid.Row="4" x:Name="StopSweepMotorInCalibrateButton" HorizontalAlignment="Center" Height="30" Content="Stop S" Click="StopSweepMotorInCalibrateButton_Click"></Button>
@@ -209,7 +208,7 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <Button Grid.Column="0" x:Name="StopAllMotorsInCalibrationPanelButton" HorizontalAlignment="Right" VerticalAlignment="Top" Height="30" Margin="2" Background="Red" Content="E-Stop"
+                            <Button Grid.Column="0" x:Name="StopAllMotorsInCalibrationPanelButton" HorizontalAlignment="Right" VerticalAlignment="Top" Height="30" Margin="2" Background="Red" Content="Stop All Motors"
                                 Click="StopAllMotorsInCalibrationPanelButton_Click"></Button>
                             <Button Grid.Column="1" x:Name="HomeAllMotorsInCalibrationPanelButton" HorizontalAlignment="Center" VerticalAlignment="Top" Height="30" Margin="2" Content="Home All Motors"
                                 Click="HomeAllMotorsInCalibrationPanelButton_Click"></Button>
@@ -246,20 +245,17 @@
                                 <RowDefinition Height="*"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
-                            <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16"
-                              Text="File Settings"></TextBlock>
+                            <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16" Text="File Settings"></TextBlock>
                             <Grid Grid.Row="1">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="2"
-                                       FontSize="12" Text="Search Directory"></TextBlock>
-                                <TextBox Grid.Column="1" x:Name="JobFileSearchDirectoryTextBox" HorizontalAlignment="Center" VerticalAlignment="Center"
-                                     Width="360" Margin="2"></TextBox>
-                                <Button Grid.Column="2" x:Name="UpdateDirectoryButton" HorizontalAlignment="Left" VerticalAlignment="Center" 
-                                    Margin="2" Content="Update" Click="UpdateDirectoryButton_Click"></Button>
+                                <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="2" FontWeight="Bold" Text="Search Directory"></TextBlock>
+                                <TextBox Grid.Column="1" x:Name="JobFileSearchDirectoryTextBox" HorizontalAlignment="Center" VerticalAlignment="Center" Width="360" Margin="2"></TextBox>
+                                <Button Grid.Column="2" x:Name="UpdateDirectoryButton" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="2" Content="Update"
+                                        Click="UpdateDirectoryButton_Click"></Button>
                             </Grid>
                             <Grid Grid.Row="2" HorizontalAlignment="Center">
                                 <Grid.ColumnDefinitions>
@@ -268,14 +264,12 @@
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="2"
-                                       FontSize="12" Text="File Name:"></TextBlock>
-                                <TextBox Grid.Column="1" x:Name="JobFileNameTextBox" HorizontalAlignment="Center" VerticalAlignment="Center" 
-                                      Width="200"  Margin="2"></TextBox>
-                                <Button Grid.Column="2" x:Name="UseDefaultJobButton" HorizontalAlignment="Center" VerticalAlignment="Center" 
-                                    Margin="2" Content="Use Default Job" Click="UseDefaultJobButton_Click"></Button>
-                                <Button Grid.Column="3" x:Name="GetJobButton" HorizontalAlignment="Center" VerticalAlignment="Center" 
-                                    Margin="2" Content="Update" Click="GetJobButton_Click"></Button>
+                                <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="2" FontWeight="Bold" Text="File Name:"></TextBlock>
+                                <TextBox Grid.Column="1" x:Name="JobFileNameTextBox" HorizontalAlignment="Center" VerticalAlignment="Center" Width="200" Margin="2"></TextBox>
+                                <Button Grid.Column="2" x:Name="UseDefaultJobButton" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="2" Content="Use Default Job"
+                                        Click="UseDefaultJobButton_Click"></Button>
+                                <Button Grid.Column="3" x:Name="GetJobButton" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="2" Content="Update"
+                                        Click="GetJobButton_Click"></Button>
                             </Grid>
                             <Grid Grid.Row="3">
                                 <!-- Marking -->
@@ -285,14 +279,14 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <Button Grid.Column="0" x:Name="ToggleRedPointerButton" HorizontalAlignment="Right" VerticalAlignment="Center" 
-                                    Content="Toggle Red Pointer" Click="ToggleRedPointerButton_Click" IsEnabled="False"></Button>
-                                <TextBlock Grid.Column="1" x:Name="RedPointerInfoText" HorizontalAlignment="Center" VerticalAlignment="Center" 
-                                           TextAlignment="Center" FontSize="12" Text="Red pointer must be off to Start Mark" Foreground="DarkGray"></TextBlock>
-                                <Button Grid.Column="2" x:Name="StartMarkButton" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="1"
-                                    Content="Start Mark" Click="StartMarkButton_Click" IsEnabled="False"></Button>
-                                <Button Grid.Column="3" x:Name="StopMarkButton" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="1"
-                                    Content="Stop Mark" Click="StopMarkButton_Click"></Button>
+                                <Button Grid.Column="0" x:Name="ToggleRedPointerButton" HorizontalAlignment="Right" VerticalAlignment="Center" Content="Toggle Red Pointer"
+                                        Click="ToggleRedPointerButton_Click" IsEnabled="False"></Button>
+                                <TextBlock Grid.Column="1" x:Name="RedPointerInfoText" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center"
+                                           Text="Red pointer must be off to Start Mark" Foreground="DarkGray"></TextBlock>
+                                <Button Grid.Column="2" x:Name="StartMarkButton" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="1" Content="Start Mark"
+                                        Click="StartMarkButton_Click" IsEnabled="False"></Button>
+                                <Button Grid.Column="3" x:Name="StopMarkButton" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="1" Content="Stop Mark"
+                                        Click="StopMarkButton_Click"></Button>
                             </Grid>
                         </Grid>
                         <!-- Layer Settings -->
@@ -312,11 +306,10 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12"
-                                        Text="Set layer thickness:"></TextBlock>
+                                <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" FontWeight="Bold" Text="Set layer thickness:"></TextBlock>
                                 <TextBox Grid.Column="1" x:Name="SetLayerThicknessTextBox" Height ="30" Margin="2" 
                                         Text=" "></TextBox>
-                                <TextBlock Grid.Column="2" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="2" FontSize="12" 
+                                <TextBlock Grid.Column="2" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="2" 
                                            Text="mm"></TextBlock>
                                 <Button Grid.Column="3" x:Name="UpdateLayerThicknessButton" HorizontalAlignment="Left" Height="30" Margin="2" Content="Update"
                                         Click="UpdateLayerThicknessButton_Click"></Button>
@@ -328,12 +321,9 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12"
-                                        Text="Desired print height:"></TextBlock>
-                                <TextBox Grid.Column="1" x:Name="DesiredPrintHeightTextBox" Width="30" Height ="30" Margin="2" 
-                                        Text=" "></TextBox>
-                                <TextBlock Grid.Column="2" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="2" FontSize="12" 
-                                           Text="mm"></TextBlock>
+                                <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" FontWeight="Bold" Text="Desired print height: "></TextBlock>
+                                <TextBox Grid.Column="1" x:Name="DesiredPrintHeightTextBox" Width="30" Height ="30" Margin="2" Text=" "></TextBox>
+                                <TextBlock Grid.Column="2" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="2" FontSize="12" Text="mm"></TextBlock>
                                 <Button Grid.Column="3" x:Name="UpdateDesiredPrintHeightButton" HorizontalAlignment="Left" Height="30" Margin="2" Content="Update"
                                         Click="UpdateDesiredPrintHeightButton_Click"></Button>
                             </Grid>
@@ -343,72 +333,95 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" VerticalAlignment="Center" FontSize="12"
-                                        Text="Estimated layers to print: "></TextBlock>
-                                <TextBlock Grid.Column="2" x:Name="EstimatedLayersToPrintTextBlock" HorizontalAlignment="Left" VerticalAlignment="Center" 
-                                           FontSize="12"></TextBlock>
+                                <TextBlock Grid.Column="0" VerticalAlignment="Center" FontSize="12" Margin="2" FontWeight="Bold" Text="Estimated layers to print: "></TextBlock>
+                                <TextBlock Grid.Column="2" x:Name="EstimatedLayersToPrintTextBlock" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="12" Margin="2"></TextBlock>
                             </Grid>
                         </Grid>
                         <Button Grid.Row="4" Content="Lock Settings" HorizontalAlignment="Center"></Button>
                     </Grid>
                 </Border>
-            
+
                 <Border Grid.Column="2" BorderBrush="Gray" BorderThickness="2" CornerRadius="5" Padding="5">
                     <Grid> <!-- Print Management -->
                         <Grid.RowDefinitions>
                             <RowDefinition Height="2*"/>
-                            <RowDefinition Height="1*"/>
-                            <RowDefinition Height="1*"/>
-                            <RowDefinition Height="1*"/>
-                            <RowDefinition Height="1*"/>
+                            <RowDefinition Height="2*"/>
                             <RowDefinition Height="1*"/>
                             <RowDefinition Height="7*"/>
-                            <RowDefinition Height="1*"/>
                         </Grid.RowDefinitions>
-                        <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16"
-                              Text="Print"></TextBlock>
+                        
+                        <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16" Text="Print"></TextBlock>
                         <Grid Grid.Row="1">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" HorizontalAlignment="Left" FontSize="12" Margin="2" Text="Print Directory: "></TextBlock>
-                            <TextBlock Grid.Column="1" x:Name="CurrentPrintDirectory" HorizontalAlignment="Left" Margin="2"></TextBlock>
-                        </Grid>
-                        <Grid Grid.Row="2">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" HorizontalAlignment="Left" FontSize="12" Margin="2" Text="Job file: "></TextBlock>
-                            <TextBlock Grid.Column="1" x:Name="CurrentJobFile" HorizontalAlignment="Left" Margin="2"></TextBlock>
-                        </Grid>
-                        <Grid Grid.Row="4">
-                            <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="3*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="3*"/>
-                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="2*"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" HorizontalAlignment="Left" FontSize="12" Margin="2" Text="Current layer thickness: "></TextBlock>
-                            <TextBlock Grid.Column="1" x:Name="CurrentLayerThickness" HorizontalAlignment="Center"></TextBlock>
-                            <TextBlock Grid.Column="2" HorizontalAlignment="Left" FontSize="12" Margin="2" Text="Current total print height: "></TextBlock>
-                            <TextBlock Grid.Column="3" x:Name="CurrentTotalPrintHeight" HorizontalAlignment="Center"></TextBlock>
-                        </Grid>
-                        <Grid Grid.Row="5">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="3*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="3*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" HorizontalAlignment="Left" FontSize="12" Margin="2" Text="Printing layer: "></TextBlock>
-                            <TextBlock Grid.Column="1" x:Name="PrintingCurrntLayer" HorizontalAlignment="Center"></TextBlock>
-                            <TextBlock Grid.Column="2" HorizontalAlignment="Left" FontSize="12" Margin="2" Text="Remaining layers to print: "></TextBlock>
-                            <TextBlock Grid.Column="3" x:Name="RemainingLayersToPrint" HorizontalAlignment="Center"></TextBlock>
+                            <Grid Grid.Column="0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <Grid Grid.Row="0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="3*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" HorizontalAlignment="Left" FontWeight="Bold" Margin="2" Text="Print Directory: "></TextBlock>
+                                    <TextBlock Grid.Column="1" x:Name="CurrentPrintDirectory" HorizontalAlignment="Left" Margin="2"></TextBlock>
+                                </Grid>
+                                <Grid Grid.Row="1">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="3*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" HorizontalAlignment="Left" FontWeight="Bold" Margin="2" Text="Job file: "></TextBlock>
+                                    <TextBlock Grid.Column="1" x:Name="CurrentJobFile" HorizontalAlignment="Left" Margin="2"></TextBlock>
+                                </Grid>
+                                <Grid Grid.Row="2">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" HorizontalAlignment="Left" FontWeight="Bold" Margin="2" Text="Current layer thickness: "></TextBlock>
+                                    <TextBlock Grid.Column="1" x:Name="CurrentLayerThickness" HorizontalAlignment="Center"></TextBlock>
+                                    <TextBlock Grid.Column="2" HorizontalAlignment="Left" FontWeight="Bold" Margin="2" Text="Current total print height: "></TextBlock>
+                                    <TextBlock Grid.Column="3" x:Name="CurrentTotalPrintHeight" HorizontalAlignment="Center"></TextBlock>
+                                </Grid>
+                                <Grid Grid.Row="3">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="3*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="3*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" HorizontalAlignment="Left" FontWeight="Bold" Margin="2" Text="Printing layer: "></TextBlock>
+                                    <TextBlock Grid.Column="1" x:Name="PrintingCurrntLayer" HorizontalAlignment="Center"></TextBlock>
+                                    <TextBlock Grid.Column="2" HorizontalAlignment="Left" FontWeight="Bold" Margin="2" Text="Remaining layers to print: "></TextBlock>
+                                    <TextBlock Grid.Column="3" x:Name="RemainingLayersToPrint" HorizontalAlignment="Center"></TextBlock>
+                                </Grid>
+                            </Grid>  <!-- Locked in Settings Display -->
+                            <Grid Grid.Column="1" x:Name="PrintHistoryGrid" HorizontalAlignment="Center" VerticalAlignment="Top">  <!-- Print History Grid -->
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                            </Grid> 
                         </Grid>
                         
-                        <Grid Grid.Row="6">
+                        <Grid Grid.Row="2">  <!-- Start New Print / Cancel Print Buttons -->
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0" x:Name="StartNewPrintButton" HorizontalAlignment="Right" VerticalAlignment="Center" Height="30" Width="150" Margin="2" Content="Start New Print" Click="StartNewPrintButton_Click"></Button>
+                            <Button Grid.Column="1" x:Name="CancelPrintButton" HorizontalAlignment="Left" VerticalAlignment="Center" Height="30" Width="150" Margin="2" Content="Cancel Print" Click="CancelPrintButton_Click"></Button>
+                        </Grid>
+                        
+                        <Grid Grid.Row="3">  <!-- Movement Orders -->
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="1*"/>
                                 <ColumnDefinition Width="2*"/>
@@ -430,7 +443,7 @@
                                             <ColumnDefinition Width="2*"/>
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
-                                        <Button Grid.Column="0" x:Name="MoveToNextLayerStartPositionButton" HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Margin="2" Content="Next Layer" Click="MoveToNextLayerStartPositionButton_Click"></Button>
+                                        <Button Grid.Column="0" x:Name="MoveToNextLayerStartPositionButton" HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="110" Margin="2" Content="Next Layer" Click="MoveToNextLayerStartPositionButton_Click"></Button>
                                         <Button Grid.Column="1" x:Name="StopSingleLayerMoveButton" HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Margin="2" Background="Red" Content="Stop" Click="StopSingleLayerMoveButton_Click"></Button>
                                     </Grid>
                                     <Grid Grid.Row="2">
@@ -438,16 +451,16 @@
                                             <ColumnDefinition Width="2*"/>
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
-                                        <Button Grid.Column="0" x:Name="MarkInPrintButton" HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Margin="2" Content="Mark" Click="MarkInPrintButton_Click"></Button>
-                                        <Button Grid.Column="1" x:Name="StopMarkInPrintButton" HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Margin="2" Background="Red" Content="Stop" Click="StopMarkInPrintButton_Click"></Button>
+                                        <Button Grid.Column="0" x:Name="StartMarkInLayerMoveButton" HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="110" Margin="2" Content="Mark" Click="StartMarkInLayerMoveButton_Click"></Button>
+                                        <Button Grid.Column="1" x:Name="StopMarkInLayerMoveButton" HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Margin="2" Background="Red" Content="Stop" Click="StopMarkInLayerMoveButton_Click"></Button>
                                     </Grid>
                                     <Grid Grid.Row="3">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="2*"/>
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
-                                        <Button Grid.Column="0" x:Name="ReturnSweepInPrintButton" HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Margin="2" Content="Return Sweep" Click="ReturnSweepInPrintButton_Click"></Button>
-                                        <Button Grid.Column="1" x:Name="StopReturnSweepInPrintButton" HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Margin="2" Background="Red" Content="Stop" Click="StopReturnSweepInPrintButton_Click"></Button>
+                                        <Button Grid.Column="0" x:Name="ReturnSweepInLayerMoveButton" HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="110" Margin="2" Content="Return Sweep" Click="ReturnSweepInLayerMoveButton_Click"></Button>
+                                        <Button Grid.Column="1" x:Name="StopReturnSweepInLayerMoveButton" HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Margin="2" Background="Red" Content="Stop" Click="StopReturnSweepInLayerMoveButton_Click"></Button>
                                     </Grid>
                                     <Grid Grid.Row="4">
                                         <Grid.ColumnDefinitions>
@@ -456,16 +469,16 @@
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
                                         <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Text="Print "></TextBlock>
-                                        <TextBox Grid.Column="1" x:Name="MultiLayerPrintInputTextBox" VerticalAlignment="Center" Width="5"></TextBox>
+                                        <TextBox Grid.Column="1" x:Name="MultiLayerMoveInputTextBox" VerticalAlignment="Center" Width="5"></TextBox>
                                         <TextBlock Grid.Column="2" VerticalAlignment="Center" Text=" layers"></TextBlock>
                                     </Grid>
                                     <Grid Grid.Row="5">
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="2*"/>
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
-                                        <Button Grid.Column="0" x:Name="StartMultiLayerMoveButton" HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Margin="2" Content="Start"></Button>
-                                        <Button Grid.Column="1" x:Name="StopMultiLayerMoveButton" HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Margin="2" Background="Red" Content="Stop"></Button>
+                                        <Button Grid.Column="0" x:Name="StartMultiLayerMoveButton" HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Margin="2" Content="Start Multi-Layer Move"></Button>
+                                        <Button Grid.Column="1" x:Name="StopMultiLayerMoveButton" HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Margin="2" Background="Red" Content="E-Stop"></Button>
                                     </Grid>
                                 </Grid>
                             </Border>
@@ -499,7 +512,7 @@
                                                         <ColumnDefinition Width="2*"/>
                                                         <ColumnDefinition Width="2*"/>
                                                     </Grid.ColumnDefinitions>
-                                                    <TextBox Grid.Column="0" x:Name="BuildMotorStepInPrintTextBox" Width="20"></TextBox>
+                                                    <TextBox Grid.Column="0" x:Name="BuildMotorStepInPrintTextBox" Height="30" Width="20"></TextBox>
                                                     <Button Grid.Column="1" x:Name="IncrementBuildButton" HorizontalAlignment="Center" Height="30" Margin="1" Content="U"
                                                             Click="IncrementBuildButton_Click"></Button>
                                                     <Button Grid.Column="2" x:Name="DecrementBuildButton" HorizontalAlignment="Center" Height="30" Margin="1" Content="D"
@@ -522,7 +535,7 @@
                                                         <ColumnDefinition Width="2*"/>
                                                         <ColumnDefinition Width="2*"/>
                                                     </Grid.ColumnDefinitions>
-                                                    <TextBox Grid.Column="0" x:Name="PowderMotorStepInPrintTextBox" Width="20"></TextBox>
+                                                    <TextBox Grid.Column="0" x:Name="PowderMotorStepInPrintTextBox" Height="30" Width="20"></TextBox>
                                                     <Button Grid.Column="1" x:Name="IncrementPowderButton" HorizontalAlignment="Center" Height="30" Margin="1" Content="U"
                                                             Click="IncrementPowderButton_Click"></Button>
                                                     <Button Grid.Column="2" x:Name="DecrementPowderButton" HorizontalAlignment="Center" Height="30" Margin="1" Content="D"
@@ -566,8 +579,6 @@
                                 </Grid>
                             </Border>
                         </Grid>
-
-                        
 
                     </Grid>
                 </Border>
