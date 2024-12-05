@@ -398,8 +398,8 @@
                                         <ColumnDefinition Width="3*"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" HorizontalAlignment="Left" FontWeight="Bold" Margin="2" Text="Printing layer: "></TextBlock>
-                                    <TextBlock Grid.Column="1" x:Name="PrintingCurrntLayer" HorizontalAlignment="Center"></TextBlock>
+                                    <TextBlock Grid.Column="0" HorizontalAlignment="Left" FontWeight="Bold" Margin="2" Text="Layers Printed: "></TextBlock>
+                                    <TextBlock Grid.Column="1" x:Name="LayersPrintedTextBlock" HorizontalAlignment="Center"></TextBlock>
                                     <TextBlock Grid.Column="2" HorizontalAlignment="Left" FontWeight="Bold" Margin="2" Text="Remaining layers to print: "></TextBlock>
                                     <TextBlock Grid.Column="3" x:Name="RemainingLayersToPrint" HorizontalAlignment="Center"></TextBlock>
                                 </Grid>

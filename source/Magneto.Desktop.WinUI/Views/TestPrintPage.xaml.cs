@@ -553,6 +553,7 @@ public sealed partial class TestPrintPage : Page
     private void StartMarkButton_Click(object sender, RoutedEventArgs e)
     {
         _ = _waverunnerPageService.MarkEntityAsync();
+        //WARNING: do not increment layers here; this is a test in settings
     }
 
     private void StopMarkButton_Click(object sender, RoutedEventArgs e)
@@ -581,7 +582,7 @@ public sealed partial class TestPrintPage : Page
 
         // Update estimated print height text boxes in settings and print panel
         EstimatedLayersToPrintTextBlock.Text = _totalLayersToPrint.ToString();
-        RemainingLayersToPrint.Text = _totalLayersToPrint.ToString();
+        RemainingLayersToPrint.Text = _totalLayersToPrint.ToString(); // TODO: May need to rethink this when if print is updated mid cycle
     }
 
     #endregion
@@ -647,15 +648,37 @@ public sealed partial class TestPrintPage : Page
     private void AddDummyPrintHistory()
     {
         _printHistoryDictionary[0.03] = 6;  // 6 layers printed at 0.03mm
-        _printHistoryDictionary[0.05] = 24;  // 24 layers printed at 0.05mm
+        _printHistoryDictionary[0.05] = 21;  // 24 layers printed at 0.05mm
         _printHistoryDictionary[0.08] = 33;  // 33 layers printed at 0.08mm
     }
 
     private void StartNewPrintButton_Click(object sender, RoutedEventArgs e)
     {
         _printHistoryDictionary = new Dictionary<double, int>();
-        AddDummyPrintHistory(); // TODO: Remove print history dummy values when done testing
+
+        // TODO: Remove print history dummy values when done testing
+        AddDummyPrintHistory();
         TestPrintHistoryPopulate();
+
+        // update layers printed
+        updateLayerTrackingUI();
+    }
+
+    private void updateLayerTrackingUI()
+    {
+        _layersPrinted = _printHistoryDictionary.Any() ? _printHistoryDictionary.Values.Sum() : 0;
+        LayersPrintedTextBlock.Text = _layersPrinted.ToString();
+        RemainingLayersToPrint.Text = (_totalLayersToPrint - _layersPrinted).ToString();
+    }
+    private int incrementLayersPrinted()
+    {
+        //TODO: get current layer thickness, increment matching value in print history dictionary
+        // if no value exists for current layer thickness, add it
+        // DO above instead of _layersPrinted++;
+
+        updateLayerTrackingUI();
+
+        return _layersPrinted;
     }
 
     private void CancelPrintButton_Click(object sender, RoutedEventArgs e)
@@ -665,6 +688,7 @@ public sealed partial class TestPrintPage : Page
 
     #endregion
 
+    
 
     #region Print Layer Move Methods
 
@@ -682,8 +706,7 @@ public sealed partial class TestPrintPage : Page
     {
         _ = _waverunnerPageService.MarkEntityAsync();
 
-        // TODO: implement update grid after marking a layer
-
+        _ = incrementLayersPrinted(); // TODO: TEST
     }
 
     private void StopMarkInLayerMoveButton_Click(object sender, RoutedEventArgs e)
@@ -755,6 +778,9 @@ public sealed partial class TestPrintPage : Page
 
                 // Mark job
                 await EnqueueOperation(() => Task.Run(() => _waverunnerPageService.MarkEntityAsync()));
+
+                // Update the number of layers printed
+                await EnqueueOperation(() => Task.Run(() => incrementLayersPrinted()));
 
                 // return sweep
                 await EnqueueOperation(() => Task.Run(() => _motorPageService.HandleHomeMotorAndUpdateTextBox(_motorPageService.sweepMotor, _motorPageService.GetSweepPositionTextBox())));
