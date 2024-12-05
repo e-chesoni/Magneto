@@ -266,20 +266,20 @@ public sealed partial class TestPrintPage : Page
         // create button groups for easy control
         // TODO: need to add stop buttons to calibrate and update initialization here (currently using stop buttons from in print to test)
         _calibrateMotorUIControlGroup = new MotorUIControlGroup(SelectBuildMotorButton, SelectPowderMotorButton, SelectSweepMotorButton,
-                                                                             BuildMotorCurrentPositionTextBox, PowderMotorCurrentPositionTextBox, SweepMotorCurrentPositionTextBox,
-                                                                             GetBuildMotorCurrentPositionButton, GetPowderMotorCurrentPositionButton, GetSweepMotorCurrentPositionButton,
-                                                                             BuildMotorStepTextBox, PowderMotorStepTextBox, SweepMotorStepTextBox,
-                                                                             StepBuildMotorUpButton, StepBuildMotorDownButton, StepPowderMotorUpButton, StepPowderMotorDownButton, StepSweepMotorLeftInCalibrateButton, StepSweepMotorRightInCalibrateButton,
-                                                                             StopBuildMotorInCalibrateButton, StopPowderMotorInCalibrateButton, StopSweepMotorInCalibrateButton,
-                                                                             HomeAllMotorsButton, StopAllMotorsInCalibrationPanelButton
-                                                                             );
+                                                                BuildMotorCurrentPositionTextBox, PowderMotorCurrentPositionTextBox, SweepMotorCurrentPositionTextBox,
+                                                                GetBuildMotorCurrentPositionButton, GetPowderMotorCurrentPositionButton, GetSweepMotorCurrentPositionButton,
+                                                                BuildMotorAbsPositionTextBox, PowderMotorAbsPositionTextBox, SweepMotorAbsPositionTextBox, // NEW abs position text box features
+                                                                BuildMotorStepTextBox, PowderMotorStepTextBox, SweepMotorStepTextBox,
+                                                                StepBuildMotorUpButton, StepBuildMotorDownButton, StepPowderMotorUpButton, StepPowderMotorDownButton, StepSweepMotorLeftInCalibrateButton, StepSweepMotorRightInCalibrateButton,
+                                                                StopBuildMotorInCalibrateButton, StopPowderMotorInCalibrateButton, StopSweepMotorInCalibrateButton,
+                                                                HomeAllMotorsButton, StopAllMotorsInCalibrationPanelButton);
 
         _inPrintMotorUIControlGroup = new MotorUIControlGroup(SelectBuildInPrintButton, SelectPowderInPrintButton, SelectSweepInPrintButton,
-                                                                                        BuildMotorCurrentPositionTextBox, PowderMotorCurrentPositionTextBox, SweepMotorCurrentPositionTextBox,
-                                                                                        BuildMotorStepInPrintTextBox, PowderMotorStepTextBox, SweepMotorStepTextBox,
-                                                                                        IncrementBuildButton, DecrementBuildButton, IncrementPowderButton, DecrementPowderButton, SweepLeftButton, SweepRightButton,
-                                                                                        StopBuildMotorButton, StopPowderMotorButton, StopSweepButton,
-                                                                                        HomeAllMotorsButton, StopAllMotorsInCalibrationPanelButton);
+                                                              BuildMotorCurrentPositionTextBox, PowderMotorCurrentPositionTextBox, SweepMotorCurrentPositionTextBox,
+                                                              BuildMotorStepInPrintTextBox, PowderMotorStepTextBox, SweepMotorStepTextBox,
+                                                              IncrementBuildButton, DecrementBuildButton, IncrementPowderButton, DecrementPowderButton, SweepLeftButton, SweepRightButton,
+                                                              StopBuildMotorButton, StopPowderMotorButton, StopSweepButton,
+                                                              HomeAllMotorsButton, StopAllMotorsInCalibrationPanelButton);
 
 
 
@@ -292,8 +292,6 @@ public sealed partial class TestPrintPage : Page
         _layerSettingsUIControlGroup = new PrintSettingsUIControlGroup(layersettingsControls);
 
         _printControlGroupHelper = new PrintUIControlGroupHelper(_calibrateMotorUIControlGroup, _inPrintMotorUIControlGroup, _printSettingsUIControlGroup, _layerSettingsUIControlGroup);
-
-        //_printControlGroupHelper = new PrintUIControlGroupHelper();
 
         _motorPageService = new MotorPageService(MissionControl.GetActuationManger(), _printControlGroupHelper);
 
@@ -311,7 +309,7 @@ public sealed partial class TestPrintPage : Page
     private void SetDefaultPrintSettings()
     {
         _layerThickness = 0.08; // set default layer height to be 0.08mm based on first steel print
-        _desiredPrintHeight = 5; // set defaut print height to be mm
+        _desiredPrintHeight = 5; // set default print height to be mm
         DesiredPrintHeightTextBox.Text = _desiredPrintHeight.ToString();
         SetLayerThicknessTextBox.Text = _layerThickness.ToString();
     }
@@ -427,17 +425,17 @@ public sealed partial class TestPrintPage : Page
 
     private void MoveBuildToAbsPositionButton_Click(object sender, RoutedEventArgs e)
     {
-
+        _motorPageService.HandleAbsMove(_motorPageService.buildMotor, _motorPageService.GetBuildAbsMoveTextBox(), this.Content.XamlRoot);
     }
 
     private void MovePowderToAbsPositionButton_Click(object sender, RoutedEventArgs e)
     {
-
+        _motorPageService.HandleAbsMove(_motorPageService.powderMotor, _motorPageService.GetPowderAbsMoveTextBox(), this.Content.XamlRoot);
     }
 
     private void MoveSweepToAbsPositionButton_Click(object sender, RoutedEventArgs e)
     {
-
+        _motorPageService.HandleAbsMove(_motorPageService.sweepMotor, _motorPageService.GetSweepAbsMoveTextBox(), this.Content.XamlRoot);
     }
 
     private void StepBuildMotorUpButton_Click(object sender, RoutedEventArgs e)
@@ -665,16 +663,6 @@ public sealed partial class TestPrintPage : Page
         _printHistoryDictionary.Clear();
     }
 
-    private void EnableLayerMoveButton_Click(object sender, RoutedEventArgs e)
-    {
-
-    }
-
-    private void EnableManualMoveButton_Click(object sender, RoutedEventArgs e)
-    {
-
-    }
-
     #endregion
 
 
@@ -683,6 +671,11 @@ public sealed partial class TestPrintPage : Page
     private void MoveToNextLayerStartPositionButton_Click(object sender, RoutedEventArgs e)
     {
         _motorPageService.MoveToNextLayer(_layerThickness);
+    }
+
+    private void StopSingleLayerMoveButton_Click(object sender, RoutedEventArgs e)
+    {
+        KillAll();
     }
 
     private void StartMarkInLayerMoveButton_Click(object sender, RoutedEventArgs e)
@@ -708,7 +701,68 @@ public sealed partial class TestPrintPage : Page
         _motorPageService.GetActuationManager().HandleStopRequest(_motorPageService.sweepMotor);
     }
 
-    private void StopSingleLayerMoveButton_Click(object sender, RoutedEventArgs e)
+    private readonly Queue<Func<Task>> _operationQueue= new Queue<Func<Task>>();
+    private bool _isProcessingQueue = false;
+
+    private async Task EnqueueOperation(Func<Task> operation)
+    {
+        _operationQueue.Enqueue(operation);
+
+        if (!_isProcessingQueue)
+        {
+            _isProcessingQueue = true;
+            await ProcessQueue();
+        }
+    }
+
+    private async Task ProcessQueue()
+    {
+        while (_operationQueue.Count > 0)
+        {
+            var operation = _operationQueue.Dequeue();
+            try
+            {
+                await operation(); // execute the tasks. not sure if this will work
+            }
+            catch (Exception ex) 
+            {
+                MagnetoLogger.Log($"Error in operation: {ex.Message}", LogFactoryLogLevel.LogLevel.ERROR);
+            }
+        }
+        _isProcessingQueue = false;
+    }
+
+
+    // TODO: TEST!!
+    private async void StartMultiLayerMoveButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(MultiLayerMoveInputTextBox.Text) || !int.TryParse(MultiLayerMoveInputTextBox.Text, out var layers))
+        {
+            var msg = "MultiLayerMoveInputTextBox text is not a valid integer.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+
+            // TODO: add pop up message for invalid input
+
+            return; // Exit the method if the validation fails
+        } else { 
+            for (var i = 0; i < layers; i++)
+            {
+                // sweep powder
+                await EnqueueOperation(() => Task.Run(() => _motorPageService.SweepAndApplyMaterial()));
+
+                // Do a layer move for both motors
+                await EnqueueOperation(() => Task.Run(() => _motorPageService.MoveToNextLayer(_layerThickness)));
+
+                // Mark job
+                await EnqueueOperation(() => Task.Run(() => _waverunnerPageService.MarkEntityAsync()));
+
+                // return sweep
+                await EnqueueOperation(() => Task.Run(() => _motorPageService.HandleHomeMotorAndUpdateTextBox(_motorPageService.sweepMotor, _motorPageService.GetSweepPositionTextBox())));
+            }
+        }
+    }
+
+    private void StopMultiLayerMoveButton_Click(object sender, RoutedEventArgs e)
     {
         KillAll();
     }
@@ -760,7 +814,7 @@ public sealed partial class TestPrintPage : Page
 
     private void SweepLeftButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.SweepLeft();
+        _motorPageService.SweepAndApplyMaterial();
     }
 
     private void StopSweepButton_Click(object sender, RoutedEventArgs e)
@@ -799,6 +853,16 @@ public sealed partial class TestPrintPage : Page
 
 
     #region Enable/Disable Panel Methods
+
+    private void EnableLayerMoveButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void EnableManualMoveButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
 
     private void EnableCalibrationPanel()
     {

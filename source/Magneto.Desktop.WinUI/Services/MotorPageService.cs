@@ -296,8 +296,8 @@ public class MotorPageService
         // move build motor down by layer height
         await _actuationManager.AddCommand(GetControllerTypeHelper(buildMotor.GetMotorName()), buildMotor.GetAxis(), CommandType.RelativeMove, -defaultLayerHeight);
 
-        // distribute powder
-        SweepLeft();
+        // apply material to build plate
+        SweepAndApplyMaterial();
 
         return 1;
     }
@@ -321,7 +321,10 @@ public class MotorPageService
         }
     }
 
-    public void SweepLeft()
+    /// <summary>
+    /// Sweeps left to apply material to build plate
+    /// </summary>
+    public void SweepAndApplyMaterial()
     {
         _actuationManager.AddCommand(GetControllerTypeHelper(sweepMotor.GetMotorName()), sweepMotor.GetAxis(), CommandType.AbsoluteMove, (sweepMotor.GetMaxPos() - 2)); // NOTE: Subtracting 2 from max position for tolerance...probs not needed in long run
     }

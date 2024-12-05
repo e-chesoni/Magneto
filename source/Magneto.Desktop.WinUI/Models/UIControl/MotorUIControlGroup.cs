@@ -135,12 +135,13 @@ public class MotorUIControlGroup : UIControlGroup
 
     // for calibrate button control group on print test page
     public MotorUIControlGroup(Button selectBuildBtn, Button selectPowderBtn, Button selectSweepBtn,
-                        TextBox buildPosTB, TextBox powderPosTB, TextBox sweepPosTB,
-                        Button getBuildPosBtn, Button getPowderPosBtn, Button getSweepPosBtn,
-                        TextBox buildStepTB, TextBox powderStepTB, TextBox sweepStepTB,
-                        Button incrBuildBtn, Button decrBuildBtn, Button incrPowderBtn, Button decrPowderBtn, Button incrSweepBtn, Button decrSweepBtn,
-                        Button stopBuildBtn, Button stopPowderBtn, Button stopSweepBtn,
-                        Button homeAllBtn, Button stopAllBtn)
+                               TextBox buildPosTB, TextBox powderPosTB, TextBox sweepPosTB,
+                               Button getBuildPosBtn, Button getPowderPosBtn, Button getSweepPosBtn,
+                               TextBox buildAbsMoveTB, TextBox powderAbsMoveTB, TextBox sweepAbsMoveTB,
+                               TextBox buildStepTB, TextBox powderStepTB, TextBox sweepStepTB,
+                               Button incrBuildBtn, Button decrBuildBtn, Button incrPowderBtn, Button decrPowderBtn, Button incrSweepBtn, Button decrSweepBtn,
+                               Button stopBuildBtn, Button stopPowderBtn, Button stopSweepBtn,
+                               Button homeAllBtn, Button stopAllBtn)
     {
         selectBuildButton = selectBuildBtn;
         selectPowderButton = selectPowderBtn;
@@ -153,6 +154,10 @@ public class MotorUIControlGroup : UIControlGroup
         getBuildPositionButton = getBuildPosBtn;
         getPowderPositionButton = getPowderPosBtn;
         getSweepPositionButton = getSweepPosBtn;
+
+        buildAbsMoveTextBox = buildAbsMoveTB;
+        powderAbsMoveTextBox = powderAbsMoveTB;
+        sweepAbsMoveTextBox = sweepAbsMoveTB;
 
         buildStepTextBox = buildStepTB;
         powderStepTextBox = powderStepTB;
