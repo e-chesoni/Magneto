@@ -164,6 +164,8 @@ public sealed partial class TestPrintPage : Page
 
     private bool _layerSettingsSectionEnabled = true;
 
+    private bool _settingsPanelEnabled = true;
+
     private bool _printPanelEnabled = true;
 
     #endregion
@@ -261,10 +263,9 @@ public sealed partial class TestPrintPage : Page
 
     #region Page Initialization Methods
 
-    private void InitMotorPageService()
+    private void InitPageServices() // combine page services initialization because motor services uses one of the UI groups
     {
-        // create button groups for easy control
-        // TODO: need to add stop buttons to calibrate and update initialization here (currently using stop buttons from in print to test)
+        // UI page groups
         _calibrateMotorUIControlGroup = new MotorUIControlGroup(SelectBuildMotorButton, SelectPowderMotorButton, SelectSweepMotorButton,
                                                                 BuildMotorCurrentPositionTextBox, PowderMotorCurrentPositionTextBox, SweepMotorCurrentPositionTextBox,
                                                                 GetBuildMotorCurrentPositionButton, GetPowderMotorCurrentPositionButton, GetSweepMotorCurrentPositionButton,
@@ -282,23 +283,18 @@ public sealed partial class TestPrintPage : Page
                                                               HomeAllMotorsButton, StopAllMotorsInCalibrationPanelButton);
 
 
-
-        var printSettingsControls = new List<object> { JobFileSearchDirectoryTextBox.IsEnabled, UpdateDirectoryButton.IsEnabled, JobFileNameTextBox.IsEnabled, GetJobButton.IsEnabled, UseDefaultJobButton.IsEnabled };
-
+        var printSettingsControls = new List<object> { JobFileSearchDirectoryTextBox, UpdateDirectoryButton, JobFileNameTextBox, UseDefaultJobButton, GetJobButton, TestWaverunnerConnectionButton, ToggleRedPointerButton, StartMarkButton };
         _printSettingsUIControlGroup = new PrintSettingsUIControlGroup(printSettingsControls);
 
-        var layersettingsControls = new List<object> { SetLayerThicknessTextBox, UpdateLayerThicknessButton};
-
+        var layersettingsControls = new List<object> { SetLayerThicknessTextBox, UpdateLayerThicknessButton, DesiredPrintHeightTextBox, UpdateDesiredPrintHeightButton, EstimatedLayersToPrintTextBlock };
         _layerSettingsUIControlGroup = new PrintSettingsUIControlGroup(layersettingsControls);
 
         _printControlGroupHelper = new PrintUIControlGroupHelper(_calibrateMotorUIControlGroup, _inPrintMotorUIControlGroup, _printSettingsUIControlGroup, _layerSettingsUIControlGroup);
 
+        // Initialize motor page service
         _motorPageService = new MotorPageService(MissionControl.GetActuationManger(), _printControlGroupHelper);
 
-    }
-
-    private void InitWaverunnerPageService()
-    {
+        // initialize waverunner page service
         _waverunnerPageService = new WaverunnerPageService(JobFileSearchDirectoryTextBox, JobFileNameTextBox,
                                                            ToggleRedPointerButton, StartMarkButton);
 
@@ -331,8 +327,7 @@ public sealed partial class TestPrintPage : Page
         // Set mission control after navigating to new page
         MissionControl = (MissionControl)e.Parameter;
 
-        InitMotorPageService();
-        InitWaverunnerPageService();
+        InitPageServices();
         SetDefaultPrintSettings();
 
         var msg = string.Format("TestPrintPage::OnNavigatedTo -- {0}", MissionControl.FriendlyMessage);
@@ -498,27 +493,6 @@ public sealed partial class TestPrintPage : Page
     #endregion
 
 
-    #region Settings Helpers
-
-    private bool ValidateReadyToPrint()
-    {
-        var currJobToPrint = Path.Combine(JobFileSearchDirectoryTextBox.Text, JobFileNameTextBox.Text);
-        if (!string.IsNullOrWhiteSpace(currJobToPrint) && !string.IsNullOrEmpty(CurrentLayerThickness.Text))
-        {
-            // Lock settings
-            LockFileSettingSection();
-            LockLayerSection();
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    #endregion
-
-
     #region Settings Methods
 
     private void UseDefaultJobButton_Click(object sender, RoutedEventArgs e)
@@ -536,12 +510,7 @@ public sealed partial class TestPrintPage : Page
     {
         // TODO: If job is invalid, need to wipe it from print manager (invalidate ready to print)
         _waverunnerPageService.GetJob(this.Content.XamlRoot);
-
         CurrentJobFile.Text = JobFileNameTextBox.Text;
-        if (ValidateReadyToPrint())
-        {
-            UnlockPrintManager();
-        }
     }
 
     private void ToggleRedPointerButton_Click(object sender, RoutedEventArgs e)
@@ -565,10 +534,6 @@ public sealed partial class TestPrintPage : Page
         // TODO: If layer thickness is invalid, need to wipe it from print manager (invalidate ready to print)
         _layerThickness = Math.Round(double.Parse(SetLayerThicknessTextBox.Text), 3);
         CurrentLayerThickness.Text = _layerThickness.ToString() + " mm";
-        if (ValidateReadyToPrint())
-        {
-            UnlockPrintManager();
-        }
     }
 
     private void UpdateDesiredPrintHeightButton_Click(object sender, RoutedEventArgs e)
@@ -777,7 +742,7 @@ public sealed partial class TestPrintPage : Page
                 await EnqueueOperation(() => Task.Run(() => _motorPageService.MoveToNextLayer(_layerThickness)));
 
                 // Mark job
-                await EnqueueOperation(() => Task.Run(() => _waverunnerPageService.MarkEntityAsync()));
+                //await EnqueueOperation(() => Task.Run(() => _waverunnerPageService.MarkEntityAsync()));
 
                 // Update the number of layers printed
                 await EnqueueOperation(() => Task.Run(() => incrementLayersPrinted()));
@@ -913,29 +878,21 @@ public sealed partial class TestPrintPage : Page
         _calibrationPanelEnabled = !_calibrationPanelEnabled;
     }
 
-    public void LockFileSettingSection()
+    public void LockSettingsPanel()
     {
+        _motorPageService.printUiControlGroupHelper.DisableUIControlGroup(_printSettingsUIControlGroup);
         _motorPageService.printUiControlGroupHelper.DisableUIControlGroup(_layerSettingsUIControlGroup);
         //ToggleFileSettingsLockButton.Content = "Unlock File Settings";
     }
 
-    public void UnlockFileSettingSection()
+    public void UnlockSettingsPanel()
     {
+        _motorPageService.printUiControlGroupHelper.EnableUIControlGroup(_printSettingsUIControlGroup);
         _motorPageService.printUiControlGroupHelper.EnableUIControlGroup(_layerSettingsUIControlGroup);
         //ToggleFileSettingsLockButton.Content = "Lock File Settings";
     }
 
-    private void ToggleFileSettingSectionHelper()
-    {
-        if (_fileSettingsSectionEnabled)
-        {
-            LockFileSettingSection();
-        } else {
-            UnlockFileSettingSection();
-        }
-    }
-
-    private void LockLayerSection()
+    private void UnlockLayerSection()
     {
         SetLayerThicknessTextBox.IsEnabled = false;
         UpdateLayerThicknessButton.IsEnabled = false;
@@ -951,11 +908,47 @@ public sealed partial class TestPrintPage : Page
         //ToggleLayerSettingsLockButton.Content = "Lock Layer Settings";
     }
 
+    private bool ValidateReadyToPrint()
+    {
+        var currJobToPrint = Path.Combine(JobFileSearchDirectoryTextBox.Text, JobFileNameTextBox.Text);
+        if (!string.IsNullOrWhiteSpace(currJobToPrint) && !string.IsNullOrEmpty(CurrentLayerThickness.Text))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    private void ToggleSettingsPanelButton_Click(object sender, RoutedEventArgs e)
+    {
+        
+        if (ValidateReadyToPrint())
+        {
+            if (_settingsPanelEnabled)
+            {
+                LockSettingsPanel();
+                _settingsPanelEnabled = false;
+                ToggleSettingsPanelButton.Content = "Unlock Settings";
+                UnlockPrintManager();
+            } else { // settings are locked
+                UnlockSettingsPanel();
+                _settingsPanelEnabled = true;
+                ToggleSettingsPanelButton.Content = "Lock Settings";
+                LockPrintManager();
+            }
+            
+        } else {
+            // TODO: show pop up calling out missing settings
+        }
+    }
+
     private void ToggleLayerSectionHelper()
     {
         if (_layerSettingsSectionEnabled)
         {
-            LockLayerSection();
+            UnlockLayerSection();
         } else {
             UnLockLayerSection();
         }
