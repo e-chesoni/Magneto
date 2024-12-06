@@ -631,10 +631,11 @@ public sealed partial class TestPrintPage : Page
 
     private void updateLayerTrackingUI()
     {
-        _layersPrinted = _printHistoryDictionary.Any() ? _printHistoryDictionary.Values.Sum() : 0;
-        LayersPrintedTextBlock.Text = _layersPrinted.ToString();
+        _layersPrinted = _printHistoryDictionary.Any() ? _printHistoryDictionary.Values.Sum() : 0; // null error on this line; must start new print before executing
+        LayersPrintedTextBlock.Text = _layersPrinted.ToString(); // error marshalled by anther thread?
         RemainingLayersToPrint.Text = (_totalLayersToPrint - _layersPrinted).ToString();
     }
+
     private int incrementLayersPrinted()
     {
         //TODO: get current layer thickness, increment matching value in print history dictionary
@@ -735,21 +736,34 @@ public sealed partial class TestPrintPage : Page
         } else { 
             for (var i = 0; i < layers; i++)
             {
-                // sweep powder
-                await EnqueueOperation(() => Task.Run(() => _motorPageService.SweepAndApplyMaterial()));
+                // TODO: this does not work as expected with tasks
+                // Problems with current config: only does next layer move once; then only sleeping
 
-                // Do a layer move for both motors
-                await EnqueueOperation(() => Task.Run(() => _motorPageService.MoveToNextLayer(_layerThickness)));
+                // First layer of powder is laid down in calibrate; now we need to:
+                // mark
+                // update number of layers printed
+                // return sweep
+                // move motors to next layer
+                // supply sweep
+                // REPEAT
 
-                // Mark job
+                // mark
                 //await EnqueueOperation(() => Task.Run(() => _waverunnerPageService.MarkEntityAsync()));
 
-                // Update the number of layers printed
-                await EnqueueOperation(() => Task.Run(() => incrementLayersPrinted()));
+                // update the number of layers printed
+                //await EnqueueOperation(() => Task.Run(() => incrementLayersPrinted()));
 
                 // return sweep
-                await EnqueueOperation(() => Task.Run(() => _motorPageService.HandleHomeMotorAndUpdateTextBox(_motorPageService.sweepMotor, _motorPageService.GetSweepPositionTextBox())));
+                _motorPageService.HandleHomeMotorAndUpdateTextBox(_motorPageService.sweepMotor, _motorPageService.GetSweepPositionTextBox());
+
+                // move motors to next layer
+                _motorPageService.MoveToNextLayer(_layerThickness);
+
+                // supply sweep
+                _motorPageService.SweepAndApplyMaterial();
             }
+            // TODO: currently ends with supply sweep; is that desired?
+
         }
     }
 
