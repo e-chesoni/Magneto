@@ -446,7 +446,7 @@ public class WaverunnerPageService
 
         try
         {
-            cci.ScMarkEntityByName("", 0); // 0 returns control to the user immediately
+            cci.ScMarkEntityByName("", 0); // 0 returns control to the user immediately; if you use 1, this becomes a blocking function
             UpdateUIMarkStatusAndLogMessage("Marking!", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.WARN, "SAMLight is Marking...");
 
             // Wait for marking to complete
@@ -467,6 +467,15 @@ public class WaverunnerPageService
             StartMarkButton.IsEnabled = true; // Allow retrying
             return ExecStatus.Failure;
         }
+    }
+
+    /// <summary>
+    /// If the ScMarkEntityByName function was called with WaitForMarkEnd set to 0, this function can be used for checking whether the actual marking process is already finished or not. 
+    /// </summary>
+    /// <returns> The Function returns 1 if the scanner application is still marking. </returns>
+    public int GetMarkStatus()
+    {
+        return cci.ScIsMarking();
     }
 
     public ExecStatus StopMark()

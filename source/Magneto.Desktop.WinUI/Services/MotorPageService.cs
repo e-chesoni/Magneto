@@ -28,6 +28,7 @@ public class MotorPageService
     public StepperMotor? buildMotor;
     public StepperMotor? powderMotor;
     public StepperMotor? sweepMotor;
+    public double maxSweepPosition;
 
     public PrintUIControlGroupHelper printUiControlGroupHelper { get; set; }
 
@@ -121,14 +122,15 @@ public class MotorPageService
 
     private async void InitMotors(ActuationManager am)
     {
-        // Set up each motor individually using the passed-in parameters
-        HandleMotorInit("powder", am.GetPowderMotor(), out powderMotor);
-        HandleMotorInit("build", am.GetBuildMotor(), out buildMotor);
-        HandleMotorInit("sweep", am.GetSweepMotor(), out sweepMotor);
-
-        // Since there's no _missionControl, you'll need to figure out how to get the BuildManager
-        // if that's still necessary in this context.
         _actuationManager = am;
+
+        // Set up each motor individually using the passed-in parameters
+        HandleMotorInit("powder", _actuationManager.GetPowderMotor(), out powderMotor);
+        HandleMotorInit("build", _actuationManager.GetBuildMotor(), out buildMotor);
+        HandleMotorInit("sweep", _actuationManager.GetSweepMotor(), out sweepMotor);
+
+        // get maxSweepPosition
+        maxSweepPosition = _actuationManager.GetSweepMotor().GetMaxPos() - 2; // NOTE: Subtracting 2 from max position for tolerance...probs not needed in long run
 
         // Optionally, get the positions of the motors after setting them up
         // GetMotorPositions(); // TODO: Fix this if needed
@@ -276,28 +278,51 @@ public class MotorPageService
             // Check the direction we're moving
             dist = moveUp ? dist : -dist;
 
-            // Move motor
-            // NOTE: when called, you must await the return to get the integer value
-            // Otherwise returns some weird string
-            await _actuationManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.RelativeMove, dist);
+            if (_actuationManager != null)
+            {
+                // Move motor
+                // NOTE: when called, you must await the return to get the integer value
+                // Otherwise returns some weird string
+                await _actuationManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.RelativeMove, dist);
+            } else {
+                var msg = $"Actuation manager is null.";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+                return 0;
+            }
+            
 
             return 1;
         }
     }
 
-    public async Task<int> MoveToNextLayer(double defaultLayerHeight)
+    /// <summary>
+    /// Homes sweep motor (moves right to min position 0), moves powder motor up 2x layer height, moves build motor down by layer height, then sweeps material onto build plate
+    /// (moves sweep motor left to max sweep position)
+    /// </summary>
+    /// <param name="defaultLayerHeight"></param>
+    /// <returns></returns>
+    public async Task<int> LayerMove(double defaultLayerHeight)
     {
-        // move sweep motor home
-        await HomeMotor(sweepMotor);
+        var powderAmplifier = 2;
 
-        // move powder motor down by layer height
-        await _actuationManager.AddCommand(GetControllerTypeHelper(powderMotor.GetMotorName()), powderMotor.GetAxis(), CommandType.RelativeMove, defaultLayerHeight);
+        if (_actuationManager != null)
+        {
+            // home sweep motor
+            //await _actuationManager.AddCommand(GetControllerTypeHelper(sweepMotor.GetMotorName()), sweepMotor.GetAxis(), CommandType.AbsoluteMove, sweepMotor.GetHomePos());
 
-        // move build motor down by layer height
-        await _actuationManager.AddCommand(GetControllerTypeHelper(buildMotor.GetMotorName()), buildMotor.GetAxis(), CommandType.RelativeMove, -defaultLayerHeight);
+            // move powder motor up by 2x layer height (Prof. Tertuliano recommends powder motor moves 2-3x distance of build motor)
+            await _actuationManager.AddCommand(GetControllerTypeHelper(powderMotor.GetMotorName()), powderMotor.GetAxis(), CommandType.RelativeMove, (powderAmplifier * defaultLayerHeight));
 
-        // apply material to build plate
-        SweepAndApplyMaterial();
+            // move build motor down by layer height
+            await _actuationManager.AddCommand(GetControllerTypeHelper(buildMotor.GetMotorName()), buildMotor.GetAxis(), CommandType.RelativeMove, -defaultLayerHeight);
+
+            // apply material to build plate
+            //await _actuationManager.AddCommand(GetControllerTypeHelper(sweepMotor.GetMotorName()), sweepMotor.GetAxis(), CommandType.AbsoluteMove, maxSweepPosition);
+        } else {
+            var msg = $"Actuation manager is null.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            return 0;
+        }
 
         return 1;
     }
@@ -312,11 +337,19 @@ public class MotorPageService
         }
         else
         {
-            // stop motor
-            // NOTE: when called, you must await the return to get the integer value
-            // Otherwise returns some weird string
-            await sweepMotor.StopMotor(); // do not go through actuator; 
-
+            if (sweepMotor != null)
+            {
+                // stop motor
+                // NOTE: when called, you must await the return to get the integer value
+                // Otherwise returns some weird string
+                await sweepMotor.StopMotor(); // do not go through actuator;
+            }
+            else
+            {
+                var msg = $"Sweep motor is null.";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+                return 0;
+            }
             return 1;
         }
     }
@@ -324,14 +357,32 @@ public class MotorPageService
     /// <summary>
     /// Sweeps left to apply material to build plate
     /// </summary>
-    public void SweepAndApplyMaterial()
+    public int SweepAndApplyMaterial()
     {
-        _actuationManager.AddCommand(GetControllerTypeHelper(sweepMotor.GetMotorName()), sweepMotor.GetAxis(), CommandType.AbsoluteMove, (sweepMotor.GetMaxPos() - 2)); // NOTE: Subtracting 2 from max position for tolerance...probs not needed in long run
+        if (_actuationManager != null)
+        {
+            _actuationManager.AddCommand(GetControllerTypeHelper(sweepMotor.GetMotorName()), sweepMotor.GetAxis(), CommandType.AbsoluteMove, (sweepMotor.GetMaxPos() - 2)); // NOTE: Subtracting 2 from max position for tolerance...probs not needed in long run
+        } else
+        {
+            var msg = $"Actuation manager is null.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            return 0;
+        }
+        return 1;
     }
 
     public async Task<int> HomeMotor(StepperMotor motor)
     {
-        await _actuationManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.AbsoluteMove, motor.GetHomePos());
+        if (_actuationManager != null)
+        {
+            await _actuationManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.AbsoluteMove, motor.GetHomePos());
+        }
+        else
+        {
+            var msg = $"Actuation manager is null.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            return 0;
+        }
         UpdateMotorPositionTextBox(motor);
         return 1;
     }

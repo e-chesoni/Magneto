@@ -126,7 +126,7 @@ public sealed partial class TestPrintPage : Page
 
     #region Layer/Print Variables
 
-    private double _layerThickness;
+    private double _currentLayerThickness;
 
     private double _desiredPrintHeight;
 
@@ -304,10 +304,10 @@ public sealed partial class TestPrintPage : Page
 
     private void SetDefaultPrintSettings()
     {
-        _layerThickness = 0.08; // set default layer height to be 0.08mm based on first steel print
+        _currentLayerThickness = 0.08; // set default layer height to be 0.08mm based on first steel print
         _desiredPrintHeight = 5; // set default print height to be mm
         DesiredPrintHeightTextBox.Text = _desiredPrintHeight.ToString();
-        SetLayerThicknessTextBox.Text = _layerThickness.ToString();
+        SetLayerThicknessTextBox.Text = _currentLayerThickness.ToString();
     }
 
     #endregion
@@ -532,8 +532,8 @@ public sealed partial class TestPrintPage : Page
     private void UpdateLayerThicknessButton_Click(object sender, RoutedEventArgs e)
     {
         // TODO: If layer thickness is invalid, need to wipe it from print manager (invalidate ready to print)
-        _layerThickness = Math.Round(double.Parse(SetLayerThicknessTextBox.Text), 3);
-        CurrentLayerThickness.Text = _layerThickness.ToString() + " mm";
+        _currentLayerThickness = Math.Round(double.Parse(SetLayerThicknessTextBox.Text), 3);
+        CurrentLayerThickness.Text = _currentLayerThickness.ToString() + " mm";
     }
 
     private void UpdateDesiredPrintHeightButton_Click(object sender, RoutedEventArgs e)
@@ -543,7 +543,7 @@ public sealed partial class TestPrintPage : Page
         CurrentTotalPrintHeight.Text = _totalPrintHeight.ToString() + " mm";
 
         // Calculate number of layers to print
-        _totalLayersToPrint = (int)Math.Ceiling(_totalPrintHeight / _layerThickness); // rounds up to complete final layer
+        _totalLayersToPrint = (int)Math.Ceiling(_totalPrintHeight / _currentLayerThickness); // rounds up to complete final layer
 
         // Update estimated print height text boxes in settings and print panel
         EstimatedLayersToPrintTextBlock.Text = _totalLayersToPrint.ToString();
@@ -612,9 +612,9 @@ public sealed partial class TestPrintPage : Page
     // TODO: remove when done testing
     private void AddDummyPrintHistory()
     {
-        _printHistoryDictionary[0.03] = 6;  // 6 layers printed at 0.03mm
-        _printHistoryDictionary[0.05] = 21;  // 24 layers printed at 0.05mm
-        _printHistoryDictionary[0.08] = 33;  // 33 layers printed at 0.08mm
+        _printHistoryDictionary[0.03] = 1;  // 1 layers printed at 0.03mm
+        _printHistoryDictionary[0.05] = 2;  // 2 layers printed at 0.05mm
+        _printHistoryDictionary[0.08] = 3;  // 3 layers printed at 0.08mm
     }
 
     private void StartNewPrintButton_Click(object sender, RoutedEventArgs e)
@@ -631,8 +631,22 @@ public sealed partial class TestPrintPage : Page
 
     private void updateLayerTrackingUI()
     {
-        _layersPrinted = _printHistoryDictionary.Any() ? _printHistoryDictionary.Values.Sum() : 0; // null error on this line; must start new print before executing
-        LayersPrintedTextBlock.Text = _layersPrinted.ToString(); // error marshalled by anther thread?
+        // TODO:
+        // get current layer thickness
+        // search print history for current layer thickness
+        // if no thickness, insert new entry
+        // else, increment matching entry
+
+        if (_printHistoryDictionary.ContainsKey(_currentLayerThickness))
+        {
+            _printHistoryDictionary[_currentLayerThickness]++;
+        } else
+        {
+            _printHistoryDictionary[_currentLayerThickness] = 1;
+        }
+
+        _layersPrinted = _printHistoryDictionary.Any() ? _printHistoryDictionary.Values.Sum() : 0;
+        LayersPrintedTextBlock.Text = _layersPrinted.ToString();
         RemainingLayersToPrint.Text = (_totalLayersToPrint - _layersPrinted).ToString();
     }
 
@@ -660,7 +674,7 @@ public sealed partial class TestPrintPage : Page
 
     private void MoveToNextLayerStartPositionButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.MoveToNextLayer(_layerThickness);
+        _motorPageService.LayerMove(_currentLayerThickness);
     }
 
     private void StopSingleLayerMoveButton_Click(object sender, RoutedEventArgs e)
@@ -733,34 +747,33 @@ public sealed partial class TestPrintPage : Page
             // TODO: add pop up message for invalid input
 
             return; // Exit the method if the validation fails
-        } else { 
+        } else {
+            // First layer of powder is laid down in calibrate, then
             for (var i = 0; i < layers; i++)
             {
-                // TODO: this does not work as expected with tasks
-                // Problems with current config: only does next layer move once; then only sleeping
+                // TODO: TEST mark wait
+                // start mark
+                /*
+                _ = _waverunnerPageService.MarkEntityAsync();
 
-                // First layer of powder is laid down in calibrate; now we need to:
-                // mark
-                // update number of layers printed
-                // return sweep
-                // move motors to next layer
-                // supply sweep
-                // REPEAT
-
-                // mark
-                //await EnqueueOperation(() => Task.Run(() => _waverunnerPageService.MarkEntityAsync()));
+                // wait until mark ends before proceeding
+                if (_waverunnerPageService.GetMarkStatus() > 0)
+                {
+                    Task.Delay(100).Wait();
+                }
+                */
+                
 
                 // update the number of layers printed
-                //await EnqueueOperation(() => Task.Run(() => incrementLayersPrinted()));
+                incrementLayersPrinted(); // TODO: Figure out how to increment in a timely manner; both happen right away because this is an asynchronous method!
 
                 // return sweep
-                _motorPageService.HandleHomeMotorAndUpdateTextBox(_motorPageService.sweepMotor, _motorPageService.GetSweepPositionTextBox());
+                //_motorPageService.HandleHomeMotorAndUpdateTextBox(_motorPageService.sweepMotor, _motorPageService.GetSweepPositionTextBox()); // homing wrapper not awaited because UI update also handled in method
 
+                // TODO: test usage of await
                 // move motors to next layer
-                _motorPageService.MoveToNextLayer(_layerThickness);
-
-                // supply sweep
-                _motorPageService.SweepAndApplyMaterial();
+                // order of layer move operations: sweep to pos 0, move powder up 2x _currlayerthickness, move build down _currlayerthickness, supply sweep
+                await _motorPageService.LayerMove(_currentLayerThickness); // _ = means don't wait; technically you can use that here because queuing should handle the waiting, but using await just to be sure
             }
             // TODO: currently ends with supply sweep; is that desired?
 
