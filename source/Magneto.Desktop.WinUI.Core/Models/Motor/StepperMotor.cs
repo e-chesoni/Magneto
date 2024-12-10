@@ -596,6 +596,13 @@ public class StepperMotor : IStepperMotor
         return 0; // Or -1 if failed
     }
 
+    public Task<int> WaitForStop()
+    {
+        // TODO: implement wait for stop
+        // 2WST = make axis 2 wait for stop before executing next command
+        return Task.FromResult(0);
+    }
+
     #endregion
 
     #region Movement Helpers

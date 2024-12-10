@@ -131,7 +131,8 @@ public class ActuationManager : ISubsciber, IStateMachine
     {
         AbsoluteMove, // Corresponds to "MVA" for absolute movements
         RelativeMove, // Corresponds to "MVR" for relative movements
-        PositionQuery // Corresponds to "POS?" for querying current position
+        PositionQuery, // Corresponds to "POS?" for querying current position
+        // TODO: implement wait for end command
     }
 
     #endregion
@@ -306,7 +307,14 @@ public class ActuationManager : ISubsciber, IStateMachine
     public Task<double> HandleStopRequest(StepperMotor motor)
     {
         TaskCompletionSource<double> tcs = null;
+        
+        // stop motor
         motor.StopMotor();
+        
+        // clear queue
+        commandQueue.Clear();
+
+        // return empty task
         return tcs?.Task ?? Task.FromResult(0.0);
     }
 
@@ -314,6 +322,18 @@ public class ActuationManager : ISubsciber, IStateMachine
 
 
     #region Queue Management
+
+    // TODO: Fix this; queue is empty but last motor command may still be running (ex. sweep takes a long time)
+    public bool MotorsRunning()
+    {
+        // if queue is not empty, motors are running
+        if(commandQueue.Count > 0) 
+        {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     public Task<double> AddCommand(ControllerType controllerType, int axis, CommandType cmdType, double dist)
     {
@@ -362,7 +382,7 @@ public class ActuationManager : ISubsciber, IStateMachine
 
     private async Task ProcessCommands()
     {
-        var msg = "Processing build manager command queue...";
+        var msg = "Processing actuation manager command queue...";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
         while (commandQueue.Count > 0)

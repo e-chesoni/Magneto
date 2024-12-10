@@ -37,6 +37,8 @@ public interface IStepperMotor
     /// <returns></returns> Returns -1 if stop command fails, 0 if move command is successful
     Task StopMotor();
 
+    Task<int> WaitForStop();
+
     #endregion
 
     #region Status Methods

@@ -3,6 +3,7 @@ using System.Reflection;
 using CommunityToolkit.WinUI.UI.Animations;
 using Magneto.Desktop.WinUI.Core;
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
+using Magneto.Desktop.WinUI.Core.Contracts.Services.Controllers;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.Motor;
 using Magneto.Desktop.WinUI.Core.Helpers;
 using Magneto.Desktop.WinUI.Core.Models;
@@ -304,8 +305,8 @@ public sealed partial class TestPrintPage : Page
 
     private void SetDefaultPrintSettings()
     {
-        _currentLayerThickness = 0.08; // set default layer height to be 0.08mm based on first steel print
-        _desiredPrintHeight = 5; // set default print height to be mm
+        _currentLayerThickness = 2; // set default layer height to be 0.08mm based on first steel print
+        _desiredPrintHeight = 20; // set default print height to be mm
         DesiredPrintHeightTextBox.Text = _desiredPrintHeight.ToString();
         SetLayerThicknessTextBox.Text = _currentLayerThickness.ToString();
     }
@@ -735,6 +736,94 @@ public sealed partial class TestPrintPage : Page
         _isProcessingQueue = false;
     }
 
+    private Queue<Command> printCommandQueue = new Queue<Command>();
+    private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+    private bool isCommandProcessing = false;
+
+    public enum ControllerType
+    {
+        BUILD, // Corresponds to build motors
+        SWEEP, // Corresponds to sweep motor
+        LASER // Corresponds to Waverunner
+    }
+
+    public enum Command
+    {
+        LaserMark, // mark entity
+        LayerMove, // move 3 motors in coordinated dance
+        IncrLayer, // increment layer counter
+    }
+
+    public Task<double> AddCommand(Command cmd)
+    {
+        var msg = "Adding Command to Queue. Locking commandQueue";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        TaskCompletionSource<double> tcs = null;
+
+        lock (printCommandQueue)
+        {
+            printCommandQueue.Enqueue(cmd);
+            if (!isCommandProcessing)
+            {
+                isCommandProcessing = true;
+                Task.Run(() => ProcessCommands());
+            }
+        }
+
+        // Ensures a task is always returns even if the task is null:
+        // Return the Task from the TaskCompletionSource if it's not null; 
+        // otherwise, return a completed Task<double> with a result of 0.0.
+        return tcs?.Task ?? Task.FromResult(0.0);
+    }
+
+    private async Task ProcessCommands()
+    {
+        var msg = "Processing print command queue...";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        while (printCommandQueue.Count > 0)
+        {
+            Command command;
+            lock (printCommandQueue)
+            {
+                command = printCommandQueue.Dequeue();
+            }
+
+            msg = $"Executing {command} command.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
+
+
+            switch (command)
+            {
+                case Command.LaserMark:
+                    WaitForMark();
+                    break;
+                case Command.LayerMove:
+                    await _motorPageService.LayerMove(_currentLayerThickness);
+                    break;
+                case Command.IncrLayer:
+                    incrementLayersPrinted();
+                    break;
+                default:
+                    break;
+            }
+        }
+        isCommandProcessing = false;
+    }
+
+    private void WaitForMark()
+    {
+        _ = _waverunnerPageService.MarkEntityAsync();
+
+        // wait until mark ends before proceeding
+        while (_waverunnerPageService.GetMarkStatus() != 0)
+        {
+            // wait
+            Task.Delay(100).Wait();
+        }
+    }
+
 
     // TODO: TEST!!
     private async void StartMultiLayerMoveButton_Click(object sender, RoutedEventArgs e)
@@ -749,6 +838,11 @@ public sealed partial class TestPrintPage : Page
             return; // Exit the method if the validation fails
         } else {
             // First layer of powder is laid down in calibrate, then
+            var msg = "starting multilayer print...";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+            double nextMotorPosition; // start with impossible position
+            double tolerance = 0.05;
+
             for (var i = 0; i < layers; i++)
             {
                 // TODO: TEST mark wait
@@ -757,15 +851,18 @@ public sealed partial class TestPrintPage : Page
                 _ = _waverunnerPageService.MarkEntityAsync();
 
                 // wait until mark ends before proceeding
-                if (_waverunnerPageService.GetMarkStatus() > 0)
+                while (_waverunnerPageService.GetMarkStatus() != 0)
                 {
+                    // wait
                     Task.Delay(100).Wait();
                 }
                 */
-                
 
                 // update the number of layers printed
-                incrementLayersPrinted(); // TODO: Figure out how to increment in a timely manner; both happen right away because this is an asynchronous method!
+                msg = "incrementing layers printed...";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+                incrementLayersPrinted(); // TODO: Figure out how to increment in a timely manner; happening right away because this is an asynchronous method!
+                //await AddCommand(Command.IncrLayer); // error occurs incrementing layer like this; possible you're trying to access something on a different thread
 
                 // return sweep
                 //_motorPageService.HandleHomeMotorAndUpdateTextBox(_motorPageService.sweepMotor, _motorPageService.GetSweepPositionTextBox()); // homing wrapper not awaited because UI update also handled in method
@@ -773,12 +870,20 @@ public sealed partial class TestPrintPage : Page
                 // TODO: test usage of await
                 // move motors to next layer
                 // order of layer move operations: sweep to pos 0, move powder up 2x _currlayerthickness, move build down _currlayerthickness, supply sweep
-                await _motorPageService.LayerMove(_currentLayerThickness); // _ = means don't wait; technically you can use that here because queuing should handle the waiting, but using await just to be sure
-            }
-            // TODO: currently ends with supply sweep; is that desired?
+                await _motorPageService.LayerMove(_currentLayerThickness); // _ = means don't wait; technically you can use that here because queuing makes sure operations happen in order, but send occurs instantly, but using await just to be sure
+                //await AddCommand(Command.LayerMove);
 
+                while (_motorPageService.MotorsRunning()) { } // TEST: wait for build motor to move below next motor position
+
+                msg = "done with layer";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+            }
+            msg = "multi-layer move complete.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
         }
     }
+
+    
 
     private void StopMultiLayerMoveButton_Click(object sender, RoutedEventArgs e)
     {
