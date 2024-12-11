@@ -841,41 +841,60 @@ public sealed partial class TestPrintPage : Page
             // First layer of powder is laid down in calibrate, then
             var msg = "starting multilayer print...";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-            double nextMotorPosition; // start with impossible position
-            double tolerance = 0.05;
 
             for (var i = 0; i < layers; i++)
             {
-                // do initial mark
-                msg = $"marking layer {i} in multi-layer print";
-                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-
-                // wait until mark ends before proceeding
-                _ = _waverunnerPageService.MarkEntityAsync();
-
-                // wait until mark ends before proceeding
-                while (_waverunnerPageService.GetMarkStatus() != 0)
+                if (StartWithMarkCheckbox.IsChecked == true)
                 {
-                    // wait
-                    Task.Delay(100).Wait();
+                    // MARK
+                    msg = $"marking layer {i} in multi-layer print";
+                    MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+                    /*
+                    _ = _waverunnerPageService.MarkEntityAsync();
+                    while (_waverunnerPageService.GetMarkStatus() != 0) // wait until mark ends before proceeding
+                    {
+                        // wait
+                        Task.Delay(100).Wait();
+                    }
+                    */
+                    // INCREMENT LAYERS PRINTED
+                    msg = "incrementing layers printed...";
+                    MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+                    incrementLayersPrinted(); // TODO: Figure out how to increment in a timely manner; happening right away because this is an asynchronous method!
+
+                    msg = "moving to next layer";
+                    MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+                    // LAYER MOVE
+                    // order of layer move operations: home sweep, move powder up 2x, move build down, supply sweep
+                    await _motorPageService.LayerMove(_currentLayerThickness); // _ = means don't wait; technically you can use that here because queuing makes sure operations happen in order, but send occurs instantly, but using await just to be sure
+                    while (_motorPageService.MotorsRunning()) { await Task.Delay(100); } // TODO: Test! now awaiting task delay to make this non-blocking
+
+                } else { // layer move first (homes sweep first)
+                    msg = "moving to next layer";
+                    MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+                    // LAYER MOVE
+                    await _motorPageService.LayerMove(_currentLayerThickness);
+                    while (_motorPageService.MotorsRunning()) { await Task.Delay(100); }
+
+                    // MARK
+                    msg = $"marking layer {i} in multi-layer print";
+                    MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+                    /*
+                    _ = _waverunnerPageService.MarkEntityAsync();
+                    while (_waverunnerPageService.GetMarkStatus() != 0)
+                    {
+                        Task.Delay(100).Wait();
+                    }
+                    */
+                    // INCREMENT LAYERS PRINTED
+                    msg = "incrementing layers printed...";
+                    MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+                    incrementLayersPrinted();
                 }
 
-                // update the number of layers printed
-                msg = "incrementing layers printed...";
-                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-                incrementLayersPrinted(); // TODO: Figure out how to increment in a timely manner; happening right away because this is an asynchronous method!
-
-                msg = "moving to next layer";
-                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-                // TODO: test usage of await
-                // move motors to next layer
-                // order of layer move operations: sweep to pos 0, move powder up 2x _currlayerthickness, move build down _currlayerthickness, supply sweep
-                await _motorPageService.LayerMove(_currentLayerThickness); // _ = means don't wait; technically you can use that here because queuing makes sure operations happen in order, but send occurs instantly, but using await just to be sure
-
-                while (_motorPageService.MotorsRunning()) { } // TEST: wait for build motor to move below next motor position
-
-                msg = "marking next layer";
-                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+                
             }
             msg = "multi-layer move complete.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
