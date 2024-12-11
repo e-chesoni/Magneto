@@ -824,6 +824,7 @@ public sealed partial class TestPrintPage : Page
         }
     }
 
+    
 
     // TODO: TEST!!
     private async void StartMultiLayerMoveButton_Click(object sender, RoutedEventArgs e)
@@ -845,9 +846,11 @@ public sealed partial class TestPrintPage : Page
 
             for (var i = 0; i < layers; i++)
             {
-                // TODO: TEST mark wait
-                // start mark
-                /*
+                // do initial mark
+                msg = $"marking layer {i} in multi-layer print";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+
+                // wait until mark ends before proceeding
                 _ = _waverunnerPageService.MarkEntityAsync();
 
                 // wait until mark ends before proceeding
@@ -856,26 +859,22 @@ public sealed partial class TestPrintPage : Page
                     // wait
                     Task.Delay(100).Wait();
                 }
-                */
 
                 // update the number of layers printed
                 msg = "incrementing layers printed...";
                 MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
                 incrementLayersPrinted(); // TODO: Figure out how to increment in a timely manner; happening right away because this is an asynchronous method!
-                //await AddCommand(Command.IncrLayer); // error occurs incrementing layer like this; possible you're trying to access something on a different thread
 
-                // return sweep
-                //_motorPageService.HandleHomeMotorAndUpdateTextBox(_motorPageService.sweepMotor, _motorPageService.GetSweepPositionTextBox()); // homing wrapper not awaited because UI update also handled in method
-
+                msg = "moving to next layer";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
                 // TODO: test usage of await
                 // move motors to next layer
                 // order of layer move operations: sweep to pos 0, move powder up 2x _currlayerthickness, move build down _currlayerthickness, supply sweep
                 await _motorPageService.LayerMove(_currentLayerThickness); // _ = means don't wait; technically you can use that here because queuing makes sure operations happen in order, but send occurs instantly, but using await just to be sure
-                //await AddCommand(Command.LayerMove);
 
                 while (_motorPageService.MotorsRunning()) { } // TEST: wait for build motor to move below next motor position
 
-                msg = "done with layer";
+                msg = "marking next layer";
                 MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
             }
             msg = "multi-layer move complete.";

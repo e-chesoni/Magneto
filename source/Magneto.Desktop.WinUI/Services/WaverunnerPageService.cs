@@ -478,6 +478,17 @@ public class WaverunnerPageService
         return cci.ScIsMarking();
     }
 
+    public void MarkAndWait()
+    {
+        while (GetMarkStatus() != 0)
+        {
+            // wait
+            Task.Delay(100).Wait();
+        }
+
+        _ = StopMark();
+    }
+
     public ExecStatus StopMark()
     {
         var msg = "";
