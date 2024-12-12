@@ -886,14 +886,13 @@ public sealed partial class TestPrintPage : Page
                     // MARK
                     msg = $"marking layer {i} in multi-layer print";
                     MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-                    /*
                     _ = _waverunnerPageService.MarkEntityAsync();
                     while (_waverunnerPageService.GetMarkStatus() != 0) // wait until mark ends before proceeding
                     {
                         // wait
                         Task.Delay(100).Wait();
                     }
-                    */
+                    
                     // INCREMENT LAYERS PRINTED
                     msg = "incrementing layers printed...";
                     MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
@@ -917,13 +916,12 @@ public sealed partial class TestPrintPage : Page
                     // MARK
                     msg = $"marking layer {i} in multi-layer print";
                     MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-                    /*
                     _ = _waverunnerPageService.MarkEntityAsync();
                     while (_waverunnerPageService.GetMarkStatus() != 0)
                     {
                         Task.Delay(100).Wait();
                     }
-                    */
+                    
                     // INCREMENT LAYERS PRINTED
                     msg = "incrementing layers printed...";
                     MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
