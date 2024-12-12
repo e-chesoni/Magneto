@@ -252,9 +252,10 @@ public class WaverunnerPageService
         return ExecStatus.Success;
     }
 
-    public ExecStatus ValidateJobPath(string fullPathToJob, XamlRoot xamlRoot)
+    public ExecStatus ValidateJobPath(XamlRoot xamlRoot)
     {
         MagnetoLogger.Log("Getting job...", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
+        var fullPathToJob = Path.Combine(_jobDirectory, JobFileNameTextBox.Text);
 
         // TODO: Use log & display for error messaging in future
         if (!Directory.Exists(_jobDirectory))
@@ -268,7 +269,7 @@ public class WaverunnerPageService
         if (!File.Exists(fullPathToJob))
         {
             var msg = $"File not found: {fullPathToJob}";
-            MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
+            MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS);
             _ = PopupInfo.ShowContentDialog(xamlRoot, "Warning", msg);
             return ExecStatus.Failure;
         }
@@ -280,8 +281,10 @@ public class WaverunnerPageService
     {
         var fullFilePath = Path.Combine(_jobDirectory, JobFileNameTextBox.Text);
 
-        if (ValidateJobPath(fullFilePath, xamlRoot) == ExecStatus.Success)
+        if (ValidateJobPath(xamlRoot) == ExecStatus.Success)
         {
+            var msg = $"Valid job path";
+            MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS);
             // Enable toggle pointer and start mark buttons
             _fullJobFilePath = fullFilePath;
             // TODO: Add check to make sure wave runner is open & running ("say hi check")
@@ -292,6 +295,9 @@ public class WaverunnerPageService
         }
         else
         {
+            var msg = $"File not found: {fullFilePath}";
+            MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
+            _ = PopupInfo.ShowContentDialog(xamlRoot, "Warning", msg);
             // Make sure buttons are disabled; we can't mark what we can't find!
             StartMarkButton.IsEnabled = false;
             ToggleRedPointerButton.IsEnabled = false;
@@ -308,13 +314,13 @@ public class WaverunnerPageService
         MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
 
         // Check if the directory exists
-        if (FindJobDirectory() == 0) // Returns 0 on fail; 1 on success
+        if (FindJobDirectory() == ExecStatus.Failure) // Returns -1 on fail; 0 on success
         {
-            msg = "Directory does not exist. Cannot get job.";
+            msg = $"Directory {_jobDirectory} does not exist. Cannot get job.";
             MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
-            return ExecStatus.Success;
+            return ExecStatus.Failure;
         }
-        else { return ExecStatus.Failure; }
+        else { return ExecStatus.Success; }
     }
 
     #endregion

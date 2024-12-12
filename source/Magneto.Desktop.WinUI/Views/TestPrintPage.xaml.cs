@@ -137,8 +137,7 @@ public sealed partial class TestPrintPage : Page
 
     private double _totalPrintHeight { get; set; }
 
-    private Dictionary<double, int> _printHistoryDictionary { get; set; }
-
+    private Dictionary<double, int> _printHistoryDictionary = new Dictionary<double, int>();
 
     #endregion
 
@@ -253,7 +252,6 @@ public sealed partial class TestPrintPage : Page
     {
         ViewModel = App.GetService<TestPrintViewModel>();
         InitializeComponent();
-        LockPrintManager();
 
         var msg = "Landed on Test Print Page";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
@@ -274,7 +272,7 @@ public sealed partial class TestPrintPage : Page
                                                                 BuildMotorStepTextBox, PowderMotorStepTextBox, SweepMotorStepTextBox,
                                                                 StepBuildMotorUpButton, StepBuildMotorDownButton, StepPowderMotorUpButton, StepPowderMotorDownButton, StepSweepMotorLeftInCalibrateButton, StepSweepMotorRightInCalibrateButton,
                                                                 StopBuildMotorInCalibrateButton, StopPowderMotorInCalibrateButton, StopSweepMotorInCalibrateButton,
-                                                                HomeAllMotorsButton, StopAllMotorsInCalibrationPanelButton);
+                                                                HomeAllMotorsInCalibrationPanelButton, StopAllMotorsInCalibrationPanelButton);
 
         _inPrintMotorUIControlGroup = new MotorUIControlGroup(SelectBuildInPrintButton, SelectPowderInPrintButton, SelectSweepInPrintButton,
                                                               BuildMotorCurrentPositionTextBox, PowderMotorCurrentPositionTextBox, SweepMotorCurrentPositionTextBox,
@@ -284,8 +282,11 @@ public sealed partial class TestPrintPage : Page
                                                               HomeAllMotorsButton, StopAllMotorsInCalibrationPanelButton);
 
 
-        var printSettingsControls = new List<object> { JobFileSearchDirectoryTextBox, UpdateDirectoryButton, JobFileNameTextBox, UseDefaultJobButton, GetJobButton, TestWaverunnerConnectionButton, ToggleRedPointerButton, StartMarkButton };
+        var printSettingsControls = new List<object> { JobFileSearchDirectoryTextBox, UpdateDirectoryButton, JobFileNameTextBox, UseDefaultJobButton, GetJobButton };
         _printSettingsUIControlGroup = new PrintSettingsUIControlGroup(printSettingsControls);
+        
+        // TODO: not doing anything with this rn
+        var markButtons = new List<object> { TestWaverunnerConnectionButton, ToggleRedPointerButton, StartMarkButton };
 
         var layersettingsControls = new List<object> { SetLayerThicknessTextBox, UpdateLayerThicknessButton, DesiredPrintHeightTextBox, UpdateDesiredPrintHeightButton, EstimatedLayersToPrintTextBlock };
         _layerSettingsUIControlGroup = new PrintSettingsUIControlGroup(layersettingsControls);
@@ -295,9 +296,8 @@ public sealed partial class TestPrintPage : Page
         // Initialize motor page service
         _motorPageService = new MotorPageService(MissionControl.GetActuationManger(), _printControlGroupHelper);
 
-        // initialize waverunner page service
-        _waverunnerPageService = new WaverunnerPageService(JobFileSearchDirectoryTextBox, JobFileNameTextBox,
-                                                           ToggleRedPointerButton, StartMarkButton);
+        // initialize Waverunner page service
+        _waverunnerPageService = new WaverunnerPageService(JobFileSearchDirectoryTextBox, JobFileNameTextBox, ToggleRedPointerButton, StartMarkButton);
 
         // Set default job file
         _waverunnerPageService.SetDefaultJobFileName("steel-3D-test-11-22-24.sjf");
@@ -330,6 +330,10 @@ public sealed partial class TestPrintPage : Page
 
         InitPageServices();
         SetDefaultPrintSettings();
+        LockSettingsPanel();
+        LockPrintManager();
+        UnlockCalibrationPanel();
+        _calibrationPanelEnabled = true;
 
         var msg = string.Format("TestPrintPage::OnNavigatedTo -- {0}", MissionControl.FriendlyMessage);
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
@@ -512,6 +516,12 @@ public sealed partial class TestPrintPage : Page
         // TODO: If job is invalid, need to wipe it from print manager (invalidate ready to print)
         _waverunnerPageService.GetJob(this.Content.XamlRoot);
         CurrentJobFile.Text = JobFileNameTextBox.Text;
+
+        // TODO: if job path is valid, unlock mark buttons
+        if (_waverunnerPageService.ValidateJobPath(Content.XamlRoot) == WaverunnerPageService.ExecStatus.Success)
+        {
+            UnlockMarkButtons();
+        }
     }
 
     private void ToggleRedPointerButton_Click(object sender, RoutedEventArgs e)
@@ -530,25 +540,53 @@ public sealed partial class TestPrintPage : Page
     {
         _waverunnerPageService.StopMark();
     }
-    private void UpdateLayerThicknessButton_Click(object sender, RoutedEventArgs e)
+
+    private bool ThicknessAndHeightTextBoxesValid(bool showPopup)
     {
-        // TODO: If layer thickness is invalid, need to wipe it from print manager (invalidate ready to print)
-        _currentLayerThickness = Math.Round(double.Parse(SetLayerThicknessTextBox.Text), 3);
-        CurrentLayerThickness.Text = _currentLayerThickness.ToString() + " mm";
+        if (string.IsNullOrWhiteSpace(SetLayerThicknessTextBox.Text) || string.IsNullOrWhiteSpace(DesiredPrintHeightTextBox.Text))
+        {
+            // TODO: popup error
+            _ =PopupInfo.ShowContentDialog(Content.XamlRoot, "Layer Thickness or Desired Print Height missing", "Layer thickness and desired print height required to calculate number of layers to print.");
+            return false;
+        } else
+        {
+            return true;
+        }
     }
 
-    private void UpdateDesiredPrintHeightButton_Click(object sender, RoutedEventArgs e)
+    private void CalculateLayersToPrint()
     {
+        // Get the current layer thickness
+        _currentLayerThickness = Math.Round(double.Parse(SetLayerThicknessTextBox.Text), 3);
+
         // Get the total print height
         _totalPrintHeight = Math.Round(double.Parse(DesiredPrintHeightTextBox.Text), 3);
         CurrentTotalPrintHeight.Text = _totalPrintHeight.ToString() + " mm";
 
         // Calculate number of layers to print
         _totalLayersToPrint = (int)Math.Ceiling(_totalPrintHeight / _currentLayerThickness); // rounds up to complete final layer
+    }
+
+    private void UpdateLayerThicknessButton_Click(object sender, RoutedEventArgs e)
+    {
+        _currentLayerThickness = Math.Round(double.Parse(SetLayerThicknessTextBox.Text), 3);
+        CurrentLayerThickness.Text = _currentLayerThickness.ToString() + " mm";
+
+        if (!string.IsNullOrWhiteSpace(DesiredPrintHeightTextBox.Text))
+        {
+            CalculateLayersToPrint();
+            DisplayLayersPrinted();
+        }
+    }
+
+    private void UpdateDesiredPrintHeightButton_Click(object sender, RoutedEventArgs e)
+    {
+        CalculateLayersToPrint();
 
         // Update estimated print height text boxes in settings and print panel
         EstimatedLayersToPrintTextBlock.Text = _totalLayersToPrint.ToString();
-        RemainingLayersToPrint.Text = _totalLayersToPrint.ToString(); // TODO: May need to rethink this when if print is updated mid cycle
+        //RemainingLayersToPrint.Text = _totalLayersToPrint.ToString(); // TODO: May need to rethink this when if print is updated mid cycle
+        DisplayLayersPrinted();
     }
 
     #endregion
@@ -620,45 +658,44 @@ public sealed partial class TestPrintPage : Page
 
     private void StartNewPrintButton_Click(object sender, RoutedEventArgs e)
     {
-        _printHistoryDictionary = new Dictionary<double, int>();
-
         // TODO: Remove print history dummy values when done testing
-        AddDummyPrintHistory();
-        TestPrintHistoryPopulate();
+        //AddDummyPrintHistory();
+        //TestPrintHistoryPopulate();
 
         // update layers printed
         updateLayerTrackingUI();
+        UnlockPrintManager();
+    }
+    private void DisplayLayersPrinted()
+    {
+        // Display layers printed
+        _layersPrinted = _printHistoryDictionary.Any() ? _printHistoryDictionary.Values.Sum() : 0;
+        LayersPrintedTextBlock.Text = _layersPrinted.ToString();
+        RemainingLayersToPrint.Text = (_totalLayersToPrint - _layersPrinted).ToString();
+        PopulateGridWithLastThree(PrintHistoryGrid); // TODO: Test
     }
 
     private void updateLayerTrackingUI()
     {
-        // TODO:
-        // get current layer thickness
-        // search print history for current layer thickness
-        // if no thickness, insert new entry
-        // else, increment matching entry
-
-        if (_printHistoryDictionary.ContainsKey(_currentLayerThickness))
+        if (_printHistoryDictionary.Count == 0)
         {
-            _printHistoryDictionary[_currentLayerThickness]++;
-        } else
-        {
-            _printHistoryDictionary[_currentLayerThickness] = 1;
+            // create a new entry for first layer; set to 0
+            _printHistoryDictionary[_currentLayerThickness] = 0;
+        } else { // search print history for current layer thickness
+            if (!_printHistoryDictionary.ContainsKey(_currentLayerThickness)) // if no thickness, insert new entry
+            {
+                _printHistoryDictionary[_currentLayerThickness] = 1;
+            }
+            else {
+                _printHistoryDictionary[_currentLayerThickness]++; // increment matching entry
+            }
         }
-
-        _layersPrinted = _printHistoryDictionary.Any() ? _printHistoryDictionary.Values.Sum() : 0;
-        LayersPrintedTextBlock.Text = _layersPrinted.ToString();
-        RemainingLayersToPrint.Text = (_totalLayersToPrint - _layersPrinted).ToString();
+        DisplayLayersPrinted();
     }
 
     private int incrementLayersPrinted()
     {
-        //TODO: get current layer thickness, increment matching value in print history dictionary
-        // if no value exists for current layer thickness, add it
-        // DO above instead of _layersPrinted++;
-
         updateLayerTrackingUI();
-
         return _layersPrinted;
     }
 
@@ -869,7 +906,6 @@ public sealed partial class TestPrintPage : Page
                     // order of layer move operations: home sweep, move powder up 2x, move build down, supply sweep
                     await _motorPageService.LayerMove(_currentLayerThickness); // _ = means don't wait; technically you can use that here because queuing makes sure operations happen in order, but send occurs instantly, but using await just to be sure
                     while (_motorPageService.MotorsRunning()) { await Task.Delay(100); } // TODO: Test! now awaiting task delay to make this non-blocking
-
                 } else { // layer move first (homes sweep first)
                     msg = "moving to next layer";
                     MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
@@ -1005,25 +1041,27 @@ public sealed partial class TestPrintPage : Page
 
     }
 
-    private void EnableCalibrationPanel()
-    {
-        _motorPageService.printUiControlGroupHelper.DisableUIControlGroup(_calibrateMotorUIControlGroup);
-        ToggleCalibrationPanelButtonLock.Content = "Unlock Calibration";
-    }
-
-    private void DisableCalibrationPanel()
+    private void UnlockCalibrationPanel()
     {
         _motorPageService.printUiControlGroupHelper.EnableUIControlGroup(_calibrateMotorUIControlGroup);
         ToggleCalibrationPanelButtonLock.Content = "Lock Calibration";
+    }
+
+    private void LockCalibrationPanel()
+    {
+        _motorPageService.printUiControlGroupHelper.DisableUIControlGroup(_calibrateMotorUIControlGroup);
+        ToggleCalibrationPanelButtonLock.Content = "Unlock Calibration";
     }
 
     private void ToggleCalibrationPanelButtonLock_Click(object sender, RoutedEventArgs e)
     {
         if (_calibrationPanelEnabled)
         {
-            DisableCalibrationPanel();
+            LockCalibrationPanel();
+            UnlockSettingsPanel();
         } else {
-            EnableCalibrationPanel();
+            UnlockCalibrationPanel();
+            LockSettingsPanel();
         }
         _calibrationPanelEnabled = !_calibrationPanelEnabled;
     }
@@ -1032,14 +1070,32 @@ public sealed partial class TestPrintPage : Page
     {
         _motorPageService.printUiControlGroupHelper.DisableUIControlGroup(_printSettingsUIControlGroup);
         _motorPageService.printUiControlGroupHelper.DisableUIControlGroup(_layerSettingsUIControlGroup);
-        //ToggleFileSettingsLockButton.Content = "Unlock File Settings";
+        LockMarkButtons();
     }
 
     public void UnlockSettingsPanel()
     {
         _motorPageService.printUiControlGroupHelper.EnableUIControlGroup(_printSettingsUIControlGroup);
         _motorPageService.printUiControlGroupHelper.EnableUIControlGroup(_layerSettingsUIControlGroup);
-        //ToggleFileSettingsLockButton.Content = "Lock File Settings";
+
+        if (ValidateReadyToPrint(false) && _waverunnerPageService.ValidateJobPath(Content.XamlRoot) == WaverunnerPageService.ExecStatus.Success)
+        {
+            UnlockMarkButtons();
+        }
+    }
+
+    public void LockMarkButtons()
+    {
+        TestWaverunnerConnectionButton.IsEnabled = false;
+        ToggleRedPointerButton.IsEnabled = false;
+        StartMarkButton.IsEnabled = false;
+    }
+
+    public void UnlockMarkButtons()
+    {
+        TestWaverunnerConnectionButton.IsEnabled = true;
+        ToggleRedPointerButton.IsEnabled = true;
+        StartMarkButton.IsEnabled = true;
     }
 
     private void UnlockLayerSection()
@@ -1058,7 +1114,7 @@ public sealed partial class TestPrintPage : Page
         //ToggleLayerSettingsLockButton.Content = "Lock Layer Settings";
     }
 
-    private bool ValidateReadyToPrint()
+    private bool ValidateReadyToPrint(bool showPopup)
     {
         var currJobToPrint = Path.Combine(JobFileSearchDirectoryTextBox.Text, JobFileNameTextBox.Text);
         if (!string.IsNullOrWhiteSpace(currJobToPrint) && !string.IsNullOrEmpty(CurrentLayerThickness.Text))
@@ -1067,6 +1123,10 @@ public sealed partial class TestPrintPage : Page
         }
         else
         {
+            if (showPopup)
+            {
+                _ = PopupInfo.ShowContentDialog(Content.XamlRoot, "Undefined Jog or Layer Thickness", "You must select a job by clicking 'update' and layer thickness to lock the settings panel and unlock the print panel.");
+            }
             return false;
         }
     }
@@ -1074,14 +1134,14 @@ public sealed partial class TestPrintPage : Page
     private void ToggleSettingsPanelButton_Click(object sender, RoutedEventArgs e)
     {
         
-        if (ValidateReadyToPrint())
+        if (ValidateReadyToPrint(true))
         {
             if (_settingsPanelEnabled)
             {
                 LockSettingsPanel();
                 _settingsPanelEnabled = false;
                 ToggleSettingsPanelButton.Content = "Unlock Settings";
-                UnlockPrintManager();
+                StartNewPrintButton.IsEnabled = true;
             } else { // settings are locked
                 UnlockSettingsPanel();
                 _settingsPanelEnabled = true;
@@ -1106,10 +1166,21 @@ public sealed partial class TestPrintPage : Page
 
     private void LockPrintManager()
     {
+        // Start/cancel print buttons
+        StartNewPrintButton.IsEnabled = false;
+        CancelPrintButton.IsEnabled = false;
+
         // Layer Move Buttons
         EnableLayerMoveButton.IsEnabled = false;
         MoveToNextLayerStartPositionButton.IsEnabled = false;
-
+        StopSingleLayerMoveButton.IsEnabled = false;
+        StartMarkInLayerMoveButton.IsEnabled = false;
+        StopMarkInLayerMoveButton.IsEnabled = false;
+        ReturnSweepInLayerMoveButton.IsEnabled = false;
+        StopReturnSweepInLayerMoveButton.IsEnabled = false;
+        MultiLayerMoveInputTextBox.IsEnabled = false;
+        StartWithMarkCheckbox.IsEnabled = false;
+        StartMultiLayerMoveButton.IsEnabled = false;
 
         // Manual Move Buttons
         EnableManualMoveButton.IsEnabled = false;
@@ -1117,24 +1188,38 @@ public sealed partial class TestPrintPage : Page
         SelectBuildInPrintButton.IsEnabled = false;
         IncrementBuildButton.IsEnabled = false;
         DecrementBuildButton.IsEnabled = false;
+        StopBuildMotorButton.IsEnabled = false;
 
         SelectPowderInPrintButton.IsEnabled = false;
         IncrementPowderButton.IsEnabled = false;
         DecrementPowderButton.IsEnabled = false;
+        StopPowderMotorButton.IsEnabled = false;
 
         SelectSweepInPrintButton.IsEnabled = false;
         SweepLeftButton.IsEnabled = false;
         SweepRightButton.IsEnabled = false;
+        StopSweepButton.IsEnabled = false;
 
         HomeAllMotorsButton.IsEnabled = false;
     }
 
     private void UnlockPrintManager()
     {
+        // Start/cancel print buttons
+        StartNewPrintButton.IsEnabled = true;
+        // CancelPrintButton.IsEnabled = false; // TODO: implement
+
         // Layer Move Buttons
         EnableLayerMoveButton.IsEnabled = true;
         MoveToNextLayerStartPositionButton.IsEnabled = true;
-
+        StopSingleLayerMoveButton.IsEnabled = true;
+        StartMarkInLayerMoveButton.IsEnabled = true;
+        StopMarkInLayerMoveButton.IsEnabled = true;
+        ReturnSweepInLayerMoveButton.IsEnabled = true;
+        StopReturnSweepInLayerMoveButton.IsEnabled = true;
+        MultiLayerMoveInputTextBox.IsEnabled = true;
+        StartWithMarkCheckbox.IsEnabled = true;
+        StartMultiLayerMoveButton.IsEnabled = true;
 
         // Manual Move Buttons
         EnableManualMoveButton.IsEnabled = true;
@@ -1142,14 +1227,17 @@ public sealed partial class TestPrintPage : Page
         SelectBuildInPrintButton.IsEnabled = true;
         IncrementBuildButton.IsEnabled = true;
         DecrementBuildButton.IsEnabled = true;
+        StopBuildMotorButton.IsEnabled = true;
 
         SelectPowderInPrintButton.IsEnabled = true;
         IncrementPowderButton.IsEnabled = true;
         DecrementPowderButton.IsEnabled = true;
+        StopPowderMotorButton.IsEnabled = true;
 
         SelectSweepInPrintButton.IsEnabled = true;
         SweepLeftButton.IsEnabled = true;
         SweepRightButton.IsEnabled = true;
+        StopSweepButton.IsEnabled = true;
 
         HomeAllMotorsButton.IsEnabled = true;
     }
@@ -1190,7 +1278,7 @@ public sealed partial class TestPrintPage : Page
     /// <param name="uiMessage"></param>
     /// <param name="logLevel"></param>
     /// <param name="logMessage"></param>
-    private void LogMessage(string uiMessage, Core.Contracts.Services.LogFactoryLogLevel.LogLevel logLevel, string logMessage = null)
+    private void LogMessage(string uiMessage, LogFactoryLogLevel.LogLevel logLevel, string logMessage = null)
     {
         // Update UI with the message
         //UpdateUITextHelper.UpdateUIText(IsMarkingText, uiMessage);
@@ -1232,7 +1320,6 @@ public sealed partial class TestPrintPage : Page
         MagnetoLogger.Log(LogMessage, LogLevel);
         await PopupInfo.ShowContentDialog(xamlRoot, PopupMessageType, PopupMessage);
     }
-
 
     #endregion
 

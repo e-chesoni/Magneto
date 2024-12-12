@@ -73,11 +73,6 @@ public sealed partial class TestWaveRunner : Page
         _waverunnerPageService.UpdateDirectory();
     }
 
-    private ExecStatus ValidateJob(string fullPathToJob)
-    {
-        return (ExecStatus)_waverunnerPageService.ValidateJobPath(fullPathToJob, this.Content.XamlRoot);
-    }
-
     private void GetJobButton_Click(object sender, RoutedEventArgs e)
     {
         _waverunnerPageService.GetJob(this.Content.XamlRoot);
