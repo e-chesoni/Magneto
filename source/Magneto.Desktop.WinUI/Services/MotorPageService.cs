@@ -303,14 +303,21 @@ public class MotorPageService
     /// <returns></returns>
     public async Task<int> LayerMove(double defaultLayerHeight)
     {
-        var powderAmplifier = 2;
+        var powderAmplifier = 4;
+        var lowerBuildForSweepDist = 1;
 
         if (_actuationManager != null)
         {
+            // move build motor down for sweep
+            await _actuationManager.AddCommand(GetControllerTypeHelper(buildMotor.GetMotorName()), buildMotor.GetAxis(), CommandType.RelativeMove, -lowerBuildForSweepDist);
+
             // home sweep motor
             await _actuationManager.AddCommand(GetControllerTypeHelper(sweepMotor.GetMotorName()), sweepMotor.GetAxis(), CommandType.AbsoluteMove, sweepMotor.GetHomePos());
 
-            // move powder motor up by 2x layer height (Prof. Tertuliano recommends powder motor moves 2-3x distance of build motor)
+            // move build motor back up to last mark height
+            await _actuationManager.AddCommand(GetControllerTypeHelper(buildMotor.GetMotorName()), buildMotor.GetAxis(), CommandType.RelativeMove, lowerBuildForSweepDist);
+
+            // move powder motor up by powder amp layer height (Prof. Tertuliano recommends powder motor moves 2-3x distance of build motor)
             await _actuationManager.AddCommand(GetControllerTypeHelper(powderMotor.GetMotorName()), powderMotor.GetAxis(), CommandType.RelativeMove, (powderAmplifier * defaultLayerHeight));
 
             // move build motor down by layer height

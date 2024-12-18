@@ -300,13 +300,13 @@ public sealed partial class TestPrintPage : Page
         _waverunnerPageService = new WaverunnerPageService(JobFileSearchDirectoryTextBox, JobFileNameTextBox, ToggleRedPointerButton, StartMarkButton);
 
         // Set default job file
-        _waverunnerPageService.SetDefaultJobFileName("steel-3D-test-11-22-24.sjf");
+        _waverunnerPageService.SetDefaultJobFileName("test2-steel-121224.sjf");
     }
 
     private void SetDefaultPrintSettings()
     {
-        _currentLayerThickness = 2; // set default layer height to be 0.08mm based on first steel print
-        _desiredPrintHeight = 20; // set default print height to be mm
+        _currentLayerThickness = 0.03; // set default layer height to be 0.03mm based on first steel print
+        _desiredPrintHeight = 5; // set default print height to be mm
         DesiredPrintHeightTextBox.Text = _desiredPrintHeight.ToString();
         SetLayerThicknessTextBox.Text = _currentLayerThickness.ToString();
     }
@@ -383,9 +383,9 @@ public sealed partial class TestPrintPage : Page
         _waverunnerPageService.StopMark();
 
         // stop motors
+        _motorPageService.GetActuationManager().HandleStopRequest(_motorPageService.sweepMotor);
         _motorPageService.GetActuationManager().HandleStopRequest(_motorPageService.buildMotor);
         _motorPageService.GetActuationManager().HandleStopRequest(_motorPageService.powderMotor);
-        _motorPageService.GetActuationManager().HandleStopRequest(_motorPageService.sweepMotor);
     }
 
     #endregion
@@ -939,7 +939,15 @@ public sealed partial class TestPrintPage : Page
 
     private void StopMultiLayerMoveButton_Click(object sender, RoutedEventArgs e)
     {
-        KillAll();
+        //KillAll();
+        //TODO: Test -- kill all did not work last time, so putting all stops here to see if it improves
+        // stop mark
+        _waverunnerPageService.StopMark();
+
+        // stop motors
+        _motorPageService.GetActuationManager().HandleStopRequest(_motorPageService.sweepMotor);
+        _motorPageService.GetActuationManager().HandleStopRequest(_motorPageService.buildMotor);
+        _motorPageService.GetActuationManager().HandleStopRequest(_motorPageService.powderMotor);
     }
 
     #endregion
