@@ -307,10 +307,12 @@ public class ActuationManager : ISubsciber, IStateMachine
     public Task<double> HandleStopRequest(StepperMotor motor)
     {
         TaskCompletionSource<double> tcs = null;
-        
+
+        MagnetoLogger.Log($"stopping {motor.GetMotorName()} motor", LogFactoryLogLevel.LogLevel.VERBOSE);
         // stop motor
         motor.StopMotor();
-        
+
+        MagnetoLogger.Log("clearing queue", LogFactoryLogLevel.LogLevel.VERBOSE);
         // clear queue
         commandQueue.Clear();
 

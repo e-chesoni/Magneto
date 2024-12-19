@@ -148,6 +148,11 @@ public sealed partial class TestPrintPage : Page
 
     #endregion
 
+    #region Flags
+
+    private bool KILL_OPERATION;
+
+    #endregion
 
     #region UI Helper Variables
 
@@ -256,6 +261,9 @@ public sealed partial class TestPrintPage : Page
         var msg = "Landed on Test Print Page";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
         MagnetoSerialConsole.LogAvailablePorts();
+
+        // set up flags
+        KILL_OPERATION = false;
     }
 
     #endregion
@@ -861,7 +869,7 @@ public sealed partial class TestPrintPage : Page
         }
     }
 
-    
+
 
     // TODO: TEST!!
     private async void StartMultiLayerMoveButton_Click(object sender, RoutedEventArgs e)
@@ -881,9 +889,15 @@ public sealed partial class TestPrintPage : Page
 
             for (var i = 0; i < layers; i++)
             {
+                if (KILL_OPERATION)
+                {
+                    break;
+                }
+                
                 if (StartWithMarkCheckbox.IsChecked == true)
                 {
                     // MARK
+                    
                     msg = $"marking layer {i} in multi-layer print";
                     MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
                     _ = _waverunnerPageService.MarkEntityAsync();
@@ -914,6 +928,7 @@ public sealed partial class TestPrintPage : Page
                     while (_motorPageService.MotorsRunning()) { await Task.Delay(100); }
 
                     // MARK
+                    
                     msg = $"marking layer {i} in multi-layer print";
                     MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
                     _ = _waverunnerPageService.MarkEntityAsync();
@@ -932,6 +947,9 @@ public sealed partial class TestPrintPage : Page
             }
             msg = "multi-layer move complete.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
+
+            // reset stop request
+            KILL_OPERATION = false;
         }
     }
 
@@ -939,6 +957,10 @@ public sealed partial class TestPrintPage : Page
 
     private void StopMultiLayerMoveButton_Click(object sender, RoutedEventArgs e)
     {
+        var msg = "stopping all motors.";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
+
+        KILL_OPERATION = true;
         //KillAll();
         //TODO: Test -- kill all did not work last time, so putting all stops here to see if it improves
         // stop mark
@@ -948,6 +970,8 @@ public sealed partial class TestPrintPage : Page
         _motorPageService.GetActuationManager().HandleStopRequest(_motorPageService.sweepMotor);
         _motorPageService.GetActuationManager().HandleStopRequest(_motorPageService.buildMotor);
         _motorPageService.GetActuationManager().HandleStopRequest(_motorPageService.powderMotor);
+
+        
     }
 
     #endregion
