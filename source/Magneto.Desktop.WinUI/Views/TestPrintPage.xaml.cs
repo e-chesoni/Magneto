@@ -308,7 +308,7 @@ public sealed partial class TestPrintPage : Page
         _waverunnerPageService = new WaverunnerPageService(JobFileSearchDirectoryTextBox, JobFileNameTextBox, ToggleRedPointerButton, StartMarkButton);
 
         // Set default job file
-        _waverunnerPageService.SetDefaultJobFileName("test2-steel-121224.sjf");
+        _waverunnerPageService.SetDefaultJobFileName("2025-01-13_5x5_square_top_left.sjf");
     }
 
     private void SetDefaultPrintSettings()
@@ -897,7 +897,6 @@ public sealed partial class TestPrintPage : Page
                 if (StartWithMarkCheckbox.IsChecked == true)
                 {
                     // MARK
-                    
                     msg = $"marking layer {i} in multi-layer print";
                     MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
                     _ = _waverunnerPageService.MarkEntityAsync();
