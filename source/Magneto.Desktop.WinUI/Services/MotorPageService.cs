@@ -303,7 +303,7 @@ public class MotorPageService
     /// <returns></returns>
     public async Task<int> LayerMove(double defaultLayerHeight)
     {
-        var powderAmplifier = 4;
+        var powderAmplifier = 2.5; // Quan requested we change this from 4-2.5 to conserve powder
         var lowerBuildForSweepDist = 2;
 
         if (_actuationManager != null)
