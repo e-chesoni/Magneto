@@ -380,7 +380,7 @@ public class MotorPageService
     /// <summary>
     /// Sweeps left to apply material to build plate
     /// </summary>
-    public int SweepAndApplyMaterial()
+    public int SweepPowder()
     {
         if (_actuationManager != null)
         {

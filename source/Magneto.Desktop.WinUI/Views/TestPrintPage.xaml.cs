@@ -1020,7 +1020,7 @@ public sealed partial class TestPrintPage : Page
 
     private void SweepLeftButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.SweepAndApplyMaterial();
+        _motorPageService.SweepPowder();
     }
 
     private void StopSweepButton_Click(object sender, RoutedEventArgs e)
