@@ -141,6 +141,7 @@ public sealed partial class TestPrintPage : Page
 
     #endregion
 
+
     #region Page Services
 
     private MotorPageService _motorPageService;
@@ -148,11 +149,13 @@ public sealed partial class TestPrintPage : Page
 
     #endregion
 
+
     #region Flags
 
     private bool KILL_OPERATION;
 
     #endregion
+
 
     #region UI Helper Variables
 
@@ -247,6 +250,7 @@ public sealed partial class TestPrintPage : Page
 
     #endregion
 
+
     #region Constructor
 
     /// <summary>
@@ -268,6 +272,7 @@ public sealed partial class TestPrintPage : Page
 
     #endregion
 
+
     #region Page Initialization Methods
 
     private void InitPageServices() // combine page services initialization because motor services uses one of the UI groups
@@ -282,12 +287,12 @@ public sealed partial class TestPrintPage : Page
                                                                 StopBuildMotorInCalibrateButton, StopPowderMotorInCalibrateButton, StopSweepMotorInCalibrateButton,
                                                                 HomeAllMotorsInCalibrationPanelButton, StopAllMotorsInCalibrationPanelButton);
 
-        _inPrintMotorUIControlGroup = new MotorUIControlGroup(SelectBuildInPrintButton, SelectPowderInPrintButton, SelectSweepInPrintButton,
-                                                              BuildMotorCurrentPositionTextBox, PowderMotorCurrentPositionTextBox, SweepMotorCurrentPositionTextBox,
-                                                              BuildMotorStepInPrintTextBox, PowderMotorStepTextBox, SweepMotorStepTextBox,
-                                                              IncrementBuildButton, DecrementBuildButton, IncrementPowderButton, DecrementPowderButton, SweepLeftButton, SweepRightButton,
-                                                              StopBuildMotorButton, StopPowderMotorButton, StopSweepButton,
-                                                              HomeAllMotorsButton, StopAllMotorsInCalibrationPanelButton);
+        //_inPrintMotorUIControlGroup = new MotorUIControlGroup(SelectBuildInPrintButton, SelectPowderInPrintButton, SelectSweepInPrintButton,
+        //                                                      BuildMotorCurrentPositionTextBox, PowderMotorCurrentPositionTextBox, SweepMotorCurrentPositionTextBox,
+        //                                                      BuildMotorStepInPrintTextBox, PowderMotorStepTextBox, SweepMotorStepTextBox,
+        //                                                      IncrementBuildButton, DecrementBuildButton, IncrementPowderButton, DecrementPowderButton, SweepLeftButton, SweepRightButton,
+        //                                                      StopBuildMotorButton, StopPowderMotorButton, StopSweepButton,
+        //                                                      HomeAllMotorsButton, StopAllMotorsInCalibrationPanelButton);
 
 
         var printSettingsControls = new List<object> { JobFileSearchDirectoryTextBox, UpdateDirectoryButton, JobFileNameTextBox, UseDefaultJobButton, GetJobButton };
@@ -348,6 +353,7 @@ public sealed partial class TestPrintPage : Page
     }
 
     #endregion
+
 
     #region Motor Helpers
 
@@ -599,6 +605,7 @@ public sealed partial class TestPrintPage : Page
 
     #endregion
 
+
     #region Print Summary Methods
 
     // Dynamically populate a Grid
@@ -714,7 +721,6 @@ public sealed partial class TestPrintPage : Page
 
     #endregion
 
-    
 
     #region Print Layer Move Methods
 
@@ -993,25 +999,25 @@ public sealed partial class TestPrintPage : Page
         _motorPageService.printUiControlGroupHelper.SelectMotorInPrint(_motorPageService.sweepMotor);
     }
 
-    private void IncrementBuildButton_Click(object sender, RoutedEventArgs e)
-    {
-        _motorPageService.HandleRelMoveInSitu(_motorPageService.buildMotor, BuildMotorStepInPrintTextBox, true, this.Content.XamlRoot);
-    }
+    //private void IncrementBuildButton_Click(object sender, RoutedEventArgs e)
+    //{
+    //    _motorPageService.HandleRelMoveInSitu(_motorPageService.buildMotor, BuildMotorStepInPrintTextBox, true, this.Content.XamlRoot);
+    //}
 
-    private void DecrementBuildButton_Click(object sender, RoutedEventArgs e)
-    {
-        _motorPageService.HandleRelMoveInSitu(_motorPageService.buildMotor, BuildMotorStepInPrintTextBox, false, this.Content.XamlRoot);
-    }
+    //private void DecrementBuildButton_Click(object sender, RoutedEventArgs e)
+    //{
+    //    _motorPageService.HandleRelMoveInSitu(_motorPageService.buildMotor, BuildMotorStepInPrintTextBox, false, this.Content.XamlRoot);
+    //}
 
-    private void IncrementPowderButton_Click(object sender, RoutedEventArgs e)
-    {
-        _motorPageService.HandleRelMoveInSitu(_motorPageService.powderMotor, PowderMotorStepInPrintTextBox, true, this.Content.XamlRoot);
-    }
+    //private void IncrementPowderButton_Click(object sender, RoutedEventArgs e)
+    //{
+    //    _motorPageService.HandleRelMoveInSitu(_motorPageService.powderMotor, PowderMotorStepInPrintTextBox, true, this.Content.XamlRoot);
+    //}
 
-    private void DecrementPowderButton_Click(object sender, RoutedEventArgs e)
-    {
-        _motorPageService.HandleRelMoveInSitu(_motorPageService.powderMotor, PowderMotorStepInPrintTextBox, false, this.Content.XamlRoot);
-    }
+    //private void DecrementPowderButton_Click(object sender, RoutedEventArgs e)
+    //{
+    //    _motorPageService.HandleRelMoveInSitu(_motorPageService.powderMotor, PowderMotorStepInPrintTextBox, false, this.Content.XamlRoot);
+    //}
 
     private void SweepRightButton_Click(object sender, RoutedEventArgs e)
     {
@@ -1212,24 +1218,24 @@ public sealed partial class TestPrintPage : Page
         StartMultiLayerMoveButton.IsEnabled = false;
 
         // Manual Move Buttons
-        EnableManualMoveButton.IsEnabled = false;
+        //EnableManualMoveButton.IsEnabled = false;
 
-        SelectBuildInPrintButton.IsEnabled = false;
-        IncrementBuildButton.IsEnabled = false;
-        DecrementBuildButton.IsEnabled = false;
-        StopBuildMotorButton.IsEnabled = false;
+        //SelectBuildInPrintButton.IsEnabled = false;
+        //IncrementBuildButton.IsEnabled = false;
+        //DecrementBuildButton.IsEnabled = false;
+        //StopBuildMotorButton.IsEnabled = false;
 
-        SelectPowderInPrintButton.IsEnabled = false;
-        IncrementPowderButton.IsEnabled = false;
-        DecrementPowderButton.IsEnabled = false;
-        StopPowderMotorButton.IsEnabled = false;
+        //SelectPowderInPrintButton.IsEnabled = false;
+        //IncrementPowderButton.IsEnabled = false;
+        //DecrementPowderButton.IsEnabled = false;
+        //StopPowderMotorButton.IsEnabled = false;
 
-        SelectSweepInPrintButton.IsEnabled = false;
-        SweepLeftButton.IsEnabled = false;
-        SweepRightButton.IsEnabled = false;
-        StopSweepButton.IsEnabled = false;
+        //SelectSweepInPrintButton.IsEnabled = false;
+        //SweepLeftButton.IsEnabled = false;
+        //SweepRightButton.IsEnabled = false;
+        //StopSweepButton.IsEnabled = false;
 
-        HomeAllMotorsButton.IsEnabled = false;
+        //HomeAllMotorsButton.IsEnabled = false;
     }
 
     private void UnlockPrintManager()
@@ -1251,24 +1257,24 @@ public sealed partial class TestPrintPage : Page
         StartMultiLayerMoveButton.IsEnabled = true;
 
         // Manual Move Buttons
-        EnableManualMoveButton.IsEnabled = true;
+        //EnableManualMoveButton.IsEnabled = true;
 
-        SelectBuildInPrintButton.IsEnabled = true;
-        IncrementBuildButton.IsEnabled = true;
-        DecrementBuildButton.IsEnabled = true;
-        StopBuildMotorButton.IsEnabled = true;
+        //SelectBuildInPrintButton.IsEnabled = true;
+        //IncrementBuildButton.IsEnabled = true;
+        //DecrementBuildButton.IsEnabled = true;
+        //StopBuildMotorButton.IsEnabled = true;
 
-        SelectPowderInPrintButton.IsEnabled = true;
-        IncrementPowderButton.IsEnabled = true;
-        DecrementPowderButton.IsEnabled = true;
-        StopPowderMotorButton.IsEnabled = true;
+        //SelectPowderInPrintButton.IsEnabled = true;
+        //IncrementPowderButton.IsEnabled = true;
+        //DecrementPowderButton.IsEnabled = true;
+        //StopPowderMotorButton.IsEnabled = true;
 
-        SelectSweepInPrintButton.IsEnabled = true;
-        SweepLeftButton.IsEnabled = true;
-        SweepRightButton.IsEnabled = true;
-        StopSweepButton.IsEnabled = true;
+        //SelectSweepInPrintButton.IsEnabled = true;
+        //SweepLeftButton.IsEnabled = true;
+        //SweepRightButton.IsEnabled = true;
+        //StopSweepButton.IsEnabled = true;
 
-        HomeAllMotorsButton.IsEnabled = true;
+        //HomeAllMotorsButton.IsEnabled = true;
     }
 
     #endregion
