@@ -450,17 +450,24 @@ public class MotorPageService
         }
         else
         {
-            msg = "Cannot move build motor. Motor is null.";
+            msg = $"Cannot execute relative move on {motor.GetMotorName()} motor. Motor is null.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
         }
     }
 
     public void HandleRelMove(StepperMotor motor, TextBox textBox, bool moveUp, XamlRoot xamlRoot)
     {
-        var moveIsAbs = false;
+        var msg = $"{motor.GetMotorName()} rel move button clicked.";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
         if (motor != null)
         {
+            var moveIsAbs = false;
             MoveMotorAndUpdateUI(motor, textBox, moveIsAbs, moveUp, xamlRoot);
+        }
+        else
+        {
+            msg = $"Cannot execute relative move on {motor.GetMotorName()} motor. Motor is null.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
         }
     }
 
