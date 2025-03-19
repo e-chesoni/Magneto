@@ -27,10 +27,9 @@
                     Grid.Column="1"
                     Margin="{StaticResource SmallLeftMargin}"
                     VerticalAlignment="Center">
-                    <TextBlock Text="{x:Bind FileName}" Style="{StaticResource ListTitleStyle}" />
-                    <TextBlock Text="{x:Bind FileLocation}" Style="{StaticResource ListTitleStyle}" />
+                    <TextBlock Text="{x:Bind SliceDirectory}" Style="{StaticResource ListTitleStyle}" />
+                    <TextBlock Text="{x:Bind StartTimestamp}" Style="{StaticResource ListTitleStyle}" />
                     <TextBlock Text="{x:Bind Status}" Style="{StaticResource ListSubTitleStyle}" />
-                    <TextBlock Text="{x:Bind CreatedAt}" Style="{StaticResource ListTitleStyle}" />
                 </StackPanel>
             </Grid>
         </DataTemplate>

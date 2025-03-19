@@ -38,35 +38,34 @@ public class SamplePrintService : ISamplePrintService
         {
             new SamplePrint()
             {
-                FileName="Structure 1",
-                // TODO: remember you may need to use at symbol with processing file locations
-                // Example: @"c:\prints\Structure1.dwg"
-                FileLocation="c:\\prints\\Structure1.dwg",
-                FileSize=300000000,
-                CreatedAt=DateTime.Now,
+                // File naming convention: 0001_ss_316l_square_5x5.sjf
+                UUID=1,
+                SliceDirectory=@"C:\Scanner Application\Scanner Software\jobfiles\ss\316l\single_square_5x5mm", // @ symbol ensures backslashes are not interpreted as spaces
+                DirectorySize=300000000,
+                StartTimestamp=DateTime.Now,
                 Status=SamplePrint.PrintStatus.NotStarted,
-                SymbolCode = 57643,
-                SymbolName = "Globe",
+                SymbolCode = 57688,
+                SymbolName = "Pictures",
             },
             new SamplePrint()
             {
-                FileName="Structure 1",
-                FileLocation="c:\\prints\\Structure2.dwg",
-                FileSize=300000000,
-                CreatedAt=DateTime.Now,
+                UUID=2,
+                SliceDirectory=@"C:\Scanner Application\Scanner Software\jobfiles\copper\grcop-42\grid_lines_5mm",
+                DirectorySize=300000000,
+                StartTimestamp=DateTime.Now,
                 Status=SamplePrint.PrintStatus.NotStarted,
-                SymbolCode = 57737,
-                SymbolName = "Audio",
+                SymbolCode = 57688,
+                SymbolName = "Pictures",
             },
             new SamplePrint()
             {
-                FileName="Structure 3",
-                FileLocation="c:\\prints\\Structure3.dwg",
-                FileSize=300000000,
-                CreatedAt=DateTime.Now,
+                UUID=3,
+                SliceDirectory=@"C:\Scanner Application\Scanner Software\jobfiles\copper\grcop-42\grid_squares_5x5mm",
+                DirectorySize=300000000,
+                StartTimestamp=DateTime.Now,
                 Status=SamplePrint.PrintStatus.NotStarted,
-                SymbolCode = 57620,
-                SymbolName = "Camera",
+                SymbolCode = 57688,
+                SymbolName = "Pictures",
             },
         };
     }

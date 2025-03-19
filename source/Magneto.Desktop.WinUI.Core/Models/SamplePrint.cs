@@ -26,34 +26,40 @@ public class SamplePrint
         Complete
     }
 
-    /// <summary>
-    /// File name
-    /// </summary>
-    public string FileName
+    // Unique print id
+    public Int64 UUID
     {
         get; set;
     }
 
     /// <summary>
-    /// Path to file
+    /// Path to directory with slices associated with print
     /// </summary>
-    public string FileLocation
+    public string SliceDirectory
     {
         get; set;
     }
 
     /// <summary>
-    /// File size
+    /// Directory size
     /// </summary>
-    public int FileSize
+    public int DirectorySize
     {
         get; set;
     }
 
     /// <summary>
-    /// Date/time file was established in Magneto system
+    /// Date/time print was started
     /// </summary>
-    public DateTime CreatedAt
+    public DateTime StartTimestamp
+    {
+        get; set;
+    }
+
+    /// <summary>
+    /// Date/time print was completed
+    /// </summary>
+    public DateTime EndTimestamp
     {
         get; set;
     }
@@ -62,6 +68,22 @@ public class SamplePrint
     /// Print status
     /// </summary>
     public PrintStatus Status
+    {
+        get; set;
+    }
+
+    /// <summary>
+    /// Number of layers printed currently
+    /// </summary>
+    public Int32 LayersPrinted
+    {
+        get; set; 
+    }
+
+    /// <summary>
+    /// Path to O2 log
+    /// </summary>
+    public string O2Path
     {
         get; set;
     }
@@ -86,6 +108,14 @@ public class SamplePrint
     /// Symbol code
     /// </summary>
     public char Symbol => (char)SymbolCode;
+
+    /// <summary>
+    /// Notes about print
+    /// </summary>
+    public string Notes
+    {
+        get; set;
+    }
 
     #endregion
 }

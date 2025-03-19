@@ -100,7 +100,7 @@ public class WaverunnerPageService
         this.IsMarkingText = isMarkingText;
 
         // Set default job directory
-        _defaultJobDirectory = @"C:\Scanner Application\Scanner Software\jobfiles";
+        _defaultJobDirectory = @"C:\Scanner Application\Scanner Software\jobfiles";  // "@" symbol means treat "\" as "\" (not a space)
         _jobDirectory = _defaultJobDirectory;
         this.JobFileSearchDirectory.Text = _jobDirectory;
 
