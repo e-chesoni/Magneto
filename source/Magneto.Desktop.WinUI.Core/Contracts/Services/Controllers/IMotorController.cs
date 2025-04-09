@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Magneto.Desktop.WinUI.Core.Models.Motor;
+using Magneto.Desktop.WinUI.Core.Models.Motors;
 
 namespace Magneto.Desktop.WinUI.Core.Contracts.Services.Controllers;
 

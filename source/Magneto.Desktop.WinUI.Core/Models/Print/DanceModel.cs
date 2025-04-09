@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Magneto.Desktop.WinUI.Core.Models.Artifact;
 using Magneto.Desktop.WinUI.Core.Services;
 
-namespace Magneto.Desktop.WinUI.Core.Models.BuildModels;
+namespace Magneto.Desktop.WinUI.Core.Models.Print;
 
 /// <summary>
 /// Dance model stores all poses to print an image model

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
-using Magneto.Desktop.WinUI.Core.Models.Motor;
+using Magneto.Desktop.WinUI.Core.Models.Motors;
 using Magneto.Desktop.WinUI.Core.Services;
 using Magneto.Desktop.WinUI.Models.UIControl;
 using Microsoft.UI;

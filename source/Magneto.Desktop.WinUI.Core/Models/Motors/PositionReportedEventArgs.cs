@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Magneto.Desktop.WinUI.Core.Models.Motor;
+namespace Magneto.Desktop.WinUI.Core.Models.Motors;
 public class PositionReportedEventArgs : EventArgs
 {
     public int Axis

@@ -9,9 +9,9 @@ using Magneto.Desktop.WinUI.Contracts.ViewModels;
 using Magneto.Desktop.WinUI.Core;
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Models;
-using Magneto.Desktop.WinUI.Core.Models.BuildModels;
+using Magneto.Desktop.WinUI.Core.Models.Print;
 using Magneto.Desktop.WinUI.Core.Models.Controllers;
-using Magneto.Desktop.WinUI.Core.Models.Motor;
+using Magneto.Desktop.WinUI.Core.Models.Motors;
 using Magneto.Desktop.WinUI.Core.Services;
 
 namespace Magneto.Desktop.WinUI.ViewModels;

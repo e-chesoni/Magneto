@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Magneto.Desktop.WinUI.Core.Models.Artifact;
 
-namespace Magneto.Desktop.WinUI.Core.Models.BuildModels;
+namespace Magneto.Desktop.WinUI.Core.Models.Print;
 
 /// <summary>
 /// Poses couple slices with layer thickness

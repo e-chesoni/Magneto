@@ -9,14 +9,14 @@ using Magneto.Desktop.WinUI.Core.Contracts.Services.Controllers;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.States;
 using Magneto.Desktop.WinUI.Core.Models.Controllers;
 using Magneto.Desktop.WinUI.Core.Models.Artifact;
-using Magneto.Desktop.WinUI.Core.Models.Monitor;
-using Magneto.Desktop.WinUI.Core.Models.Motor;
+using Magneto.Desktop.WinUI.Core.Models.Monitors;
+using Magneto.Desktop.WinUI.Core.Models.Motors;
 using Magneto.Desktop.WinUI.Core.Models.State.PrintStates;
 using Magneto.Desktop.WinUI.Core.Services;
-using static Magneto.Desktop.WinUI.Core.Models.Motor.StepperMotor;
+using static Magneto.Desktop.WinUI.Core.Models.Motors.StepperMotor;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.States;
 
-namespace Magneto.Desktop.WinUI.Core.Models.BuildModels;
+namespace Magneto.Desktop.WinUI.Core.Models.Print;
 
 /// <summary>
 /// Coordinates printing tasks across components

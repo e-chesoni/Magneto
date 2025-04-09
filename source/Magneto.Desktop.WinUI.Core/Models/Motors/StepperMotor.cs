@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using System.Diagnostics;
 using Newtonsoft.Json.Linq;
 
-namespace Magneto.Desktop.WinUI.Core.Models.Motor;
+namespace Magneto.Desktop.WinUI.Core.Models.Motors;
 
 /// <summary>
 /// Represents a stepper motor and encapsulates its functionality and control mechanisms.

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Magneto.Desktop.WinUI.Core.Models.BuildModels;
+using Magneto.Desktop.WinUI.Core.Models.Print;
 using Magneto.Desktop.WinUI.Core.Models.Artifact;
 using Magneto.Desktop.WinUI.Core.Services;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.States;

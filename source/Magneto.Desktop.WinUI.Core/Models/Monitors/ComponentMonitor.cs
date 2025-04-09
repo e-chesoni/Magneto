@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.Monitors;
 
-namespace Magneto.Desktop.WinUI.Core.Models.Monitor;
+namespace Magneto.Desktop.WinUI.Core.Models.Monitors;
 
 /// <summary>
 /// Implementation to monitor a Magneto sub-system

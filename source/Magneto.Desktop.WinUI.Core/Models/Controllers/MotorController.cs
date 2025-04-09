@@ -4,9 +4,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.Controllers;
-using Magneto.Desktop.WinUI.Core.Models.Motor;
+using Magneto.Desktop.WinUI.Core.Models.Motors;
 using Magneto.Desktop.WinUI.Core.Services;
-using static Magneto.Desktop.WinUI.Core.Models.Motor.StepperMotor;
+using static Magneto.Desktop.WinUI.Core.Models.Motors.StepperMotor;
 
 namespace Magneto.Desktop.WinUI.Core.Models.Controllers;
 
