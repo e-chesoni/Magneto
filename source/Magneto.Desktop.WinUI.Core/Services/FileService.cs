@@ -38,4 +38,13 @@ public class FileService : IFileService
             File.Delete(Path.Combine(folderPath, fileName));
         }
     }
+    public IEnumerable<string> GetSliceFilesFromDirectoryPath(string directoryPath)
+    {
+        if (!Directory.Exists(directoryPath))
+            return Enumerable.Empty<string>();
+
+        // sorts files by name (ex. 0000_square.sjf will be first, followed by 0001_square.sjf, and so on)
+        return Directory.GetFiles(directoryPath, "*.sjf")
+            .OrderBy(f => f);
+    }
 }

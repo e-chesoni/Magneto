@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Magneto.Desktop.WinUI.Core.Models;
 using Magneto.Desktop.WinUI.Core.Models.Artifact;
 
-namespace Magneto.Desktop.WinUI.Core.Contracts.Services.StateMachineServices;
+namespace Magneto.Desktop.WinUI.Core.Contracts.Services.State;
 
 /// <summary>
 /// Interface for Magneto Build Manager States

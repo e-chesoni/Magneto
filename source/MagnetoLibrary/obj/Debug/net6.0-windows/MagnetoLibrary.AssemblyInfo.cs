@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MagnetoLibrary")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+951206f6d683e0706640ce7967342997c1ac0f80")]
 [assembly: System.Reflection.AssemblyProductAttribute("MagnetoLibrary")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MagnetoLibrary")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

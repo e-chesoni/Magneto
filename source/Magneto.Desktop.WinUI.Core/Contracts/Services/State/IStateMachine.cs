@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Magneto.Desktop.WinUI.Core.Contracts.Services.StateMachineServices;
+namespace Magneto.Desktop.WinUI.Core.Contracts.Services.State;
 public interface IStateMachine
 {
     /// NOTE: All classes should implement a TransistionTo(State s) method

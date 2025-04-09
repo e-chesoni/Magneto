@@ -3,18 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Magneto.Desktop.WinUI.Core.Contracts.Services.StateMachineServices;
 using Magneto.Desktop.WinUI.Core.Models.BuildModels;
 using Magneto.Desktop.WinUI.Core.Models.Artifact;
 using Magneto.Desktop.WinUI.Core.Services;
+using Magneto.Desktop.WinUI.Core.Contracts.Services.State;
 
-namespace Magneto.Desktop.WinUI.Core.Models.State.BuildManagerStates;
+namespace Magneto.Desktop.WinUI.Core.Models.State.PrintStates;
 
 /// <summary>
 /// Pass-through state; you should not be able to call anything in this state
 /// This class exist to process the cancel request
 /// </summary>
-public class CancelledBuildState : IBuildManagerState
+public class CancelledBuildState : IPrintState
 {
     private ActuationManager _BuildManagerSM { get; set; }
 

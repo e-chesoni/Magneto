@@ -6,14 +6,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.Controllers;
-using Magneto.Desktop.WinUI.Core.Contracts.Services.StateMachineServices;
+using Magneto.Desktop.WinUI.Core.Contracts.Services.State;
 using Magneto.Desktop.WinUI.Core.Models.Controllers;
 using Magneto.Desktop.WinUI.Core.Models.Artifact;
 using Magneto.Desktop.WinUI.Core.Models.Monitor;
 using Magneto.Desktop.WinUI.Core.Models.Motor;
-using Magneto.Desktop.WinUI.Core.Models.State.BuildManagerStates;
+using Magneto.Desktop.WinUI.Core.Models.State.PrintStates;
 using Magneto.Desktop.WinUI.Core.Services;
 using static Magneto.Desktop.WinUI.Core.Models.Motor.StepperMotor;
+using Magneto.Desktop.WinUI.Core.Contracts.Services.State;
 
 namespace Magneto.Desktop.WinUI.Core.Models.BuildModels;
 
@@ -73,7 +74,7 @@ public class ActuationManager : ISubsciber, IStateMachine
     /// <summary>
     /// Holder for current state (set in constructor and updated by state methods)
     /// </summary>
-    private IBuildManagerState _state = null;
+    private IPrintState _state = null;
 
     /// <summary>
     /// Flag used to interrupt builds
@@ -494,7 +495,7 @@ public class ActuationManager : ISubsciber, IStateMachine
     /// Method to handle state transitions
     /// </summary>
     /// <param name="state"></param>
-    public void TransitionTo(IBuildManagerState state)
+    public void TransitionTo(IPrintState state)
     {
         _state = state;
     }

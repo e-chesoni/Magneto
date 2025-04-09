@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Magneto.Desktop.WinUI.Core.Contracts.Services.StateMachineServices;
+namespace Magneto.Desktop.WinUI.Core.Contracts.Services.State;
 
 /// <summary>
 /// Interface for Magneto Motor Controller States

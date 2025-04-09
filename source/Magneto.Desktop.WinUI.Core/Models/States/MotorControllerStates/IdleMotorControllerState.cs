@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Magneto.Desktop.WinUI.Core.Contracts.Services.StateMachineServices;
+using Magneto.Desktop.WinUI.Core.Contracts.Services.State;
 
 namespace Magneto.Desktop.WinUI.Core.Models.State.MotorControlerStates;
 public class IdleMotorControllerState : IMotorControllerState

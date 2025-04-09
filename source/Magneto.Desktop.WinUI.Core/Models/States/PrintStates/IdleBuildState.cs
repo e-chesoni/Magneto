@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Transactions;
-using Magneto.Desktop.WinUI.Core.Contracts.Services.StateMachineServices;
 using Magneto.Desktop.WinUI.Core.Models.BuildModels;
 using Magneto.Desktop.WinUI.Core.Models.Artifact;
 using Magneto.Desktop.WinUI.Core.Services;
+using Magneto.Desktop.WinUI.Core.Contracts.Services.State;
 
-namespace Magneto.Desktop.WinUI.Core.Models.State.BuildManagerStates;
+namespace Magneto.Desktop.WinUI.Core.Models.State.PrintStates;
 public class IdleBuildState : IBuildManagerState
 {
     private ActuationManager _BuildManagerSM;
