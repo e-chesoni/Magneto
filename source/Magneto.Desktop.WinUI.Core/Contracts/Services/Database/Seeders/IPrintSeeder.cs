@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Magneto.Desktop.WinUI.Core.Contracts.Services.Database.Seeders;
-internal class IPrintSeeder
+public interface IPrintSeeder
 {
+    Task CreatePrintFromDirectory(string directory);
 }

@@ -156,7 +156,6 @@ public class StepperMotor : IStepperMotor
     public bool STOP_MOVE_FLAG;
     #endregion
 
-
     #region Constructor
 
     /// <summary>
