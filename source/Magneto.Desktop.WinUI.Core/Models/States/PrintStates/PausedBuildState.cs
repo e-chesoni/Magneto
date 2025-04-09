@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 using Magneto.Desktop.WinUI.Core.Models.BuildModels;
 using Magneto.Desktop.WinUI.Core.Models.Artifact;
 using Magneto.Desktop.WinUI.Core.Services;
-using Magneto.Desktop.WinUI.Core.Contracts.Services.State;
+using Magneto.Desktop.WinUI.Core.Contracts.Services.States;
 
 namespace Magneto.Desktop.WinUI.Core.Models.State.PrintStates;
-public class PausedBuildState : IBuildManagerState
+public class PausedBuildState : IPrintState
 {
     private ActuationManager _BuildManagerSM { get; set; }
 

@@ -1,5 +1,5 @@
 ﻿using Magneto.Desktop.WinUI.Core.Contracts.Services;
-using Magneto.Desktop.WinUI.Core.Contracts.Services.Motor;
+using Magneto.Desktop.WinUI.Core.Contracts.Services.Motors;
 using Magneto.Desktop.WinUI.Core.Services;
 using Microsoft.VisualBasic;
 using System.Text.RegularExpressions;

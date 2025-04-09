@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 using Magneto.Desktop.WinUI.Core.Models;
 using Magneto.Desktop.WinUI.Core.Models.Artifact;
 
-namespace Magneto.Desktop.WinUI.Core.Contracts.Services.State;
+namespace Magneto.Desktop.WinUI.Core.Contracts.Services.States;
 
 /// <summary>
 /// Interface for Magneto Build Manager States
 /// </summary>
-public interface IBuildManagerState
+public interface IPrintState
 {
     void Start(ArtifactModel im);
 

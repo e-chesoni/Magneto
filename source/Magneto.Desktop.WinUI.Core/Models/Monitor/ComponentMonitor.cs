@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Magneto.Desktop.WinUI.Core.Contracts.Services.Monitor;
+using Magneto.Desktop.WinUI.Core.Contracts.Services.Monitors;
 
 namespace Magneto.Desktop.WinUI.Core.Models.Monitor;
 

@@ -9,11 +9,11 @@ using Magneto.Desktop.WinUI.Core.Models.Controllers;
 using Magneto.Desktop.WinUI.Core.Models.Artifact;
 using Magneto.Desktop.WinUI.Core.Models.Motor;
 using Magneto.Desktop.WinUI.Core.Services;
-using Magneto.Desktop.WinUI.Core.Contracts.Services.State;
+using Magneto.Desktop.WinUI.Core.Contracts.Services.States;
 
 
 namespace Magneto.Desktop.WinUI.Core.Models.State.PrintStates;
-public class PrintingBuildState : IBuildManagerState
+public class PrintingBuildState : IPrintState
 {
     private ActuationManager _BuildManagerSM { get; set; }
 

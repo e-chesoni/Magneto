@@ -29,7 +29,7 @@ using Magneto.Desktop.WinUI.Helpers;
 using Microsoft.UI;
 using static Magneto.Desktop.WinUI.Core.Models.BuildModels.ActuationManager;
 using static Magneto.Desktop.WinUI.Views.TestPrintPage;
-using Magneto.Desktop.WinUI.Core.Contracts.Services.Motor;
+using Magneto.Desktop.WinUI.Core.Contracts.Services.Motors;
 using CommunityToolkit.WinUI.UI.Animations;
 using CommunityToolkit.WinUI.UI.Controls.TextToolbarSymbols;
 using Magneto.Desktop.WinUI.Models.UIControl;

@@ -4,7 +4,7 @@ using CommunityToolkit.WinUI.UI.Animations;
 using Magneto.Desktop.WinUI.Core;
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.Controllers;
-using Magneto.Desktop.WinUI.Core.Contracts.Services.Motor;
+using Magneto.Desktop.WinUI.Core.Contracts.Services.Motors;
 using Magneto.Desktop.WinUI.Core.Helpers;
 using Magneto.Desktop.WinUI.Core.Models;
 using Magneto.Desktop.WinUI.Core.Models.BuildModels;

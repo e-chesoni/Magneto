@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.Controllers;
-using Magneto.Desktop.WinUI.Core.Contracts.Services.State;
+using Magneto.Desktop.WinUI.Core.Contracts.Services.States;
 using Magneto.Desktop.WinUI.Core.Models.Controllers;
 using Magneto.Desktop.WinUI.Core.Models.Artifact;
 using Magneto.Desktop.WinUI.Core.Models.Monitor;
@@ -14,7 +14,7 @@ using Magneto.Desktop.WinUI.Core.Models.Motor;
 using Magneto.Desktop.WinUI.Core.Models.State.PrintStates;
 using Magneto.Desktop.WinUI.Core.Services;
 using static Magneto.Desktop.WinUI.Core.Models.Motor.StepperMotor;
-using Magneto.Desktop.WinUI.Core.Contracts.Services.State;
+using Magneto.Desktop.WinUI.Core.Contracts.Services.States;
 
 namespace Magneto.Desktop.WinUI.Core.Models.BuildModels;
 
