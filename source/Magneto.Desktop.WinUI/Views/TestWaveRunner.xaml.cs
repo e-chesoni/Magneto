@@ -75,7 +75,7 @@ public sealed partial class TestWaveRunner : Page
 
     private void GetJobButton_Click(object sender, RoutedEventArgs e)
     {
-        _waverunnerPageService.GetJob(this.Content.XamlRoot);
+        _waverunnerPageService.SetMarkJobInTestConfig(this.Content.XamlRoot);
     }
 
     private void UseDefaultJobButton_Click(object sender, RoutedEventArgs e)

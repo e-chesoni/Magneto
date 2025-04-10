@@ -26,6 +26,9 @@ using SAMLIGHT_CLIENT_CTRL_EXLib;
 using Windows.Devices.SerialCommunication;
 using static Magneto.Desktop.WinUI.Core.Models.Print.ActuationManager;
 using static Magneto.Desktop.WinUI.Views.TestPrintPage;
+using System.Diagnostics;
+using Windows.Storage.Pickers;
+using WinRT.Interop;
 
 namespace Magneto.Desktop.WinUI.Views;
 
@@ -311,7 +314,7 @@ public sealed partial class TestPrintPage : Page
         _motorPageService = new MotorPageService(MissionControl.GetActuationManger(), _printControlGroupHelper);
 
         // initialize Waverunner page service
-        //_waverunnerPageService = new WaverunnerPageService(JobFileSearchDirectoryTextBox, JobFileNameTextBox, ToggleRedPointerButton, StartMarkButton);
+        _waverunnerPageService = new WaverunnerPageService(PrintDirectoryInputTextBox, PrintLayersButton);
 
         // Set default job file
         //_waverunnerPageService.SetDefaultJobFileName("2025-01-13_5x5_square_top_left.sjf");
@@ -529,7 +532,7 @@ public sealed partial class TestPrintPage : Page
     private void GetJobButton_Click(object sender, RoutedEventArgs e)
     {
         // TODO: If job is invalid, need to wipe it from print manager (invalidate ready to print)
-        _waverunnerPageService.GetJob(this.Content.XamlRoot);
+        _waverunnerPageService.SetMarkJobInTestConfig(this.Content.XamlRoot);
         //CurrentJobFile.Text = JobFileNameTextBox.Text;
 
         // TODO: if job path is valid, unlock mark buttons
@@ -555,11 +558,9 @@ public sealed partial class TestPrintPage : Page
     {
         _waverunnerPageService.StopMark();
     }
-
-    ///
+    /*
     private bool ThicknessAndHeightTextBoxesValid(bool showPopup)
     {
-        /*
         if (string.IsNullOrWhiteSpace(SetLayerThicknessTextBox.Text) || string.IsNullOrWhiteSpace(DesiredPrintHeightTextBox.Text))
         {
             // TODO: popup error
@@ -569,7 +570,6 @@ public sealed partial class TestPrintPage : Page
         {
             return true;
         }
-        */
         return false;
     }
 
@@ -590,13 +590,11 @@ public sealed partial class TestPrintPage : Page
     {
         //_currentLayerThickness = Math.Round(double.Parse(SetLayerThicknessTextBox.Text), 3);
         //CurrentLayerThickness.Text = _currentLayerThickness.ToString() + " mm";
-        /*
         if (!string.IsNullOrWhiteSpace(DesiredPrintHeightTextBox.Text))
         {
             CalculateLayersToPrint();
             DisplayLayersPrinted();
         }
-        */
     }
 
     private void UpdateDesiredPrintHeightButton_Click(object sender, RoutedEventArgs e)
@@ -608,11 +606,12 @@ public sealed partial class TestPrintPage : Page
         //RemainingLayersToPrint.Text = _totalLayersToPrint.ToString(); // TODO: May need to rethink this when if print is updated mid cycle
         //DisplayLayersPrinted();
     }
-
+    */
     #endregion
 
 
     #region Print Summary Methods
+    /*
 
     // Dynamically populate a Grid
     public void PopulateGridWithLastThree(Grid targetGrid)
@@ -664,14 +663,14 @@ public sealed partial class TestPrintPage : Page
         }
     }
 
-    /*
     private void TestPrintHistoryPopulate()
     {
         PopulateGridWithLastThree(PrintHistoryGrid);
     }
     */
 
-    // TODO: remove when done testing
+    // TODO: remove when done testing\
+    /*
     private void AddDummyPrintHistory()
     {
         _printHistoryDictionary[0.03] = 1;  // 1 layers printed at 0.03mm
@@ -689,7 +688,6 @@ public sealed partial class TestPrintPage : Page
         //updateLayerTrackingUI();
         UnlockPrintManager();
     }
-    /*
     private void DisplayLayersPrinted()
     {
         // Display layers printed
@@ -729,25 +727,27 @@ public sealed partial class TestPrintPage : Page
     */
     #endregion
     #region Print Layer Move Methods
-    private void MoveToNextLayerStartPositionButton_Click(object sender, RoutedEventArgs e)
-    {
-        _motorPageService.LayerMove(_currentLayerThickness);
-    }
-    private void StopSingleLayerMoveButton_Click(object sender, RoutedEventArgs e)
-    {
-        KillAll();
-    }
-    private void StartMarkInLayerMoveButton_Click(object sender, RoutedEventArgs e)
+    private void MarkButton_Click(object sender, RoutedEventArgs e)
     {
         _ = _waverunnerPageService.MarkEntityAsync();
 
         //_ = incrementLayersPrinted(); // TODO: TEST
     }
+    //PrintLayersButton_Click
 
-    private void StopMarkInLayerMoveButton_Click(object sender, RoutedEventArgs e)
+
+    private void StopButton_Click(object sender, RoutedEventArgs e)
     {
+        //KillAll(); // TODO: TEST; does the same as below, but has not always worked in methods
+        // stop mark
         _waverunnerPageService.StopMark();
+
+        // stop motors
+        _motorPageService.GetActuationManager().HandleStopRequest(_motorPageService.sweepMotor);
+        _motorPageService.GetActuationManager().HandleStopRequest(_motorPageService.buildMotor);
+        _motorPageService.GetActuationManager().HandleStopRequest(_motorPageService.powderMotor);
     }
+    /*
     private void ReturnSweepInLayerMoveButton_Click(object sender, RoutedEventArgs e)
     {
         _motorPageService.HandleHomeMotor(_motorPageService.sweepMotor);
@@ -756,6 +756,7 @@ public sealed partial class TestPrintPage : Page
     {
         _motorPageService.GetActuationManager().HandleStopRequest(_motorPageService.sweepMotor);
     }
+    */
      #endregion
 
     private readonly Queue<Func<Task>> _operationQueue= new Queue<Func<Task>>();
@@ -877,7 +878,7 @@ public sealed partial class TestPrintPage : Page
         }
     }
 
-    private async void StartMultiLayerMoveButton_Click(object sender, RoutedEventArgs e)
+    private async void PrintLayersButton_Click(object sender, RoutedEventArgs e)
     {
         if (string.IsNullOrWhiteSpace(MultiLayerMoveInputTextBox.Text) || !int.TryParse(MultiLayerMoveInputTextBox.Text, out var layers))
         {
@@ -905,6 +906,7 @@ public sealed partial class TestPrintPage : Page
                     msg = $"marking layer {i} in multi-layer print";
                     MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
                     _ = _waverunnerPageService.MarkEntityAsync();
+                    //_ = _waverunnerPageService.MarkEntityAsync(this.Content.XamlRoot, currentSlice.fileName);
                     while (_waverunnerPageService.GetMarkStatus() != 0) // wait until mark ends before proceeding
                     {
                         // wait
@@ -975,7 +977,6 @@ public sealed partial class TestPrintPage : Page
 
         
     }
-
 
     #region Print Manual Move Methods
     /*
@@ -1185,7 +1186,7 @@ public sealed partial class TestPrintPage : Page
         //StopReturnSweepInLayerMoveButton.IsEnabled = false;
         MultiLayerMoveInputTextBox.IsEnabled = false;
         StartWithMarkCheckbox.IsEnabled = false;
-        StartMultiLayerMoveButton.IsEnabled = false;
+        //StartMultiLayerMoveButton.IsEnabled = false;
 
         // Manual Move Buttons
         //EnableManualMoveButton.IsEnabled = false;
@@ -1224,7 +1225,7 @@ public sealed partial class TestPrintPage : Page
         //StopReturnSweepInLayerMoveButton.IsEnabled = true;
         MultiLayerMoveInputTextBox.IsEnabled = true;
         StartWithMarkCheckbox.IsEnabled = true;
-        StartMultiLayerMoveButton.IsEnabled = true;
+        //StartMultiLayerMoveButton.IsEnabled = true;
 
         // Manual Move Buttons
         //EnableManualMoveButton.IsEnabled = true;
@@ -1316,9 +1317,88 @@ public sealed partial class TestPrintPage : Page
     }
 
     #endregion
-
-    private void BrowseButton_Click(object sender, RoutedEventArgs e)
+    private async void PopulatePageText()
     {
+        /*
+        var print = ViewModel.currentPrint;
+        var slice = ViewModel.currentSlice;
+        if (print != null)
+        {
+            if (!string.IsNullOrWhiteSpace(print.directoryPath))
+            {
+                if (slice != null)
+                {
+                    if (!string.IsNullOrWhiteSpace(slice.filePath))
+                    {
+                        // ✅ All values are valid — update the UI
+                        PrintNameTextBlock.Text = print.name;
+                        CurrentSliceTextBox.Text = slice.fileName;
+                        StatusTextBlock.Text = print?.complete == true ? "Complete" : "Incomplete";
+                        SlicesMarkedTextBlock.Text = (await ViewModel.GetSlicesMarkedAsync()).ToString();
+                        TotalSlicesTextBlock.Text = (await ViewModel.GetTotalSlicesAsync()).ToString();
+                        // convert UTC to local time
+                        var duration = print.duration;
+                        var localStart = print.startTime.ToLocalTime();
+                        var localEnd = print.endTime?.ToLocalTime();
+                        Debug.WriteLine($"📅 start: {print.startTime}, end: {print.endTime}, duration: {print.duration}");
+                        DurationTextBlock.Text = duration?.ToString(@"hh\:mm\:ss") ?? "—";
+                    }
+                    else
+                    {
+                        Debug.WriteLine("❌ Slice image path is null or empty.");
+                        return;
+                    }
+                }
+                else
+                {
+                    Debug.WriteLine("❌ Current slice is null.");
+                    return;
+                }
+            }
+            else
+            {
+                Debug.WriteLine("❌ Directory path is null or empty.");
+                return;
+            }
+        }
+        else
+        {
+            Debug.WriteLine("❌ Current print is null.");
+            return;
+        }
+        */
+    }
+    private async void BrowseButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        var folderPicker = new FolderPicker();
+        folderPicker.SuggestedStartLocation = PickerLocationId.Desktop;
+        folderPicker.FileTypeFilter.Add("*");
 
+        var hwnd = WindowNative.GetWindowHandle(App.MainWindow);
+        InitializeWithWindow.Initialize(folderPicker, hwnd);
+
+        var folder = await folderPicker.PickSingleFolderAsync();
+        // folder must contain .sjf files. if it does not contain any, error and return
+        if (folder != null)
+        {
+            // Check for .sjf files in the selected folder
+            var files = Directory.EnumerateFiles(folder.Path, "*.sjf");
+            if (!files.Any())
+            {
+                Debug.WriteLine("❌ No .sjf files found in the selected folder.");
+                ContentDialog dialog = new ContentDialog
+                {
+                    Title = "No Job Files in Folder",
+                    Content = "The selected folder does not contain any .sjf files.",
+                    CloseButtonText = "OK",
+                    XamlRoot = this.Content.XamlRoot
+                };
+                await dialog.ShowAsync();
+                return;
+            }
+            PrintDirectoryInputTextBox.Text = folder.Path;
+            //await ViewModel.AddPrintToDatabaseAsync(folder.Path);
+        }
+        PopulatePageText();
     }
 }

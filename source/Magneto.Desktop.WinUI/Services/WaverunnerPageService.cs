@@ -50,7 +50,6 @@ public class WaverunnerPageService
 
     private bool _redPointerEnabled { get; set; }
 
-
     #region Enumerators
 
     /// <summary>
@@ -78,7 +77,7 @@ public class WaverunnerPageService
 
     #region UI Variables
 
-    public TextBox JobFileSearchDirectory { get; set; }
+    public TextBox JobDirectoryTextBox { get; set; }
 
     public TextBox JobFileNameTextBox { get; set; }
 
@@ -93,7 +92,7 @@ public class WaverunnerPageService
     public WaverunnerPageService(TextBox jobFileSearchDirectory, TextBox jobFileNameTextBox,
                                  Button toggleRedPointerButton, Button startMarkButton, TextBlock isMarkingText)
     {
-        this.JobFileSearchDirectory = jobFileSearchDirectory;
+        this.JobDirectoryTextBox = jobFileSearchDirectory;
         this.JobFileNameTextBox = jobFileNameTextBox;
         this.ToggleRedPointerButton = toggleRedPointerButton;
         this.StartMarkButton = startMarkButton;
@@ -102,7 +101,7 @@ public class WaverunnerPageService
         // Set default job directory
         _defaultJobDirectory = @"C:\Scanner Application\Scanner Software\jobfiles";  // "@" symbol means treat "\" as "\" (not a space)
         _jobDirectory = _defaultJobDirectory;
-        this.JobFileSearchDirectory.Text = _jobDirectory;
+        this.JobDirectoryTextBox.Text = _jobDirectory;
 
         // Set default job file
         _defaultJobName = "steel-3D-test-11-22-24.sjf";
@@ -117,7 +116,7 @@ public class WaverunnerPageService
     public WaverunnerPageService(TextBox jobFileSearchDirectory, TextBox jobFileNameTextBox,
                                  Button toggleRedPointerButton, Button startMarkButton)
     {
-        this.JobFileSearchDirectory = jobFileSearchDirectory;
+        this.JobDirectoryTextBox = jobFileSearchDirectory;
         this.JobFileNameTextBox = jobFileNameTextBox;
         this.ToggleRedPointerButton = toggleRedPointerButton;
         this.StartMarkButton = startMarkButton;
@@ -126,7 +125,7 @@ public class WaverunnerPageService
         // Set default job directory
         _defaultJobDirectory = @"C:\Scanner Application\Scanner Software\jobfiles";
         _jobDirectory = _defaultJobDirectory;
-        this.JobFileSearchDirectory.Text = _jobDirectory;
+        this.JobDirectoryTextBox.Text = _jobDirectory;
 
         // Set default job file
         _defaultJobName = "center_crosshair_OAT.sjf";
@@ -138,15 +137,39 @@ public class WaverunnerPageService
         _redPointerEnabled = false;
     }
 
+    public WaverunnerPageService(TextBox printDirectoryTextBox, Button startMarkButton)
+    {
+        //this.JobFileSearchDirectory = jobFileSearchDirectory;
+        //this.JobFileNameTextBox = jobFileNameTextBox;
+        //this.ToggleRedPointerButton = toggleRedPointerButton;
+        this.StartMarkButton = startMarkButton;
+        //this.IsMarkingText = null;
+
+        // Set default job directory
+        _defaultJobDirectory = @"C:\Scanner Application\Scanner Software\jobfiles";
+        _jobDirectory = _defaultJobDirectory;
+        //this.JobDirectory.Text = _jobDirectory;
+
+        // Set default job file
+        //_defaultJobName = "center_crosshair_OAT.sjf";
+        //this.JobFileNameTextBox.Text = _defaultJobName;
+
+        // ASSUMPTION: Red pointer is off when application starts
+        // Have not found way to check red pointer status in SAMLight docs 
+        // Initialize red pointer to off
+        _redPointerEnabled = false;
+    }
+
     #region Setters
-
-
+    public void SetDirectory(string directory)
+    {
+        //JobDirectoryTextBox = directory;
+    }
     public void SetDefaultJobFileName(string defaultFileNameJob)
     {
         _defaultJobName = defaultFileNameJob;
         JobFileNameTextBox.Text = defaultFileNameJob;
     }
-
     #endregion
 
     #region Connectivity Test Methods
@@ -175,7 +198,6 @@ public class WaverunnerPageService
     }
 
     #endregion
-
 
     #region Helper Functions
 
@@ -241,13 +263,12 @@ public class WaverunnerPageService
 
     #endregion
 
-
     #region File Path Methods
 
     // TODO: put in a try/catch block in case update fails
     public ExecStatus UpdateDirectory()
     {
-        _jobDirectory = JobFileSearchDirectory.Text;
+        _jobDirectory = JobDirectoryTextBox.Text;
         StartMarkButton.IsEnabled = false;
         return ExecStatus.Success;
     }
@@ -277,7 +298,7 @@ public class WaverunnerPageService
         return ExecStatus.Success;
     }
 
-    public ExecStatus GetJob(XamlRoot xamlRoot)
+    public ExecStatus SetMarkJobInTestConfig(XamlRoot xamlRoot)
     {
         var fullFilePath = Path.Combine(_jobDirectory, JobFileNameTextBox.Text);
 
@@ -305,6 +326,32 @@ public class WaverunnerPageService
         }
     }
 
+    public string SetMarkJob(XamlRoot xamlRoot, string jobFileName)
+    {
+        var fullFilePath = Path.Combine(_jobDirectory, jobFileName);
+
+        if (ValidateJobPath(xamlRoot) == ExecStatus.Success)
+        {
+            var msg = $"Valid job path";
+            MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS);
+            // Enable toggle pointer and start mark buttons
+            _fullJobFilePath = fullFilePath;
+            // TODO: Add check to make sure wave runner is open & running ("say hi check")
+            // If it's not open, do not enable these buttons! Instead, display error pop up & log error
+            StartMarkButton.IsEnabled = true;
+            return fullFilePath;
+        }
+        else
+        {
+            var msg = $"File not found: {fullFilePath}";
+            MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
+            _ = PopupInfo.ShowContentDialog(xamlRoot, "Warning", msg);
+            // Make sure buttons are disabled; we can't mark what we can't find!
+            StartMarkButton.IsEnabled = false;
+            return "";
+        }
+    }
+
     public ExecStatus UseDefaultJob()
     {
         // Update job file name
@@ -324,7 +371,6 @@ public class WaverunnerPageService
     }
 
     #endregion
-
 
     #region Marking Methods
 
@@ -475,6 +521,56 @@ public class WaverunnerPageService
         }
     }
 
+    public async Task<ExecStatus> GetAndMarkEntityAsync(XamlRoot xamlRoot, string fileName)
+    {
+        // Get job to mark
+        var fullPath = SetMarkJob(xamlRoot, fileName);
+
+        // File exists, proceed with marking
+        var msg = $"Starting mark for file: {fullPath}";
+        MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        if (cci.ScIsRunning() == 0)
+        {
+            UpdateUIMarkStatusAndLogMessage("Cannot Mark; WaveRunner is closed.", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR, "SAMLight not found");
+            StartMarkButton.IsEnabled = false;
+            return ExecStatus.Failure;
+        }
+
+        UpdateUIMarkStatusAndLogMessage("Sending Objects!", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS); // Update UI with status
+
+        // load demo job file
+        cci.ScLoadJob(fullPath, 1, 1, 0);
+
+        msg = $"Loaded file at path: {fullPath} for marking...";
+
+        MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.WARN);
+
+        try
+        {
+            cci.ScMarkEntityByName("", 0); // 0 returns control to the user immediately; if you use 1, this becomes a blocking function
+            UpdateUIMarkStatusAndLogMessage("Marking!", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.WARN, "SAMLight is Marking...");
+
+            // Wait for marking to complete
+            while (cci.ScIsMarking() != 0)
+            {
+                await Task.Delay(100); // Use a delay to throttle the loop for checking marking status
+            }
+
+            cci.ScStopMarking();
+            UpdateUIMarkStatusAndLogMessage("Done Marking", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS, "SAMLight is done marking.");
+            StartMarkButton.IsEnabled = true; // Allow retrying
+
+            return ExecStatus.Success;
+        }
+        catch (System.Runtime.InteropServices.COMException comEx)
+        {
+            UpdateUIMarkStatusAndLogMessage($"COM Exception: {comEx.Message}", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
+            StartMarkButton.IsEnabled = true; // Allow retrying
+            return ExecStatus.Failure;
+        }
+    }
+
     /// <summary>
     /// If the ScMarkEntityByName function was called with WaitForMarkEnd set to 0, this function can be used for checking whether the actual marking process is already finished or not. 
     /// </summary>
@@ -517,7 +613,6 @@ public class WaverunnerPageService
     }
 
     #endregion
-
 
     #region Logging Methods
 
