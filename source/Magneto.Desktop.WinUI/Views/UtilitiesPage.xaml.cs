@@ -19,7 +19,7 @@ public sealed partial class UtilitiesPage : Page
     /// <summary>
     /// Store "global" mission control on this page
     /// </summary>
-    public MissionControl? MissionControl { get; set; }
+    public MissionControl? _missionControl { get; set; }
 
     /// <summary>
     /// Page view model
@@ -36,7 +36,9 @@ public sealed partial class UtilitiesPage : Page
     public UtilitiesPage()
     {
         ViewModel = App.GetService<UtilitiesViewModel>();
+        _missionControl = App.GetService<MissionControl>();
         InitializeComponent();
+        
     }
 
     #endregion
@@ -51,10 +53,10 @@ public sealed partial class UtilitiesPage : Page
     {
         // Get mission control (passed over when navigating from previous page)
         base.OnNavigatedTo(e);
-        MissionControl = (MissionControl)e.Parameter;
+        //_missionControl = (MissionControl)e.Parameter;
 
-        var msg = string.Format("UtilitiesPage::OnNavigatedTo -- {0}", MissionControl.FriendlyMessage);
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
+        //var msg = string.Format("UtilitiesPage::OnNavigatedTo -- {0}", MissionControl.FriendlyMessage);
+        //MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
     }
 
     /// <summary>
@@ -64,7 +66,7 @@ public sealed partial class UtilitiesPage : Page
     /// <param name="e"></param>
     private void NavigateToCleaningPage_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        Frame.Navigate(typeof(CleaningPage), MissionControl);
+        Frame.Navigate(typeof(CleaningPage), _missionControl);
     }
 
     /// <summary>
@@ -74,7 +76,7 @@ public sealed partial class UtilitiesPage : Page
     /// <param name="e"></param>
     private void NavigateToTestPrintPage_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        Frame.Navigate(typeof(TestPrintPage), MissionControl);
+        Frame.Navigate(typeof(TestPrintPage), _missionControl);
     }
 
     /// <summary>
@@ -84,7 +86,7 @@ public sealed partial class UtilitiesPage : Page
     /// <param name="e"></param>
     private void NavigateToTestWaveRunnerPage_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        Frame.Navigate(typeof(TestWaveRunner), MissionControl);
+        Frame.Navigate(typeof(TestWaveRunner), _missionControl);
     }
 
     /// <summary>
@@ -94,7 +96,7 @@ public sealed partial class UtilitiesPage : Page
     /// <param name="e"></param>
     private void NavigateToTestMotorsrPage_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        Frame.Navigate(typeof(TestMotorsPage), MissionControl);
+        Frame.Navigate(typeof(TestMotorsPage), _missionControl);
     }
 
     #endregion

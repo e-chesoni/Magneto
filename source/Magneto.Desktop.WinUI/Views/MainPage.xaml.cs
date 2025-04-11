@@ -51,7 +51,7 @@ public sealed partial class MainPage : Page
     /// <param name="e"></param>
     private void NavigateToPrintPage_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        Frame.Navigate(typeof(PrintPage), ViewModel.missionControl);
+        Frame.Navigate(typeof(PrintPage));
     }
 
     /// <summary>
@@ -61,7 +61,7 @@ public sealed partial class MainPage : Page
     /// <param name="e"></param>
     private void NavigateToMonitorPage_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        Frame.Navigate(typeof(MonitorPage), ViewModel.missionControl);
+        Frame.Navigate(typeof(MonitorPage));
     }
 
     /// <summary>
@@ -71,7 +71,7 @@ public sealed partial class MainPage : Page
     /// <param name="e"></param>
     private void NavigateToSettingsPage_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        Frame.Navigate(typeof(SettingsPage), ViewModel.missionControl);
+        Frame.Navigate(typeof(SettingsPage));
     }
 
     /// <summary>
@@ -81,7 +81,7 @@ public sealed partial class MainPage : Page
     /// <param name="e"></param>
     private void NavigateToPrintQueuePage_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        Frame.Navigate(typeof(PrintQueuePage), ViewModel.missionControl);
+        Frame.Navigate(typeof(PrintQueuePage));
     }
 
     /// <summary>
@@ -91,7 +91,7 @@ public sealed partial class MainPage : Page
     /// <param name="e"></param>
     private void NavigateToUtilitiesPage_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        Frame.Navigate(typeof(UtilitiesPage), ViewModel.missionControl);
+        Frame.Navigate(typeof(UtilitiesPage));
     }
 
     #endregion

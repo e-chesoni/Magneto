@@ -10,13 +10,14 @@ namespace Magneto.Desktop.WinUI.Views;
 
 public sealed partial class PrintingPage : Page
 {
-    public MissionControl? MissionControl { get; set; }
+    public MissionControl? _missionControl { get; set; }
     
     public PrintingViewModel ViewModel { get; }
 
     public PrintingPage()
     {
         ViewModel = App.GetService<PrintingViewModel>();
+        _missionControl = App.GetService<MissionControl>();
         InitializeComponent();
     }
 
@@ -24,9 +25,9 @@ public sealed partial class PrintingPage : Page
     {
         // Get mission control (passed over when navigating from previous page)
         base.OnNavigatedTo(e);
-        MissionControl = (MissionControl)e.Parameter;
+        //MissionControl = (MissionControl)e.Parameter;
 
-        var msg = string.Format("PrintingPage::OnNavigatedTo -- {0}", MissionControl.FriendlyMessage);
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
+        //var msg = string.Format("PrintingPage::OnNavigatedTo -- {0}", MissionControl.FriendlyMessage);
+        //MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
     }
 }

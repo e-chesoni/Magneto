@@ -15,7 +15,7 @@ public sealed partial class MonitorPage : Page
     /// <summary>
     /// Store "global" mission control on this page
     /// </summary>
-    public MissionControl? MissionControl { get; set; }
+    public MissionControl? _missionControl { get; set; }
 
     /// <summary>
     /// Page view model
@@ -32,6 +32,7 @@ public sealed partial class MonitorPage : Page
     public MonitorPage()
     {
         ViewModel = App.GetService<MonitorViewModel>();
+        _missionControl = App.GetService<MissionControl>();
         InitializeComponent();
     }
 
@@ -47,10 +48,6 @@ public sealed partial class MonitorPage : Page
     {
         // Get mission control (passed over when navigating from previous page)
         base.OnNavigatedTo(e);
-        MissionControl = (MissionControl)e.Parameter;
-
-        var msg = string.Format("MonitorPage::OnNavigatedTo -- {0}", MissionControl.FriendlyMessage);
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
     }
 
     #endregion
@@ -64,7 +61,7 @@ public sealed partial class MonitorPage : Page
     /// <param name="e"></param>
     private void NavigateToLaserPage_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        Frame.Navigate(typeof(LaserMonitorPage), MissionControl);
+        Frame.Navigate(typeof(LaserMonitorPage), _missionControl);
     }
 
     /// <summary>
@@ -74,7 +71,7 @@ public sealed partial class MonitorPage : Page
     /// <param name="e"></param>
     private void NavigateToArgonPage_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        Frame.Navigate(typeof(ArgonMonitorPage), MissionControl);
+        Frame.Navigate(typeof(ArgonMonitorPage), _missionControl);
     }
 
     /// <summary>
@@ -84,7 +81,7 @@ public sealed partial class MonitorPage : Page
     /// <param name="e"></param>
     private void NavigateToMaterialsPage_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        Frame.Navigate(typeof(MaterialsMonitorPage), MissionControl);
+        Frame.Navigate(typeof(MaterialsMonitorPage), _missionControl);
     }
 
     #endregion

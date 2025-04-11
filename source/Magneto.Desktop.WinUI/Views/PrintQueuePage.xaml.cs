@@ -10,13 +10,14 @@ namespace Magneto.Desktop.WinUI.Views;
 
 public sealed partial class PrintQueuePage : Page
 {
-    public MissionControl? MissionControl { get; set; }
+    public MissionControl? _missionControl { get; set; }
 
     public PrintQueueViewModel ViewModel { get; }
 
     public PrintQueuePage()
     {
         ViewModel = App.GetService<PrintQueueViewModel>();
+        _missionControl = App.GetService<MissionControl>();
         InitializeComponent();
     }
 
@@ -24,10 +25,6 @@ public sealed partial class PrintQueuePage : Page
     {
         // Get mission control (passed over when navigating from previous page)
         base.OnNavigatedTo(e);
-        MissionControl = (MissionControl)e.Parameter;
-
-        var msg = string.Format("PrintQueuePage::OnNavigatedTo -- {0}", MissionControl.FriendlyMessage);
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
     }
 
     private void OnViewStateChanged(object sender, ListDetailsViewState e)

@@ -114,9 +114,8 @@ public sealed partial class TestPrintPage : Page
 
     #endregion
 
-
+    private IMotorService _motorService;
     #region Page Services
-
     // TODO: make these singletons initialized in app.xaml.cs
     private MotorPageService _motorPageService;
     private WaverunnerPageService _waverunnerPageService;
@@ -235,13 +234,13 @@ public sealed partial class TestPrintPage : Page
     {
         ViewModel = App.GetService<TestPrintViewModel>();
         InitializeComponent();
-
         var msg = "Landed on Test Print Page";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
         MagnetoSerialConsole.LogAvailablePorts();
 
         // set up flags
         KILL_OPERATION = false;
+        //this.motorService = motorService;
     }
 
     #endregion
@@ -428,7 +427,9 @@ public sealed partial class TestPrintPage : Page
     private void StepBuildMotorUpButton_Click(object sender, RoutedEventArgs e)
     {
         MagnetoLogger.Log("step build up clicked", LogFactoryLogLevel.LogLevel.VERBOSE);
-        _motorPageService.HandleRelMove(_motorPageService.buildMotor, _motorPageService.GetBuildStepTextBox(), true, this.Content.XamlRoot);
+        //_motorPageService.HandleRelMove(_motorPageService.buildMotor, _motorPageService.GetBuildStepTextBox(), true, this.Content.XamlRoot);
+        // TOOD: USE MOTOR SERVICE
+        ViewModel.StepBuildMotor(BuildMotorStepTextBox.Text, true); // WORKING!
     }
 
     private void StepBuildMotorDownButton_Click(object sender, RoutedEventArgs e)

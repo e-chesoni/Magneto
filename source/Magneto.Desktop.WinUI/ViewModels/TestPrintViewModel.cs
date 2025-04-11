@@ -9,6 +9,7 @@ using Magneto.Desktop.WinUI.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Services;
 using Magneto.Desktop.WinUI.Services;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Magneto.Desktop.WinUI.ViewModels;
 
@@ -18,6 +19,7 @@ public class TestPrintViewModel : ObservableRecipient
     private readonly IPrintService _printService;
     private readonly ISliceService _sliceService;
     private readonly IPrintSeeder _seeder;
+    private readonly IMotorService _motorService;
     private readonly IWaverunnerService _waverunnerService;
     // TODO: Add motor service
     #endregion
@@ -28,11 +30,13 @@ public class TestPrintViewModel : ObservableRecipient
     public SliceModel? currentSlice = new();
     #endregion
 
-    public TestPrintViewModel(IPrintSeeder seeder, IPrintService printService, ISliceService sliceService, IWaverunnerService waverunnerService)
+    public TestPrintViewModel(IPrintSeeder seeder, IPrintService printService, ISliceService sliceService, IMotorService motorService, IWaverunnerService waverunnerService)
     {
         _printService = printService;
         _sliceService = sliceService;
         _seeder = seeder;
+        _motorService = motorService;
+        _motorService.HandleStartUp();
         _waverunnerService = waverunnerService;
     }
     /*
@@ -71,6 +75,22 @@ public class TestPrintViewModel : ObservableRecipient
     public void TestWaverunnerConnection()
     {
         _waverunnerService.TestConnection();
+    }
+
+    public void StepBuildMotor(string distanceString, bool moveUp)
+    {
+        double distance;
+        if (double.TryParse(distanceString, out distance))
+        {
+            // ✅ Parsed successfully,
+            _motorService.MoveMotorRel(_motorService.GetBuildMotor(), distance, moveUp);
+        }
+        else
+        {
+            // ❌ Handle the case where parsing failed (e.g., show error or use default)
+            Debug.WriteLine("❌Could not parse distance.");
+        }
+
     }
 
     #region Setters

@@ -60,7 +60,7 @@ public class MainViewModel : ObservableRecipient, INavigationAware
     /// <summary>
     /// build manager
     /// </summary>
-    private static ActuationManager? _actuationManager;
+    private static ActuationManager? _actuationManagerOld;
 
 
     /// <summary>
@@ -105,6 +105,7 @@ public class MainViewModel : ObservableRecipient, INavigationAware
         _initialPageLoaded = true;
     }
 
+    /*
     private void InitializeMagnetoComponents()
     {
         // Initialize Motor configs
@@ -151,12 +152,12 @@ public class MainViewModel : ObservableRecipient, INavigationAware
         _laserController = new();
 
         // Set build manager
-        _actuationManager = new ActuationManager(_buildController, _sweepController, _laserController);
+        _actuationManagerOld = new ActuationManager(_buildController, _sweepController, _laserController);
 
         // Set mission control
-        missionControl = new MissionControl(_actuationManager);
+        missionControl = new MissionControl(_actuationManagerOld);
     }
-
+    */
 
     public ICommand ItemClickCommand
     {
@@ -164,7 +165,7 @@ public class MainViewModel : ObservableRecipient, INavigationAware
     }
 
     public ObservableCollection<SampleOrder> Source { get; } = new ObservableCollection<SampleOrder>();
-
+    /*
     public MainViewModel(INavigationService navigationService, ISampleDataService sampleDataService, ISamplePrintService samplePrintService)
     {
         _navigationService = navigationService;
@@ -178,6 +179,28 @@ public class MainViewModel : ObservableRecipient, INavigationAware
         }
         
         ItemClickCommand = new RelayCommand<SampleOrder>(OnItemClick);
+    }
+    */
+    private readonly ActuationManager _actuationManager;
+    private readonly MissionControl _missionControl;
+
+    public MainViewModel(
+        INavigationService navigationService,
+        ISampleDataService sampleDataService,
+        ISamplePrintService samplePrintService,
+        ActuationManager actuationManager,
+        MissionControl missionControl)
+    {
+        _navigationService = navigationService;
+        _sampleDataService = sampleDataService;
+        _samplePrintService = samplePrintService;
+
+        _actuationManager = actuationManager;
+        _missionControl = missionControl;
+
+        ItemClickCommand = new RelayCommand<SampleOrder>(OnItemClick);
+        InitializeMagnetoPorts();
+
     }
 
     public async void OnNavigatedTo(object parameter)

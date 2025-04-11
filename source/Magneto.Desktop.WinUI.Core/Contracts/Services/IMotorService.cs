@@ -9,6 +9,8 @@ using Magneto.Desktop.WinUI.Core.Models.Print;
 namespace Magneto.Desktop.WinUI.Core.Contracts.Services;
 public interface IMotorService
 {
+    void HandleStartUp();
+    StepperMotor GetBuildMotor();
     void ConfigurePortEventHandlers();
     void InitMotors();
     void HandleMotorInit(string motorName, StepperMotor motor, out StepperMotor motorField);

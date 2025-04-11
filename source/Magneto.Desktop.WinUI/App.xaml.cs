@@ -23,6 +23,10 @@ using Magneto.Desktop.WinUI.Core.Services.Database.Seeders;
 using MongoDB.Driver;
 using Magneto.Desktop.WinUI.Core.Services.Database;
 using Magneto.Desktop.WinUI.Core.Models.Print;
+using Magneto.Desktop.WinUI.Core.Models.Controllers;
+using Magneto.Desktop.WinUI.Core.Contracts.Services.Controllers;
+using Magneto.Desktop.WinUI.Core.Factories;
+using Magneto.Desktop.WinUI.Core.Models;
 
 namespace Magneto.Desktop.WinUI;
 
@@ -81,9 +85,27 @@ public partial class App : Application
             services.AddSingleton<ISampleDataService, SampleDataService>();
             services.AddSingleton<ISamplePrintService, SamplePrintService>();
             services.AddSingleton<IFileService, FileService>();
-            services.AddSingleton<ActuationManager, ActuationManager>();
+            services.AddSingleton<IMotorController, MotorController>();
+            services.AddSingleton<ActuationManager>(provider =>
+            {
+                var buildController = MotorFactory.CreateBuildController();
+                var sweepController = MotorFactory.CreateSweepController();
+                var laserController = new LaserController();
+
+                return new ActuationManager(buildController, sweepController, laserController);
+            });
+            services.AddSingleton<MissionControl>(provider =>
+            {
+                var actuationManager = provider.GetRequiredService<ActuationManager>();
+                return new MissionControl(actuationManager);
+            });
+
+
+
+
             // Peripheral Services
             services.AddSingleton<IWaverunnerService, WaverunerServiceTEST>();
+            services.AddSingleton<IMotorService, MotorService>();
 
             // MongoDb Services
             services.AddSingleton<IMongoClient>(_ => new MongoClient("mongodb://localhost:27017"));

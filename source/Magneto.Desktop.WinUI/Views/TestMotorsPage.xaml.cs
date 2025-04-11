@@ -90,7 +90,7 @@ namespace Magneto.Desktop.WinUI
         }
 
         #region Initialization Methods
-
+        /*
         private void InitMotorPageService()
         {
             _calibrateMotorUIControlGroup = new MotorUIControlGroup(SelectBuildMotorButton, SelectPowderMotorButton, SelectSweepMotorButton,
@@ -99,7 +99,7 @@ namespace Magneto.Desktop.WinUI
                                                                                               BuildAbsMoveTextBox, PowderAbsMoveTextBox, SweepAbsMoveTextBox);
             _motorPageService = new MotorPageService(MissionControl.GetActuationManger(), _calibrateMotorUIControlGroup);
         }
-
+        */
         /// <summary>
         /// Handle page startup tasks
         /// </summary>
@@ -113,7 +113,7 @@ namespace Magneto.Desktop.WinUI
             MissionControl = (MissionControl)e.Parameter;
 
             // Initialize motor page service
-            InitMotorPageService(); // Must go after MissionControl initialization
+            //InitMotorPageService(); // Must go after MissionControl initialization
 
             var msg = string.Format("TestPrintPage::OnNavigatedTo -- {0}", MissionControl.FriendlyMessage);
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);

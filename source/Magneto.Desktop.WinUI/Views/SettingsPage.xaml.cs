@@ -15,7 +15,7 @@ public sealed partial class SettingsPage : Page
     /// <summary>
     /// Store "global" mission control on this page
     /// </summary>
-    public MissionControl? MissionControl { get; set; }
+    public MissionControl? _missionControl { get; set; }
 
     /// <summary>
     /// Page view model
@@ -32,6 +32,7 @@ public sealed partial class SettingsPage : Page
     public SettingsPage()
     {
         ViewModel = App.GetService<SettingsViewModel>();
+        _missionControl = App.GetService<MissionControl>();
         InitializeComponent();
     }
 
@@ -47,10 +48,6 @@ public sealed partial class SettingsPage : Page
     {
         // Get mission control (passed over when navigating from previous page)
         base.OnNavigatedTo(e);
-        MissionControl = (MissionControl)e.Parameter;
-
-        var msg = string.Format("SettingsPage::OnNavigatedTo -- {0}", MissionControl.FriendlyMessage);
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
     }
 
     #endregion

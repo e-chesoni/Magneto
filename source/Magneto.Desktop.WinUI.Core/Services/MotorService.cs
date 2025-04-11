@@ -17,11 +17,31 @@ public class MotorService : IMotorService
     private StepperMotor? powderMotor;
     private StepperMotor? sweepMotor;
     //private double maxSweepPosition;
+    /// <summary>
+    /// Initializes the dictionary mapping motor names to their corresponding StepperMotor objects.
+    /// This map facilitates the retrieval of motor objects based on their names.
+    /// </summary>
+    private Dictionary<string, StepperMotor?>? _motorTextMap;
     public MotorService(ActuationManager am)
     {
         _actuationManager = am;
+        HandleStartUp();
     }
 
+    public StepperMotor GetBuildMotor()
+    {
+        return buildMotor;
+    }
+
+    public void HandleStartUp()
+    {
+        ConfigurePortEventHandlers();
+        // Initialize motor set up for test page
+        InitMotors();
+        // Initialize motor map to simplify coordinated calls below
+        // Make sure this happens AFTER motor setup
+        InitializeMotorMap();
+    }
     public void ConfigurePortEventHandlers()
     {
         var msg = "Requesting port access for motor service.";
@@ -98,7 +118,15 @@ public class MotorService : IMotorService
     }
 
     public Task<int> HomeMotor(StepperMotor motor) => throw new NotImplementedException();
-    public void InitializeMotorMap() => throw new NotImplementedException();
+    public void InitializeMotorMap()
+    {
+        _motorTextMap = new Dictionary<string, StepperMotor?>
+            {
+                { "build", buildMotor },
+                { "powder", powderMotor },
+                { "sweep", sweepMotor }
+            };
+    }
     public async Task<int> LayerMove(double layerThickness, double supplyAmplifier)
     {
         //var powderAmplifier = 2.5; // Quan requested we change this from 4-2.5 to conserve powder

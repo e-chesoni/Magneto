@@ -37,6 +37,7 @@ public class MotorPageService
     /// </summary>
     private Dictionary<string, StepperMotor?>? _motorTextMap;
 
+    /*
     public MotorPageService(ActuationManager am,
                             MotorUIControlGroup calibrateCtlGrp)
     {
@@ -52,29 +53,13 @@ public class MotorPageService
 
         printUiControlGroupHelper = new PrintUIControlGroupHelper(calibrateCtlGrp);
     }
-
-    public MotorPageService(ActuationManager am,
-                            MotorUIControlGroup calibrateCtlGrp,
-                            MotorUIControlGroup inPrintCtlGrp)
-    {
-        // Set up event handers to communicate with motor controller ports
-        ConfigurePortEventHandlers();
-
-        // Initialize motor set up for test page
-        InitMotors(am);
-
-        // Initialize motor map to simplify coordinated calls below
-        // Make sure this happens AFTER motor setup
-        InitializeMotorMap();
-
-        printUiControlGroupHelper = new PrintUIControlGroupHelper(calibrateCtlGrp, inPrintCtlGrp);
-    }
-
+    */
     public MotorPageService(ActuationManager am, PrintUIControlGroupHelper printCtlGrpHelper)
     {
+        //_motorService.ConfigurePortEventHandlers();
         // Set up event handers to communicate with motor controller ports
         ConfigurePortEventHandlers();
-
+        
         // Initialize motor set up for test page
         InitMotors(am);
 

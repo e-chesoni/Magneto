@@ -23,7 +23,7 @@ public sealed partial class PrintPage : Page
     /// <summary>
     /// Store "global" mission control on this page
     /// </summary>
-    public MissionControl? MissionControl { get; set; }
+    public MissionControl? _missionControl { get; set; }
 
     /// <summary>
     /// Page view model
@@ -43,6 +43,7 @@ public sealed partial class PrintPage : Page
     public PrintPage()
     {
         ViewModel = App.GetService<PrintViewModel>();
+        _missionControl = App.GetService<MissionControl>();
         InitializeComponent(); // This is fine...not sure why there are red lines sometimes
 
         var msg = "";
@@ -84,8 +85,8 @@ public sealed partial class PrintPage : Page
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
-        MissionControl = (MissionControl)e.Parameter; // get parameter
-        MagnetoLogger.Log(MissionControl.FriendlyMessage, LogFactoryLogLevel.LogLevel.DEBUG);
+        //MissionControl = (MissionControl)e.Parameter; // get parameter
+        //MagnetoLogger.Log(MissionControl.FriendlyMessage, LogFactoryLogLevel.LogLevel.DEBUG);
     }
 
     private void FindPrint_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -103,22 +104,22 @@ public sealed partial class PrintPage : Page
             SelectedPrint.Text = path_to_image;
 
             // Put a new image on the build manager
-            MissionControl.CreateArtifactModel(path_to_image);
+            _missionControl.CreateArtifactModel(path_to_image);
 
             // TODO: Toast Message: Using default thickness of {} get from config
             msg = "Setting every print layer's thickness to default thickness from MagnetoConfig";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
-            MissionControl.SetArtifactThickness(MissionControl.GetDefaultArtifactThickness());
+            _missionControl.SetArtifactThickness(_missionControl.GetDefaultArtifactThickness());
 
             // Slice image
-            MissionControl.SliceArtifact(); // TODO: IMAGE HANDLER references Magneto Config to control slice number: SliceArtifact calls SliceArtifact in build controller which calls ImageHandler
+            _missionControl.SliceArtifact(); // TODO: IMAGE HANDLER references Magneto Config to control slice number: SliceArtifact calls SliceArtifact in build controller which calls ImageHandler
             StartPrintButton.IsEnabled = true;
 
             // Enable go to start button
             GoToStartingPositionButton.IsEnabled = true;
 
             // TODO: MOVE ME -- Populate after successful calibration
-            PrintHeightTextBlock.Text = MissionControl.GetCurrentPrintHeight().ToString();
+            PrintHeightTextBlock.Text = _missionControl.GetCurrentPrintHeight().ToString();
         }
         else
         {
@@ -137,26 +138,26 @@ public sealed partial class PrintPage : Page
         // Calls build manager in method to handle print
         // Build manager should have an image at this point!
         // TODO: Clear images from build manager after print (in done and cancel states)
-        MissionControl.StartPrint();
+        _missionControl.StartPrint();
     }
 
     private void HomeMotors_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        MissionControl.HomeMotors();
+        _missionControl.HomeMotors();
     }
 
     private void IncrementThickness_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        var newThickness = MissionControl.GetDefaultArtifactThickness();
+        var newThickness = _missionControl.GetDefaultArtifactThickness();
         newThickness += 1;
-        MissionControl.SetArtifactThickness(newThickness);
+        _missionControl.SetArtifactThickness(newThickness);
     }
 
     private void DecrementThickness_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        var newThickness = MissionControl.GetDefaultArtifactThickness();
+        var newThickness = _missionControl.GetDefaultArtifactThickness();
         newThickness -= 1;
-        MissionControl.SetArtifactThickness(newThickness);
+        _missionControl.SetArtifactThickness(newThickness);
     }
 
     private void GoToStartingPositionButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -171,16 +172,16 @@ public sealed partial class PrintPage : Page
 
     private void CalibrateMotorsButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        _ = PopupInteractiveHelper.ShowContentDialog(this.Content.XamlRoot, MissionControl, "Calibrate Motors", "Calibrate Motors Description");
+        _ = PopupInteractiveHelper.ShowContentDialog(this.Content.XamlRoot, _missionControl, "Calibrate Motors", "Calibrate Motors Description");
     }
 
     #endregion
 
     private void HomeBuildMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        if (MissionControl != null)
+        if (_missionControl != null)
         {
-            var bm = MissionControl.GetActuationManger();
+            var bm = _missionControl.GetActuationManger();
             var build_axis = bm.buildController.GetBuildMotor().GetAxis();
             bm.AddCommand(Core.Models.Print.ActuationManager.ControllerType.BUILD, build_axis, Core.Models.Print.ActuationManager.CommandType.AbsoluteMove, 0);
         }
@@ -195,9 +196,9 @@ public sealed partial class PrintPage : Page
 
     private void HomePowderMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        if (MissionControl != null)
+        if (_missionControl != null)
         {
-            var bm = MissionControl.GetActuationManger();
+            var bm = _missionControl.GetActuationManger();
             var powder_axis = bm.buildController.GetPowderMotor().GetAxis();
             bm.AddCommand(Core.Models.Print.ActuationManager.ControllerType.BUILD, powder_axis, Core.Models.Print.ActuationManager.CommandType.AbsoluteMove, 0);
         }
@@ -213,9 +214,9 @@ public sealed partial class PrintPage : Page
     private void CancelPrintButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
         var msg = "";
-        if (MissionControl != null)
+        if (_missionControl != null)
         {
-            var bm = MissionControl.GetActuationManger();
+            var bm = _missionControl.GetActuationManger();
             msg = $"Stopping print.";
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Print Canceled", msg);
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
