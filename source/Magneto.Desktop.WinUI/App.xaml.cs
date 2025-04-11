@@ -49,7 +49,6 @@ public partial class App : Application
         return service;
     }
 
-    //public static WindowEx MainWindow { get; } = new MainWindow();
     public static WindowEx MainWindow { get; private set; }
 
     public App()
@@ -97,12 +96,12 @@ public partial class App : Application
             var mongoDbSeeder = serviceProvider.GetRequiredService<IMongoDbSeeder>();
 
             // Seed or clear magnetoDb
-            //Task.Run(async () =>
-            //{
-            //    // WARNING: only run one of these
-            //    await mongoDbSeeder.ClearDatabaseAsync(true);
-            //    //await mongoDbSeeder.SeedDatabaseAsync();
-            //});
+            Task.Run(async () =>
+            {
+                // WARNING: only run one of these
+                await mongoDbSeeder.ClearDatabaseAsync(true);
+                //await mongoDbSeeder.SeedDatabaseAsync();
+            });
 
             // Views and ViewModels
             services.AddTransient<SettingsViewModel>();
@@ -159,16 +158,7 @@ public partial class App : Application
         // TODO: Log and handle exceptions as appropriate.
         // https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.application.unhandledexception.
     }
-    /*
-    protected async override void OnLaunched(LaunchActivatedEventArgs args)
-    {
-        base.OnLaunched(args);
 
-        App.GetService<IAppNotificationService>().Show(string.Format("AppNotificationSamplePayload".GetLocalized(), AppContext.BaseDirectory));
-
-        await App.GetService<IActivationService>().ActivateAsync(args);
-    }
-    */
     protected async override void OnLaunched(LaunchActivatedEventArgs args)
     {
         base.OnLaunched(args);

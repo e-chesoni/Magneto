@@ -221,16 +221,17 @@
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="2*"/>
+                        <RowDefinition Height="5"/>
+                        <RowDefinition Height="8*"/>
                         <RowDefinition Height="1*"/>
-                        <RowDefinition Height="10*"/>
-                        <RowDefinition Height="1*"/>
-                        <RowDefinition Height="6*"/>
+                        <RowDefinition Height="8*"/>
+                        <RowDefinition Height="5"/>
                     </Grid.RowDefinitions>
                     <Grid Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,10">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <!-- TextBox takes needed space -->
-                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="5"/>
                             <!-- Small spacer -->
                             <ColumnDefinition Width="Auto"/>
                             <!-- Browse button -->
@@ -257,9 +258,8 @@
                             <RowDefinition Height="1*"/>
                             <RowDefinition Height="1*"/>
                             <RowDefinition Height="1*"/>
-                            <RowDefinition Height="1*"/>
                         </Grid.RowDefinitions>
-                        <Grid Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,10">
+                        <Grid Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="10"/>
@@ -272,14 +272,14 @@
                             </Grid>
                             <Grid Grid.Column="2">
                                 <TextBox x:Name="CurrentSliceTextBox"
-                                         Width="350"
+                                         Width="200"
                                          VerticalAlignment="Center"
                                          HorizontalAlignment="Center"
                                          IsEnabled="False"/>
                             </Grid>
                         </Grid>
                         
-                        <Grid Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,10">
+                        <Grid Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="10"/>
@@ -304,7 +304,7 @@
                             </Grid>
                         </Grid>
                         
-                        <Grid Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,10">
+                        <Grid Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="10"/>
@@ -329,7 +329,7 @@
                             </Grid>
                         </Grid>
 
-                        <Grid Grid.Row="3" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,10">
+                        <Grid Grid.Row="3" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="10"/>
@@ -366,7 +366,7 @@
                             </Grid>
                         </Grid>
 
-                        <Grid Grid.Row="4" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,10">
+                        <Grid Grid.Row="4" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="10"/>
@@ -393,24 +393,113 @@
                         </Grid>
                         
                     </Grid>
+                    
+                    <Grid Grid.Row="3">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="1*"/>
+                        </Grid.ColumnDefinitions>
 
+                        <Grid Grid.Column="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="1*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0"
+                                       Text="Print Name: "
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Right"
+                                       Padding="10"/>
+                            <TextBlock/>
+                            <TextBlock Grid.Column="1"
+                                       x:Name="PrintNameTextBlock"
+                                       Text="Directory"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Left"/>
+                        </Grid>
+
+                        <Grid Grid.Column="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="1*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0"
+                                       Text="Status: "
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Right"
+                                       Padding="10"/>
+                            <TextBlock/>
+                            <TextBlock Grid.Column="1"
+                                       x:Name="StatusTextBlock"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Left"/>
+                        </Grid>
+
+                        <Grid Grid.Column="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="1*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0"
+                                       Text="Duration: "
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Right"
+                                       Padding="10"/>
+                            <TextBlock/>
+                            <TextBlock Grid.Column="1"
+                                       x:Name="DurationTextBlock"
+                                       VerticalAlignment="Center"
+                                        HorizontalAlignment="Left"/>
+                        </Grid>
+                        <StackPanel Grid.Column="3"
+                                    Orientation="Horizontal"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Margin="10,0">
+                            <!-- Padding: L, T, R, B-->
+                            <TextBlock Text="Marked:" 
+                                       VerticalAlignment="Center"
+                                       Padding="2,0"/>
+                            <TextBlock x:Name="SlicesMarkedTextBlock" 
+                                       VerticalAlignment="Center"
+                                       />
+                            <TextBlock Text="/" 
+                                       VerticalAlignment="Center"/>
+                            <TextBlock x:Name="TotalSlicesTextBlock" 
+                                       VerticalAlignment="Center"
+                                       Padding="0,0,2,0"/>
+                            <TextBlock Text="slices" 
+                                       VerticalAlignment="Center"
+                                       Padding="2,0"/>
+                        </StackPanel>
+                    </Grid>
                     <Grid Grid.Row="4">
                         <controls:DataGrid
                              Grid.Row="1"
                              AutoGenerateColumns="False"
-                             GridLinesVisibility="Horizontal">
+                             GridLinesVisibility="Horizontal"
+                             ItemsSource="{x:Bind ViewModel.sliceCollection, Mode=OneWay}">
                             <controls:DataGrid.Resources>
                                 <SolidColorBrush x:Key="DataGridColumnHeaderBackgroundColor" Color="Transparent" />
                             </controls:DataGrid.Resources>
                             <controls:DataGrid.Columns>
-                                
+                                <controls:DataGridTextColumn Binding="{Binding id}" Header="Slice ID" />
+                                <controls:DataGridTextColumn Binding="{Binding filePath}" Header="Image Path" />
+                                <controls:DataGridTextColumn Binding="{Binding layer}" Header="Layer" />
+                                <controls:DataGridTextColumn Binding="{Binding layerThickness}" Header="Layer Thickness" />
+                                <controls:DataGridTextColumn Binding="{Binding power}" Header="Power" />
+                                <controls:DataGridTextColumn Binding="{Binding scanSpeed}" Header="Scan Speed" />
+                                <controls:DataGridTextColumn Binding="{Binding hatchSpacing}" Header="Hatch Spacing" />
+                                <controls:DataGridTextColumn Binding="{Binding energyDensity}" Header="Energy Density" />
+                                <controls:DataGridTextColumn Binding="{Binding marked}" Header="Marked?" />
+                                <controls:DataGridTextColumn Binding="{Binding markedAt}" Header="Marked At" />
                             </controls:DataGrid.Columns>
                         </controls:DataGrid>
                     </Grid>
 
                 </Grid>
-
-                
                 
             </Border>
             <Grid Grid.Row="4">

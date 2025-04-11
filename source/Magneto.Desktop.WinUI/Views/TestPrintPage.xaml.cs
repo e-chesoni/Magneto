@@ -878,7 +878,7 @@ public sealed partial class TestPrintPage : Page
         }
     }
 
-    private async void PrintLayersButton_Click(object sender, RoutedEventArgs e)
+    private async void MultiLayerMoveButton_Click(object sender, RoutedEventArgs e)
     {
         if (string.IsNullOrWhiteSpace(MultiLayerMoveInputTextBox.Text) || !int.TryParse(MultiLayerMoveInputTextBox.Text, out var layers))
         {
@@ -1317,9 +1317,9 @@ public sealed partial class TestPrintPage : Page
     }
 
     #endregion
+    #region Page Text Managers
     private async void PopulatePageText()
     {
-        /*
         var print = ViewModel.currentPrint;
         var slice = ViewModel.currentSlice;
         if (print != null)
@@ -1366,7 +1366,53 @@ public sealed partial class TestPrintPage : Page
             Debug.WriteLine("❌ Current print is null.");
             return;
         }
-        */
+    }
+    private void ClearPageText()
+    {
+        PrintDirectoryInputTextBox.Text = "";
+        PrintNameTextBlock.Text = "";
+        CurrentSliceTextBox.Text = "";
+        StatusTextBlock.Text = "";
+        DurationTextBlock.Text = "";
+        SlicesMarkedTextBlock.Text = "";
+        TotalSlicesTextBlock.Text = "";
+        ViewModel.ClearData();
+    }
+    #endregion
+
+    #region Button Methods
+    private async void GetSlices_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        await ViewModel.AddPrintToDatabaseAsync(PrintDirectoryInputTextBox.Text);
+        if (ViewModel.currentSlice != null)
+        {
+            if (ViewModel.currentSlice.filePath == null)
+            {
+                Debug.WriteLine("❌ImagePath is null.");
+                return;
+            }
+            PopulatePageText();
+        }
+    }
+    private async void PrintLayersButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        await ViewModel.MarkSliceAsync();
+        PopulatePageText();
+    }
+    private async void DeletePrintButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        if (ViewModel.currentPrint == null)
+        {
+            Debug.WriteLine("❌Current print is null");
+            return;
+        }
+        else
+        {
+            Debug.WriteLine("✅Deleting print.");
+            await ViewModel.DeleteCurrentPrintAsync();
+            Debug.WriteLine("✅Removing data from display.");
+            ClearPageText();
+        }
     }
     private async void BrowseButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
@@ -1397,8 +1443,9 @@ public sealed partial class TestPrintPage : Page
                 return;
             }
             PrintDirectoryInputTextBox.Text = folder.Path;
-            //await ViewModel.AddPrintToDatabaseAsync(folder.Path);
+            await ViewModel.AddPrintToDatabaseAsync(folder.Path);
         }
         PopulatePageText();
     }
+    #endregion
 }
