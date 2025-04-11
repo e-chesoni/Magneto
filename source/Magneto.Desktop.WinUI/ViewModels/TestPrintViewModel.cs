@@ -6,6 +6,9 @@ using Magneto.Desktop.WinUI.Core.Models.Print.Database;
 using Microsoft.UI.Xaml;
 using System.Diagnostics;
 using Magneto.Desktop.WinUI.Contracts.Services;
+using Magneto.Desktop.WinUI.Core.Contracts.Services;
+using Magneto.Desktop.WinUI.Core.Services;
+using Magneto.Desktop.WinUI.Services;
 
 namespace Magneto.Desktop.WinUI.ViewModels;
 
@@ -74,7 +77,7 @@ public class TestPrintViewModel : ObservableRecipient
     public async Task SetCurrentPrintAsync(string directoryPath)
     {
         currentPrint = await _printService.GetPrintByDirectory(directoryPath);
-        await UpdateSlicesHelper(); // ✅ await this now
+        await UpdateSliceDisplay(); // ✅ await this now
     }
     #endregion
 
@@ -124,15 +127,6 @@ public class TestPrintViewModel : ObservableRecipient
             return "";
         }
         return currentSlice.filePath;
-    }
-    #endregion
-
-    #region Helpers
-    private async Task UpdateSlicesHelper()
-    {
-        sliceCollection.Clear();
-        await LoadSliceDataAsync();
-        currentSlice = await GetNextSliceAsync();
     }
     #endregion
 
@@ -224,9 +218,18 @@ public class TestPrintViewModel : ObservableRecipient
     }
     #endregion
 
+    #region Helpers
+    private async Task UpdateSliceDisplay()
+    {
+        sliceCollection.Clear();
+        await LoadSliceDataAsync();
+        currentSlice = await GetNextSliceAsync();
+    }
+    #endregion
+
     #region Print Methods
     // TODO: in the future should we be able to pass a full slice to this method?
-    public async Task UpdateSliceCollectionAsync()
+    private async Task UpdateSliceCollectionAsync(double thickness, double power, double scanSpeed, double hatchSpacing)
     {
         if (currentSlice == null)
         {
@@ -240,17 +243,15 @@ public class TestPrintViewModel : ObservableRecipient
             return;
         }
         Debug.WriteLine($"✅ Marking slice {currentSlice.fileName}.");
+        currentSlice.layerThickness = thickness;
+        currentSlice.power = power;
+        currentSlice.scanSpeed = scanSpeed;
+        currentSlice.hatchSpacing = hatchSpacing;
         currentSlice.marked = true;
         await _sliceService.EditSlice(currentSlice);
     }
-
     // TODO: put layer movement logic here
-    public async Task NextLayer()
-    {
-        
-    }
-
-    public async Task MarkSliceAsync()
+    public async Task HandleMarkEntityAsync()
     {
         // Get entity to mark
         var entity = GetSliceFilePath();
@@ -263,11 +264,32 @@ public class TestPrintViewModel : ObservableRecipient
         // TODO: TEST
         // TODO: mark slice
         //await _waverunnerService.MarkEntityAsync(entity);
-        // TODO: update slice collection
-        await UpdateSliceCollectionAsync();
-        // TODO: update display
-        await UpdateSlicesHelper(); // this should update currentSlice
     }
+
+    public async Task PrintLayer(bool startWithMark, double thickness, double power, double scanSpeed, double hatchSpacing)
+    {
+        if (startWithMark)
+        {
+            // TODO: set waverunner mark parameters (not yet implemented)
+            // await _waverunnerService(power, scanSpeed, hatchSpacing);
+            // mark
+            await HandleMarkEntityAsync();
+            // wait for making to finish
+            while (_waverunnerService.GetMarkStatus() != 0) // wait until mark ends before proceeding
+            {
+                // wait
+                Task.Delay(100).Wait();
+            }
+            // layer move (TODO: get slice thickness)
+            //await _motorPageService.LayerMove(thickness);
+            //while (_motorPageService.MotorsRunning()) { await Task.Delay(100); }
+        }
+        // TODO: update slice collection
+        await UpdateSliceCollectionAsync(thickness, power, scanSpeed, hatchSpacing);
+        // TODO: update display
+        await UpdateSliceDisplay(); // this should update currentSlice
+    }
+
     #endregion
 
     #region Navigation

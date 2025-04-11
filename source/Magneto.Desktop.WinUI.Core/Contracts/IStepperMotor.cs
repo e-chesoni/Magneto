@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Magneto.Desktop.WinUI.Core.Contracts.Services.Motors;
+namespace Magneto.Desktop.WinUI.Core.Contracts;
 /// <summary>
 /// Interface for Magneto Motors
 /// </summary>

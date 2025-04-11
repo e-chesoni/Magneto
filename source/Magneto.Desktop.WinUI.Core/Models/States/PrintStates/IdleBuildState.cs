@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using System.Transactions;
 using Magneto.Desktop.WinUI.Core.Models.Print;
 using Magneto.Desktop.WinUI.Core.Models.Artifact;
-using Magneto.Desktop.WinUI.Core.Services;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.States;
 
 namespace Magneto.Desktop.WinUI.Core.Models.State.PrintStates;

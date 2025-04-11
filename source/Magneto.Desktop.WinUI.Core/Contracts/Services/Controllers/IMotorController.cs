@@ -14,7 +14,7 @@ public interface IMotorController : IController
 {
     // TODO: You can probably find a clever way to simplify this using unpacking, kwargs, or something...
 
-    public List<StepperMotor> GetMotorList();
+    public List<StepperMotor> GetMinions();
 
     /// <summary>
     /// Perform asynchronous motor movement

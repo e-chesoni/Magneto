@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Magneto.Desktop.WinUI.Contracts.Services;
-using Magneto.Desktop.WinUI.Core.Services;
+using Magneto.Desktop.WinUI.Core;
 using Magneto.Desktop.WinUI.Popups;
 using Microsoft.UI.Xaml;
 using SAMLIGHT_CLIENT_CTRL_EXLib;

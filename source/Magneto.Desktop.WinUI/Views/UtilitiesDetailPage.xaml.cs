@@ -1,9 +1,9 @@
 ﻿using CommunityToolkit.WinUI.UI.Animations;
 
 using Magneto.Desktop.WinUI.Contracts.Services;
+using Magneto.Desktop.WinUI.Core;
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Models;
-using Magneto.Desktop.WinUI.Core.Services;
 using Magneto.Desktop.WinUI.ViewModels;
 
 using Microsoft.UI.Xaml.Controls;

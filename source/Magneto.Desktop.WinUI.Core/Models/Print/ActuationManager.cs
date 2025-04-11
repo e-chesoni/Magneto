@@ -12,9 +12,9 @@ using Magneto.Desktop.WinUI.Core.Models.Artifact;
 using Magneto.Desktop.WinUI.Core.Models.Monitors;
 using Magneto.Desktop.WinUI.Core.Models.Motors;
 using Magneto.Desktop.WinUI.Core.Models.State.PrintStates;
-using Magneto.Desktop.WinUI.Core.Services;
 using static Magneto.Desktop.WinUI.Core.Models.Motors.StepperMotor;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.States;
+using Magneto.Desktop.WinUI.Core.Contracts;
 
 namespace Magneto.Desktop.WinUI.Core.Models.Print;
 
@@ -32,7 +32,6 @@ public class ActuationManager : ISubsciber, IStateMachine
     private double _currentPrintHeight { get; set; }
 
     #endregion
-
 
     #region Public Variables
 
@@ -138,7 +137,6 @@ public class ActuationManager : ISubsciber, IStateMachine
 
     #endregion
 
-
     #region Constructor
 
     /// <summary>
@@ -161,8 +159,8 @@ public class ActuationManager : ISubsciber, IStateMachine
         motorControllers.Add(buildController);
         motorControllers.Add(sweepController);
 
-        foreach(var m in buildController.GetMotorList()) { _motorList.Add(m); }
-        foreach (var n in sweepController.GetMotorList()) { _motorList.Add(n); }
+        foreach(var m in buildController.GetMinions()) { _motorList.Add(m); }
+        foreach (var n in sweepController.GetMinions()) { _motorList.Add(n); }
 
         // TODO: Move to config file
         // Set default sweep distance
@@ -236,7 +234,7 @@ public class ActuationManager : ISubsciber, IStateMachine
         foreach (var c in motorControllers)
         {
             // Add each motor on controller to temporary motor list (created above)
-            foreach (var m in c.GetMotorList()) { motors.Add(m); }
+            foreach (var m in c.GetMinions()) { motors.Add(m); }
         }
 
         // Find the stepper motor on the motor list that matches the given motorId
@@ -409,10 +407,10 @@ public class ActuationManager : ISubsciber, IStateMachine
             {
                 if (controller is IMotorController motorController)
                 {
-                    var motorList = motorController.GetMotorList();
+                    var motorList = motorController.GetMinions();
                     
                     // Get the motor matching the extrapolated axis (above) from the controller
-                    StepperMotor motor = controller.GetMotorList().FirstOrDefault(m => m.GetID() % 10 == axis);
+                    StepperMotor motor = controller.GetMinions().FirstOrDefault(m => m.GetID() % 10 == axis);
                     if (motor != null)
                     {
                         if (motorCommand.Contains("POS"))

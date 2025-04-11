@@ -2,7 +2,7 @@
 using static Magneto.Desktop.WinUI.Core.Contracts.Services.LogFactoryLogLevel;
 using static Magneto.Desktop.WinUI.Core.Contracts.Services.LogFactoryOutputLevel;
 
-namespace Magneto.Desktop.WinUI.Core.Services;
+namespace Magneto.Desktop.WinUI.Core;
 
 /// <summary>
 /// Logger for Magneto app

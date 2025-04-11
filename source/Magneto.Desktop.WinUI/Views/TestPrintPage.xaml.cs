@@ -3,13 +3,9 @@ using System.Reflection;
 using CommunityToolkit.WinUI.UI.Animations;
 using Magneto.Desktop.WinUI.Core;
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
-using Magneto.Desktop.WinUI.Core.Contracts.Services.Controllers;
-using Magneto.Desktop.WinUI.Core.Contracts.Services.Motors;
-using Magneto.Desktop.WinUI.Core.Helpers;
 using Magneto.Desktop.WinUI.Core.Models;
 using Magneto.Desktop.WinUI.Core.Models.Print;
 using Magneto.Desktop.WinUI.Core.Models.Motors;
-using Magneto.Desktop.WinUI.Core.Services;
 using Magneto.Desktop.WinUI.Helpers;
 using Magneto.Desktop.WinUI.Models.UIControl;
 using Magneto.Desktop.WinUI.Popups;
@@ -769,7 +765,7 @@ public sealed partial class TestPrintPage : Page
                     MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
                     //_ = _waverunnerPageService.MarkEntityAsync();
                     // TOOD: TEST
-                    await ViewModel.MarkSliceAsync();
+                    await ViewModel.HandleMarkEntityAsync();
                     while (_waverunnerPageService.GetMarkStatus() != 0) // wait until mark ends before proceeding
                     {
                         // wait
@@ -788,7 +784,9 @@ public sealed partial class TestPrintPage : Page
                     // order of layer move operations: home sweep, move powder up 2x, move build down, supply sweep
                     await _motorPageService.LayerMove(_currentLayerThickness); // _ = means don't wait; technically you can use that here because queuing makes sure operations happen in order, but send occurs instantly, but using await just to be sure
                     while (_motorPageService.MotorsRunning()) { await Task.Delay(100); } // TODO: Test! now awaiting task delay to make this non-blocking
-                } else { // layer move first (homes sweep first)
+                }
+                else 
+                { // layer move first (homes sweep first)
                     msg = "moving to next layer";
                     MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
@@ -1256,11 +1254,12 @@ public sealed partial class TestPrintPage : Page
     }
     private async void PrintLayersButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        await ViewModel.MarkSliceAsync();
+        await ViewModel.HandleMarkEntityAsync();
         PopulatePageText();
     }
     private async void DeletePrintButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
+        // TODO: add guards to ask user if they're sure they want to delete this print
         if (ViewModel.currentPrint == null)
         {
             Debug.WriteLine("❌Current print is null");

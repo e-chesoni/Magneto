@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 using System.IO.Ports;
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Microsoft.VisualBasic;
+
 //using Microsoft.Extensions.Logging.Console.Internal;
 
-namespace Magneto.Desktop.WinUI.Core.Services;
+namespace Magneto.Desktop.WinUI.Core;
 
 public static class MagnetoSerialConsole
 {
@@ -80,7 +81,7 @@ public static class MagnetoSerialConsole
         var msg = $"Initializing a new serial port: {portName}";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
 
-        SerialPort serialPort = new SerialPort();
+        var serialPort = new SerialPort();
 
         // Allow the user to set the appropriate properties.
         serialPort.PortName = SetPortName(portName);
@@ -171,7 +172,7 @@ public static class MagnetoSerialConsole
     {
         var msg = "";
         MagnetoLogger.Log("Initialized Ports:", LogFactoryLogLevel.LogLevel.DEBUG);
-        foreach (SerialPort s in _serialPorts)
+        foreach (var s in _serialPorts)
         {
             msg = $"   {s.PortName}";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
@@ -185,7 +186,7 @@ public static class MagnetoSerialConsole
     /// <returns></returns>
     private static string SetPortName(string portName)
     {
-        if (portName == "" || !(portName.ToLower()).StartsWith("com"))
+        if (portName == "" || !portName.ToLower().StartsWith("com"))
         {
             portName = _defaultPortName;
         }
@@ -324,7 +325,7 @@ public static class MagnetoSerialConsole
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
 
         // Find the port in ports list
-        SerialPort foundPort = _serialPorts.Find(port => port.PortName == portName);
+        var foundPort = _serialPorts.Find(port => port.PortName == portName);
 
         if (foundPort != null)
         {
@@ -366,7 +367,7 @@ public static class MagnetoSerialConsole
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
 
         // Find the port in ports list
-        SerialPort foundPort = _serialPorts.Find(port => port.PortName == portName);
+        var foundPort = _serialPorts.Find(port => port.PortName == portName);
         
         if (foundPort != null)
         {
@@ -396,7 +397,7 @@ public static class MagnetoSerialConsole
         var msg = "Closing all serial ports";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
 
-        foreach (SerialPort port in _serialPorts)
+        foreach (var port in _serialPorts)
         {
             // Try closing the serial port
             try { port.Close(); }
@@ -437,7 +438,7 @@ public static class MagnetoSerialConsole
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
 
         // Find the port in ports list
-        SerialPort foundPort = _serialPorts.Find(port => port.PortName == portName);
+        var foundPort = _serialPorts.Find(port => port.PortName == portName);
 
         if (foundPort != null)
         {
@@ -448,8 +449,8 @@ public static class MagnetoSerialConsole
             {
                 if (foundPort.BytesToRead <= 0)
                 {
-                    ASCIIEncoding encoding = new ASCIIEncoding();
-                    byte[] data = encoding.GetBytes(serial_msg);
+                    var encoding = new ASCIIEncoding();
+                    var data = encoding.GetBytes(serial_msg);
 
                     try
                     {
@@ -518,7 +519,7 @@ public static class MagnetoSerialConsole
         var buildPort = MagnetoConfig.GetMotorByName("build").COMPort;
 
         // Get com port 4
-        foreach (SerialPort port in GetAvailablePorts())
+        foreach (var port in GetAvailablePorts())
         {
             // Get default motor (build motor) to get port
             if (port.PortName.Equals(buildPort, StringComparison.OrdinalIgnoreCase))
@@ -532,8 +533,8 @@ public static class MagnetoSerialConsole
 
         if (readPort.IsOpen)
         {
-            int bytes = readPort.BytesToRead;
-            byte[] buffer = new byte[bytes];
+            var bytes = readPort.BytesToRead;
+            var buffer = new byte[bytes];
             if (readPort.BytesToWrite <= 0)
             {
                 while (readPort.BytesToRead > 0)
@@ -592,7 +593,7 @@ public static class MagnetoSerialConsole
         var sweepPort = MagnetoConfig.GetMotorByName("sweep").COMPort;
 
         // Get com port 7
-        foreach (SerialPort port in GetAvailablePorts())
+        foreach (var port in GetAvailablePorts())
         {
             // Get default motor (build motor) to get port
             if (port.PortName.Equals(sweepPort, StringComparison.OrdinalIgnoreCase))
@@ -606,8 +607,8 @@ public static class MagnetoSerialConsole
 
         if (readPort.IsOpen)
         {
-            int bytes = readPort.BytesToRead;
-            byte[] buffer = new byte[bytes];
+            var bytes = readPort.BytesToRead;
+            var buffer = new byte[bytes];
             if (readPort.BytesToWrite <= 0)
             {
                 while (readPort.BytesToRead > 0)

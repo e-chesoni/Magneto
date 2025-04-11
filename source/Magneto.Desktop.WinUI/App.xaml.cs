@@ -22,6 +22,7 @@ using Magneto.Desktop.WinUI.Core.Contracts.Services.Database;
 using Magneto.Desktop.WinUI.Core.Services.Database.Seeders;
 using MongoDB.Driver;
 using Magneto.Desktop.WinUI.Core.Services.Database;
+using Magneto.Desktop.WinUI.Core.Models.Print;
 
 namespace Magneto.Desktop.WinUI;
 
@@ -80,7 +81,7 @@ public partial class App : Application
             services.AddSingleton<ISampleDataService, SampleDataService>();
             services.AddSingleton<ISamplePrintService, SamplePrintService>();
             services.AddSingleton<IFileService, FileService>();
-
+            services.AddSingleton<ActuationManager, ActuationManager>();
             // Peripheral Services
             services.AddSingleton<IWaverunnerService, WaverunerServiceTEST>();
 

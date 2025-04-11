@@ -8,8 +8,8 @@ using Magneto.Desktop.WinUI.Core.Models.Print;
 using Magneto.Desktop.WinUI.Core.Models.Controllers;
 using Magneto.Desktop.WinUI.Core.Models.Artifact;
 using Magneto.Desktop.WinUI.Core.Models.Motors;
-using Magneto.Desktop.WinUI.Core.Services;
 using static Magneto.Desktop.WinUI.Core.Models.Motors.StepperMotor;
+using Magneto.Desktop.WinUI.Core.Contracts;
 
 namespace Magneto.Desktop.WinUI.Core.Models;
 public class MissionControl : IMediator, IPublisher, ISubsciber

@@ -1,10 +1,9 @@
 ﻿using Magneto.Desktop.WinUI.Core.Contracts.Services;
-using Magneto.Desktop.WinUI.Core.Contracts.Services.Motors;
-using Magneto.Desktop.WinUI.Core.Services;
 using Microsoft.VisualBasic;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
 using Newtonsoft.Json.Linq;
+using Magneto.Desktop.WinUI.Core.Contracts;
 
 namespace Magneto.Desktop.WinUI.Core.Models.Motors;
 

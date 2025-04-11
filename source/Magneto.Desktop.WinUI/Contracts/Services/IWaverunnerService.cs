@@ -7,11 +7,10 @@ using System.Threading.Tasks;
 namespace Magneto.Desktop.WinUI.Contracts.Services;
 public interface IWaverunnerService
 {
-    public void TestConnection();
-    public int StartRedPointer(string filePath);
-    public int StopRedPointer();
-    public Task<int> MarkEntityAsync(string filePath);
-    public int GetMarkStatus();
-    public int StopMark();
-
+    void TestConnection();
+    int StartRedPointer(string filePath);
+    int StopRedPointer();
+    Task<int> MarkEntityAsync(string filePath);
+    int GetMarkStatus();
+    int StopMark();
 }

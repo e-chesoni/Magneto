@@ -12,7 +12,6 @@ using Magneto.Desktop.WinUI.Core.Models;
 using Magneto.Desktop.WinUI.Core.Models.Print;
 using Magneto.Desktop.WinUI.Core.Models.Controllers;
 using Magneto.Desktop.WinUI.Core.Models.Motors;
-using Magneto.Desktop.WinUI.Core.Services;
 
 namespace Magneto.Desktop.WinUI.ViewModels;
 

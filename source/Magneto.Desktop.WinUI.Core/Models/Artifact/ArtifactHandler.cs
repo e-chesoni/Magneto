@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Magneto.Desktop.WinUI.Core.Services;
 
 namespace Magneto.Desktop.WinUI.Core.Models.Artifact;
 

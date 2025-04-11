@@ -13,12 +13,12 @@ using Microsoft.UI.Xaml.Navigation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using SAMLIGHT_CLIENT_CTRL_EXLib;
-using Magneto.Desktop.WinUI.Core.Services;
 using Magneto.Desktop.WinUI.Helpers;
 using ABI.System;
 using static System.Net.Mime.MediaTypeNames;
 using Microsoft.UI;
 using Magneto.Desktop.WinUI.Popups;
+using Magneto.Desktop.WinUI.Core;
 
 namespace Magneto.Desktop.WinUI.Services;
 public class WaverunnerPageService

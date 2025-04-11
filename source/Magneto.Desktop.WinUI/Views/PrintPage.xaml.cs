@@ -6,10 +6,8 @@ using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Models;
 using Magneto.Desktop.WinUI.Core.Models.Artifact;
 using Magneto.Desktop.WinUI.Core.Models.Motors;
-using Magneto.Desktop.WinUI.Core.Services;
 using Magneto.Desktop.WinUI.Popups;
 using Magneto.Desktop.WinUI.ViewModels;
-using Magneto.Desktop.WinUI.Core.Services;
 
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Magneto.Desktop.WinUI.Core.Contracts.Services;
+namespace Magneto.Desktop.WinUI.Core.Contracts;
 
 /// <summary>
 /// Interface for class that coordinates tasks across two or more classes

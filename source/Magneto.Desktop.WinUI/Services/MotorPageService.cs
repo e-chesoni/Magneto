@@ -9,7 +9,6 @@ using Microsoft.UI.Xaml.Controls;
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Models.Print;
 using Magneto.Desktop.WinUI.Core.Models.Motors;
-using Magneto.Desktop.WinUI.Core.Services;
 using static Magneto.Desktop.WinUI.Core.Models.Print.ActuationManager;
 using Microsoft.UI.Xaml.Controls;
 using Magneto.Desktop.WinUI.Helpers;
@@ -271,13 +270,10 @@ public class MotorPageService
         {
             // Convert distance to an absolute number to avoid confusing user
             var dist = Math.Abs(double.Parse(textBox.Text));
-
             // Update the text box with corrected distance
             textBox.Text = dist.ToString();
-
             // Check the direction we're moving
             dist = moveUp ? dist : -dist;
-
             if (_actuationManager != null)
             {
                 // Move motor
@@ -289,8 +285,6 @@ public class MotorPageService
                 MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
                 return 0;
             }
-            
-
             return 1;
         }
     }
@@ -299,9 +293,9 @@ public class MotorPageService
     /// Homes sweep motor (moves right to min position 0), moves powder motor up 2x layer height, moves build motor down by layer height, then sweeps material onto build plate
     /// (moves sweep motor left to max sweep position)
     /// </summary>
-    /// <param name="defaultLayerHeight"></param>
+    /// <param name="layerThickness"></param>
     /// <returns></returns>
-    public async Task<int> LayerMove(double defaultLayerHeight)
+    public async Task<int> LayerMove(double layerThickness)
     {
         var powderAmplifier = 2.5; // Quan requested we change this from 4-2.5 to conserve powder
         var lowerBuildForSweepDist = 2;
@@ -318,10 +312,10 @@ public class MotorPageService
             await _actuationManager.AddCommand(GetControllerTypeHelper(buildMotor.GetMotorName()), buildMotor.GetAxis(), CommandType.RelativeMove, lowerBuildForSweepDist);
 
             // move powder motor up by powder amp layer height (Prof. Tertuliano recommends powder motor moves 2-3x distance of build motor)
-            await _actuationManager.AddCommand(GetControllerTypeHelper(powderMotor.GetMotorName()), powderMotor.GetAxis(), CommandType.RelativeMove, (powderAmplifier * defaultLayerHeight));
+            await _actuationManager.AddCommand(GetControllerTypeHelper(powderMotor.GetMotorName()), powderMotor.GetAxis(), CommandType.RelativeMove, (powderAmplifier * layerThickness));
 
             // move build motor down by layer height
-            await _actuationManager.AddCommand(GetControllerTypeHelper(buildMotor.GetMotorName()), buildMotor.GetAxis(), CommandType.RelativeMove, -defaultLayerHeight);
+            await _actuationManager.AddCommand(GetControllerTypeHelper(buildMotor.GetMotorName()), buildMotor.GetAxis(), CommandType.RelativeMove, -layerThickness);
 
             // apply material to build plate
             await _actuationManager.AddCommand(GetControllerTypeHelper(sweepMotor.GetMotorName()), sweepMotor.GetAxis(), CommandType.AbsoluteMove, maxSweepPosition);
@@ -333,7 +327,6 @@ public class MotorPageService
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             return 0;
         }
-
         return 1;
     }
 
@@ -350,7 +343,7 @@ public class MotorPageService
         }
     }
 
-    public async Task<int> StopMotor(StepperMotor motor, TextBox textBox)
+    public async Task<int> StopSweepMotor(StepperMotor motor, TextBox textBox)
     {
         if (textBox == null || !double.TryParse(textBox.Text, out var value))
         {
@@ -633,7 +626,7 @@ public class MotorPageService
             // Select build motor button
             printUiControlGroupHelper.SelectMotor(motor);
 
-            res = await StopMotor(motor, textBox);
+            res = await StopSweepMotor(motor, textBox);
 
             // If operation is successful, update text box
             if (res == 1)

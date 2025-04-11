@@ -7,7 +7,6 @@ using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Models.Print;
 using Magneto.Desktop.WinUI.Core.Models.Motors;
 using Magneto.Desktop.WinUI.Core.Models;
-using Magneto.Desktop.WinUI.Core.Services;
 using Magneto.Desktop.WinUI.Core;
 using Magneto.Desktop.WinUI.Popups;
 using Magneto.Desktop.WinUI.Services;

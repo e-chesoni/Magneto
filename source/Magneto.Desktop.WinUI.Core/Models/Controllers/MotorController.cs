@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.Controllers;
 using Magneto.Desktop.WinUI.Core.Models.Motors;
-using Magneto.Desktop.WinUI.Core.Services;
 using static Magneto.Desktop.WinUI.Core.Models.Motors.StepperMotor;
 
 namespace Magneto.Desktop.WinUI.Core.Models.Controllers;
@@ -78,7 +77,7 @@ public class MotorController : IMotorController
         return _mcPort;
     }
 
-    public List<StepperMotor> GetMotorList()
+    public List<StepperMotor> GetMinions()
     {
         return _motorList;
     }

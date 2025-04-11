@@ -407,7 +407,8 @@
                                     Height="30" 
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
-                                    Margin="2"/>
+                                    Margin="2"
+                                    Click="DeletePrintButton_Click"/>
                             </Grid>
                         </Grid>
                         
