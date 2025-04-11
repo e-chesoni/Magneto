@@ -521,56 +521,6 @@ public class WaverunnerPageService
         }
     }
 
-    public async Task<ExecStatus> GetAndMarkEntityAsync(XamlRoot xamlRoot, string fileName)
-    {
-        // Get job to mark
-        var fullPath = SetMarkJob(xamlRoot, fileName);
-
-        // File exists, proceed with marking
-        var msg = $"Starting mark for file: {fullPath}";
-        MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
-
-        if (cci.ScIsRunning() == 0)
-        {
-            UpdateUIMarkStatusAndLogMessage("Cannot Mark; WaveRunner is closed.", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR, "SAMLight not found");
-            StartMarkButton.IsEnabled = false;
-            return ExecStatus.Failure;
-        }
-
-        UpdateUIMarkStatusAndLogMessage("Sending Objects!", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS); // Update UI with status
-
-        // load demo job file
-        cci.ScLoadJob(fullPath, 1, 1, 0);
-
-        msg = $"Loaded file at path: {fullPath} for marking...";
-
-        MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.WARN);
-
-        try
-        {
-            cci.ScMarkEntityByName("", 0); // 0 returns control to the user immediately; if you use 1, this becomes a blocking function
-            UpdateUIMarkStatusAndLogMessage("Marking!", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.WARN, "SAMLight is Marking...");
-
-            // Wait for marking to complete
-            while (cci.ScIsMarking() != 0)
-            {
-                await Task.Delay(100); // Use a delay to throttle the loop for checking marking status
-            }
-
-            cci.ScStopMarking();
-            UpdateUIMarkStatusAndLogMessage("Done Marking", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.SUCCESS, "SAMLight is done marking.");
-            StartMarkButton.IsEnabled = true; // Allow retrying
-
-            return ExecStatus.Success;
-        }
-        catch (System.Runtime.InteropServices.COMException comEx)
-        {
-            UpdateUIMarkStatusAndLogMessage($"COM Exception: {comEx.Message}", Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
-            StartMarkButton.IsEnabled = true; // Allow retrying
-            return ExecStatus.Failure;
-        }
-    }
-
     /// <summary>
     /// If the ScMarkEntityByName function was called with WaitForMarkEnd set to 0, this function can be used for checking whether the actual marking process is already finished or not. 
     /// </summary>

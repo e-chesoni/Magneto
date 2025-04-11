@@ -29,6 +29,7 @@ using static Magneto.Desktop.WinUI.Views.TestPrintPage;
 using System.Diagnostics;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
+using SAMLIGHT_CLIENT_CTRL_EXLib;
 
 namespace Magneto.Desktop.WinUI.Views;
 
@@ -38,40 +39,13 @@ namespace Magneto.Desktop.WinUI.Views;
 public sealed partial class TestPrintPage : Page
 {
     #region Motor Variables
-
     private StepperMotor? _powderMotor;
 
     private StepperMotor? _buildMotor;
 
     private StepperMotor? _sweepMotor;
 
-    private ActuationManager? _bm;
-
-    private bool _powderMotorSelected = false;
-
-    private bool _buildMotorSelected = false;
-
-    private bool _sweepMotorSelected = false;
-
-    private bool _movingMotorToTarget = false;
-
-    /// <summary>
-    /// Struct for motor details
-    /// </summary>
-    public struct MotorDetails
-    {
-        public string MotorName { get; }
-        public ControllerType ControllerType { get; }
-        public int MotorAxis { get; }
-
-        public MotorDetails(string motorName, ControllerType controllerType, int motorAxis)
-        {
-            MotorName = motorName;
-            ControllerType = controllerType;
-            MotorAxis = motorAxis;
-        }
-    }
-
+    private ActuationManager? _am;
     #endregion
 
 
@@ -224,7 +198,7 @@ public sealed partial class TestPrintPage : Page
         SetUpMotor("build", MissionControl.GetBuildMotor(), out _buildMotor);
         SetUpMotor("sweep", MissionControl.GetSweepMotor(), out _sweepMotor);
 
-        _bm = MissionControl.GetActuationManger();
+        _am = MissionControl.GetActuationManger();
 
         //GetMotorPositions(); // TOOD: Fix--all positions are 0 on page load even if they're not...
     }
@@ -408,7 +382,6 @@ public sealed partial class TestPrintPage : Page
 
     #endregion
 
-
     #region Calibration Panel Methods
 
     private void SelectBuildMotorButton_Click(object sender, RoutedEventArgs e)
@@ -515,9 +488,8 @@ public sealed partial class TestPrintPage : Page
 
     #endregion
 
-
     #region Settings Methods
-
+    /*
     private void UseDefaultJobButton_Click(object sender, RoutedEventArgs e)
     {
         _waverunnerPageService.UseDefaultJob();
@@ -558,7 +530,6 @@ public sealed partial class TestPrintPage : Page
     {
         _waverunnerPageService.StopMark();
     }
-    /*
     private bool ThicknessAndHeightTextBoxesValid(bool showPopup)
     {
         if (string.IsNullOrWhiteSpace(SetLayerThicknessTextBox.Text) || string.IsNullOrWhiteSpace(DesiredPrintHeightTextBox.Text))
@@ -608,7 +579,6 @@ public sealed partial class TestPrintPage : Page
     }
     */
     #endregion
-
 
     #region Print Summary Methods
     /*
@@ -726,22 +696,13 @@ public sealed partial class TestPrintPage : Page
     }
     */
     #endregion
+
     #region Print Layer Move Methods
-    private void MarkButton_Click(object sender, RoutedEventArgs e)
-    {
-        _ = _waverunnerPageService.MarkEntityAsync();
-
-        //_ = incrementLayersPrinted(); // TODO: TEST
-    }
-    //PrintLayersButton_Click
-
-
     private void StopButton_Click(object sender, RoutedEventArgs e)
     {
         //KillAll(); // TODO: TEST; does the same as below, but has not always worked in methods
         // stop mark
         _waverunnerPageService.StopMark();
-
         // stop motors
         _motorPageService.GetActuationManager().HandleStopRequest(_motorPageService.sweepMotor);
         _motorPageService.GetActuationManager().HandleStopRequest(_motorPageService.buildMotor);
@@ -759,111 +720,11 @@ public sealed partial class TestPrintPage : Page
     */
      #endregion
 
-    private readonly Queue<Func<Task>> _operationQueue= new Queue<Func<Task>>();
-    private bool _isProcessingQueue = false;
-
-    private async Task EnqueueOperation(Func<Task> operation)
-    {
-        _operationQueue.Enqueue(operation);
-
-        if (!_isProcessingQueue)
-        {
-            _isProcessingQueue = true;
-            await ProcessQueue();
-        }
-    }
-   
-    private async Task ProcessQueue()
-    {
-        while (_operationQueue.Count > 0)
-        {
-            var operation = _operationQueue.Dequeue();
-            try
-            {
-                await operation(); // execute the tasks. not sure if this will work
-            }
-            catch (Exception ex) 
-            {
-                MagnetoLogger.Log($"Error in operation: {ex.Message}", LogFactoryLogLevel.LogLevel.ERROR);
-            }
-        }
-        _isProcessingQueue = false;
-    }
-
-    private Queue<Command> printCommandQueue = new Queue<Command>();
-    private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-    private bool isCommandProcessing = false;
-
     public enum ControllerType
     {
         BUILD, // Corresponds to build motors
         SWEEP, // Corresponds to sweep motor
         LASER // Corresponds to Waverunner
-    }
-
-    public enum Command
-    {
-        LaserMark, // mark entity
-        LayerMove, // move 3 motors in coordinated dance
-        IncrLayer, // increment layer counter
-    }
-
-    public Task<double> AddCommand(Command cmd)
-    {
-        var msg = "Adding Command to Queue. Locking commandQueue";
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-
-        TaskCompletionSource<double> tcs = null;
-
-        lock (printCommandQueue)
-        {
-            printCommandQueue.Enqueue(cmd);
-            if (!isCommandProcessing)
-            {
-                isCommandProcessing = true;
-                Task.Run(() => ProcessCommands());
-            }
-        }
-
-        // Ensures a task is always returns even if the task is null:
-        // Return the Task from the TaskCompletionSource if it's not null; 
-        // otherwise, return a completed Task<double> with a result of 0.0.
-        return tcs?.Task ?? Task.FromResult(0.0);
-    }
-
-    private async Task ProcessCommands()
-    {
-        var msg = "Processing print command queue...";
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-
-        while (printCommandQueue.Count > 0)
-        {
-            Command command;
-            lock (printCommandQueue)
-            {
-                command = printCommandQueue.Dequeue();
-            }
-
-            msg = $"Executing {command} command.";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
-
-
-            switch (command)
-            {
-                case Command.LaserMark:
-                    WaitForMark();
-                    break;
-                case Command.LayerMove:
-                    await _motorPageService.LayerMove(_currentLayerThickness);
-                    break;
-                case Command.IncrLayer:
-                    //incrementLayersPrinted();
-                    break;
-                default:
-                    break;
-            }
-        }
-        isCommandProcessing = false;
     }
 
     private void WaitForMark()
@@ -880,6 +741,7 @@ public sealed partial class TestPrintPage : Page
 
     private async void MultiLayerMoveButton_Click(object sender, RoutedEventArgs e)
     {
+        var fullPath = "";
         if (string.IsNullOrWhiteSpace(MultiLayerMoveInputTextBox.Text) || !int.TryParse(MultiLayerMoveInputTextBox.Text, out var layers))
         {
             var msg = "MultiLayerMoveInputTextBox text is not a valid integer.";
@@ -905,8 +767,9 @@ public sealed partial class TestPrintPage : Page
                     // MARK
                     msg = $"marking layer {i} in multi-layer print";
                     MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-                    _ = _waverunnerPageService.MarkEntityAsync();
-                    //_ = _waverunnerPageService.MarkEntityAsync(this.Content.XamlRoot, currentSlice.fileName);
+                    //_ = _waverunnerPageService.MarkEntityAsync();
+                    // TOOD: TEST
+                    await ViewModel.MarkSliceAsync();
                     while (_waverunnerPageService.GetMarkStatus() != 0) // wait until mark ends before proceeding
                     {
                         // wait
@@ -914,8 +777,8 @@ public sealed partial class TestPrintPage : Page
                     }
                     
                     // INCREMENT LAYERS PRINTED
-                    msg = "incrementing layers printed...";
-                    MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+                    //msg = "incrementing layers printed...";
+                    //MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
                     //incrementLayersPrinted(); // TODO: Figure out how to increment in a timely manner; happening right away because this is an asynchronous method!
 
                     msg = "moving to next layer";
@@ -934,7 +797,6 @@ public sealed partial class TestPrintPage : Page
                     while (_motorPageService.MotorsRunning()) { await Task.Delay(100); }
 
                     // MARK
-                    
                     msg = $"marking layer {i} in multi-layer print";
                     MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
                     _ = _waverunnerPageService.MarkEntityAsync();
@@ -944,12 +806,10 @@ public sealed partial class TestPrintPage : Page
                     }
                     
                     // INCREMENT LAYERS PRINTED
-                    msg = "incrementing layers printed...";
-                    MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+                    //msg = "incrementing layers printed...";
+                    //MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
                     //incrementLayersPrinted();
                 }
-
-                
             }
             msg = "multi-layer move complete.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
@@ -1448,4 +1308,9 @@ public sealed partial class TestPrintPage : Page
         PopulatePageText();
     }
     #endregion
+
+    private void TEST_Click(object sender, RoutedEventArgs e)
+    {
+        ViewModel.TestWaverunnerConnection();
+    }
 }

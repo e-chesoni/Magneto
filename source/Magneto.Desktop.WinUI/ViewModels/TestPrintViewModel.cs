@@ -3,9 +3,9 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.Database.Seeders;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.Database;
 using Magneto.Desktop.WinUI.Core.Models.Print.Database;
-using Magneto.Desktop.WinUI.Core.Services;
 using Microsoft.UI.Xaml;
 using System.Diagnostics;
+using Magneto.Desktop.WinUI.Contracts.Services;
 
 namespace Magneto.Desktop.WinUI.ViewModels;
 
@@ -15,10 +15,8 @@ public class TestPrintViewModel : ObservableRecipient
     private readonly IPrintService _printService;
     private readonly ISliceService _sliceService;
     private readonly IPrintSeeder _seeder;
-    private string? _distanceText;
-    //private double? _distance;
-    private string? _positionText;
-    //private double? _position;
+    private readonly IWaverunnerService _waverunnerService;
+    // TODO: Add motor service
     #endregion
 
     #region Public Variables
@@ -27,13 +25,12 @@ public class TestPrintViewModel : ObservableRecipient
     public SliceModel? currentSlice = new();
     #endregion
 
-    public TestPrintViewModel(IPrintSeeder seeder, IPrintService printService, ISliceService sliceService)
+    public TestPrintViewModel(IPrintSeeder seeder, IPrintService printService, ISliceService sliceService, IWaverunnerService waverunnerService)
     {
-        // Set default distance to move motors
-        //SetDistance(10);
         _printService = printService;
         _sliceService = sliceService;
         _seeder = seeder;
+        _waverunnerService = waverunnerService;
     }
     /*
     public string DistanceText
@@ -67,6 +64,11 @@ public class TestPrintViewModel : ObservableRecipient
         //_distanceText = distance.ToString();
     }
     */
+
+    public void TestWaverunnerConnection()
+    {
+        _waverunnerService.TestConnection();
+    }
 
     #region Setters
     public async Task SetCurrentPrintAsync(string directoryPath)
@@ -113,6 +115,15 @@ public class TestPrintViewModel : ObservableRecipient
     public async Task<long> GetTotalSlicesAsync()
     {
         return await _printService.TotalSlicesCount(currentPrint.id);
+    }
+    public string GetSliceFilePath()
+    {
+        if (currentSlice == null)
+        {
+            Debug.WriteLine("❌Current slice is null.");
+            return "";
+        }
+        return currentSlice.filePath;
     }
     #endregion
 
@@ -214,7 +225,8 @@ public class TestPrintViewModel : ObservableRecipient
     #endregion
 
     #region Print Methods
-    public async Task MarkSliceAsync()
+    // TODO: in the future should we be able to pass a full slice to this method?
+    public async Task UpdateSliceCollectionAsync()
     {
         if (currentSlice == null)
         {
@@ -227,15 +239,37 @@ public class TestPrintViewModel : ObservableRecipient
             Debug.WriteLine("❌Slice already marked. Canceling operation");
             return;
         }
-
         Debug.WriteLine($"✅ Marking slice {currentSlice.fileName}.");
-
         currentSlice.marked = true;
         await _sliceService.EditSlice(currentSlice);
+    }
 
+    // TODO: put layer movement logic here
+    public async Task NextLayer()
+    {
+        
+    }
+
+    public async Task MarkSliceAsync()
+    {
+        // Get entity to mark
+        var entity = GetSliceFilePath();
+        if (string.IsNullOrEmpty(entity))
+        {
+            Debug.WriteLine("❌Slice full path is null.");
+            return;
+        }
+        Debug.WriteLine($"✅Marking slice at {entity}.");
+        // TODO: TEST
+        // TODO: mark slice
+        //await _waverunnerService.MarkEntityAsync(entity);
+        // TODO: update slice collection
+        await UpdateSliceCollectionAsync();
+        // TODO: update display
         await UpdateSlicesHelper(); // this should update currentSlice
     }
     #endregion
+
     #region Navigation
     public async void OnNavigatedTo(object parameter)
     {

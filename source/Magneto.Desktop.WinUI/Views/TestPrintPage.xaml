@@ -231,10 +231,13 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <!-- TextBox takes needed space -->
-                            <ColumnDefinition Width="5"/>
+                            <ColumnDefinition Width="10"/>
                             <!-- Small spacer -->
                             <ColumnDefinition Width="Auto"/>
                             <!-- Browse button -->
+                            <ColumnDefinition Width="10"/>
+                            <!-- Small spacer -->
+                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <TextBox Grid.Column="0" 
                                  x:Name="PrintDirectoryInputTextBox"
@@ -249,6 +252,12 @@
                                 Height="40"
                                 HorizontalAlignment="Center"
                                 Click="BrowseButton_Click"/>
+                        <Button Grid.Column="4"
+                                Content="TEST"
+                                Width="150"
+                                Height="40"
+                                HorizontalAlignment="Center"
+                                Click="TEST_Click"/>
                     </Grid>
 
                     <Grid Grid.Row="2">
@@ -371,6 +380,8 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="10"/>
                                 <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <Grid Grid.Column="0">
                                 <Button x:Name="StopMultiLayerMoveButton"
@@ -385,6 +396,14 @@
                             <Grid Grid.Column="2">
                                 <Button
                                     Content="Reset"
+                                    Height="30" 
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Margin="2"/>
+                            </Grid>
+                            <Grid Grid.Column="4">
+                                <Button
+                                    Content="Delete Print"
                                     Height="30" 
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"

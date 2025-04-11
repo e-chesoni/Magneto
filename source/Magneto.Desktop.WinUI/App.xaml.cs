@@ -81,10 +81,11 @@ public partial class App : Application
             services.AddSingleton<ISamplePrintService, SamplePrintService>();
             services.AddSingleton<IFileService, FileService>();
 
-            // Register MongoDb client
-            services.AddSingleton<IMongoClient>(_ => new MongoClient("mongodb://localhost:27017"));
+            // Peripheral Services
+            services.AddSingleton<IWaverunnerService, WaverunerServiceTEST>();
 
             // MongoDb Services
+            services.AddSingleton<IMongoClient>(_ => new MongoClient("mongodb://localhost:27017"));
             services.AddSingleton<IMongoDbService, MongoDbService>();
             services.AddSingleton<IPrintService, PrintService>();
             services.AddSingleton<ISliceService, SliceService>();
