@@ -428,14 +428,18 @@ public sealed partial class TestPrintPage : Page
     {
         MagnetoLogger.Log("step build up clicked", LogFactoryLogLevel.LogLevel.VERBOSE);
         //_motorPageService.HandleRelMove(_motorPageService.buildMotor, _motorPageService.GetBuildStepTextBox(), true, this.Content.XamlRoot);
-        // TOOD: USE MOTOR SERVICE
-        ViewModel.StepBuildMotor(BuildMotorStepTextBox.Text, true); // WORKING!
+        var directionIsUp = true;
+        ViewModel.StepBuildMotor(BuildMotorStepTextBox.Text, directionIsUp); // WORKING!
+        // TODO: update position text box after move
     }
 
     private void StepBuildMotorDownButton_Click(object sender, RoutedEventArgs e)
     {
         MagnetoLogger.Log("step build down clicked", LogFactoryLogLevel.LogLevel.VERBOSE);
-        _motorPageService.HandleRelMove(_motorPageService.buildMotor, _motorPageService.GetBuildStepTextBox(), false, this.Content.XamlRoot);
+        //_motorPageService.HandleRelMove(_motorPageService.buildMotor, _motorPageService.GetBuildStepTextBox(), false, this.Content.XamlRoot);
+        var directionIsUp = false;
+        ViewModel.StepBuildMotor(BuildMotorStepTextBox.Text, directionIsUp);
+        // TODO: update position text box after move
     }
 
     private void StepPowderMotorUpButton_Click(object sender, RoutedEventArgs e)
