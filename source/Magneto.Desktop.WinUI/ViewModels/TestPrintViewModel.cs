@@ -10,6 +10,7 @@ using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Services;
 using Magneto.Desktop.WinUI.Services;
 using Microsoft.UI.Xaml.Controls;
+using Magneto.Desktop.WinUI.Core.Models.Motors;
 
 namespace Magneto.Desktop.WinUI.ViewModels;
 
@@ -77,6 +78,12 @@ public class TestPrintViewModel : ObservableRecipient
         _waverunnerService.TestConnection();
     }
 
+    public async Task<double> GetBuildMotorPositionAsync()
+    {
+        return await _motorService.GetMotorPosition(_motorService.GetBuildMotor());
+    }
+
+
     public void StepBuildMotor(string distanceString, bool moveUp)
     {
         double distance;
@@ -90,7 +97,34 @@ public class TestPrintViewModel : ObservableRecipient
             // ❌ Handle the case where parsing failed (e.g., show error or use default)
             Debug.WriteLine("❌Could not parse distance.");
         }
-
+    }
+    public void StepPowderMotor(string distanceString, bool moveUp)
+    {
+        double distance;
+        if (double.TryParse(distanceString, out distance))
+        {
+            // ✅ Parsed successfully,
+            _motorService.MoveMotorRel(_motorService.GetPowderMotor(), distance, moveUp);
+        }
+        else
+        {
+            // ❌ Handle the case where parsing failed (e.g., show error or use default)
+            Debug.WriteLine("❌Could not parse distance.");
+        }
+    }
+    public void StepSweepMotor(string distanceString, bool moveUp)
+    {
+        double distance;
+        if (double.TryParse(distanceString, out distance))
+        {
+            // ✅ Parsed successfully,
+            _motorService.MoveMotorRel(_motorService.GetSweepMotor(), distance, moveUp);
+        }
+        else
+        {
+            // ❌ Handle the case where parsing failed (e.g., show error or use default)
+            Debug.WriteLine("❌Could not parse distance.");
+        }
     }
 
     #region Setters

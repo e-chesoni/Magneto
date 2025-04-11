@@ -32,6 +32,19 @@ public class MotorService : IMotorService
     {
         return buildMotor;
     }
+    public StepperMotor GetPowderMotor()
+    {
+        return powderMotor;
+    }
+    public StepperMotor GetSweepMotor()
+    {
+        return sweepMotor;
+    }
+
+    public async Task<double> GetMotorPosition(StepperMotor motor)
+    {
+        return await motor.GetPosAsync();
+    }
 
     public void HandleStartUp()
     {

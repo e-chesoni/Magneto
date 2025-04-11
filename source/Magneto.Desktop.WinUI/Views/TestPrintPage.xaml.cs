@@ -394,9 +394,12 @@ public sealed partial class TestPrintPage : Page
         _motorPageService.printUiControlGroupHelper.SelectMotor(_motorPageService.sweepMotor);
     }
 
-    private void GetBuildMotorCurrentPositionButton_Click(object sender, RoutedEventArgs e)
+    private async void GetBuildMotorCurrentPositionButton_Click(object sender, RoutedEventArgs e)
     {
         _motorPageService.HandleGetPosition(_motorPageService.buildMotor, _motorPageService.GetBuildPositionTextBox());
+        // TODO: Finish moving to view model
+        var pos = await ViewModel.GetBuildMotorPositionAsync();
+        Debug.WriteLine($"Build position: {pos}");
     }
 
     private void GetPowderMotorCurrentPositionButton_Click(object sender, RoutedEventArgs e)
@@ -444,22 +447,30 @@ public sealed partial class TestPrintPage : Page
 
     private void StepPowderMotorUpButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.HandleRelMove(_motorPageService.powderMotor, _motorPageService.GetPowderStepTextBox(), true, this.Content.XamlRoot);
+        //_motorPageService.HandleRelMove(_motorPageService.powderMotor, _motorPageService.GetPowderStepTextBox(), true, this.Content.XamlRoot);
+        var directionIsUp = true;
+        ViewModel.StepPowderMotor(PowderMotorStepTextBox.Text, directionIsUp);
     }
 
     private void StepPowderMotorDownButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.HandleRelMove(_motorPageService.powderMotor, _motorPageService.GetPowderStepTextBox(), false, this.Content.XamlRoot);
+        //_motorPageService.HandleRelMove(_motorPageService.powderMotor, _motorPageService.GetPowderStepTextBox(), false, this.Content.XamlRoot);
+        var directionIsUp = false;
+        ViewModel.StepPowderMotor(PowderMotorStepTextBox.Text, directionIsUp);
     }
 
     private void StepSweepMotorLeftInCalibrateButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.HandleRelMove(_motorPageService.sweepMotor, _motorPageService.GetSweepStepTextBox(), true, this.Content.XamlRoot);
+        //_motorPageService.HandleRelMove(_motorPageService.sweepMotor, _motorPageService.GetSweepStepTextBox(), true, this.Content.XamlRoot);
+        var directionIsUp = true;
+        ViewModel.StepSweepMotor(SweepMotorStepTextBox.Text, directionIsUp);
     }
 
     private void StepSweepMotorRightInCalibrateButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.HandleRelMove(_motorPageService.sweepMotor, _motorPageService.GetSweepStepTextBox(), false, this.Content.XamlRoot);
+        //_motorPageService.HandleRelMove(_motorPageService.sweepMotor, _motorPageService.GetSweepStepTextBox(), false, this.Content.XamlRoot);
+        var directionIsUp = false;
+        ViewModel.StepSweepMotor(SweepMotorStepTextBox.Text, directionIsUp);
     }
 
     private void HomeAllMotorsInCalibrationPanelButton_Click(object sender, RoutedEventArgs e)
