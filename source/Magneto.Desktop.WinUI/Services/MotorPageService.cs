@@ -18,10 +18,12 @@ using Microsoft.UI;
 using Magneto.Desktop.WinUI.Core;
 using CommunityToolkit.WinUI.UI.Controls.TextToolbarSymbols;
 using Magneto.Desktop.WinUI.Models.UIControl;
+using Magneto.Desktop.WinUI.Core.Services;
 
 namespace Magneto.Desktop.WinUI;
 public class MotorPageService
 {
+    private readonly IMotorService _motorService;
     private ActuationManager? _actuationManager;
 
     public StepperMotor? buildMotor;
@@ -56,8 +58,9 @@ public class MotorPageService
     */
     public MotorPageService(ActuationManager am, PrintUIControlGroupHelper printCtlGrpHelper)
     {
-        //_motorService.ConfigurePortEventHandlers();
-        // Set up event handers to communicate with motor controller ports
+        _motorService = App.GetService<IMotorService>();
+        _actuationManager = _motorService.GetActuationManager();
+        //_motorService.Initialize(); // still null
         ConfigurePortEventHandlers();
         
         // Initialize motor set up for test page
@@ -239,6 +242,8 @@ public class MotorPageService
         {
             var dist = double.Parse(textBox.Text);
             await _actuationManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.AbsoluteMove, dist);
+            // TODO: call motor service
+            //await _motorService.MoveMotorAbs(motor, dist);
             return 1;
         }
     }
@@ -257,8 +262,12 @@ public class MotorPageService
             var dist = Math.Abs(double.Parse(textBox.Text));
             // Update the text box with corrected distance
             textBox.Text = dist.ToString();
-            // Check the direction we're moving
-            dist = moveUp ? dist : -dist;
+            // Add sign to distance based on moveUp boolean
+            var distance = moveUp ? dist : -dist;
+            MagnetoLogger.Log($"Moving motor distance of {distance}", LogFactoryLogLevel.LogLevel.SUCCESS);
+            //await _motorService.MoveMotorRel(motor, distance);
+            await _actuationManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.RelativeMove, distance);
+            /*
             if (_actuationManager != null)
             {
                 // Move motor
@@ -270,6 +279,7 @@ public class MotorPageService
                 MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
                 return 0;
             }
+            */
             return 1;
         }
     }
@@ -396,7 +406,7 @@ public class MotorPageService
     {
         var msg = "Get position button clicked...";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-
+        motor = _motorService.GetBuildMotor();
         if (motor != null)
         {
             if (motor != null)
@@ -418,6 +428,7 @@ public class MotorPageService
 
     public void HandleAbsMove(StepperMotor motor, TextBox textBox, XamlRoot xamlRoot)
     {
+        motor = _motorService.GetBuildMotor();
         var msg = $"{motor.GetMotorName()} abs move button clicked.";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
         if (motor != null)
@@ -435,16 +446,17 @@ public class MotorPageService
 
     public void HandleRelMove(StepperMotor motor, TextBox textBox, bool moveUp, XamlRoot xamlRoot)
     {
-        var msg = $"{motor.GetMotorName()} rel move button clicked.";
+        var serviceMotor = _motorService.GetBuildMotor();
+        var msg = $"{serviceMotor.GetMotorName()} rel move button clicked.";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
-        if (motor != null)
+        if (serviceMotor != null)
         {
             var moveIsAbs = false;
-            MoveMotorAndUpdateUI(motor, textBox, moveIsAbs, moveUp, xamlRoot);
+            MoveMotorAndUpdateUI(serviceMotor, textBox, moveIsAbs, moveUp, xamlRoot);
         }
         else
         {
-            msg = $"Cannot execute relative move on {motor.GetMotorName()} motor. Motor is null.";
+            msg = $"Cannot execute relative move on {serviceMotor.GetMotorName()} motor. Motor is null.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
         }
     }
@@ -517,9 +529,10 @@ public class MotorPageService
         try
         {
             // Call AddCommand with CommandType.PositionQuery to get the motor's position
-            var position = await _actuationManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.PositionQuery, 0);
-
-            MagnetoLogger.Log($"Position of motor on axis {buildMotor.GetAxis()} is {position}", LogFactoryLogLevel.LogLevel.SUCCESS);
+            // TODO: Use motor service
+            //var position = await _actuationManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.PositionQuery, 0);
+            var position =_motorService.GetMotorPosition(motor);
+            //MagnetoLogger.Log($"Position of motor on axis {buildMotor.GetAxis()} is {position}", LogFactoryLogLevel.LogLevel.SUCCESS);
         }
         catch (Exception ex)
         {

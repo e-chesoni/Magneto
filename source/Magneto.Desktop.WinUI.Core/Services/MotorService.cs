@@ -25,25 +25,12 @@ public class MotorService : IMotorService
     public MotorService(ActuationManager am)
     {
         _actuationManager = am;
-        HandleStartUp();
+        //HandleStartUp();
     }
 
-    public StepperMotor GetBuildMotor()
+    public void Initialize()
     {
-        return buildMotor;
-    }
-    public StepperMotor GetPowderMotor()
-    {
-        return powderMotor;
-    }
-    public StepperMotor GetSweepMotor()
-    {
-        return sweepMotor;
-    }
-
-    public async Task<double> GetMotorPosition(StepperMotor motor)
-    {
-        return await motor.GetPosAsync();
+        HandleStartUp(); // This now runs AFTER everything is ready
     }
 
     public void HandleStartUp()
@@ -129,8 +116,6 @@ public class MotorService : IMotorService
             default: return ControllerType.BUILD;
         }
     }
-
-    public Task<int> HomeMotor(StepperMotor motor) => throw new NotImplementedException();
     public void InitializeMotorMap()
     {
         _motorTextMap = new Dictionary<string, StepperMotor?>
@@ -139,6 +124,30 @@ public class MotorService : IMotorService
                 { "powder", powderMotor },
                 { "sweep", sweepMotor }
             };
+    }
+
+    public Task<int> HomeMotor(StepperMotor motor) => throw new NotImplementedException();
+
+    public ActuationManager GetActuationManager()
+    {
+        return _actuationManager;
+    }
+    public StepperMotor GetBuildMotor()
+    {
+        return buildMotor;
+    }
+    public StepperMotor GetPowderMotor()
+    {
+        return powderMotor;
+    }
+    public StepperMotor GetSweepMotor()
+    {
+        return sweepMotor;
+    }
+
+    public async Task<double> GetMotorPosition(StepperMotor motor)
+    {
+        return await motor.GetPosAsync();
     }
     public async Task<int> LayerMove(double layerThickness, double supplyAmplifier)
     {
@@ -195,9 +204,8 @@ public class MotorService : IMotorService
         await _actuationManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.AbsoluteMove, target);
         return 1;
     }
-    public async Task<int> MoveMotorRel(StepperMotor motor, double distance, bool moveUp)
+    public async Task<int> MoveMotorRel(StepperMotor motor, double distance)
     {
-        distance = moveUp ? distance : -distance;
         if (_actuationManager != null)
         {
             // Move motor

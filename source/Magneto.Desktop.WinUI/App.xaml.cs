@@ -190,6 +190,8 @@ public partial class App : Application
         MainWindow = new MainWindow();
         MainWindow.Activate();
 
+        App.GetService<IMotorService>().Initialize();
+
         await App.GetService<IActivationService>().ActivateAsync(args);
     }
 }

@@ -26,6 +26,7 @@ using System.Diagnostics;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
 using SAMLIGHT_CLIENT_CTRL_EXLib;
+using System.Threading.Tasks;
 
 namespace Magneto.Desktop.WinUI.Views;
 
@@ -393,23 +394,20 @@ public sealed partial class TestPrintPage : Page
     {
         _motorPageService.printUiControlGroupHelper.SelectMotor(_motorPageService.sweepMotor);
     }
-
     private async void GetBuildMotorCurrentPositionButton_Click(object sender, RoutedEventArgs e)
     {
         _motorPageService.HandleGetPosition(_motorPageService.buildMotor, _motorPageService.GetBuildPositionTextBox());
-        // TODO: Finish moving to view model
-        var pos = await ViewModel.GetBuildMotorPositionAsync();
-        Debug.WriteLine($"Build position: {pos}");
+        //await UpdateBuildPositionHelper();
     }
 
-    private void GetPowderMotorCurrentPositionButton_Click(object sender, RoutedEventArgs e)
+    private async void GetPowderMotorCurrentPositionButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.HandleGetPosition(_motorPageService.powderMotor, _motorPageService.GetPowderPositionTextBox());
+        //await UpdatePowderPositionHelper();
     }
 
-    private void GetSweepMotorCurrentPositionButton_Click(object sender, RoutedEventArgs e)
+    private async void GetSweepMotorCurrentPositionButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.HandleGetPosition(_motorPageService.sweepMotor, _motorPageService.GetSweepPositionTextBox());
+        //await UpdateSweepPositionHelper();
     }
 
     private void MoveBuildToAbsPositionButton_Click(object sender, RoutedEventArgs e)
@@ -427,50 +425,36 @@ public sealed partial class TestPrintPage : Page
         _motorPageService.HandleAbsMove(_motorPageService.sweepMotor, _motorPageService.GetSweepAbsMoveTextBox(), this.Content.XamlRoot);
     }
 
-    private void StepBuildMotorUpButton_Click(object sender, RoutedEventArgs e)
+    private async void StepBuildMotorUpButton_Click(object sender, RoutedEventArgs e)
     {
         MagnetoLogger.Log("step build up clicked", LogFactoryLogLevel.LogLevel.VERBOSE);
-        //_motorPageService.HandleRelMove(_motorPageService.buildMotor, _motorPageService.GetBuildStepTextBox(), true, this.Content.XamlRoot);
-        var directionIsUp = true;
-        ViewModel.StepBuildMotor(BuildMotorStepTextBox.Text, directionIsUp); // WORKING!
-        // TODO: update position text box after move
+        _motorPageService.HandleRelMove(_motorPageService.buildMotor, _motorPageService.GetBuildStepTextBox(), true, this.Content.XamlRoot);
     }
 
-    private void StepBuildMotorDownButton_Click(object sender, RoutedEventArgs e)
+    private async void StepBuildMotorDownButton_Click(object sender, RoutedEventArgs e)
     {
         MagnetoLogger.Log("step build down clicked", LogFactoryLogLevel.LogLevel.VERBOSE);
-        //_motorPageService.HandleRelMove(_motorPageService.buildMotor, _motorPageService.GetBuildStepTextBox(), false, this.Content.XamlRoot);
-        var directionIsUp = false;
-        ViewModel.StepBuildMotor(BuildMotorStepTextBox.Text, directionIsUp);
-        // TODO: update position text box after move
+        _motorPageService.HandleRelMove(_motorPageService.buildMotor, _motorPageService.GetBuildStepTextBox(), false, this.Content.XamlRoot);
     }
 
     private void StepPowderMotorUpButton_Click(object sender, RoutedEventArgs e)
     {
-        //_motorPageService.HandleRelMove(_motorPageService.powderMotor, _motorPageService.GetPowderStepTextBox(), true, this.Content.XamlRoot);
-        var directionIsUp = true;
-        ViewModel.StepPowderMotor(PowderMotorStepTextBox.Text, directionIsUp);
+        _motorPageService.HandleRelMove(_motorPageService.powderMotor, _motorPageService.GetPowderStepTextBox(), true, this.Content.XamlRoot);
     }
 
     private void StepPowderMotorDownButton_Click(object sender, RoutedEventArgs e)
     {
-        //_motorPageService.HandleRelMove(_motorPageService.powderMotor, _motorPageService.GetPowderStepTextBox(), false, this.Content.XamlRoot);
-        var directionIsUp = false;
-        ViewModel.StepPowderMotor(PowderMotorStepTextBox.Text, directionIsUp);
+        _motorPageService.HandleRelMove(_motorPageService.powderMotor, _motorPageService.GetPowderStepTextBox(), false, this.Content.XamlRoot);
     }
 
     private void StepSweepMotorLeftInCalibrateButton_Click(object sender, RoutedEventArgs e)
     {
-        //_motorPageService.HandleRelMove(_motorPageService.sweepMotor, _motorPageService.GetSweepStepTextBox(), true, this.Content.XamlRoot);
-        var directionIsUp = true;
-        ViewModel.StepSweepMotor(SweepMotorStepTextBox.Text, directionIsUp);
+        _motorPageService.HandleRelMove(_motorPageService.sweepMotor, _motorPageService.GetSweepStepTextBox(), true, this.Content.XamlRoot);
     }
 
     private void StepSweepMotorRightInCalibrateButton_Click(object sender, RoutedEventArgs e)
     {
-        //_motorPageService.HandleRelMove(_motorPageService.sweepMotor, _motorPageService.GetSweepStepTextBox(), false, this.Content.XamlRoot);
-        var directionIsUp = false;
-        ViewModel.StepSweepMotor(SweepMotorStepTextBox.Text, directionIsUp);
+        _motorPageService.HandleRelMove(_motorPageService.sweepMotor, _motorPageService.GetSweepStepTextBox(), false, this.Content.XamlRoot);
     }
 
     private void HomeAllMotorsInCalibrationPanelButton_Click(object sender, RoutedEventArgs e)

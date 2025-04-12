@@ -11,6 +11,7 @@ using Magneto.Desktop.WinUI.Core.Services;
 using Magneto.Desktop.WinUI.Services;
 using Microsoft.UI.Xaml.Controls;
 using Magneto.Desktop.WinUI.Core.Models.Motors;
+using Magneto.Desktop.WinUI.Core;
 
 namespace Magneto.Desktop.WinUI.ViewModels;
 
@@ -78,54 +79,86 @@ public class TestPrintViewModel : ObservableRecipient
         _waverunnerService.TestConnection();
     }
 
+    #region Helpers
+    public async Task<double> GetMotorPositionHelperAsync(Func<StepperMotor> getMotor)
+    {
+        return await _motorService.GetMotorPosition(getMotor());
+    }
+    public void StepMotorHelper(string distanceString, bool moveUp, Func<StepperMotor> getMotor)
+    {
+        if (double.TryParse(distanceString, out var distance))
+        {
+            //_motorService.MoveMotorRel(getMotor(), distance, moveUp);
+        }
+        else
+        {
+            Debug.WriteLine("❌Could not parse distance.");
+        }
+    }
+    public async Task StepMotorHelperAsync(string distanceString, bool moveUp, Func<StepperMotor> getMotor)
+    {
+        if (double.TryParse(distanceString, out var distance))
+        {
+            //await _motorService.MoveMotorRel(getMotor(), distance, moveUp);
+        }
+        else
+        {
+            Debug.WriteLine("❌Could not parse distance.");
+        }
+    }
+
+    #endregion
+
+    #region Getters
     public async Task<double> GetBuildMotorPositionAsync()
     {
-        return await _motorService.GetMotorPosition(_motorService.GetBuildMotor());
+        return await GetMotorPositionHelperAsync(_motorService.GetBuildMotor);
     }
+    public async Task<double> GetPowderMotorPositionAsync()
+    {
+        return await GetMotorPositionHelperAsync(_motorService.GetPowderMotor);
+    }
+    public async Task<double> GetSweepMotorPositionAsync()
+    {
+        return await GetMotorPositionHelperAsync(_motorService.GetSweepMotor);
+    }
+    #endregion
 
-
+    #region Movement
     public void StepBuildMotor(string distanceString, bool moveUp)
     {
-        double distance;
-        if (double.TryParse(distanceString, out distance))
+        StepMotorHelper(distanceString, moveUp, _motorService.GetBuildMotor);
+    }
+    public async Task<double?> StepMotorAsync(string distanceString, bool moveUp, Func<StepperMotor> getMotor)
+    {
+        if (double.TryParse(distanceString, out var distance))
         {
-            // ✅ Parsed successfully,
-            _motorService.MoveMotorRel(_motorService.GetBuildMotor(), distance, moveUp);
+            var motor = getMotor();
+            //await _motorService.MoveMotorRel(motor, distance, moveUp);
+            return await _motorService.GetMotorPosition(motor);
         }
         else
         {
-            // ❌ Handle the case where parsing failed (e.g., show error or use default)
-            Debug.WriteLine("❌Could not parse distance.");
+            MagnetoLogger.Log("❌Could not parse distance.", LogFactoryLogLevel.LogLevel.ERROR);
+            return null;
         }
     }
+    public Func<StepperMotor> GetBuildMotor => _motorService.GetBuildMotor;
+    public Func<StepperMotor> GetPowderMotor => _motorService.GetPowderMotor;
+    public Func<StepperMotor> GetSweepMotor => _motorService.GetSweepMotor;
+
+
+
     public void StepPowderMotor(string distanceString, bool moveUp)
     {
-        double distance;
-        if (double.TryParse(distanceString, out distance))
-        {
-            // ✅ Parsed successfully,
-            _motorService.MoveMotorRel(_motorService.GetPowderMotor(), distance, moveUp);
-        }
-        else
-        {
-            // ❌ Handle the case where parsing failed (e.g., show error or use default)
-            Debug.WriteLine("❌Could not parse distance.");
-        }
+        StepMotorHelper(distanceString, moveUp, _motorService.GetPowderMotor);
     }
     public void StepSweepMotor(string distanceString, bool moveUp)
     {
-        double distance;
-        if (double.TryParse(distanceString, out distance))
-        {
-            // ✅ Parsed successfully,
-            _motorService.MoveMotorRel(_motorService.GetSweepMotor(), distance, moveUp);
-        }
-        else
-        {
-            // ❌ Handle the case where parsing failed (e.g., show error or use default)
-            Debug.WriteLine("❌Could not parse distance.");
-        }
+        StepMotorHelper(distanceString, moveUp, _motorService.GetSweepMotor);
     }
+    #endregion
+
 
     #region Setters
     public async Task SetCurrentPrintAsync(string directoryPath)
