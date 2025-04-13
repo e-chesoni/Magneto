@@ -71,6 +71,6 @@ public interface IMotorController : IController
     /// EMERGENCY STOP: Stop all motors attached to controller
     /// </summary>
     /// <returns></returns> returns 0 on success, -1 on failure
-    Task StopMotors();
+    void StopMotors();
 
 }

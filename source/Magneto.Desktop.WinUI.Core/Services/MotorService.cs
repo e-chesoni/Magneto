@@ -148,7 +148,7 @@ public class MotorService : IMotorService
     {
         return sweepMotor.GetMaxPos();
     }
-    public async Task<double> GetMotorPosition(StepperMotor motor)
+    public async Task<double> GetMotorPositionAsync(StepperMotor motor)
     {
         return await motor.GetPosAsync();
     }
@@ -214,6 +214,7 @@ public class MotorService : IMotorService
             // Move motor
             // NOTE: when called, you must await the return to get the integer value
             // Otherwise returns some weird string
+            MagnetoLogger.Log($"distance: {distance}", LogFactoryLogLevel.LogLevel.ERROR);
             await _actuationManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.RelativeMove, distance);
         }
         else

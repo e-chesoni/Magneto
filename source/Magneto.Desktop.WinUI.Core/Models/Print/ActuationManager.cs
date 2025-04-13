@@ -467,7 +467,7 @@ public class ActuationManager : ISubsciber, IStateMachine
         if (motorCommand.StartsWith("STP"))
         {
             MagnetoLogger.Log("Stopping motor", LogFactoryLogLevel.LogLevel.SUCCESS);
-            await motor.StopMotor();
+            motor.StopMotor();
         }
         else if (motorCommand.StartsWith("MVA"))
         {

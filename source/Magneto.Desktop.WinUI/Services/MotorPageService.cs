@@ -275,6 +275,7 @@ public class MotorPageService
             textBox.Text = dist.ToString();
             // Add sign to distance based on moveUp boolean
             var distance = moveUp ? dist : -dist;
+
             MagnetoLogger.Log($"Moving motor distance of {distance}", LogFactoryLogLevel.LogLevel.SUCCESS);
             await _motorService.MoveMotorRel(motor, distance);
             //await _actuationManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.RelativeMove, distance);
@@ -411,7 +412,7 @@ public class MotorPageService
                 // stop motor
                 // NOTE: when called, you must await the return to get the integer value
                 // Otherwise returns some weird string
-                await _motorService.GetSweepMotor().StopMotor(); // do not go through actuator;
+                _motorService.GetSweepMotor().StopMotor(); // do not go through actuator;
             }
             else
             {
@@ -582,26 +583,29 @@ public class MotorPageService
     /// </summary>
     /// <param name="motorName">Name of the motor whose position needs to be updated in the UI.</param>
     /// <param name="motor">The motor object whose position is to be retrieved and displayed.</param>
-    public async void UpdateMotorPositionTextBox(StepperMotor motor)
+    public async Task<int> UpdateMotorPositionTextBox(StepperMotor motor)
     {
         MagnetoLogger.Log("Updating motor position text box.", LogFactoryLogLevel.LogLevel.SUCCESS);
         // Call position add command first so we can update motor position in UI
         // TODO: WARNING -- this may cause issues when you decouple
+        var position = 0.0;
         try
         {
             // Call AddCommand with CommandType.PositionQuery to get the motor's position
             // TODO: Use motor service
-            //var position = await _actuationManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.PositionQuery, 0);
-            var position =_motorService.GetMotorPosition(motor);
-            //MagnetoLogger.Log($"Position of motor on axis {buildMotor.GetAxis()} is {position}", LogFactoryLogLevel.LogLevel.SUCCESS);
+            //position = await motor.GetPosAsync();
+            position = await _motorService.GetMotorPositionAsync(motor);
+            var textBox = GetMotorPositonTextBox(motor);
+            if (textBox != null)
+                textBox.Text = position.ToString();
+            return 0;
         }
         catch (Exception ex)
         {
-            MagnetoLogger.Log($"Failed to get motor position: {ex.Message}", LogFactoryLogLevel.LogLevel.ERROR);
+            MagnetoLogger.Log($"❌Failed to get motor position: {ex.Message}", LogFactoryLogLevel.LogLevel.ERROR);
+            return -1;
         }
-        var textBox = GetMotorPositonTextBox(motor);
-        if (textBox != null)
-            textBox.Text = motor.GetCurrentPos().ToString();
+        
     }
 
     public async void MoveMotorAndUpdateUI(StepperMotor motor, TextBox textBox, bool moveIsAbs, bool increment, XamlRoot xamlRoot)
@@ -624,7 +628,7 @@ public class MotorPageService
             // If operation is successful, update text box
             if (res == 1)
             {
-                UpdateMotorPositionTextBox(motor);
+                await UpdateMotorPositionTextBox(motor);
             }
             else
             {
@@ -664,7 +668,7 @@ public class MotorPageService
             // If operation is successful, update text box
             if (res == 1)
             {
-                UpdateMotorPositionTextBox(motor);
+                await UpdateMotorPositionTextBox(motor);
             }
             else
             {

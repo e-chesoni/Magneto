@@ -35,7 +35,7 @@ public interface IStepperMotor
     /// EMERGENCY STOP: Stop motor
     /// </summary>
     /// <returns></returns> Returns -1 if stop command fails, 0 if move command is successful
-    Task StopMotor();
+    void StopMotor();
 
     Task<int> WaitForStop();
 

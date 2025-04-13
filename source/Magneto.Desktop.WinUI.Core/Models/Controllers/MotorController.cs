@@ -273,13 +273,19 @@ public class MotorController : IMotorController
     /// EMERGENCY STOP: Stop all motors attached to controller
     /// </summary>
     /// <returns></returns> returns 0 on success, -1 on failure
-    public async Task StopMotors()
+    public void StopMotors()
     {
+        /*
         // Stop all motors concurrently
         var stopTasks = _motorList.Select(motor => motor.StopMotor());
 
         // Wait for all motors to stop
         await Task.WhenAll(stopTasks);
+        */
+        foreach (var motor in _motorList)
+        {
+            motor.StopMotor(); // Just call it
+        }
     }
 
     #endregion

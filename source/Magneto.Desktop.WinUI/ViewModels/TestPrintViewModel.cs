@@ -82,7 +82,7 @@ public class TestPrintViewModel : ObservableRecipient
     #region Helpers
     public async Task<double> GetMotorPositionHelperAsync(Func<StepperMotor> getMotor)
     {
-        return await _motorService.GetMotorPosition(getMotor());
+        return await _motorService.GetMotorPositionAsync(getMotor());
     }
     public void StepMotorHelper(string distanceString, bool moveUp, Func<StepperMotor> getMotor)
     {
@@ -135,7 +135,7 @@ public class TestPrintViewModel : ObservableRecipient
         {
             var motor = getMotor();
             //await _motorService.MoveMotorRel(motor, distance, moveUp);
-            return await _motorService.GetMotorPosition(motor);
+            return await _motorService.GetMotorPositionAsync(motor);
         }
         else
         {

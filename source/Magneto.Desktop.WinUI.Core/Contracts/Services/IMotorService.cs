@@ -16,7 +16,7 @@ public interface IMotorService
     StepperMotor GetPowderMotor();
     StepperMotor GetSweepMotor();
     double GetMaxSweepPosition();
-    public Task<double> GetMotorPosition(StepperMotor motor);
+    public Task<double> GetMotorPositionAsync(StepperMotor motor);
     void ConfigurePortEventHandlers();
     void InitMotors();
     void HandleMotorInit(string motorName, StepperMotor motor, out StepperMotor motorField);
