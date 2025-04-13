@@ -523,6 +523,7 @@ public class MotorPageService
         }
     }
 
+    /*
     public void HandleRelMoveInSitu(StepperMotor motor, TextBox textBox, bool moveUp, XamlRoot xamlRoot)
     {
         var moveIsAbs = false;
@@ -533,7 +534,7 @@ public class MotorPageService
             MoveMotorAndUpdateUI(motor, textBox, moveIsAbs, moveUp, inSitu, xamlRoot);
         }
     }
-
+    */
     public void HandleHomeMotorAndUpdateTextBox(StepperMotor motor, TextBox positionTextBox)
     {
         MagnetoLogger.Log("Homing Motor.", LogFactoryLogLevel.LogLevel.VERBOSE);
@@ -640,7 +641,7 @@ public class MotorPageService
             _ = PopupInfo.ShowContentDialog(xamlRoot, "Error", "Failed to select motor. Motor is null.");
         }
     }
-
+    /*
     public async void MoveMotorAndUpdateUI(StepperMotor motor, TextBox textBox, bool moveIsAbs, bool increment, bool inSitu, XamlRoot xamlRoot)
     {
         var res = 0;
@@ -680,7 +681,6 @@ public class MotorPageService
             _ = PopupInfo.ShowContentDialog(xamlRoot, "Error", "Failed to select motor. Motor is null.");
         }
     }
-    /*
     public async void StopMotorAndUpdateUI(StepperMotor motor, TextBox textBox, XamlRoot xamlRoot)
     {
         var res = 0;
