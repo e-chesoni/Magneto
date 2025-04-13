@@ -628,7 +628,7 @@ public class MotorPageService
             // If operation is successful, update text box
             if (res == 1)
             {
-                await UpdateMotorPositionTextBox(motor);
+                //await UpdateMotorPositionTextBox(motor);
             }
             else
             {
