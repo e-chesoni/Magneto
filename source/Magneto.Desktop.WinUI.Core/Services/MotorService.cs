@@ -223,7 +223,8 @@ public class MotorService : IMotorService
     }
     public async Task<int> StopMotor(StepperMotor motor)
     {
-        await motor.StopMotor();
+        //await motor.StopMotor();
+        await _actuationManager.HandleStopRequest(motor);
         return 1;
     }
 }

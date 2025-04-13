@@ -469,17 +469,17 @@ public sealed partial class TestPrintPage : Page
 
     private void StopBuildMotorInCalibrateButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.GetActuationManager().HandleStopRequest(_motorPageService.buildMotor);
+        _motorPageService.StopBuildMotor();
     }
 
     private void StopPowderMotorInCalibrateButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.GetActuationManager().HandleStopRequest(_motorPageService.powderMotor);
+        _motorPageService.StopPowderMotor();
     }
 
     private void StopSweepMotorInCalibrateButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.GetActuationManager().HandleStopRequest(_motorPageService.sweepMotor);
+        _motorPageService.StopSweepMotor();
     }
 
     #endregion
@@ -700,9 +700,14 @@ public sealed partial class TestPrintPage : Page
         // stop mark
         _waverunnerPageService.StopMark();
         // stop motors
+        /*
         _motorPageService.GetActuationManager().HandleStopRequest(_motorPageService.sweepMotor);
         _motorPageService.GetActuationManager().HandleStopRequest(_motorPageService.buildMotor);
         _motorPageService.GetActuationManager().HandleStopRequest(_motorPageService.powderMotor);
+        */
+        _motorPageService.StopSweepMotor();
+        _motorPageService.StopBuildMotor();
+        _motorPageService.StopPowderMotor();
     }
     /*
     private void ReturnSweepInLayerMoveButton_Click(object sender, RoutedEventArgs e)

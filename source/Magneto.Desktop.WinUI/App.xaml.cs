@@ -101,8 +101,6 @@ public partial class App : Application
             });
 
 
-
-
             // Peripheral Services
             services.AddSingleton<IWaverunnerService, WaverunerServiceTEST>();
             services.AddSingleton<IMotorService, MotorService>();

@@ -47,24 +47,6 @@ namespace Magneto.Desktop.WinUI
 
         private MotorPageService _motorPageService;
 
-        private StepperMotor? _powderMotor;
-
-        private StepperMotor? _buildMotor;
-
-        private StepperMotor? _sweepMotor;
-
-        private StepperMotor? _currTestMotor;
-
-        private ActuationManager? _actuationManager;
-
-        private bool _powderMotorSelected = false;
-
-        private bool _buildMotorSelected = false;
-
-        private bool _sweepMotorSelected = false;
-
-        private bool _movingMotorToTarget = false;
-
         #endregion
 
         /// <summary>
@@ -90,16 +72,6 @@ namespace Magneto.Desktop.WinUI
         }
 
         #region Initialization Methods
-        /*
-        private void InitMotorPageService()
-        {
-            _calibrateMotorUIControlGroup = new MotorUIControlGroup(SelectBuildMotorButton, SelectPowderMotorButton, SelectSweepMotorButton,
-                                                                                              BuildPositionTextBox, PowderPositionTextBox, SweepPositionTextBox,
-                                                                                              IncrBuildPositionTextBox, IncrPowderPositionTextBox, IncrSweepPositionTextBox,
-                                                                                              BuildAbsMoveTextBox, PowderAbsMoveTextBox, SweepAbsMoveTextBox);
-            _motorPageService = new MotorPageService(MissionControl.GetActuationManger(), _calibrateMotorUIControlGroup);
-        }
-        */
         /// <summary>
         /// Handle page startup tasks
         /// </summary>

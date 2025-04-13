@@ -24,13 +24,13 @@ namespace Magneto.Desktop.WinUI;
 public class MotorPageService
 {
     private readonly IMotorService _motorService;
+    /*
     private ActuationManager? _actuationManager;
-
     public StepperMotor? buildMotor;
     public StepperMotor? powderMotor;
     public StepperMotor? sweepMotor;
     public double maxSweepPosition;
-
+    */
     public PrintUIControlGroupHelper printUiControlGroupHelper { get; set; }
 
     /// <summary>
@@ -59,22 +59,22 @@ public class MotorPageService
     public MotorPageService(ActuationManager am, PrintUIControlGroupHelper printCtlGrpHelper)
     {
         _motorService = App.GetService<IMotorService>();
-        _actuationManager = _motorService.GetActuationManager();
+        //_actuationManager = _motorService.GetActuationManager();
         //_motorService.Initialize(); // still null
-        ConfigurePortEventHandlers();
+        //ConfigurePortEventHandlers();
         
         // Initialize motor set up for test page
-        InitMotors(am);
+        //InitMotors(am);
 
         // Initialize motor map to simplify coordinated calls below
         // Make sure this happens AFTER motor setup
-        InitializeMotorMap();
+        //InitializeMotorMap();
 
         printUiControlGroupHelper = new PrintUIControlGroupHelper(printCtlGrpHelper.calibrateMotorControlGroup, printCtlGrpHelper.printMotorControlGroup);
     }
 
     #region Initial Setup
-
+    /*
     private void ConfigurePortEventHandlers()
     {
         var msg = "Requesting port access for motor service.";
@@ -147,15 +147,16 @@ public class MotorPageService
                 { "sweep", sweepMotor }
             };
     }
-
+    */
     #endregion
 
     #region Getters
+    /*
     public ActuationManager GetActuationManager()
     {
         return _actuationManager;
     }
-
+    */
     public TextBox GetBuildPositionTextBox()
     {
         return printUiControlGroupHelper.calibrateMotorControlGroup.buildPositionTextBox;
@@ -338,7 +339,29 @@ public class MotorPageService
         }
     }
 
-    public async Task<int> StopSweepMotor(StepperMotor motor, TextBox textBox)
+    public async void StopBuildMotor()
+    {
+        var motor = _motorService.GetBuildMotor();
+        var msg = $"stopping {motor.GetMotorName()} motor";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
+        await _motorService.StopMotor(motor);
+    }
+    public async void StopPowderMotor()
+    {
+        var motor = _motorService.GetPowderMotor();
+        var msg = $"stopping {motor.GetMotorName()} motor";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
+        await _motorService.StopMotor(motor);
+    }
+    public async void StopSweepMotor()
+    {
+        var motor = _motorService.GetSweepMotor();
+        var msg = $"stopping {motor.GetMotorName()} motor";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
+        await _motorService.StopMotor(motor);
+    }
+
+    public async Task<int> StopSweepMotorOld(StepperMotor motor, TextBox textBox)
     {
         if (textBox == null || !double.TryParse(textBox.Text, out var value))
         {
@@ -368,6 +391,7 @@ public class MotorPageService
     /// <summary>
     /// Sweeps left to apply material to build plate
     /// </summary>
+    /*
     public int SweepPowder()
     {
         if (_actuationManager != null)
@@ -381,6 +405,7 @@ public class MotorPageService
         }
         return 1;
     }
+    */
 
     public async Task<int> HomeMotor(StepperMotor motor)
     {
@@ -624,7 +649,7 @@ public class MotorPageService
             // Select build motor button
             printUiControlGroupHelper.SelectMotor(motor);
 
-            res = await StopSweepMotor(motor, textBox);
+            res = await StopSweepMotorOld(motor, textBox);
 
             // If operation is successful, update text box
             if (res == 1)

@@ -46,11 +46,11 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     /// Mission control constructor
     /// </summary>
     /// <param name="bm"></param> Build manager
-    public MissionControl(ActuationManager _am)
+    public MissionControl(ActuationManager actuationManager)
     {
         MagnetoLogger.Log("", LogFactoryLogLevel.LogLevel.VERBOSE);
 
-        _actuationManager = _am;
+        _actuationManager = actuationManager;
 
     }
 
