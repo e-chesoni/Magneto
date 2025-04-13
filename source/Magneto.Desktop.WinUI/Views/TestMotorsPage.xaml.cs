@@ -59,16 +59,18 @@ namespace Magneto.Desktop.WinUI
         /// </summary>
         public TestMotorsViewModel ViewModel { get; }
 
-        private MotorUIControlGroup _calibrateMotorUIControlGroup { get; set; }
+        private MotorUIControlGroup _calibrateMotorUIControlGroup { get; set;
+        }
 
         public TestMotorsPage()
         {
             ViewModel = App.GetService<TestMotorsViewModel>();
             this.InitializeComponent();
 
-            var msg = "Landed on Test Print Page";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
-            MagnetoSerialConsole.LogAvailablePorts();
+            // TODO: create calibrate motor UI control group
+
+            // TODO: pass control group to helper
+            //_printControlGroupHelper = new PrintUIControlGroupHelper(_calibrateMotorUIControlGroup);
         }
 
         #region Initialization Methods
