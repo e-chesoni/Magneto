@@ -27,6 +27,7 @@ using Magneto.Desktop.WinUI.Core.Models.Controllers;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.Controllers;
 using Magneto.Desktop.WinUI.Core.Factories;
 using Magneto.Desktop.WinUI.Core.Models;
+using Magneto.Desktop.WinUI.Core.Models.Motors;
 
 namespace Magneto.Desktop.WinUI;
 
@@ -85,6 +86,7 @@ public partial class App : Application
             services.AddSingleton<ISampleDataService, SampleDataService>();
             services.AddSingleton<ISamplePrintService, SamplePrintService>();
             services.AddSingleton<IFileService, FileService>();
+            /*
             services.AddSingleton<IMotorController, MotorController>();
             services.AddSingleton<ActuationManager>(provider =>
             {
@@ -99,6 +101,60 @@ public partial class App : Application
                 var actuationManager = provider.GetRequiredService<ActuationManager>();
                 return new MissionControl(actuationManager);
             });
+            */
+            // Motors
+            services.AddSingleton(MotorFactory.CreateMotor("powder"));
+            services.AddSingleton(MotorFactory.CreateMotor("build"));
+            services.AddSingleton(MotorFactory.CreateMotor("sweep"));
+
+            // Controllers
+            services.AddSingleton<BuildMotorController>(provider =>
+                new BuildMotorController(
+                    provider.GetServices<StepperMotor>().First(m => m.GetMotorName() == "powder"),
+                    provider.GetServices<StepperMotor>().First(m => m.GetMotorName() == "build")
+                )
+            );
+
+            services.AddSingleton<SweepMotorController>(provider =>
+                new SweepMotorController(
+                    provider.GetServices<StepperMotor>().First(m => m.GetMotorName() == "sweep")
+                )
+            );
+
+            // Laser
+            services.AddSingleton<LaserController>();
+
+            // ActuationManager
+            services.AddSingleton<ActuationManager>(provider =>
+                new ActuationManager(
+                    provider.GetRequiredService<BuildMotorController>(),
+                    provider.GetRequiredService<SweepMotorController>(),
+                    provider.GetRequiredService<LaserController>()
+                )
+            );
+
+            // MissionControl
+            services.AddSingleton<MissionControl>(provider =>
+                new MissionControl(provider.GetRequiredService<ActuationManager>())
+            );
+
+
+            // Register MissionControl
+            services.AddSingleton<MissionControl>(provider =>
+            {
+                var am = provider.GetRequiredService<ActuationManager>();
+                return new MissionControl(am);
+            });
+
+            // Register MotorService (needs ActuationManager)
+            services.AddSingleton<IMotorService, MotorService>(provider =>
+            {
+                var am = provider.GetRequiredService<ActuationManager>();
+                var ms = new MotorService(am);
+                ms.Initialize(); // Now that motors/controllers are fully built
+                return ms;
+            });
+
 
 
             // Peripheral Services

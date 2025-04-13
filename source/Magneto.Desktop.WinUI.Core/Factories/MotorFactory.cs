@@ -24,7 +24,7 @@ public static class MotorFactory
         return new MotorController(sweep);
     }
 
-    private static StepperMotor CreateMotor(string name)
+    public static StepperMotor CreateMotor(string name)
     {
         var config = MagnetoConfig.GetMotorByName(name);
         if (config == null)
