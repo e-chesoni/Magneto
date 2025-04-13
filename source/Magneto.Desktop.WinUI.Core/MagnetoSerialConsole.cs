@@ -14,17 +14,14 @@ namespace Magneto.Desktop.WinUI.Core;
 public static class MagnetoSerialConsole
 {
     #region Private Variables
-
     /// <summary>
     /// Serial port
     /// </summary>
     private static SerialPort _serialPort = new SerialPort();
-
-
     private static List<SerialPort> _serialPorts = new List<SerialPort>();
-
-    private static string _lastTermRead { get; set; }
-
+    //private static string _lastTermRead { get; set; }
+    private static readonly Dictionary<string, TaskCompletionSource<string>> _pendingResponses = new();
+    private static readonly object _lock = new();
     #endregion
 
     #region Default Port Setting Variables
@@ -126,25 +123,55 @@ public static class MagnetoSerialConsole
     }
 
     #endregion
+    private static void HandleIncomingResponse(SerialPort readPort)
+    {
+        try
+        {
+            var response = readPort.ReadLine();
+            MagnetoLogger.Log($"📨 [{readPort.PortName}] Received: {response}", LogFactoryLogLevel.LogLevel.SUCCESS);
+
+            lock (_lock)
+            {
+                if (_pendingResponses.TryGetValue(readPort.PortName, out var tcs))
+                {
+                    tcs.SetResult(response);
+                    _pendingResponses.Remove(readPort.PortName);
+                }
+                else
+                {
+                    MagnetoLogger.Log($"⚠️ No awaiting task for {readPort.PortName}", LogFactoryLogLevel.LogLevel.WARN);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            MagnetoLogger.Log($"❌ Error reading from {readPort.PortName}: {ex.Message}", LogFactoryLogLevel.LogLevel.ERROR);
+        }
+    }
+
+
+
 
     #region Getters
 
+    /*
     public static string GetTermRead()
     {
         return _lastTermRead;
     }
+    */
 
     #endregion
 
     #region
-
+    /*
     public static void ClearTermRead()
     {
         var msg = $"Clearing term read...";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
         _lastTermRead = "";
     }
-
+    */
     #endregion
 
     #region Port Setup Methods
@@ -511,49 +538,51 @@ public static class MagnetoSerialConsole
     private static void build_powder_port_DataReceived(object sender, SerialDataReceivedEventArgs e)
     {
         var msg = "";
-        SerialPort readPort = null;
+        SerialPort buildPort = null;
+        var portString = MagnetoConfig.GetMotorByName("build").COMPort;
 
         msg = $"Data received";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
-
-        var buildPort = MagnetoConfig.GetMotorByName("build").COMPort;
 
         // Get com port 4
         foreach (var port in GetAvailablePorts())
         {
             // Get default motor (build motor) to get port
-            if (port.PortName.Equals(buildPort, StringComparison.OrdinalIgnoreCase))
+            if (port.PortName.Equals(portString, StringComparison.OrdinalIgnoreCase))
             {
-                readPort = port;
+                buildPort = port;
             }
         }
 
-        msg = $"Checking port {readPort.PortName}";
+        msg = $"Checking port {buildPort.PortName}";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
-        if (readPort.IsOpen)
+        if (buildPort.IsOpen)
         {
-            var bytes = readPort.BytesToRead;
+            var bytes = buildPort.BytesToRead;
             var buffer = new byte[bytes];
-            if (readPort.BytesToWrite <= 0)
+            if (buildPort.BytesToWrite <= 0)
             {
-                while (readPort.BytesToRead > 0)
+                while (buildPort.BytesToRead > 0)
                 {
                     msg = "fetching data...";
                     MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
                     try
                     {
-                        _lastTermRead = readPort.ReadLine();
-                        msg = $"{_lastTermRead}";
+                        //_lastTermRead = buildPort.ReadLine();
+                        // TODO: remove last term read and use handle incoming response
+                        HandleIncomingResponse(buildPort);
+
+                        //msg = $"{_lastTermRead}";
                         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
-                        readPort.Read(buffer, 0, bytes);
-                        _lastTermRead = msg;
+                        buildPort.Read(buffer, 0, bytes);
+                        //_lastTermRead = msg;
                     }
                     catch
                     {
                         try
                         {
-                            readPort.Open();
+                            buildPort.Open();
                         }
                         catch
                         {
@@ -574,60 +603,61 @@ public static class MagnetoSerialConsole
             msg = "Your port has been disconnected";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
 
-            msg = $"Trying to re-open port{readPort.PortName}";
+            msg = $"Trying to re-open port{buildPort.PortName}";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
 
             // try opening port again
-            OpenSerialPort(readPort.PortName);
+            OpenSerialPort(buildPort.PortName);
         }
     }
 
     private static void sweep_port_DataReceived(object sender, SerialDataReceivedEventArgs e)
     {
         var msg = "";
-        SerialPort readPort = null;
+        SerialPort sweepPort = null;
 
         msg = $"Data received";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
 
-        var sweepPort = MagnetoConfig.GetMotorByName("sweep").COMPort;
+        var portString = MagnetoConfig.GetMotorByName("sweep").COMPort;
 
         // Get com port 7
         foreach (var port in GetAvailablePorts())
         {
             // Get default motor (build motor) to get port
-            if (port.PortName.Equals(sweepPort, StringComparison.OrdinalIgnoreCase))
+            if (port.PortName.Equals(portString, StringComparison.OrdinalIgnoreCase))
             {
-                readPort = port;
+                sweepPort = port;
             }
         }
 
-        msg = $"Checking port {readPort.PortName}";
+        msg = $"Checking port {sweepPort.PortName}";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
-        if (readPort.IsOpen)
+        if (sweepPort.IsOpen)
         {
-            var bytes = readPort.BytesToRead;
+            var bytes = sweepPort.BytesToRead;
             var buffer = new byte[bytes];
-            if (readPort.BytesToWrite <= 0)
+            if (sweepPort.BytesToWrite <= 0)
             {
-                while (readPort.BytesToRead > 0)
+                while (sweepPort.BytesToRead > 0)
                 {
                     msg = "fetching data...";
                     MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
                     try
                     {
-                        _lastTermRead = readPort.ReadLine();
-                        msg = $"{_lastTermRead}";
+                        //_lastTermRead = readPort.ReadLine();
+                        //msg = $"{_lastTermRead}";
+                        HandleIncomingResponse(sweepPort);
                         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
-                        readPort.Read(buffer, 0, bytes);
-                        _lastTermRead = msg;
+                        sweepPort.Read(buffer, 0, bytes);
+                        //_lastTermRead = msg;
                     }
                     catch
                     {
                         try
                         {
-                            readPort.Open();
+                            sweepPort.Open();
                         }
                         catch
                         {
@@ -648,6 +678,65 @@ public static class MagnetoSerialConsole
             msg = "Your port has been disconnected";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
         }
+    }
+    public static async Task<string> AwaitResponseFromPortAsync(string portName, int timeout = 2000)
+    {
+        var tcs = new TaskCompletionSource<string>();
+
+        lock (_lock)
+        {
+            if (_pendingResponses.ContainsKey(portName))
+            {
+                throw new InvalidOperationException($"Another read is already pending on port {portName}");
+            }
+            _pendingResponses[portName] = tcs;
+        }
+
+        var completedTask = await Task.WhenAny(tcs.Task, Task.Delay(timeout));
+        if (completedTask == tcs.Task)
+        {
+            return tcs.Task.Result;
+        }
+        else
+        {
+            lock (_lock)
+            {
+                _pendingResponses.Remove(portName);
+            }
+            throw new TimeoutException($"Timed out waiting for response on port {portName}");
+        }
+    }
+
+    public static async Task<string> RequestResponseAsync(string portName, string command, TimeSpan timeout)
+    {
+        var tcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        lock (_lock)
+        {
+            if (_pendingResponses.ContainsKey(portName))
+            {
+                throw new InvalidOperationException($"A response is already pending on port {portName}");
+            }
+
+            _pendingResponses[portName] = tcs;
+        }
+
+        SerialWrite(portName, command);
+        MagnetoLogger.Log($"🔄 Sent '{command}' on {portName}. Awaiting response...", LogFactoryLogLevel.LogLevel.DEBUG);
+
+        var completedTask = await Task.WhenAny(tcs.Task, Task.Delay(timeout));
+
+        lock (_lock)
+        {
+            _pendingResponses.Remove(portName);
+        }
+
+        if (completedTask == tcs.Task)
+        {
+            return tcs.Task.Result;
+        }
+
+        throw new TimeoutException($"No response from {portName} within {timeout.TotalSeconds} seconds.");
     }
 
     #endregion

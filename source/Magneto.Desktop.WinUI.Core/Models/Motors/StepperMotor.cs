@@ -608,7 +608,8 @@ public class StepperMotor : IStepperMotor
     /// Get current motor position
     /// </summary>
     /// <returns></returns> Returns -1 if request for position fails, otherwise returns motor position
-    public async Task<double> GetPosAsync()
+    /*
+    public async Task<double> GetPosAsyncOLD()
     {
         MagnetoLogger.Log($"Getting {_motorName} motor position...", LogFactoryLogLevel.LogLevel.VERBOSE);
 
@@ -647,6 +648,45 @@ public class StepperMotor : IStepperMotor
 
         return posDouble;
     }
+    */
+    public async Task<double> GetPosAsync()
+    {
+        MagnetoLogger.Log($"Getting {_motorName} motor position...", LogFactoryLogLevel.LogLevel.VERBOSE);
+
+        var positionRequest = $"{_motorAxis}POS?";
+
+        if (!MagnetoSerialConsole.OpenSerialPort(_motorPort))
+        {
+            MagnetoLogger.Log("Port Closed.", LogFactoryLogLevel.LogLevel.ERROR);
+            return -1.0;
+        }
+
+        try
+        {
+            var response = await MagnetoSerialConsole.RequestResponseAsync(_motorPort, positionRequest, TimeSpan.FromSeconds(5));
+
+            if (string.IsNullOrWhiteSpace(response) || !response.StartsWith("#"))
+            {
+                MagnetoLogger.Log($"Invalid or no response received for {_motorName}", LogFactoryLogLevel.LogLevel.ERROR);
+                return -1.0;
+            }
+
+            var posDouble = ExtractDoubleFromString(response);
+            MagnetoLogger.Log($"Position as double: {posDouble}", LogFactoryLogLevel.LogLevel.VERBOSE);
+            return posDouble;
+        }
+        catch (TimeoutException ex)
+        {
+            MagnetoLogger.Log($"Timeout while waiting for {_motorName} motor response: {ex.Message}", LogFactoryLogLevel.LogLevel.ERROR);
+            return -1.0;
+        }
+        catch (Exception ex)
+        {
+            MagnetoLogger.Log($"Unexpected error while reading {_motorName}: {ex.Message}", LogFactoryLogLevel.LogLevel.ERROR);
+            return -1.0;
+        }
+    }
+
 
 
     // TODO: Update methods to use asynchronous position check
@@ -665,7 +705,7 @@ public class StepperMotor : IStepperMotor
             if (Math.Abs(_currentPos - desiredPos) <= _tolerance || STOP_MOVE_FLAG)
             {
                 MagnetoLogger.Log("Desired position reached.", LogFactoryLogLevel.LogLevel.SUCCESS);
-                MagnetoSerialConsole.ClearTermRead();
+                //MagnetoSerialConsole.ClearTermRead();
 
                 // Reset set stop flag to true if loop entered because position was reached
                 STOP_MOVE_FLAG = true;

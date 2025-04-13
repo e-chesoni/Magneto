@@ -42,7 +42,7 @@ public class MainViewModel : ObservableRecipient, INavigationAware
         MagnetoSerialConsole.GetInitializedPorts();
 
         // Set default termread value
-        MagnetoSerialConsole.ClearTermRead();
+        //MagnetoSerialConsole.ClearTermRead();
     }
 
     public ICommand ItemClickCommand
