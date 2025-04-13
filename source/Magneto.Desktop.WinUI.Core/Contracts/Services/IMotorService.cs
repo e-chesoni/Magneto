@@ -15,6 +15,7 @@ public interface IMotorService
     StepperMotor GetBuildMotor();
     StepperMotor GetPowderMotor();
     StepperMotor GetSweepMotor();
+    double GetMaxSweepPosition();
     public Task<double> GetMotorPosition(StepperMotor motor);
     void ConfigurePortEventHandlers();
     void InitMotors();

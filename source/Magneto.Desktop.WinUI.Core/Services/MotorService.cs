@@ -144,7 +144,10 @@ public class MotorService : IMotorService
     {
         return sweepMotor;
     }
-
+    public double GetMaxSweepPosition()
+    {
+        return sweepMotor.GetMaxPos();
+    }
     public async Task<double> GetMotorPosition(StepperMotor motor)
     {
         return await motor.GetPosAsync();

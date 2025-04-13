@@ -31,13 +31,9 @@ public class MotorPageService
     public StepperMotor? sweepMotor;
     public double maxSweepPosition;
     */
-    public PrintUIControlGroupHelper printUiControlGroupHelper { get; set; }
 
-    /// <summary>
-    /// Initializes the dictionary mapping motor names to their corresponding StepperMotor objects.
-    /// This map facilitates the retrieval of motor objects based on their names.
-    /// </summary>
-    private Dictionary<string, StepperMotor?>? _motorTextMap;
+    //private Dictionary<string, StepperMotor?>? _motorTextMap;
+    public PrintUIControlGroupHelper printUiControlGroupHelper { get; set; }
 
     /*
     public MotorPageService(ActuationManager am,
@@ -157,6 +153,20 @@ public class MotorPageService
         return _actuationManager;
     }
     */
+
+    public StepperMotor GetBuildMotor()
+    {
+        return _motorService.GetBuildMotor();
+    }
+    public StepperMotor GetPowderMotor()
+    {
+        return _motorService.GetPowderMotor();
+    }
+    public StepperMotor GetSweepMotor()
+    {
+        return _motorService.GetSweepMotor();
+    }
+
     public TextBox GetBuildPositionTextBox()
     {
         return printUiControlGroupHelper.calibrateMotorControlGroup.buildPositionTextBox;
@@ -242,9 +252,9 @@ public class MotorPageService
         else
         {
             var dist = double.Parse(textBox.Text);
-            await _actuationManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.AbsoluteMove, dist);
+            //await _actuationManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.AbsoluteMove, dist);
             // TODO: call motor service
-            //await _motorService.MoveMotorAbs(motor, dist);
+            await _motorService.MoveMotorAbs(motor, dist);
             return 1;
         }
     }
@@ -266,8 +276,8 @@ public class MotorPageService
             // Add sign to distance based on moveUp boolean
             var distance = moveUp ? dist : -dist;
             MagnetoLogger.Log($"Moving motor distance of {distance}", LogFactoryLogLevel.LogLevel.SUCCESS);
-            //await _motorService.MoveMotorRel(motor, distance);
-            await _actuationManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.RelativeMove, distance);
+            await _motorService.MoveMotorRel(motor, distance);
+            //await _actuationManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.RelativeMove, distance);
             /*
             if (_actuationManager != null)
             {
@@ -291,7 +301,8 @@ public class MotorPageService
     /// </summary>
     /// <param name="layerThickness"></param>
     /// <returns></returns>
-    public async Task<int> LayerMove(double layerThickness)
+    /*
+    public async Task<int> LayerMoveOLD(double layerThickness)
     {
         var powderAmplifier = 2.5; // Quan requested we change this from 4-2.5 to conserve powder
         var lowerBuildForSweepDist = 2;
@@ -325,11 +336,35 @@ public class MotorPageService
         }
         return 1;
     }
+    */
+    public async Task<int> LayerMove(double layerThickness, double amplifier)
+    {
+        var buildMotor = _motorService.GetBuildMotor();
+        var powderMotor = _motorService.GetPowderMotor();
+        var sweepMotor = _motorService.GetSweepMotor();
+        var maxSweepPosition = _motorService.GetMaxSweepPosition();
+        var clearance = 2;
+        // 1. move build motor down for sweep
+        await _motorService.MoveMotorRel(buildMotor, -clearance);
+        // 2. home sweep motor
+        await _motorService.HomeMotor(sweepMotor);
+        // 3. move build motor back up to last mark height
+        await _motorService.MoveMotorRel(buildMotor, clearance);
+        // 4. move powder motor up by powder amp layer height (Prof. Tertuliano recommends powder motor moves 2-3x distance of build motor)
+        await _motorService.MoveMotorRel(powderMotor, layerThickness);
+        // 5. move build motor down by layer height
+        await _motorService.MoveMotorRel(buildMotor, -layerThickness);
+        // 6. apply material to build plate
+        await _motorService.MoveMotorRel(sweepMotor, maxSweepPosition);
+        // TEMPORARY SOLUTION: repeat last command to pad queue so we can use motors running check properly
+        await _motorService.MoveMotorRel(sweepMotor, maxSweepPosition);
+        return 1; // TODO: implement failure return
+    }
 
     public bool MotorsRunning()
     {
         // if queue is not empty, motors are running
-        if (_actuationManager.MotorsRunning())
+        if (_motorService.MotorsRunning())
         {
             return true;
         }
@@ -361,7 +396,7 @@ public class MotorPageService
         await _motorService.StopMotor(motor);
     }
 
-    public async Task<int> StopSweepMotorOld(StepperMotor motor, TextBox textBox)
+    public async Task<int> StopSweepAndUpdateTextBox(StepperMotor motor, TextBox textBox)
     {
         if (textBox == null || !double.TryParse(textBox.Text, out var value))
         {
@@ -371,12 +406,12 @@ public class MotorPageService
         }
         else
         {
-            if (sweepMotor != null)
+            if (_motorService.GetSweepMotor() != null)
             {
                 // stop motor
                 // NOTE: when called, you must await the return to get the integer value
                 // Otherwise returns some weird string
-                await sweepMotor.StopMotor(); // do not go through actuator;
+                await _motorService.GetSweepMotor().StopMotor(); // do not go through actuator;
             }
             else
             {
@@ -409,6 +444,7 @@ public class MotorPageService
 
     public async Task<int> HomeMotor(StepperMotor motor)
     {
+        /*
         if (_actuationManager != null)
         {
             await _actuationManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.AbsoluteMove, motor.GetHomePos());
@@ -419,7 +455,9 @@ public class MotorPageService
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             return 0;
         }
-        UpdateMotorPositionTextBox(motor);
+        */
+        await _motorService.HomeMotor(motor);
+        UpdateMotorPositionTextBox(motor); // TODO: This should probably wait until the motor is done moving...
         return 1;
     }
 
@@ -431,7 +469,6 @@ public class MotorPageService
     {
         var msg = "Get position button clicked...";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-        motor = _motorService.GetBuildMotor();
         if (motor != null)
         {
             if (motor != null)
@@ -471,17 +508,16 @@ public class MotorPageService
 
     public void HandleRelMove(StepperMotor motor, TextBox textBox, bool moveUp, XamlRoot xamlRoot)
     {
-        var serviceMotor = _motorService.GetBuildMotor();
-        var msg = $"{serviceMotor.GetMotorName()} rel move button clicked.";
+        var msg = $"{motor.GetMotorName()} rel move button clicked.";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
-        if (serviceMotor != null)
+        if (motor != null)
         {
             var moveIsAbs = false;
-            MoveMotorAndUpdateUI(serviceMotor, textBox, moveIsAbs, moveUp, xamlRoot);
+            MoveMotorAndUpdateUI(motor, textBox, moveIsAbs, moveUp, xamlRoot);
         }
         else
         {
-            msg = $"Cannot execute relative move on {serviceMotor.GetMotorName()} motor. Motor is null.";
+            msg = $"Cannot execute relative move on {motor.GetMotorName()} motor. Motor is null.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
         }
     }
@@ -640,7 +676,7 @@ public class MotorPageService
             _ = PopupInfo.ShowContentDialog(xamlRoot, "Error", "Failed to select motor. Motor is null.");
         }
     }
-
+    /*
     public async void StopMotorAndUpdateUI(StepperMotor motor, TextBox textBox, XamlRoot xamlRoot)
     {
         var res = 0;
@@ -649,7 +685,7 @@ public class MotorPageService
             // Select build motor button
             printUiControlGroupHelper.SelectMotor(motor);
 
-            res = await StopSweepMotorOld(motor, textBox);
+            res = await StopSweepAndUpdateTextBox(motor, textBox);
 
             // If operation is successful, update text box
             if (res == 1)
@@ -666,7 +702,7 @@ public class MotorPageService
             _ = PopupInfo.ShowContentDialog(xamlRoot, "Error", "Cannot select motor. Motor is null.");
         }
     }
-
+    */
     #endregion
 }
 

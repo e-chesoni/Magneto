@@ -336,28 +336,33 @@ public sealed partial class TestPrintPage : Page
 
         var msg = "Homing all motors";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-
-        if (_motorPageService.buildMotor != null)
+        var buildMotor = _motorPageService.GetBuildMotor();
+        var powderMotor = _motorPageService.GetPowderMotor();
+        var sweepMotor = _motorPageService.GetSweepMotor();
+        var buildTextBox = _motorPageService.GetBuildPositionTextBox();
+        var powderTextBox = _motorPageService.GetPowderPositionTextBox();
+        var sweepTextBox = _motorPageService.GetSweepPositionTextBox();
+        if (buildMotor != null)
         {
-            _motorPageService.HandleHomeMotorAndUpdateTextBox(_motorPageService.buildMotor, _motorPageService.GetBuildPositionTextBox());
+            _motorPageService.HandleHomeMotorAndUpdateTextBox(buildMotor, buildTextBox);
         }
         else
         {
             MagnetoLogger.Log("Build Motor is null, cannot home motor.", LogFactoryLogLevel.LogLevel.ERROR);
         }
 
-        if (_motorPageService.powderMotor != null)
+        if (powderMotor != null)
         {
-            _motorPageService.HandleHomeMotorAndUpdateTextBox(_motorPageService.powderMotor, _motorPageService.GetPowderPositionTextBox());
+            _motorPageService.HandleHomeMotorAndUpdateTextBox(powderMotor, powderTextBox);
         }
         else
         {
             MagnetoLogger.Log("Powder Motor is null, cannot home motor.", LogFactoryLogLevel.LogLevel.ERROR);
         }
 
-        if (_motorPageService.sweepMotor != null)
+        if (sweepMotor != null)
         {
-            _motorPageService.HandleHomeMotorAndUpdateTextBox(_motorPageService.sweepMotor, _motorPageService.GetSweepPositionTextBox());
+            _motorPageService.HandleHomeMotorAndUpdateTextBox(sweepMotor, sweepTextBox);
         }
         else
         {
@@ -371,9 +376,14 @@ public sealed partial class TestPrintPage : Page
         _waverunnerPageService.StopMark();
 
         // stop motors
+        /*
         _motorPageService.GetActuationManager().HandleStopRequest(_motorPageService.sweepMotor);
         _motorPageService.GetActuationManager().HandleStopRequest(_motorPageService.buildMotor);
         _motorPageService.GetActuationManager().HandleStopRequest(_motorPageService.powderMotor);
+        */
+        _motorPageService.StopSweepMotor();
+        _motorPageService.StopBuildMotor();
+        _motorPageService.StopPowderMotor();
     }
 
     #endregion
@@ -382,79 +392,90 @@ public sealed partial class TestPrintPage : Page
 
     private void SelectBuildMotorButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.printUiControlGroupHelper.SelectMotor(_motorPageService.buildMotor);
+        _motorPageService.printUiControlGroupHelper.SelectMotor(_motorPageService.GetBuildMotor());
     }
 
     private void SelectPowderMotorButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.printUiControlGroupHelper.SelectMotor(_motorPageService.powderMotor);
+        _motorPageService.printUiControlGroupHelper.SelectMotor(_motorPageService.GetPowderMotor());
     }
 
     private void SelectSweepMotorButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.printUiControlGroupHelper.SelectMotor(_motorPageService.sweepMotor);
+        _motorPageService.printUiControlGroupHelper.SelectMotor(_motorPageService.GetSweepMotor());
     }
     private async void GetBuildMotorCurrentPositionButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.HandleGetPosition(_motorPageService.buildMotor, _motorPageService.GetBuildPositionTextBox());
+        _motorPageService.HandleGetPosition(_motorPageService.GetBuildMotor(), _motorPageService.GetBuildPositionTextBox());
         //await UpdateBuildPositionHelper();
     }
 
     private async void GetPowderMotorCurrentPositionButton_Click(object sender, RoutedEventArgs e)
     {
+        _motorPageService.HandleGetPosition(_motorPageService.GetPowderMotor(), _motorPageService.GetPowderPositionTextBox());
         //await UpdatePowderPositionHelper();
     }
 
     private async void GetSweepMotorCurrentPositionButton_Click(object sender, RoutedEventArgs e)
     {
+        _motorPageService.HandleGetPosition(_motorPageService.GetSweepMotor(), _motorPageService.GetSweepPositionTextBox());
         //await UpdateSweepPositionHelper();
     }
 
     private void MoveBuildToAbsPositionButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.HandleAbsMove(_motorPageService.buildMotor, _motorPageService.GetBuildAbsMoveTextBox(), this.Content.XamlRoot);
+        var buildMotor = _motorPageService.GetBuildMotor();
+        _motorPageService.HandleAbsMove(buildMotor, _motorPageService.GetBuildAbsMoveTextBox(), this.Content.XamlRoot);
     }
 
     private void MovePowderToAbsPositionButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.HandleAbsMove(_motorPageService.powderMotor, _motorPageService.GetPowderAbsMoveTextBox(), this.Content.XamlRoot);
+        var powderMotor = _motorPageService.GetPowderMotor();
+        _motorPageService.HandleAbsMove(powderMotor, _motorPageService.GetPowderAbsMoveTextBox(), this.Content.XamlRoot);
     }
 
     private void MoveSweepToAbsPositionButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.HandleAbsMove(_motorPageService.sweepMotor, _motorPageService.GetSweepAbsMoveTextBox(), this.Content.XamlRoot);
+        var sweepMotor = _motorPageService.GetSweepMotor();
+        _motorPageService.HandleAbsMove(sweepMotor, _motorPageService.GetSweepAbsMoveTextBox(), this.Content.XamlRoot);
     }
 
     private async void StepBuildMotorUpButton_Click(object sender, RoutedEventArgs e)
     {
         MagnetoLogger.Log("step build up clicked", LogFactoryLogLevel.LogLevel.VERBOSE);
-        _motorPageService.HandleRelMove(_motorPageService.buildMotor, _motorPageService.GetBuildStepTextBox(), true, this.Content.XamlRoot);
+        var motor = _motorPageService.GetBuildMotor();
+        _motorPageService.HandleRelMove(motor, _motorPageService.GetBuildStepTextBox(), true, this.Content.XamlRoot);
     }
 
     private async void StepBuildMotorDownButton_Click(object sender, RoutedEventArgs e)
     {
         MagnetoLogger.Log("step build down clicked", LogFactoryLogLevel.LogLevel.VERBOSE);
-        _motorPageService.HandleRelMove(_motorPageService.buildMotor, _motorPageService.GetBuildStepTextBox(), false, this.Content.XamlRoot);
+        var motor = _motorPageService.GetBuildMotor();
+        _motorPageService.HandleRelMove(motor, _motorPageService.GetBuildStepTextBox(), false, this.Content.XamlRoot);
     }
 
     private void StepPowderMotorUpButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.HandleRelMove(_motorPageService.powderMotor, _motorPageService.GetPowderStepTextBox(), true, this.Content.XamlRoot);
+        var motor = _motorPageService.GetPowderMotor();
+        _motorPageService.HandleRelMove(motor, _motorPageService.GetPowderStepTextBox(), true, this.Content.XamlRoot);
     }
 
     private void StepPowderMotorDownButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.HandleRelMove(_motorPageService.powderMotor, _motorPageService.GetPowderStepTextBox(), false, this.Content.XamlRoot);
+        var motor = _motorPageService.GetPowderMotor();
+        _motorPageService.HandleRelMove(motor, _motorPageService.GetPowderStepTextBox(), false, this.Content.XamlRoot);
     }
 
     private void StepSweepMotorLeftInCalibrateButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.HandleRelMove(_motorPageService.sweepMotor, _motorPageService.GetSweepStepTextBox(), true, this.Content.XamlRoot);
+        var motor = _motorPageService.GetSweepMotor();
+        _motorPageService.HandleRelMove(motor, _motorPageService.GetPowderStepTextBox(), true, this.Content.XamlRoot);
     }
 
     private void StepSweepMotorRightInCalibrateButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.HandleRelMove(_motorPageService.sweepMotor, _motorPageService.GetSweepStepTextBox(), false, this.Content.XamlRoot);
+        var motor = _motorPageService.GetSweepMotor();
+        _motorPageService.HandleRelMove(motor, _motorPageService.GetPowderStepTextBox(), false, this.Content.XamlRoot);
     }
 
     private void HomeAllMotorsInCalibrationPanelButton_Click(object sender, RoutedEventArgs e)
@@ -743,6 +764,8 @@ public sealed partial class TestPrintPage : Page
     private async void MultiLayerMoveButton_Click(object sender, RoutedEventArgs e)
     {
         var fullPath = "";
+        var layerThickness = 0.03; // TODO: Replace with read from layerThickness text box
+        var amplifier = 2; // TODO: Replace with read from amplifier text box
         if (string.IsNullOrWhiteSpace(MultiLayerMoveInputTextBox.Text) || !int.TryParse(MultiLayerMoveInputTextBox.Text, out var layers))
         {
             var msg = "MultiLayerMoveInputTextBox text is not a valid integer.";
@@ -787,7 +810,7 @@ public sealed partial class TestPrintPage : Page
 
                     // LAYER MOVE
                     // order of layer move operations: home sweep, move powder up 2x, move build down, supply sweep
-                    await _motorPageService.LayerMove(_currentLayerThickness); // _ = means don't wait; technically you can use that here because queuing makes sure operations happen in order, but send occurs instantly, but using await just to be sure
+                    await _motorPageService.LayerMove(layerThickness, amplifier); // _ = means don't wait; technically you can use that here because queuing makes sure operations happen in order, but send occurs instantly, but using await just to be sure
                     while (_motorPageService.MotorsRunning()) { await Task.Delay(100); } // TODO: Test! now awaiting task delay to make this non-blocking
                 }
                 else 
@@ -796,7 +819,7 @@ public sealed partial class TestPrintPage : Page
                     MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
 
                     // LAYER MOVE
-                    await _motorPageService.LayerMove(_currentLayerThickness);
+                    await _motorPageService.LayerMove(layerThickness, amplifier);
                     while (_motorPageService.MotorsRunning()) { await Task.Delay(100); }
 
                     // MARK
@@ -821,7 +844,7 @@ public sealed partial class TestPrintPage : Page
             KILL_OPERATION = false;
         }
     }
-
+    /*
     private void StopMultiLayerMoveButton_Click(object sender, RoutedEventArgs e)
     {
         var msg = "stopping all motors.";
@@ -840,7 +863,7 @@ public sealed partial class TestPrintPage : Page
 
         
     }
-
+    */
     #region Print Manual Move Methods
     /*
     private void SelectBuildInPrintButton_Click(object sender, RoutedEventArgs e)
@@ -900,9 +923,9 @@ public sealed partial class TestPrintPage : Page
     */
     private void StopMotorsHelper()
     {
-        _motorPageService.GetActuationManager().HandleStopRequest(_motorPageService.buildMotor);
-        _motorPageService.GetActuationManager().HandleStopRequest(_motorPageService.powderMotor);
-        _motorPageService.GetActuationManager().HandleStopRequest(_motorPageService.sweepMotor);
+        _motorPageService.StopSweepMotor();
+        _motorPageService.StopBuildMotor();
+        _motorPageService.StopPowderMotor();
     }
 
     #endregion
