@@ -404,19 +404,19 @@ public sealed partial class TestPrintPage : Page
     {
         _motorPageService.printUiControlGroupHelper.SelectMotor(_motorPageService.GetSweepMotor());
     }
-    private async void GetBuildMotorCurrentPositionButton_Click(object sender, RoutedEventArgs e)
+    private void GetBuildMotorCurrentPositionButton_Click(object sender, RoutedEventArgs e)
     {
         _motorPageService.HandleGetPosition(_motorPageService.GetBuildMotor(), _motorPageService.GetBuildPositionTextBox());
         //await UpdateBuildPositionHelper();
     }
 
-    private async void GetPowderMotorCurrentPositionButton_Click(object sender, RoutedEventArgs e)
+    private void GetPowderMotorCurrentPositionButton_Click(object sender, RoutedEventArgs e)
     {
         _motorPageService.HandleGetPosition(_motorPageService.GetPowderMotor(), _motorPageService.GetPowderPositionTextBox());
         //await UpdatePowderPositionHelper();
     }
 
-    private async void GetSweepMotorCurrentPositionButton_Click(object sender, RoutedEventArgs e)
+    private void GetSweepMotorCurrentPositionButton_Click(object sender, RoutedEventArgs e)
     {
         _motorPageService.HandleGetPosition(_motorPageService.GetSweepMotor(), _motorPageService.GetSweepPositionTextBox());
         //await UpdateSweepPositionHelper();
@@ -440,14 +440,14 @@ public sealed partial class TestPrintPage : Page
         _motorPageService.HandleAbsMove(sweepMotor, _motorPageService.GetSweepAbsMoveTextBox(), this.Content.XamlRoot);
     }
 
-    private async void StepBuildMotorUpButton_Click(object sender, RoutedEventArgs e)
+    private void StepBuildMotorUpButton_Click(object sender, RoutedEventArgs e)
     {
         MagnetoLogger.Log("step build up clicked", LogFactoryLogLevel.LogLevel.VERBOSE);
         var motor = _motorPageService.GetBuildMotor();
         _motorPageService.HandleRelMove(motor, _motorPageService.GetBuildStepTextBox(), true, this.Content.XamlRoot);
     }
 
-    private async void StepBuildMotorDownButton_Click(object sender, RoutedEventArgs e)
+    private void StepBuildMotorDownButton_Click(object sender, RoutedEventArgs e)
     {
         MagnetoLogger.Log("step build down clicked", LogFactoryLogLevel.LogLevel.VERBOSE);
         var motor = _motorPageService.GetBuildMotor();

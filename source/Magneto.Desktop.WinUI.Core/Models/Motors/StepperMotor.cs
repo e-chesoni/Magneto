@@ -552,16 +552,19 @@ public class StepperMotor : IStepperMotor
         await _moveLock.WaitAsync(); // Acquire lock
         try
         {
+            /*
             var initialPos = await GetPosAsync();
             var desiredPos = initialPos + value;
-            var moveCmd = "MVR";
 
-            var moveId = Guid.NewGuid(); // helpful for tracing async logs
             var msg = $"[{moveId}] Initial position of {_motorName} motor: {initialPos}. " +
                       $"Desired relative position: {desiredPos} (value: {value})";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
+            */
+            //if (ValidateDesiredPosition(desiredPos) == ExecStatus.Success)
+            var moveId = Guid.NewGuid(); // helpful for tracing async logs
+            var moveCmd = "MVR";
 
-            if (ValidateDesiredPosition(desiredPos) == ExecStatus.Success)
+            if (true)
             {
                 if (MagnetoSerialConsole.OpenSerialPort(_motorPort))
                 {
@@ -573,7 +576,7 @@ public class StepperMotor : IStepperMotor
                         $"Command Sent: {motorCmd}",
                         LogFactoryLogLevel.LogLevel.VERBOSE);
 
-                    await HandleCheckPosition(desiredPos);
+                    //await HandleCheckPosition(desiredPos);
                 }
                 else
                 {
@@ -583,10 +586,12 @@ public class StepperMotor : IStepperMotor
             }
             else
             {
+                /*
                 MagnetoLogger.Log(
                     $"Invalid position: {desiredPos} for {_motorName}. _minPos is {_minPos} and _maxPos is {_maxPos}. " +
                     $"Aborting motor move operation.",
                     LogFactoryLogLevel.LogLevel.ERROR);
+                */
                 return;
             }
         }
@@ -651,17 +656,17 @@ public class StepperMotor : IStepperMotor
     #endregion
 
     #region Movement Helpers
+    /*
     /// <summary>
     /// Get current motor position
     /// </summary>
     /// <returns></returns> Returns -1 if request for position fails, otherwise returns motor position
-    /*
     public async Task<double> GetPosAsyncOLD()
     {
         MagnetoLogger.Log($"Getting {_motorName} motor position...", LogFactoryLogLevel.LogLevel.VERBOSE);
 
         // TODO: Test is this is still needed with newly implemented AddCommand method (uses locking)
-        MagnetoSerialConsole.ClearTermRead();
+        //MagnetoSerialConsole.ClearTermRead();
         var positionRequest = $"{_motorAxis}POS?";
 
         if (!MagnetoSerialConsole.OpenSerialPort(_motorPort))
@@ -695,7 +700,6 @@ public class StepperMotor : IStepperMotor
 
         return posDouble;
     }
-    */
     public async Task<double> GetPosAsync()
     {
         MagnetoLogger.Log($"Getting {_motorName} motor position...", LogFactoryLogLevel.LogLevel.VERBOSE);
@@ -731,6 +735,49 @@ public class StepperMotor : IStepperMotor
         {
             MagnetoLogger.Log($"Unexpected error while reading {_motorName}: {ex.Message}", LogFactoryLogLevel.LogLevel.ERROR);
             return -1.0;
+        }
+    }
+    */
+    public async Task<double> GetPosAsync()
+    {
+        await _moveLock.WaitAsync();
+        try
+        {
+            MagnetoLogger.Log($"Getting {_motorName} motor position...", LogFactoryLogLevel.LogLevel.VERBOSE);
+
+            var positionRequest = $"{_motorAxis}POS?";
+
+            if (!MagnetoSerialConsole.OpenSerialPort(_motorPort))
+            {
+                MagnetoLogger.Log("Port Closed.", LogFactoryLogLevel.LogLevel.ERROR);
+                return -1.0;
+            }
+
+            var response = await MagnetoSerialConsole.RequestResponseAsync(_motorPort, positionRequest, TimeSpan.FromSeconds(5));
+
+            if (string.IsNullOrWhiteSpace(response) || !response.StartsWith("#"))
+            {
+                MagnetoLogger.Log($"Invalid or no response received for {_motorName}", LogFactoryLogLevel.LogLevel.ERROR);
+                return -1.0;
+            }
+
+            var posDouble = ExtractDoubleFromString(response);
+            MagnetoLogger.Log($"Position as double: {posDouble}", LogFactoryLogLevel.LogLevel.VERBOSE);
+            return posDouble;
+        }
+        catch (TimeoutException ex)
+        {
+            MagnetoLogger.Log($"Timeout while waiting for {_motorName} motor response: {ex.Message}", LogFactoryLogLevel.LogLevel.ERROR);
+            return -1.0;
+        }
+        catch (Exception ex)
+        {
+            MagnetoLogger.Log($"Unexpected error while reading {_motorName}: {ex.Message}", LogFactoryLogLevel.LogLevel.ERROR);
+            return -1.0;
+        }
+        finally
+        {
+            _moveLock.Release();
         }
     }
 

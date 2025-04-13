@@ -338,9 +338,7 @@ public class ActuationManager : ISubsciber, IStateMachine
 
     public Task<double> AddCommand(ControllerType controllerType, int axis, CommandType cmdType, double dist)
     {
-        var msg = "Adding Command to Queue. Locking commandQueue";
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-
+        MagnetoLogger.Log($"📬 Enqueuing command for {controllerType}, axis {axis}, type {cmdType}, distance {dist}", LogFactoryLogLevel.LogLevel.WARN);
         TaskCompletionSource<double> tcs = null;
         MotorKey key = new MotorKey(controllerType, axis);
 
@@ -442,7 +440,6 @@ public class ActuationManager : ISubsciber, IStateMachine
                 MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             }
         }
-
         isCommandProcessing = false;
     }
 
@@ -460,9 +457,10 @@ public class ActuationManager : ISubsciber, IStateMachine
     private async Task ExecuteMotorCommand(StepperMotor motor, string motorCommand)
     {
         //double value = double.Parse(motorCommand.Substring(3));
-        double value = double.Parse(motorCommand[3..]); // TODO: test use of range operator (prettier code)
-        var msg = $"Executing command {value}.";
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
+        var value = double.Parse(motorCommand[3..]);
+        //var msg = $"Executing command {value}.";
+        //MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
+        MagnetoLogger.Log($"🏁 Executing motor command: {motorCommand}", LogFactoryLogLevel.LogLevel.WARN);
 
         if (motorCommand.StartsWith("STP"))
         {
@@ -479,7 +477,7 @@ public class ActuationManager : ISubsciber, IStateMachine
         }
         else
         {
-            msg = "Failed to execute motor command. Command not recognized.";
+            var msg = "Failed to execute motor command. Command not recognized.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
         }
     }

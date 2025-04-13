@@ -34,7 +34,6 @@ public static class UpdateUITextHelper
     {
         if (textBox != null)
         {
-            // Assuming DispatcherQueue is accessible or passed in some way
             textBox.DispatcherQueue.TryEnqueue(() =>
             {
                 textBox.Text = update;

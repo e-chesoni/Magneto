@@ -475,7 +475,8 @@ public class MotorPageService
             if (motor != null)
             {
                 //var motorDetails = GetMotorDetailsHelper(motor);
-                var pos = await motor.GetPosAsync(); // TODO: figure out why AddCommand returns 0...
+                //var pos = await motor.GetPosAsync(); // TODO: figure out why AddCommand returns 0...
+                var pos = await _motorService.GetMotorPositionAsync(motor);
                 if (textBox != null) // Full error checking in UITextHelper
                 {
                     UpdateUITextHelper.UpdateUIText(textBox, pos.ToString());
@@ -485,13 +486,12 @@ public class MotorPageService
         }
         else
         {
-            MagnetoLogger.Log($"{motor.GetPortName()} is null, cannot get position.", LogFactoryLogLevel.LogLevel.ERROR);
+            MagnetoLogger.Log("Motor is null, cannot get position.", LogFactoryLogLevel.LogLevel.ERROR);
         }
     }
 
     public void HandleAbsMove(StepperMotor motor, TextBox textBox, XamlRoot xamlRoot)
     {
-        motor = _motorService.GetBuildMotor();
         var msg = $"{motor.GetMotorName()} abs move button clicked.";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
         if (motor != null)
@@ -518,7 +518,7 @@ public class MotorPageService
         }
         else
         {
-            msg = $"Cannot execute relative move on {motor.GetMotorName()} motor. Motor is null.";
+            msg = $"Cannot execute relative move on motor. Motor is null.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
         }
     }

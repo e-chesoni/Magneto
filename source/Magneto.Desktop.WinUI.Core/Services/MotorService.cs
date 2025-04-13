@@ -214,7 +214,8 @@ public class MotorService : IMotorService
             // Move motor
             // NOTE: when called, you must await the return to get the integer value
             // Otherwise returns some weird string
-            MagnetoLogger.Log($"distance: {distance}", LogFactoryLogLevel.LogLevel.ERROR);
+            MagnetoLogger.Log($"🚦called with distance {distance} on motor {motor.GetMotorName()}", LogFactoryLogLevel.LogLevel.WARN);
+            MagnetoLogger.Log($"🔁distance {distance} to {motor.GetMotorName()} via {motor.GetAxis()}", LogFactoryLogLevel.LogLevel.WARN);
             await _actuationManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.RelativeMove, distance);
         }
         else
