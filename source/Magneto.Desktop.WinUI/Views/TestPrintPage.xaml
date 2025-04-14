@@ -89,7 +89,7 @@
                                             Click="StepBuildMotorDownButton_Click"></Button>
                                     </Grid>
                                 </Grid>
-                                <Button Grid.Row="4" x:Name="StopBuildMotorInCalibrateButton" HorizontalAlignment="Center" Height="30" Content="Stop B" Click="StopBuildMotorInCalibrateButton_Click"></Button>
+                                <Button Grid.Row="4" x:Name="StopBuildMotorButton" HorizontalAlignment="Center" Height="30" Content="Stop B" Click="StopBuildMotorButton_Click"></Button>
                             </Grid>
 
                             <Grid Grid.Column="1">
@@ -144,7 +144,7 @@
                                         <Button Grid.Column="1" x:Name="StepPowderMotorDownButton" HorizontalAlignment="Center" Height="30" Content="D" Click="StepPowderMotorDownButton_Click"></Button>
                                     </Grid>
                                 </Grid>
-                                <Button Grid.Row="4" x:Name="StopPowderMotorInCalibrateButton" HorizontalAlignment="Center" Height="30" Content="Stop P" Click="StopPowderMotorInCalibrateButton_Click"></Button>
+                                <Button Grid.Row="4" x:Name="StopPowderMotorButton" HorizontalAlignment="Center" Height="30" Content="Stop P" Click="StopPowderMotorButton_Click"></Button>
                             </Grid>
 
                             <Grid Grid.Column="2">
@@ -197,7 +197,7 @@
                                         <Button Grid.Column="1" x:Name="StepSweepMotorRightInCalibrateButton" HorizontalAlignment="Center" Height="30" Content="R" Click="StepSweepMotorRightInCalibrateButton_Click"></Button>
                                     </Grid>
                                 </Grid>
-                                <Button Grid.Row="4" x:Name="StopSweepMotorInCalibrateButton" HorizontalAlignment="Center" Height="30" Content="Stop S" Click="StopSweepMotorInCalibrateButton_Click"></Button>
+                                <Button Grid.Row="4" x:Name="StopSweepMotorButton" HorizontalAlignment="Center" Height="30" Content="Stop S" Click="StopSweepMotorButton_Click"></Button>
                             </Grid>
                         </Grid>
 

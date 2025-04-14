@@ -245,7 +245,7 @@ public sealed partial class TestPrintPage : Page
                                                                 BuildMotorAbsPositionTextBox, PowderMotorAbsPositionTextBox, SweepMotorAbsPositionTextBox, // NEW abs position text box features
                                                                 BuildMotorStepTextBox, PowderMotorStepTextBox, SweepMotorStepTextBox,
                                                                 StepBuildMotorUpButton, StepBuildMotorDownButton, StepPowderMotorUpButton, StepPowderMotorDownButton, StepSweepMotorLeftInCalibrateButton, StepSweepMotorRightInCalibrateButton,
-                                                                StopBuildMotorInCalibrateButton, StopPowderMotorInCalibrateButton, StopSweepMotorInCalibrateButton,
+                                                                StopBuildMotorButton, StopPowderMotorButton, StopSweepMotorButton,
                                                                 HomeAllMotorsInCalibrationPanelButton, StopAllMotorsInCalibrationPanelButton);
 
         _printControlGroupHelper = new PrintUIControlGroupHelper(_calibrateMotorUIControlGroup);
@@ -419,17 +419,20 @@ public sealed partial class TestPrintPage : Page
     {
         StopMotorsHelper();
     }
-    private void StopBuildMotorInCalibrateButton_Click(object sender, RoutedEventArgs e)
+    private void StopBuildMotorButton_Click(object sender, RoutedEventArgs e)
     {
         _motorPageService.StopBuildMotorAndUpdateTextBox();
     }
-    private void StopPowderMotorInCalibrateButton_Click(object sender, RoutedEventArgs e)
+    private void StopPowderMotorButton_Click(object sender, RoutedEventArgs e)
     {
         _motorPageService.StopPowderMotorAndUpdateTextBox();
     }
-    private void StopSweepMotorInCalibrateButton_Click(object sender, RoutedEventArgs e)
+    private void StopSweepMotorButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.StopSweepMotorAndUpdateTextBox();
+        var sweepConfig = MagnetoConfig.GetMotorByName("sweep");
+        var sweepMotor = _motorPageService.GetSweepMotor();
+        MagnetoSerialConsole.SerialWrite(sweepConfig.COMPort, "1STP");
+        sweepMotor.STOP_MOVE_FLAG = true;
     }
     #endregion
 
