@@ -222,10 +222,13 @@ public class MotorService : IMotorService
         await _commandQueueManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.RelativeMove, distance);
         return 1;
     }
-    public Task<int> HomeMotor(StepperMotor motor) => throw new NotImplementedException();
+    public async Task<int> HomeMotor(StepperMotor motor)
+    {
+        await _commandQueueManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.AbsoluteMove, motor.GetHomePos());
+        return 1;
+    }
     public async Task<int> StopMotor(StepperMotor motor)
     {
-        //await motor.StopMotor();
         await _commandQueueManager.HandleStopRequest(motor);
         return 1;
     }

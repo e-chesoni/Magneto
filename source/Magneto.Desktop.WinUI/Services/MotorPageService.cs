@@ -231,21 +231,11 @@ public class MotorPageService
         await _motorService.StopMotor(motor);
     }
 
-    public async Task<int> HomeMotor(StepperMotor motor)
+    public async Task<int> HomeMotorAndUpdateTextBox(StepperMotor motor)
     {
-        /*
-        if (_actuationManager != null)
-        {
-            await _actuationManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.AbsoluteMove, motor.GetHomePos());
-        }
-        else
-        {
-            var msg = $"Actuation manager is null.";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            return 0;
-        }
-        */
+        printUiControlGroupHelper.SelectMotor(motor);
         await _motorService.HomeMotor(motor);
+        await WaitUntilAtTargetAsync(motor, motor.GetHomePos());
         await UpdateMotorPositionTextBox(motor); // TODO: This should probably wait until the motor is done moving...
         return 1;
     }
@@ -288,7 +278,7 @@ public class MotorPageService
         }
         else
         {
-            msg = $"Cannot execute relative move on {motor.GetMotorName()} motor. Motor is null.";
+            msg = $"Cannot execute relative move on motor. Motor is null.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
         }
     }
@@ -308,6 +298,7 @@ public class MotorPageService
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
         }
     }
+    /*
     public void HandleHomeMotorAndUpdateTextBox(StepperMotor motor, TextBox positionTextBox)
     {
         MagnetoLogger.Log("Homing Motor.", LogFactoryLogLevel.LogLevel.VERBOSE);
@@ -319,7 +310,7 @@ public class MotorPageService
         }
         else
         {
-            MagnetoLogger.Log($"Cannot home {motor.GetMotorName()} motor: motor value is null.", LogFactoryLogLevel.LogLevel.ERROR);
+            MagnetoLogger.Log($"Cannot home motor: motor value is null.", LogFactoryLogLevel.LogLevel.ERROR);
         }
     }
     public void HandleHomeMotor(StepperMotor motor)
@@ -336,7 +327,7 @@ public class MotorPageService
             MagnetoLogger.Log($"Cannot home {motor.GetMotorName()} motor: motor value is null.", LogFactoryLogLevel.LogLevel.ERROR);
         }
     }
-
+    */
     #endregion
 
     #region Move and Update UI Method

@@ -294,7 +294,7 @@ public sealed partial class TestPrintPage : Page
 
 
     #region Motor Helpers
-    private void HomeMotorsHelper()
+    private async Task HomeMotorsHelper()
     {
         var msg = "Homing all motors";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
@@ -306,7 +306,8 @@ public sealed partial class TestPrintPage : Page
         var sweepTextBox = _motorPageService.GetSweepPositionTextBox();
         if (buildMotor != null)
         {
-            _motorPageService.HandleHomeMotorAndUpdateTextBox(buildMotor, buildTextBox);
+            //_motorPageService.HandleHomeMotorAndUpdateTextBox(buildMotor, buildTextBox);
+            await _motorPageService.HomeMotorAndUpdateTextBox(buildMotor);
         }
         else
         {
@@ -315,7 +316,8 @@ public sealed partial class TestPrintPage : Page
 
         if (powderMotor != null)
         {
-            _motorPageService.HandleHomeMotorAndUpdateTextBox(powderMotor, powderTextBox);
+            //_motorPageService.HandleHomeMotorAndUpdateTextBox(powderMotor, powderTextBox);
+            await _motorPageService.HomeMotorAndUpdateTextBox(powderMotor);
         }
         else
         {
@@ -324,7 +326,8 @@ public sealed partial class TestPrintPage : Page
 
         if (sweepMotor != null)
         {
-            _motorPageService.HandleHomeMotorAndUpdateTextBox(sweepMotor, sweepTextBox);
+            //_motorPageService.HandleHomeMotorAndUpdateTextBox(sweepMotor, sweepTextBox);
+            await _motorPageService.HomeMotorAndUpdateTextBox(sweepMotor);
         }
         else
         {
@@ -423,18 +426,18 @@ public sealed partial class TestPrintPage : Page
     private void StepSweepMotorLeftInCalibrateButton_Click(object sender, RoutedEventArgs e)
     {
         var motor = _motorPageService.GetSweepMotor();
-        _motorPageService.HandleRelMove(motor, _motorPageService.GetPowderStepTextBox(), true, this.Content.XamlRoot);
+        _motorPageService.HandleRelMove(motor, _motorPageService.GetSweepStepTextBox(), true, this.Content.XamlRoot);
     }
 
     private void StepSweepMotorRightInCalibrateButton_Click(object sender, RoutedEventArgs e)
     {
         var motor = _motorPageService.GetSweepMotor();
-        _motorPageService.HandleRelMove(motor, _motorPageService.GetPowderStepTextBox(), false, this.Content.XamlRoot);
+        _motorPageService.HandleRelMove(motor, _motorPageService.GetSweepStepTextBox(), false, this.Content.XamlRoot);
     }
 
-    private void HomeAllMotorsInCalibrationPanelButton_Click(object sender, RoutedEventArgs e)
+    private async void HomeAllMotorsInCalibrationPanelButton_Click(object sender, RoutedEventArgs e)
     {
-        HomeMotorsHelper();
+        await HomeMotorsHelper();
     }
 
     private void StopAllMotorsInCalibrationPanelButton_Click(object sender, RoutedEventArgs e)

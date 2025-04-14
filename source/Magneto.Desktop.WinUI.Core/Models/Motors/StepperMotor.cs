@@ -513,7 +513,7 @@ public class StepperMotor : IStepperMotor
     {
         MagnetoLogger.Log("Homing motor...", LogFactoryLogLevel.LogLevel.VERBOSE);
         await MoveMotorAbsAsync(GetHomePos());
-        _calculatedPos = GetHomePos();
+        //_calculatedPos = GetHomePos();
 
         // TODO: You need to implement the logic to determine if the command has failed or succeeded
         // and return -1 or 0 accordingly. This is just a placeholder.
