@@ -275,7 +275,7 @@ namespace Magneto.Desktop.WinUI
         private async void GetBuildPositionButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             //HandleGetPosition(_buildMotor, BuildPositionTextBox);
-            _motorPageService.HandleGetPosition(_motorPageService.GetBuildMotor(), _motorPageService.GetBuildPositionTextBox());
+            await _motorPageService.HandleGetPosition(_motorPageService.GetBuildMotor(), _motorPageService.GetBuildPositionTextBox(), true);
         }
 
         /// <summary>
@@ -287,7 +287,7 @@ namespace Magneto.Desktop.WinUI
         /// <param name="e">Event data for the click event.</param>
         private async void GetPowderPositionButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            _motorPageService.HandleGetPosition(_motorPageService.GetPowderMotor(), _motorPageService.GetPowderPositionTextBox());
+            await _motorPageService.HandleGetPosition(_motorPageService.GetPowderMotor(), _motorPageService.GetPowderPositionTextBox(), true);
         }
 
         /// <summary>
@@ -300,7 +300,7 @@ namespace Magneto.Desktop.WinUI
         private async void GetSweepPositionButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             //HandleGetPosition(_sweepMotor, SweepPositionTextBox);
-            _motorPageService.HandleGetPosition(_motorPageService.GetSweepMotor(), _motorPageService.GetSweepPositionTextBox());
+            await _motorPageService.HandleGetPosition(_motorPageService.GetSweepMotor(), _motorPageService.GetSweepPositionTextBox(), true);
         }
 
         #endregion

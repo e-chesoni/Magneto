@@ -258,6 +258,7 @@ public sealed partial class TestPrintPage : Page
 
         // Set default job file
         //_waverunnerPageService.SetDefaultJobFileName("2025-01-13_5x5_square_top_left.sjf");
+        _motorPageService.HandleGetAllPositions();
     }
     /*
     private void SetDefaultPrintSettings()
@@ -312,7 +313,7 @@ public sealed partial class TestPrintPage : Page
         }
         else
         {
-            MagnetoLogger.Log("Build Motor is null, cannot home motor.", LogFactoryLogLevel.LogLevel.ERROR);
+            MagnetoLogger.Log("Build Motor is null or stop flag is up cannot home motor.", LogFactoryLogLevel.LogLevel.ERROR);
         }
 
         if ((powderMotor != null) && (!_motorPageService.GetSweepMotor().STOP_MOVE_FLAG))
@@ -322,7 +323,7 @@ public sealed partial class TestPrintPage : Page
         }
         else
         {
-            MagnetoLogger.Log("Powder Motor is null, cannot home motor.", LogFactoryLogLevel.LogLevel.ERROR);
+            MagnetoLogger.Log("Powder Motor is null or stop flag is up cannot home motor.", LogFactoryLogLevel.LogLevel.ERROR);
         }
 
         if ((sweepMotor != null) && (!_motorPageService.GetSweepMotor().STOP_MOVE_FLAG))
@@ -332,7 +333,7 @@ public sealed partial class TestPrintPage : Page
         }
         else
         {
-            MagnetoLogger.Log("Sweep Motor is null, cannot home motor.", LogFactoryLogLevel.LogLevel.ERROR);
+            MagnetoLogger.Log("Sweep Motor is null or stop flag is up cannot home motor.", LogFactoryLogLevel.LogLevel.ERROR);
         }
     }
     #endregion
@@ -351,17 +352,17 @@ public sealed partial class TestPrintPage : Page
     {
         _motorPageService.printUiControlGroupHelper.SelectMotor(_motorPageService.GetSweepMotor());
     }
-    private void GetBuildMotorCurrentPositionButton_Click(object sender, RoutedEventArgs e)
+    private async void GetBuildMotorCurrentPositionButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.HandleGetPosition(_motorPageService.GetBuildMotor(), _motorPageService.GetBuildPositionTextBox());
+        await _motorPageService.HandleGetPosition(_motorPageService.GetBuildMotor(), _motorPageService.GetBuildPositionTextBox(), true);
     }
-    private void GetPowderMotorCurrentPositionButton_Click(object sender, RoutedEventArgs e)
+    private async void GetPowderMotorCurrentPositionButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.HandleGetPosition(_motorPageService.GetPowderMotor(), _motorPageService.GetPowderPositionTextBox());
+        await _motorPageService.HandleGetPosition(_motorPageService.GetPowderMotor(), _motorPageService.GetPowderPositionTextBox(), true);
     }
-    private void GetSweepMotorCurrentPositionButton_Click(object sender, RoutedEventArgs e)
+    private async void GetSweepMotorCurrentPositionButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.HandleGetPosition(_motorPageService.GetSweepMotor(), _motorPageService.GetSweepPositionTextBox());
+        await _motorPageService.HandleGetPosition(_motorPageService.GetSweepMotor(), _motorPageService.GetSweepPositionTextBox(), true);
     }
     private void MoveBuildToAbsPositionButton_Click(object sender, RoutedEventArgs e)
     {
@@ -672,34 +673,33 @@ public sealed partial class TestPrintPage : Page
         buildMotor.STOP_MOVE_FLAG = true;
         powderMotor.STOP_MOVE_FLAG = true;
         sweepMotor.STOP_MOVE_FLAG = true;
-        _motorPageService.printUiControlGroupHelper.AllSelectButtonBackgroundsRed(_calibrateMotorUIControlGroup);
+        _motorPageService.printUiControlGroupHelper.ChangeSelectButtonsBackground(_calibrateMotorUIControlGroup, Colors.Red);
         LockCalibrationPanel();
     }
     #endregion
 
     #region Enable/Disable Panel Methods
-    private void ToggleCalibrationPanelButtonLock_Click(object sender, RoutedEventArgs e)
+    private void EnableMotorsButton_Click(object sender, RoutedEventArgs e)
     {
-        if (_calibrationPanelEnabled)
-        {
-            LockCalibrationPanel();
-        }
-        else
-        {
-            UnlockCalibrationPanel();
-        }
-        _calibrationPanelEnabled = !_calibrationPanelEnabled;
+        var buildMotor = _motorPageService.GetBuildMotor();
+        var powderMotor = _motorPageService.GetPowderMotor();
+        var sweepMotor = _motorPageService.GetSweepMotor();
+        buildMotor.STOP_MOVE_FLAG = false;
+        powderMotor.STOP_MOVE_FLAG = false;
+        sweepMotor.STOP_MOVE_FLAG = false;
+        UnlockCalibrationPanel();
+        _motorPageService.printUiControlGroupHelper.ChangeSelectButtonsBackground(_calibrateMotorUIControlGroup, Colors.DarkGray);
     }
     private void UnlockCalibrationPanel()
     {
         _motorPageService.printUiControlGroupHelper.EnableUIControlGroup(_calibrateMotorUIControlGroup);
-        ToggleCalibrationPanelButtonLock.Content = "Lock Calibration";
+        EnableMotorsButton.Content = "Enable Calibration";
     }
 
     private void LockCalibrationPanel()
     {
         _motorPageService.printUiControlGroupHelper.DisableUIControlGroup(_calibrateMotorUIControlGroup);
-        ToggleCalibrationPanelButtonLock.Content = "Unlock Calibration";
+        EnableMotorsButton.Content = "Enable Calibration";
     }
 
     #endregion

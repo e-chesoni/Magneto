@@ -258,8 +258,16 @@ public class MotorPageService
     #endregion
 
     #region Movement Handlers
+    public async void HandleGetAllPositions()
+    {
+        var msg = "Get position button clicked...";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+        await HandleGetPosition(GetBuildMotor(), GetBuildPositionTextBox(), false);
+        await HandleGetPosition(GetPowderMotor(), GetPowderPositionTextBox(), false);
+        await HandleGetPosition(GetSweepMotor(), GetSweepPositionTextBox(), false);
+    }
 
-    public async void HandleGetPosition(StepperMotor motor, TextBox textBox)
+    public async Task HandleGetPosition(StepperMotor motor, TextBox textBox, bool selectMotor)
     {
         var msg = "Get position button clicked...";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
@@ -272,7 +280,10 @@ public class MotorPageService
                 {
                     UpdateUITextHelper.UpdateUIText(textBox, pos.ToString());
                 }
-                printUiControlGroupHelper.SelectMotor(motor);
+                if (selectMotor)
+                {
+                    printUiControlGroupHelper.SelectMotor(motor);
+                }
             }
         }
         else

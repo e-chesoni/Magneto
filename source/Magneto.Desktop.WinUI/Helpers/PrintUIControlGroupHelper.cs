@@ -63,15 +63,13 @@ public class PrintUIControlGroupHelper
         buttonGrp.selectPowderButton.Background = new SolidColorBrush(motor.GetMotorName() == "powder" ? Colors.Green : Colors.DimGray);
         buttonGrp.selectSweepButton.Background = new SolidColorBrush(motor.GetMotorName() == "sweep" ? Colors.Green : Colors.DimGray);
     }
-
-    public void AllSelectButtonBackgroundsRed(MotorUIControlGroup buttonGrp)
+    public void ChangeSelectButtonsBackground(MotorUIControlGroup buttonGrp, Windows.UI.Color color)
     {
         // Update button backgrounds and selection flags
-        buttonGrp.selectBuildButton.Background = new SolidColorBrush(Colors.Red);
-        buttonGrp.selectPowderButton.Background = new SolidColorBrush(Colors.Red);
-        buttonGrp.selectSweepButton.Background = new SolidColorBrush(Colors.Red);
+        buttonGrp.selectBuildButton.Background = new SolidColorBrush(color);
+        buttonGrp.selectPowderButton.Background = new SolidColorBrush(color);
+        buttonGrp.selectSweepButton.Background = new SolidColorBrush(color);
     }
-
     #endregion
 
     #region Select Motor Helper Methods
