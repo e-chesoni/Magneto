@@ -24,136 +24,15 @@ namespace Magneto.Desktop.WinUI;
 public class MotorPageService
 {
     private readonly IMotorService _motorService;
-    /*
-    private ActuationManager? _actuationManager;
-    public StepperMotor? buildMotor;
-    public StepperMotor? powderMotor;
-    public StepperMotor? sweepMotor;
-    public double maxSweepPosition;
-    */
-
-    //private Dictionary<string, StepperMotor?>? _motorTextMap;
     public PrintUIControlGroupHelper printUiControlGroupHelper { get; set; }
 
-    /*
-    public MotorPageService(ActuationManager am,
-                            MotorUIControlGroup calibrateCtlGrp)
-    {
-        // Set up event handers to communicate with motor controller ports
-        ConfigurePortEventHandlers();
-
-        // Initialize motor set up for test page
-        InitMotors(am);
-
-        // Initialize motor map to simplify coordinated calls below
-        // Make sure this happens AFTER motor setup
-        InitializeMotorMap();
-
-        printUiControlGroupHelper = new PrintUIControlGroupHelper(calibrateCtlGrp);
-    }
-    */
     public MotorPageService(ActuationManager am, PrintUIControlGroupHelper printCtlGrpHelper)
     {
         _motorService = App.GetService<IMotorService>();
-        //_actuationManager = _motorService.GetActuationManager();
-        //_motorService.Initialize(); // still null
-        //ConfigurePortEventHandlers();
-        
-        // Initialize motor set up for test page
-        //InitMotors(am);
-
-        // Initialize motor map to simplify coordinated calls below
-        // Make sure this happens AFTER motor setup
-        //InitializeMotorMap();
-
         printUiControlGroupHelper = new PrintUIControlGroupHelper(printCtlGrpHelper.calibrateMotorControlGroup, printCtlGrpHelper.printMotorControlGroup);
     }
 
-    #region Initial Setup
-    /*
-    private void ConfigurePortEventHandlers()
-    {
-        var msg = "Requesting port access for motor service.";
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
-        MagnetoSerialConsole.LogAvailablePorts();
-
-        // Get motor configurations
-        var buildMotorConfig = MagnetoConfig.GetMotorByName("build");
-        var sweepMotorConfig = MagnetoConfig.GetMotorByName("sweep");
-
-        // Get motor ports, ensuring that the motor configurations are not null
-        var buildPort = buildMotorConfig?.COMPort;
-        var sweepPort = sweepMotorConfig?.COMPort;
-
-        // Register event handlers on page
-        foreach (SerialPort port in MagnetoSerialConsole.GetAvailablePorts())
-        {
-            if (port.PortName.Equals(buildPort, StringComparison.OrdinalIgnoreCase))
-            {
-                MagnetoSerialConsole.AddEventHandler(port);
-                msg = $"Requesting addition of event handler for port {port.PortName}";
-                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-            }
-            else if (port.PortName.Equals(sweepPort, StringComparison.OrdinalIgnoreCase))
-            {
-                MagnetoSerialConsole.AddEventHandler(port);
-                msg = $"Requesting addition of event handler for port {port.PortName}";
-                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-            }
-        }
-    }
-
-    private async void InitMotors(ActuationManager am)
-    {
-        _actuationManager = am;
-
-        // Set up each motor individually using the passed-in parameters
-        HandleMotorInit("powder", _actuationManager.GetPowderMotor(), out powderMotor);
-        HandleMotorInit("build", _actuationManager.GetBuildMotor(), out buildMotor);
-        HandleMotorInit("sweep", _actuationManager.GetSweepMotor(), out sweepMotor);
-
-        // get maxSweepPosition
-        maxSweepPosition = _actuationManager.GetSweepMotor().GetMaxPos() - 2; // NOTE: Subtracting 2 from max position for tolerance...probs not needed in long run
-
-        // Optionally, get the positions of the motors after setting them up
-        // GetMotorPositions(); // TODO: Fix this if needed
-    }
-
-    private void HandleMotorInit(string motorName, StepperMotor motor, out StepperMotor motorField)
-    {
-        if (motor != null)
-        {
-            motorField = motor;
-            var msg = $"Found motor in config with name {motor.GetMotorName()}. Setting this to {motorName} motor in test.";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-        }
-        else
-        {
-            motorField = null;
-            MagnetoLogger.Log($"Unable to find {motorName} motor", LogFactoryLogLevel.LogLevel.ERROR);
-        }
-    }
-
-    private void InitializeMotorMap()
-    {
-        _motorTextMap = new Dictionary<string, StepperMotor?>
-            {
-                { "build", buildMotor },
-                { "powder", powderMotor },
-                { "sweep", sweepMotor }
-            };
-    }
-    */
-    #endregion
-
     #region Getters
-    /*
-    public ActuationManager GetActuationManager()
-    {
-        return _actuationManager;
-    }
-    */
-
     public StepperMotor GetBuildMotor()
     {
         return _motorService.GetBuildMotor();
@@ -252,20 +131,18 @@ public class MotorPageService
         else
         {
             var dist = double.Parse(textBox.Text);
-            //await _actuationManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.AbsoluteMove, dist);
-            // TODO: call motor service
             await _motorService.MoveMotorAbs(motor, dist);
             return 1;
         }
     }
 
-    public async Task<int> MoveMotorRel(StepperMotor motor, TextBox textBox, bool moveUp)
+    public async Task<(int status, double targetPos)> MoveMotorRel(StepperMotor motor, TextBox textBox, bool moveUp)
     {
         if (textBox == null || !double.TryParse(textBox.Text, out var value))
         {
             var msg = $"invalid input in {motor.GetMotorName} text box: {textBox.Text}";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            return 0;
+            return (0,0);
         }
         else
         {
@@ -277,22 +154,12 @@ public class MotorPageService
             var distance = moveUp ? dist : -dist;
 
             MagnetoLogger.Log($"Moving motor distance of {distance}", LogFactoryLogLevel.LogLevel.SUCCESS);
+
+            var currentPos = await _motorService.GetMotorPositionAsync(motor);
+            var targetPos = currentPos + distance;
+
             await _motorService.MoveMotorRel(motor, distance);
-            //await _actuationManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.RelativeMove, distance);
-            /*
-            if (_actuationManager != null)
-            {
-                // Move motor
-                // NOTE: when called, you must await the return to get the integer value
-                // Otherwise returns some weird string
-                await _actuationManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.RelativeMove, dist);
-            } else {
-                var msg = $"Actuation manager is null.";
-                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-                return 0;
-            }
-            */
-            return 1;
+            return (1, targetPos);
         }
     }
 
@@ -361,7 +228,6 @@ public class MotorPageService
         await _motorService.MoveMotorRel(sweepMotor, maxSweepPosition);
         return 1; // TODO: implement failure return
     }
-
     public bool MotorsRunning()
     {
         // if queue is not empty, motors are running
@@ -374,7 +240,6 @@ public class MotorPageService
             return false;
         }
     }
-
     public async void StopBuildMotor()
     {
         var motor = _motorService.GetBuildMotor();
@@ -397,52 +262,6 @@ public class MotorPageService
         await _motorService.StopMotor(motor);
     }
 
-    public async Task<int> StopSweepAndUpdateTextBox(StepperMotor motor, TextBox textBox)
-    {
-        if (textBox == null || !double.TryParse(textBox.Text, out var value))
-        {
-            var msg = $"invalid input in {motor.GetMotorName} text box: {textBox.Text}";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            return 0;
-        }
-        else
-        {
-            if (_motorService.GetSweepMotor() != null)
-            {
-                // stop motor
-                // NOTE: when called, you must await the return to get the integer value
-                // Otherwise returns some weird string
-                _motorService.GetSweepMotor().StopMotor(); // do not go through actuator;
-            }
-            else
-            {
-                var msg = $"Sweep motor is null.";
-                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-                return 0;
-            }
-            return 1;
-        }
-    }
-
-    /// <summary>
-    /// Sweeps left to apply material to build plate
-    /// </summary>
-    /*
-    public int SweepPowder()
-    {
-        if (_actuationManager != null)
-        {
-            _actuationManager.AddCommand(GetControllerTypeHelper(sweepMotor.GetMotorName()), sweepMotor.GetAxis(), CommandType.AbsoluteMove, (sweepMotor.GetMaxPos() - 2)); // NOTE: Subtracting 2 from max position for tolerance...probs not needed in long run
-        } else
-        {
-            var msg = $"Actuation manager is null.";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            return 0;
-        }
-        return 1;
-    }
-    */
-
     public async Task<int> HomeMotor(StepperMotor motor)
     {
         /*
@@ -458,7 +277,7 @@ public class MotorPageService
         }
         */
         await _motorService.HomeMotor(motor);
-        UpdateMotorPositionTextBox(motor); // TODO: This should probably wait until the motor is done moving...
+        await UpdateMotorPositionTextBox(motor); // TODO: This should probably wait until the motor is done moving...
         return 1;
     }
 
@@ -474,8 +293,6 @@ public class MotorPageService
         {
             if (motor != null)
             {
-                //var motorDetails = GetMotorDetailsHelper(motor);
-                //var pos = await motor.GetPosAsync(); // TODO: figure out why AddCommand returns 0...
                 var pos = await _motorService.GetMotorPositionAsync(motor);
                 if (textBox != null) // Full error checking in UITextHelper
                 {
@@ -522,19 +339,6 @@ public class MotorPageService
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
         }
     }
-
-    /*
-    public void HandleRelMoveInSitu(StepperMotor motor, TextBox textBox, bool moveUp, XamlRoot xamlRoot)
-    {
-        var moveIsAbs = false;
-        var inSitu = true;
-
-        if (motor != null)
-        {
-            MoveMotorAndUpdateUI(motor, textBox, moveIsAbs, moveUp, inSitu, xamlRoot);
-        }
-    }
-    */
     public void HandleHomeMotorAndUpdateTextBox(StepperMotor motor, TextBox positionTextBox)
     {
         MagnetoLogger.Log("Homing Motor.", LogFactoryLogLevel.LogLevel.VERBOSE);
@@ -587,15 +391,9 @@ public class MotorPageService
     public async Task<int> UpdateMotorPositionTextBox(StepperMotor motor)
     {
         MagnetoLogger.Log("Updating motor position text box.", LogFactoryLogLevel.LogLevel.SUCCESS);
-        // Call position add command first so we can update motor position in UI
-        // TODO: WARNING -- this may cause issues when you decouple
-        var position = 0.0;
         try
         {
-            // Call AddCommand with CommandType.PositionQuery to get the motor's position
-            // TODO: Use motor service
-            //position = await motor.GetPosAsync();
-            position = await _motorService.GetMotorPositionAsync(motor);
+            var position = await _motorService.GetMotorPositionAsync(motor);
             var textBox = GetMotorPositonTextBox(motor);
             if (textBox != null)
                 textBox.Text = position.ToString();
@@ -610,102 +408,37 @@ public class MotorPageService
 
     public async void MoveMotorAndUpdateUI(StepperMotor motor, TextBox textBox, bool moveIsAbs, bool increment, XamlRoot xamlRoot)
     {
-        var res = 0;
-        if (motor != null)
-        {
-            // Select build motor button
-            printUiControlGroupHelper.SelectMotor(motor);
-
-            if (moveIsAbs)
-            {
-                res = await MoveMotorAbs(motor, textBox);
-            }
-            else
-            {
-                res = await MoveMotorRel(motor, textBox, increment);
-            }
-
-            // If operation is successful, update text box
-            if (res == 1)
-            {
-                //await UpdateMotorPositionTextBox(motor);
-            }
-            else
-            {
-                _ = PopupInfo.ShowContentDialog(xamlRoot, "Error", "Failed to send command to motor.");
-            }
-        }
-        else
+        if (motor == null)
         {
             _ = PopupInfo.ShowContentDialog(xamlRoot, "Error", "Failed to select motor. Motor is null.");
+            return;
         }
-    }
-    /*
-    public async void MoveMotorAndUpdateUI(StepperMotor motor, TextBox textBox, bool moveIsAbs, bool increment, bool inSitu, XamlRoot xamlRoot)
-    {
-        var res = 0;
-        if (motor != null)
+
+        printUiControlGroupHelper.SelectMotor(motor);
+
+        int res;
+        double targetPos = 0;
+
+        if (moveIsAbs)
         {
-            // Select build motor button
-            if (inSitu)
-            {
-                printUiControlGroupHelper.SelectMotorInPrint(motor);
-            }
-            else
-            {
-                printUiControlGroupHelper.SelectMotor(motor);
-            }
-
-            if (moveIsAbs)
-            {
-                res = await MoveMotorAbs(motor, textBox);
-            }
-            else
-            {
-                res = await MoveMotorRel(motor, textBox, increment);
-            }
-
-            // If operation is successful, update text box
-            if (res == 1)
-            {
-                await UpdateMotorPositionTextBox(motor);
-            }
-            else
-            {
-                _ = PopupInfo.ShowContentDialog(xamlRoot, "Error", "Failed to send command to motor.");
-            }
+            res = await MoveMotorAbs(motor, textBox);
         }
         else
         {
-            _ = PopupInfo.ShowContentDialog(xamlRoot, "Error", "Failed to select motor. Motor is null.");
+            (res, targetPos) = await MoveMotorRel(motor, textBox, increment);
         }
-    }
-    public async void StopMotorAndUpdateUI(StepperMotor motor, TextBox textBox, XamlRoot xamlRoot)
-    {
-        var res = 0;
-        if (motor != null)
+
+        if (res == 1)
         {
-            // Select build motor button
-            printUiControlGroupHelper.SelectMotor(motor);
-
-            res = await StopSweepAndUpdateTextBox(motor, textBox);
-
-            // If operation is successful, update text box
-            if (res == 1)
-            {
-                UpdateMotorPositionTextBox(motor);
-            }
-            else
-            {
-                _ = PopupInfo.ShowContentDialog(xamlRoot, "Error", "Failed to send command to motor.");
-            }
+            // 🔒 Wait until motor reaches final position
+            await motor.WaitUntilAtTargetAsync(targetPos); // TODO: go through _motorService
+            await UpdateMotorPositionTextBox(motor); // TODO: TEST--may cause issues
         }
         else
         {
-            _ = PopupInfo.ShowContentDialog(xamlRoot, "Error", "Cannot select motor. Motor is null.");
+            _ = PopupInfo.ShowContentDialog(xamlRoot, "Error", "Failed to send command to motor.");
         }
     }
-    */
     #endregion
 }
 
