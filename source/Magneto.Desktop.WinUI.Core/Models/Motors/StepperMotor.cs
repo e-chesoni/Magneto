@@ -591,11 +591,6 @@ public class StepperMotor : IStepperMotor
 
     public async Task<double> GetPosAsync()
     {
-        if (STOP_MOVE_FLAG)
-        {
-            MagnetoLogger.Log($"🛑 Position check aborted for {_motorName} due to STOP_MOVE_FLAG", LogFactoryLogLevel.LogLevel.WARN);
-            return -1.0;
-        }
         await _moveLock.WaitAsync();
         try
         {

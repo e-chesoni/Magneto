@@ -234,11 +234,17 @@ public class MotorPageService
         await UpdateMotorPositionTextBox(motor);
     }
 
-    public async void StopAllMotorsAndClearQueue()
+    public void StopMotorsWithFlag()
     {
-        await _motorService.StopMotorAndClearQueue(_motorService.GetBuildMotor());
-        await _motorService.StopMotorAndClearQueue(_motorService.GetPowderMotor());
-        await _motorService.StopMotorAndClearQueue(_motorService.GetSweepMotor());
+        var buildConfig = MagnetoConfig.GetMotorByName("build");
+        var sweepConfig = MagnetoConfig.GetMotorByName("sweep");
+        MagnetoLogger.Log("✉️Writing to COM to stop", LogFactoryLogLevel.LogLevel.WARN);
+        MagnetoSerialConsole.SerialWrite(buildConfig.COMPort, "1STP"); // build motor is on axis 1
+        MagnetoSerialConsole.SerialWrite(buildConfig.COMPort, "2STP");
+        MagnetoSerialConsole.SerialWrite(sweepConfig.COMPort, "1STP"); // sweep motor is on axis 1
+        GetBuildMotor().STOP_MOVE_FLAG = true;
+        GetPowderMotor().STOP_MOVE_FLAG = true;
+        GetSweepMotor().STOP_MOVE_FLAG = true;
     }
     public async Task<int> HomeMotorAndUpdateTextBox(StepperMotor motor)
     {

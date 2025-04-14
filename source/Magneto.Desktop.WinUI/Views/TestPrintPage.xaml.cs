@@ -335,18 +335,6 @@ public sealed partial class TestPrintPage : Page
             MagnetoLogger.Log("Sweep Motor is null, cannot home motor.", LogFactoryLogLevel.LogLevel.ERROR);
         }
     }
-
-    private void KillAll()
-    {
-        // stop mark
-        _waverunnerPageService.StopMark();
-
-        // stop motors
-        _motorPageService.StopSweepMotorAndUpdateTextBox();
-        _motorPageService.StopBuildMotorAndUpdateTextBox();
-        _motorPageService.StopPowderMotorAndUpdateTextBox();
-    }
-
     #endregion
 
     #region Calibration Panel Methods
@@ -355,12 +343,10 @@ public sealed partial class TestPrintPage : Page
     {
         _motorPageService.printUiControlGroupHelper.SelectMotor(_motorPageService.GetBuildMotor());
     }
-
     private void SelectPowderMotorButton_Click(object sender, RoutedEventArgs e)
     {
         _motorPageService.printUiControlGroupHelper.SelectMotor(_motorPageService.GetPowderMotor());
     }
-
     private void SelectSweepMotorButton_Click(object sender, RoutedEventArgs e)
     {
         _motorPageService.printUiControlGroupHelper.SelectMotor(_motorPageService.GetSweepMotor());
@@ -369,98 +355,81 @@ public sealed partial class TestPrintPage : Page
     {
         _motorPageService.HandleGetPosition(_motorPageService.GetBuildMotor(), _motorPageService.GetBuildPositionTextBox());
     }
-
     private void GetPowderMotorCurrentPositionButton_Click(object sender, RoutedEventArgs e)
     {
         _motorPageService.HandleGetPosition(_motorPageService.GetPowderMotor(), _motorPageService.GetPowderPositionTextBox());
     }
-
     private void GetSweepMotorCurrentPositionButton_Click(object sender, RoutedEventArgs e)
     {
         _motorPageService.HandleGetPosition(_motorPageService.GetSweepMotor(), _motorPageService.GetSweepPositionTextBox());
     }
-
     private void MoveBuildToAbsPositionButton_Click(object sender, RoutedEventArgs e)
     {
         var buildMotor = _motorPageService.GetBuildMotor();
         _motorPageService.HandleAbsMove(buildMotor, _motorPageService.GetBuildAbsMoveTextBox(), this.Content.XamlRoot);
     }
-
     private void MovePowderToAbsPositionButton_Click(object sender, RoutedEventArgs e)
     {
         var powderMotor = _motorPageService.GetPowderMotor();
         _motorPageService.HandleAbsMove(powderMotor, _motorPageService.GetPowderAbsMoveTextBox(), this.Content.XamlRoot);
     }
-
     private void MoveSweepToAbsPositionButton_Click(object sender, RoutedEventArgs e)
     {
         var sweepMotor = _motorPageService.GetSweepMotor();
         _motorPageService.HandleAbsMove(sweepMotor, _motorPageService.GetSweepAbsMoveTextBox(), this.Content.XamlRoot);
     }
-
     private void StepBuildMotorUpButton_Click(object sender, RoutedEventArgs e)
     {
         MagnetoLogger.Log("step build up clicked", LogFactoryLogLevel.LogLevel.VERBOSE);
         var motor = _motorPageService.GetBuildMotor();
         _motorPageService.HandleRelMove(motor, _motorPageService.GetBuildStepTextBox(), true, this.Content.XamlRoot);
     }
-
     private void StepBuildMotorDownButton_Click(object sender, RoutedEventArgs e)
     {
         MagnetoLogger.Log("step build down clicked", LogFactoryLogLevel.LogLevel.VERBOSE);
         var motor = _motorPageService.GetBuildMotor();
         _motorPageService.HandleRelMove(motor, _motorPageService.GetBuildStepTextBox(), false, this.Content.XamlRoot);
     }
-
     private void StepPowderMotorUpButton_Click(object sender, RoutedEventArgs e)
     {
         var motor = _motorPageService.GetPowderMotor();
         _motorPageService.HandleRelMove(motor, _motorPageService.GetPowderStepTextBox(), true, this.Content.XamlRoot);
     }
-
     private void StepPowderMotorDownButton_Click(object sender, RoutedEventArgs e)
     {
         var motor = _motorPageService.GetPowderMotor();
         _motorPageService.HandleRelMove(motor, _motorPageService.GetPowderStepTextBox(), false, this.Content.XamlRoot);
     }
-
     private void StepSweepMotorLeftInCalibrateButton_Click(object sender, RoutedEventArgs e)
     {
         var motor = _motorPageService.GetSweepMotor();
         _motorPageService.HandleRelMove(motor, _motorPageService.GetSweepStepTextBox(), true, this.Content.XamlRoot);
     }
-
     private void StepSweepMotorRightInCalibrateButton_Click(object sender, RoutedEventArgs e)
     {
         var motor = _motorPageService.GetSweepMotor();
         _motorPageService.HandleRelMove(motor, _motorPageService.GetSweepStepTextBox(), false, this.Content.XamlRoot);
     }
-
     private async void HomeAllMotorsInCalibrationPanelButton_Click(object sender, RoutedEventArgs e)
     {
         await HomeMotorsHelper();
     }
-
     private void StopAllMotorsInCalibrationPanelButton_Click(object sender, RoutedEventArgs e)
     {
         StopMotorsHelper();
     }
-
     private void StopBuildMotorInCalibrateButton_Click(object sender, RoutedEventArgs e)
     {
         _motorPageService.StopBuildMotorAndUpdateTextBox();
     }
-
     private void StopPowderMotorInCalibrateButton_Click(object sender, RoutedEventArgs e)
     {
         _motorPageService.StopPowderMotorAndUpdateTextBox();
     }
-
     private void StopSweepMotorInCalibrateButton_Click(object sender, RoutedEventArgs e)
     {
         _motorPageService.StopSweepMotorAndUpdateTextBox();
     }
-
     #endregion
 
     #region Print Summary Methods
@@ -688,31 +657,23 @@ public sealed partial class TestPrintPage : Page
     }
 
     #region Print Manual Move Methods
-    private async void StopMotorsHelper()
+    private void StopMotorsHelper()
     {
-        _motorPageService.StopAllMotorsAndClearQueue();
-        /*
-        _motorPageService.StopSweepMotorAndUpdateTextBox();
-        _motorPageService.StopBuildMotorAndUpdateTextBox();
-        _motorPageService.StopPowderMotorAndUpdateTextBox();
-        */
+        // TODO: Does not work when moved to page service (only one motor stops)...no idea why...
         var buildConfig = MagnetoConfig.GetMotorByName("build");
         var sweepConfig = MagnetoConfig.GetMotorByName("sweep");
+        var buildMotor = _motorPageService.GetBuildMotor();
+        var powderMotor = _motorPageService.GetPowderMotor();
+        var sweepMotor = _motorPageService.GetSweepMotor();
         MagnetoLogger.Log("✉️Writing to COM to stop", LogFactoryLogLevel.LogLevel.WARN);
         MagnetoSerialConsole.SerialWrite(buildConfig.COMPort, "1STP"); // build motor is on axis 1
         MagnetoSerialConsole.SerialWrite(buildConfig.COMPort, "2STP");
         MagnetoSerialConsole.SerialWrite(sweepConfig.COMPort, "1STP"); // sweep motor is on axis 1
-        _motorPageService.GetBuildMotor().STOP_MOVE_FLAG = true;
-        _motorPageService.GetPowderMotor().STOP_MOVE_FLAG = true;
-        _motorPageService.GetSweepMotor().STOP_MOVE_FLAG = true;
-        /*
-        MagnetoLogger.Log("퍌Calling stop directly on motor", LogFactoryLogLevel.LogLevel.WARN);
-        _motorPageService.GetSweepMotor().StopMotor();
-        _motorPageService.GetSweepMotor().StopMotor();
-        _motorPageService.GetSweepMotor().StopMotor();
-        */
-        await _motorPageService.WaitUntilAtTargetAsync(_motorPageService.GetSweepMotor(), 0);
-        
+        buildMotor.STOP_MOVE_FLAG = true;
+        powderMotor.STOP_MOVE_FLAG = true;
+        sweepMotor.STOP_MOVE_FLAG = true;
+        _motorPageService.printUiControlGroupHelper.AllSelectButtonBackgroundsRed(_calibrateMotorUIControlGroup);
+        LockCalibrationPanel();
     }
     #endregion
 

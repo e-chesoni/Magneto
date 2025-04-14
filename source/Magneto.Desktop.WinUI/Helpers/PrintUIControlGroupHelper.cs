@@ -56,12 +56,20 @@ public class PrintUIControlGroupHelper
     /// <param name="motor">The StepperMotor to be selected as the current test motor.</param>
     /// <param name="positionTextBox">The TextBox associated with the motor, to be cleared upon selection.</param>
     /// <param name="thisMotorSelected">A reference to a boolean flag indicating the selection status of this motor.</param>
-    public void SelectMotorUIHelper(StepperMotor motor, MotorUIControlGroup buttonGrp)
+    public void SelectButtonBackgroundGreen(StepperMotor motor, MotorUIControlGroup buttonGrp)
     {
         // Update button backgrounds and selection flags
         buttonGrp.selectBuildButton.Background = new SolidColorBrush(motor.GetMotorName() == "build" ? Colors.Green : Colors.DimGray);
         buttonGrp.selectPowderButton.Background = new SolidColorBrush(motor.GetMotorName() == "powder" ? Colors.Green : Colors.DimGray);
         buttonGrp.selectSweepButton.Background = new SolidColorBrush(motor.GetMotorName() == "sweep" ? Colors.Green : Colors.DimGray);
+    }
+
+    public void AllSelectButtonBackgroundsRed(MotorUIControlGroup buttonGrp)
+    {
+        // Update button backgrounds and selection flags
+        buttonGrp.selectBuildButton.Background = new SolidColorBrush(Colors.Red);
+        buttonGrp.selectPowderButton.Background = new SolidColorBrush(Colors.Red);
+        buttonGrp.selectSweepButton.Background = new SolidColorBrush(Colors.Red);
     }
 
     #endregion
@@ -75,7 +83,7 @@ public class PrintUIControlGroupHelper
     {
         if (motor != null)
         {
-            SelectMotorUIHelper(motor, calibrateMotorControlGroup);
+            SelectButtonBackgroundGreen(motor, calibrateMotorControlGroup);
         }
         else
         {
@@ -83,13 +91,11 @@ public class PrintUIControlGroupHelper
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
         }
     }
-
-
     public void SelectMotorInPrint(StepperMotor motor)
     {
         if (motor != null)
         {
-            SelectMotorUIHelper(motor, printMotorControlGroup);
+            SelectButtonBackgroundGreen(motor, printMotorControlGroup);
 
         }
         else
@@ -98,7 +104,6 @@ public class PrintUIControlGroupHelper
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
         }
     }
-
     public void EnableUIControlGroup(UIControlGroup controlGrp)
     {
         foreach (var control in controlGrp.GetControlGroupEnuerable())
