@@ -11,14 +11,14 @@ public interface IMotorService
 {
     void Initialize();
     void HandleStartUp();
-    public ActuationManager GetActuationManager();
+    public CommandQueueManager GetActuationManager();
     StepperMotor GetBuildMotor();
     StepperMotor GetPowderMotor();
     StepperMotor GetSweepMotor();
     double GetMaxSweepPosition();
     public Task<double> GetMotorPositionAsync(StepperMotor motor);
     void ConfigurePortEventHandlers();
-    void InitMotors();
+    void IntializeMotors();
     void HandleMotorInit(string motorName, StepperMotor motor, out StepperMotor motorField);
     void InitializeMotorMap();
     Task<int> MoveMotorAbs(StepperMotor motor, double target);

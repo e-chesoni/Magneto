@@ -125,8 +125,8 @@ public partial class App : Application
             services.AddSingleton<LaserController>();
 
             // ActuationManager
-            services.AddSingleton<ActuationManager>(provider =>
-                new ActuationManager(
+            services.AddSingleton<CommandQueueManager>(provider =>
+                new CommandQueueManager(
                     provider.GetRequiredService<BuildMotorController>(),
                     provider.GetRequiredService<SweepMotorController>(),
                     provider.GetRequiredService<LaserController>()
@@ -135,27 +135,25 @@ public partial class App : Application
 
             // MissionControl
             services.AddSingleton<MissionControl>(provider =>
-                new MissionControl(provider.GetRequiredService<ActuationManager>())
+                new MissionControl(provider.GetRequiredService<CommandQueueManager>())
             );
 
 
             // Register MissionControl
             services.AddSingleton<MissionControl>(provider =>
             {
-                var am = provider.GetRequiredService<ActuationManager>();
+                var am = provider.GetRequiredService<CommandQueueManager>();
                 return new MissionControl(am);
             });
 
             // Register MotorService (needs ActuationManager)
             services.AddSingleton<IMotorService, MotorService>(provider =>
             {
-                var am = provider.GetRequiredService<ActuationManager>();
+                var am = provider.GetRequiredService<CommandQueueManager>();
                 var ms = new MotorService(am);
                 ms.Initialize(); // Now that motors/controllers are fully built
                 return ms;
             });
-
-
 
             // Peripheral Services
             services.AddSingleton<IWaverunnerService, WaverunerServiceTEST>();
@@ -243,8 +241,6 @@ public partial class App : Application
 
         MainWindow = new MainWindow();
         MainWindow.Activate();
-
-        App.GetService<IMotorService>().Initialize();
 
         await App.GetService<IActivationService>().ActivateAsync(args);
     }

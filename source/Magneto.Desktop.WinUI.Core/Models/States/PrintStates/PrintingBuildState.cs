@@ -14,9 +14,9 @@ using Magneto.Desktop.WinUI.Core.Contracts.Services.States;
 namespace Magneto.Desktop.WinUI.Core.Models.State.PrintStates;
 public class PrintingBuildState : IPrintState
 {
-    private ActuationManager _BuildManagerSM { get; set; }
+    private CommandQueueManager _BuildManagerSM { get; set; }
 
-    public PrintingBuildState(ActuationManager bm)
+    public PrintingBuildState(CommandQueueManager bm)
     {
         var msg = "Entered PrintingBuildState...";
         MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
@@ -25,7 +25,7 @@ public class PrintingBuildState : IPrintState
         _BuildManagerSM = bm;
 
         // Set the build flag to resume
-        _BuildManagerSM.build_flag = ActuationManager.BuildFlag.RESUME;
+        _BuildManagerSM.build_flag = CommandQueueManager.BuildFlag.RESUME;
 
         // Start drawing
         _ = Draw();
@@ -34,14 +34,14 @@ public class PrintingBuildState : IPrintState
     public void Cancel()
     {
         MagnetoLogger.Log("Cancel flag triggered!", Contracts.Services.LogFactoryLogLevel.LogLevel.WARN);
-        _BuildManagerSM.build_flag = ActuationManager.BuildFlag.CANCEL;
+        _BuildManagerSM.build_flag = CommandQueueManager.BuildFlag.CANCEL;
         _BuildManagerSM.TransitionTo(new CancelledBuildState(_BuildManagerSM));
     }
 
     public void Pause()
     {
         MagnetoLogger.Log("Pause flag triggered!", Contracts.Services.LogFactoryLogLevel.LogLevel.WARN);
-        _BuildManagerSM.build_flag = ActuationManager.BuildFlag.PAUSE;
+        _BuildManagerSM.build_flag = CommandQueueManager.BuildFlag.PAUSE;
         _BuildManagerSM.TransitionTo(new PausedBuildState(_BuildManagerSM));
     }
 
@@ -87,14 +87,14 @@ public class PrintingBuildState : IPrintState
         // TODO: TEST ME
         // For now, home powder motor (to bottom)
         // in production, user will adjust this to the desired start height for powder distribution
-        _ = _BuildManagerSM.AddCommand(ActuationManager.ControllerType.BUILD, powderAxis, ActuationManager.CommandType.AbsoluteMove, _BuildManagerSM.GetPowderMotor().GetHomePos());
+        _ = _BuildManagerSM.AddCommand(CommandQueueManager.ControllerType.BUILD, powderAxis, CommandQueueManager.CommandType.AbsoluteMove, _BuildManagerSM.GetPowderMotor().GetHomePos());
 
         // TODO: Remove 2mm added for testing in production
-        _ = _BuildManagerSM.AddCommand(ActuationManager.ControllerType.BUILD, powderAxis, ActuationManager.CommandType.RelativeMove, -(artifactHeight + 2)); // add 2mm for test so we can also test homing after print
+        _ = _BuildManagerSM.AddCommand(CommandQueueManager.ControllerType.BUILD, powderAxis, CommandQueueManager.CommandType.RelativeMove, -(artifactHeight + 2)); // add 2mm for test so we can also test homing after print
 
         // Move build motor down print height + plate thickness (6mm + print height)
         var plateThickness = 6; // about 6mm
-        _ = _BuildManagerSM.AddCommand(ActuationManager.ControllerType.BUILD, buildAxis, ActuationManager.CommandType.RelativeMove, -(artifactHeight + plateThickness));
+        _ = _BuildManagerSM.AddCommand(CommandQueueManager.ControllerType.BUILD, buildAxis, CommandQueueManager.CommandType.RelativeMove, -(artifactHeight + plateThickness));
 
         // TODO: Let user calibrate build start height
 
@@ -112,7 +112,7 @@ public class PrintingBuildState : IPrintState
 
             switch (_BuildManagerSM.build_flag)
             {
-                case ActuationManager.BuildFlag.RESUME: // Build flag is set to resume in constructor
+                case CommandQueueManager.BuildFlag.RESUME: // Build flag is set to resume in constructor
                     
                     // dance loop:
                     // 1. sweep
@@ -122,8 +122,8 @@ public class PrintingBuildState : IPrintState
                     // REPEAT until all slices have been processed
 
                     // Perform sweep
-                    _ = _BuildManagerSM.AddCommand(ActuationManager.ControllerType.SWEEP, sweepAxis, ActuationManager.CommandType.AbsoluteMove, 280); // Test 280 first; e.o.p is actually 283 (max travel is 284.5)
-                    _ = _BuildManagerSM.AddCommand(ActuationManager.ControllerType.SWEEP, sweepAxis, ActuationManager.CommandType.AbsoluteMove, _BuildManagerSM.GetSweepMotor().GetHomePos()); // sweep home position is set when mission control is initialized (value est. in Magneto Config)
+                    _ = _BuildManagerSM.AddCommand(CommandQueueManager.ControllerType.SWEEP, sweepAxis, CommandQueueManager.CommandType.AbsoluteMove, 280); // Test 280 first; e.o.p is actually 283 (max travel is 284.5)
+                    _ = _BuildManagerSM.AddCommand(CommandQueueManager.ControllerType.SWEEP, sweepAxis, CommandQueueManager.CommandType.AbsoluteMove, _BuildManagerSM.GetSweepMotor().GetHomePos()); // sweep home position is set when mission control is initialized (value est. in Magneto Config)
 
                     // Get current slice (to pass to laser controller in switch)
                     var slice = pose.slice;
@@ -135,19 +135,19 @@ public class PrintingBuildState : IPrintState
                     // TODO: break loop when LASER_OPERATING flag is false
 
                     // After calibration, powder motor moves up slice thickness
-                    _ = _BuildManagerSM.AddCommand(ActuationManager.ControllerType.BUILD, powderAxis, ActuationManager.CommandType.RelativeMove, pose.thickness); // Currently uses default thickness set in IdleBuildState (value est. in Magneto Config)
+                    _ = _BuildManagerSM.AddCommand(CommandQueueManager.ControllerType.BUILD, powderAxis, CommandQueueManager.CommandType.RelativeMove, pose.thickness); // Currently uses default thickness set in IdleBuildState (value est. in Magneto Config)
 
                     // Build motor moves down slice thickness
-                    _ = _BuildManagerSM.AddCommand(ActuationManager.ControllerType.BUILD, buildAxis, ActuationManager.CommandType.RelativeMove, -pose.thickness); // TODO: test you don't need to add () to pose.thickness here...
+                    _ = _BuildManagerSM.AddCommand(CommandQueueManager.ControllerType.BUILD, buildAxis, CommandQueueManager.CommandType.RelativeMove, -pose.thickness); // TODO: test you don't need to add () to pose.thickness here...
 
                     break;
 
                 // TODO: Test interrupts
-                case ActuationManager.BuildFlag.PAUSE:
+                case CommandQueueManager.BuildFlag.PAUSE:
                     Pause();
                     break;
 
-                case ActuationManager.BuildFlag.CANCEL:
+                case CommandQueueManager.BuildFlag.CANCEL:
                     Cancel();
                     break;
 
@@ -169,8 +169,8 @@ public class PrintingBuildState : IPrintState
         var powder_axis = _BuildManagerSM.buildController.GetPowderMotor().GetAxis();
         var build_axis = _BuildManagerSM.buildController.GetBuildMotor().GetAxis();
 
-        _ = _BuildManagerSM.AddCommand(ActuationManager.ControllerType.BUILD, powder_axis, ActuationManager.CommandType.AbsoluteMove, 0);
-        _ = _BuildManagerSM.AddCommand(ActuationManager.ControllerType.BUILD, build_axis, ActuationManager.CommandType.AbsoluteMove, 0);
+        _ = _BuildManagerSM.AddCommand(CommandQueueManager.ControllerType.BUILD, powder_axis, CommandQueueManager.CommandType.AbsoluteMove, 0);
+        _ = _BuildManagerSM.AddCommand(CommandQueueManager.ControllerType.BUILD, build_axis, CommandQueueManager.CommandType.AbsoluteMove, 0);
 
         // Return to idle state
         _BuildManagerSM.TransitionTo(new IdleBuildState(_BuildManagerSM));

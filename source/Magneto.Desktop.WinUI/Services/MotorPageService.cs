@@ -9,7 +9,7 @@ using Microsoft.UI.Xaml.Controls;
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Models.Print;
 using Magneto.Desktop.WinUI.Core.Models.Motors;
-using static Magneto.Desktop.WinUI.Core.Models.Print.ActuationManager;
+using static Magneto.Desktop.WinUI.Core.Models.Print.CommandQueueManager;
 using Microsoft.UI.Xaml.Controls;
 using Magneto.Desktop.WinUI.Helpers;
 using Magneto.Desktop.WinUI.Popups;
@@ -26,9 +26,10 @@ public class MotorPageService
     private readonly IMotorService _motorService;
     public PrintUIControlGroupHelper printUiControlGroupHelper { get; set; }
 
-    public MotorPageService(ActuationManager am, PrintUIControlGroupHelper printCtlGrpHelper)
+    public MotorPageService(CommandQueueManager am, PrintUIControlGroupHelper printCtlGrpHelper)
     {
         _motorService = App.GetService<IMotorService>();
+        _motorService.HandleStartUp();
         printUiControlGroupHelper = new PrintUIControlGroupHelper(printCtlGrpHelper.calibrateMotorControlGroup, printCtlGrpHelper.printMotorControlGroup);
     }
 
@@ -45,86 +46,50 @@ public class MotorPageService
     {
         return _motorService.GetSweepMotor();
     }
-
     public TextBox GetBuildPositionTextBox()
     {
         return printUiControlGroupHelper.calibrateMotorControlGroup.buildPositionTextBox;
     }
-
     public TextBox GetPowderPositionTextBox()
     {
         return printUiControlGroupHelper.calibrateMotorControlGroup.powderPositionTextBox;
     }
-
     public TextBox GetSweepPositionTextBox()
     {
         return printUiControlGroupHelper.calibrateMotorControlGroup.sweepPositionTextBox;
     }
-
     public TextBox GetBuildStepTextBox()
     {
         return printUiControlGroupHelper.calibrateMotorControlGroup.buildStepTextBox;
     }
-
     public TextBox GetPowderStepTextBox()
     {
         return printUiControlGroupHelper.calibrateMotorControlGroup.powderStepTextBox;
     }
-
     public TextBox GetSweepStepTextBox()
     {
         return printUiControlGroupHelper.calibrateMotorControlGroup.sweepStepTextBox;
     }
-
     public TextBox GetBuildAbsMoveTextBox()
     {
         return printUiControlGroupHelper.calibrateMotorControlGroup.buildAbsMoveTextBox;
     }
-
     public TextBox GetPowderAbsMoveTextBox()
     {
         return printUiControlGroupHelper.calibrateMotorControlGroup.powderAbsMoveTextBox;
     }
-
     public TextBox GetSweepAbsMoveTextBox()
     {
         return printUiControlGroupHelper.calibrateMotorControlGroup.sweepAbsMoveTextBox;
     }
-
-    /// <summary>
-    /// Helper to get controller type given motor name
-    /// </summary>
-    /// <param name="motorName">Name of the motor for which to return the controller type</param>
-    /// <returns>Controller type</returns>
-    private ControllerType GetControllerTypeHelper(string motorName)
-    {
-        switch (motorName)
-        {
-            case "sweep":
-                return ControllerType.SWEEP;
-            default: return ControllerType.BUILD;
-        }
-    }
-
-    /// <summary>
-    /// Helper to get motor name, controller type, and motor axis given a motor
-    /// </summary>
-    /// <param name="motor"></param>
-    /// <returns>Tuple containing motor name, controller type, and motor axis</returns>
-    public (string motorName, ControllerType controllerType, int motorAxis) GetMotorDetailsHelper(StepperMotor motor)
-    {
-        return (motor.GetMotorName(), GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis());
-    }
-
     #endregion
 
     #region Motor Movement Methods
-
     public async Task<int> MoveMotorAbs(StepperMotor motor, TextBox textBox)
     {
         if (textBox == null || !double.TryParse(textBox.Text, out var value))
         {
-            var msg = $"invalid input in {motor.GetMotorName} text box: {textBox.Text}";
+            var msg = $"invalid input in {motor.GetMotorName} text box.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             return 0;
         }
@@ -135,7 +100,6 @@ public class MotorPageService
             return 1;
         }
     }
-
     public async Task<(int status, double targetPos)> MoveMotorRel(StepperMotor motor, TextBox textBox, bool moveUp)
     {
         if (textBox == null || !double.TryParse(textBox.Text, out var value))

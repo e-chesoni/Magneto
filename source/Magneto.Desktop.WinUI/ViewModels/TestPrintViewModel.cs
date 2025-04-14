@@ -38,7 +38,6 @@ public class TestPrintViewModel : ObservableRecipient
         _sliceService = sliceService;
         _seeder = seeder;
         _motorService = motorService;
-        _motorService.HandleStartUp();
         _waverunnerService = waverunnerService;
     }
     /*

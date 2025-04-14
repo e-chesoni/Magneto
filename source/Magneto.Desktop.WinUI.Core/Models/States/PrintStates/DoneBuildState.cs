@@ -14,9 +14,9 @@ namespace Magneto.Desktop.WinUI.Core.Models.State.PrintStates;
 /// </summary>
 public class DoneBuildState : IPrintState
 {
-    private ActuationManager _BuildManagerSM { get; set; }
+    private CommandQueueManager _BuildManagerSM { get; set; }
 
-    public DoneBuildState(ActuationManager _bm)
+    public DoneBuildState(CommandQueueManager _bm)
     {
         var msg = "Entered DoneBuildState...";
         MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
@@ -36,8 +36,8 @@ public class DoneBuildState : IPrintState
         var build_axis = _BuildManagerSM.buildController.GetBuildMotor().GetAxis();
 
         // TODO: May want to change to await instead of _ (need to test)
-        _ = _BuildManagerSM.AddCommand(ActuationManager.ControllerType.BUILD, powder_axis, ActuationManager.CommandType.AbsoluteMove, 0);
-        _ = _BuildManagerSM.AddCommand(ActuationManager.ControllerType.BUILD, build_axis, ActuationManager.CommandType.AbsoluteMove, 0);
+        _ = _BuildManagerSM.AddCommand(CommandQueueManager.ControllerType.BUILD, powder_axis, CommandQueueManager.CommandType.AbsoluteMove, 0);
+        _ = _BuildManagerSM.AddCommand(CommandQueueManager.ControllerType.BUILD, build_axis, CommandQueueManager.CommandType.AbsoluteMove, 0);
 
         // Return to idle state
         _BuildManagerSM.TransitionTo(new IdleBuildState(_BuildManagerSM));

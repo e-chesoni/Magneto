@@ -20,7 +20,7 @@ using Microsoft.UI.Xaml.Navigation;
 using Newtonsoft.Json.Bson;
 using SAMLIGHT_CLIENT_CTRL_EXLib;
 using Windows.Devices.SerialCommunication;
-using static Magneto.Desktop.WinUI.Core.Models.Print.ActuationManager;
+using static Magneto.Desktop.WinUI.Core.Models.Print.CommandQueueManager;
 using static Magneto.Desktop.WinUI.Views.TestPrintPage;
 using System.Diagnostics;
 using Windows.Storage.Pickers;
@@ -36,15 +36,13 @@ namespace Magneto.Desktop.WinUI.Views;
 public sealed partial class TestPrintPage : Page
 {
     #region Motor Variables
+    /*
     private StepperMotor? _powderMotor;
-
     private StepperMotor? _buildMotor;
-
     private StepperMotor? _sweepMotor;
-
     private ActuationManager? _am;
+    */
     #endregion
-
 
     #region WaveRunner Variables
 
@@ -56,24 +54,24 @@ public sealed partial class TestPrintPage : Page
     /// <summary>
     /// Default job directory (to search for job files)
     /// </summary>
-    private string _defaultJobDirectory { get; set; }
+    private string? _defaultJobDirectory { get; set; }
 
     /// <summary>
     /// Default job file name
     /// </summary>
-    private string _defaultJobName { get; set; }
+    private string? _defaultJobName { get; set; }
 
     /// <summary>
     /// Job directory (to search for files) -- can be defined by the user
     /// </summary>
-    private string _jobDirectory { get; set; }
+    private string? _jobDirectory { get; set; }
 
     /// <summary>
     /// Full file path to entity
     /// </summary>
     private string? _fullJobFilePath { get; set; }
 
-    private bool _redPointerEnabled { get; set; }
+    private bool? _redPointerEnabled { get; set; }
 
     /// <summary>
     /// WaveRunner Execution statuses
@@ -98,7 +96,6 @@ public sealed partial class TestPrintPage : Page
 
     #endregion
 
-
     #region Layer/Print Variables
 
     private double _currentLayerThickness;
@@ -111,16 +108,14 @@ public sealed partial class TestPrintPage : Page
 
     private double _totalPrintHeight { get; set; }
 
-    private Dictionary<double, int> _printHistoryDictionary = new Dictionary<double, int>();
-
+    //private readonly Dictionary<double, int> _printHistoryDictionary = new Dictionary<double, int>();
     #endregion
 
-    private IMotorService _motorService;
-    #region Page Services
+    #region Services
     // TODO: make these singletons initialized in app.xaml.cs
-    private MotorPageService _motorPageService;
-    private WaverunnerPageService _waverunnerPageService;
-
+    //private readonly IMotorService? _motorService;
+    private MotorPageService? _motorPageService;
+    private WaverunnerPageService? _waverunnerPageService;
     #endregion
 
     #region Flags
@@ -131,15 +126,16 @@ public sealed partial class TestPrintPage : Page
 
     #region UI Helper Variables
 
-    private MotorUIControlGroup _calibrateMotorUIControlGroup { get; set; }
+    private MotorUIControlGroup? _calibrateMotorUIControlGroup { get; set; }
+    /*
     private MotorUIControlGroup _inPrintMotorUIControlGroup { get; set; }
     private PrintSettingsUIControlGroup _printSettingsUIControlGroup { get; set; }
     private PrintSettingsUIControlGroup _layerSettingsUIControlGroup { get; set; }
-
-    private PrintUIControlGroupHelper _printControlGroupHelper { get; set; }
+    */
+    private PrintUIControlGroupHelper? _printControlGroupHelper { get; set; }
 
     private bool _calibrationPanelEnabled = true;
-
+    /*
     private bool _fileSettingsSectionEnabled = true;
 
     private bool _layerSettingsSectionEnabled = true;
@@ -147,7 +143,7 @@ public sealed partial class TestPrintPage : Page
     private bool _settingsPanelEnabled = true;
 
     private bool _printPanelEnabled = true;
-
+    */
     #endregion
 
     #region Core Page Functionality Variables
@@ -155,10 +151,7 @@ public sealed partial class TestPrintPage : Page
     /// <summary>
     /// Central control that gets passed from page to page
     /// </summary>
-    public MissionControl? MissionControl
-    {
-        get; set;
-    }
+    private MissionControl _missionControl { get; set; }
 
     /// <summary>
     /// TestPrintViewModel view model
@@ -177,6 +170,7 @@ public sealed partial class TestPrintPage : Page
     /// and initializing the respective StepperMotor objects. Logs success or error for each motor setup.
     /// Assumes motor order in configuration corresponds to powder, build, and sweep.
     /// </summary>
+    /*
     private async void SetUpTestMotors()
     {
         if (MissionControl == null)
@@ -194,7 +188,6 @@ public sealed partial class TestPrintPage : Page
 
         //GetMotorPositions(); // TOOD: Fix--all positions are 0 on page load even if they're not...
     }
-
     /// <summary>
     /// Gets motor from mission control and assigns each motor to a private variable for easy access in the TestPrintPage class
     /// </summary>
@@ -215,14 +208,10 @@ public sealed partial class TestPrintPage : Page
             MagnetoLogger.Log($"Unable to find {motorName} motor", LogFactoryLogLevel.LogLevel.ERROR);
         }
     }
-
-    // TODO: Lock settings and print panels by default
-
+    */
     #endregion
 
-
     #region Constructor
-
     /// <summary>
     /// Constructor for TestPrintPage. Initializes the ViewModel, sets up UI components, logs the page visit,
     /// retrieves configuration for build and sweep motors, and registers event handlers for their respective ports.
@@ -230,6 +219,7 @@ public sealed partial class TestPrintPage : Page
     public TestPrintPage()
     {
         ViewModel = App.GetService<TestPrintViewModel>();
+        _missionControl = App.GetService<MissionControl>();
         InitializeComponent();
         var msg = "Landed on Test Print Page";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
@@ -260,7 +250,7 @@ public sealed partial class TestPrintPage : Page
         _printControlGroupHelper = new PrintUIControlGroupHelper(_calibrateMotorUIControlGroup);
 
         // Initialize motor page service
-        _motorPageService = new MotorPageService(MissionControl.GetActuationManger(), _printControlGroupHelper);
+        _motorPageService = new MotorPageService(_missionControl.GetActuationManger(), _printControlGroupHelper);
 
         // initialize Waverunner page service
         _waverunnerPageService = new WaverunnerPageService(PrintDirectoryInputTextBox, PrintLayersButton);
@@ -268,13 +258,13 @@ public sealed partial class TestPrintPage : Page
         // Set default job file
         //_waverunnerPageService.SetDefaultJobFileName("2025-01-13_5x5_square_top_left.sjf");
     }
-
+    /*
     private void SetDefaultPrintSettings()
     {
         _currentLayerThickness = 0.03; // set default layer height to be 0.03mm based on first steel print
         _desiredPrintHeight = 5; // set default print height to be mm
     }
-
+    */
     #endregion
 
 
@@ -290,13 +280,13 @@ public sealed partial class TestPrintPage : Page
         base.OnNavigatedTo(e);
 
         // Set mission control after navigating to new page
-        MissionControl = (MissionControl)e.Parameter;
+        //_missionControl = (MissionControl)e.Parameter;
 
         InitPageServices();
-        SetDefaultPrintSettings();
+        //SetDefaultPrintSettings();
         _calibrationPanelEnabled = true;
 
-        var msg = string.Format("TestPrintPage::OnNavigatedTo -- {0}", MissionControl.FriendlyMessage);
+        var msg = string.Format("TestPrintPage::OnNavigatedTo -- {0}", _missionControl.FriendlyMessage);
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
     }
 
@@ -304,10 +294,8 @@ public sealed partial class TestPrintPage : Page
 
 
     #region Motor Helpers
-
     private void HomeMotorsHelper()
     {
-
         var msg = "Homing all motors";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
         var buildMotor = _motorPageService.GetBuildMotor();
@@ -473,7 +461,6 @@ public sealed partial class TestPrintPage : Page
 
     #region Print Summary Methods
     /*
-
     // Dynamically populate a Grid
     public void PopulateGridWithLastThree(Grid targetGrid)
     {
@@ -619,7 +606,6 @@ public sealed partial class TestPrintPage : Page
             Task.Delay(100).Wait();
         }
     }
-
     private async void MultiLayerMoveButton_Click(object sender, RoutedEventArgs e)
     {
         var fullPath = "";
@@ -741,74 +727,7 @@ public sealed partial class TestPrintPage : Page
 
     #endregion
 
-
-    #region Logging Methods
-
-    /// <summary>
-    /// Log and display the same message
-    /// </summary>
-    /// <param name="LogLevel"></param>
-    /// <param name="xamlRoot"></param>
-    /// <param name="msg"></param>
-    private async void LogAndDisplayMessage(LogFactoryLogLevel.LogLevel LogLevel, XamlRoot xamlRoot, string msg)
-    {
-        var PopupMessageType = GetPopupMessageType(LogLevel);
-
-        MagnetoLogger.Log(msg, LogLevel);
-        await PopupInfo.ShowContentDialog(xamlRoot, PopupMessageType, msg);
-    }
-
-    /// <summary>
-    /// Update UI and log
-    /// </summary>
-    /// <param name="uiMessage"></param>
-    /// <param name="logLevel"></param>
-    /// <param name="logMessage"></param>
-    private void LogMessage(string uiMessage, LogFactoryLogLevel.LogLevel logLevel, string logMessage = null)
-    {
-        // Update UI with the message
-        //UpdateUITextHelper.UpdateUIText(IsMarkingText, uiMessage);
-
-        // Use the provided log level for logging
-        MagnetoLogger.Log(logMessage ?? uiMessage, logLevel);
-    }
-
-    private string GetPopupMessageType(LogFactoryLogLevel.LogLevel LogLevel)
-    {
-        switch (LogLevel)
-        {
-            case LogFactoryLogLevel.LogLevel.DEBUG:
-                return "Debug";
-            case LogFactoryLogLevel.LogLevel.VERBOSE:
-                return "Info";
-            case LogFactoryLogLevel.LogLevel.WARN:
-                return "Warning";
-            case LogFactoryLogLevel.LogLevel.ERROR:
-                return "Error";
-            case LogFactoryLogLevel.LogLevel.SUCCESS:
-                return "Success";
-            default:
-                return "Unknown";
-        }
-    }
-
-    /// <summary>
-    /// Log and Display if you want to have a different log and pop up message
-    /// </summary>
-    /// <param name="LogLevel"></param>
-    /// <param name="xamlRoot"></param>
-    /// <param name="LogMessage"></param>
-    /// <param name="PopupMessage"></param>
-    private async void LogAndDisplayMessage(LogFactoryLogLevel.LogLevel LogLevel, XamlRoot xamlRoot, string LogMessage, string PopupMessage)
-    {
-        var PopupMessageType = GetPopupMessageType(LogLevel);
-
-        MagnetoLogger.Log(LogMessage, LogLevel);
-        await PopupInfo.ShowContentDialog(xamlRoot, PopupMessageType, PopupMessage);
-    }
-
-    #endregion
-    #region Page Text Managers
+    #region POC Page Text Managers
     private async void PopulatePageText()
     {
         var print = ViewModel.currentPrint;
@@ -871,7 +790,7 @@ public sealed partial class TestPrintPage : Page
     }
     #endregion
 
-    #region Button Methods
+    #region POC Button Methods
     private async void GetSlices_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
         await ViewModel.AddPrintToDatabaseAsync(PrintDirectoryInputTextBox.Text);
@@ -941,6 +860,72 @@ public sealed partial class TestPrintPage : Page
     }
     #endregion
 
+    #region Logging Methods
+
+    /// <summary>
+    /// Log and display the same message
+    /// </summary>
+    /// <param name="LogLevel"></param>
+    /// <param name="xamlRoot"></param>
+    /// <param name="msg"></param>
+    private async void LogAndDisplayMessage(LogFactoryLogLevel.LogLevel LogLevel, XamlRoot xamlRoot, string msg)
+    {
+        var PopupMessageType = GetPopupMessageType(LogLevel);
+
+        MagnetoLogger.Log(msg, LogLevel);
+        await PopupInfo.ShowContentDialog(xamlRoot, PopupMessageType, msg);
+    }
+
+    /// <summary>
+    /// Update UI and log
+    /// </summary>
+    /// <param name="uiMessage"></param>
+    /// <param name="logLevel"></param>
+    /// <param name="logMessage"></param>
+    private void LogMessage(string uiMessage, LogFactoryLogLevel.LogLevel logLevel, string logMessage = null)
+    {
+        // Update UI with the message
+        //UpdateUITextHelper.UpdateUIText(IsMarkingText, uiMessage);
+
+        // Use the provided log level for logging
+        MagnetoLogger.Log(logMessage ?? uiMessage, logLevel);
+    }
+
+    private string GetPopupMessageType(LogFactoryLogLevel.LogLevel LogLevel)
+    {
+        switch (LogLevel)
+        {
+            case LogFactoryLogLevel.LogLevel.DEBUG:
+                return "Debug";
+            case LogFactoryLogLevel.LogLevel.VERBOSE:
+                return "Info";
+            case LogFactoryLogLevel.LogLevel.WARN:
+                return "Warning";
+            case LogFactoryLogLevel.LogLevel.ERROR:
+                return "Error";
+            case LogFactoryLogLevel.LogLevel.SUCCESS:
+                return "Success";
+            default:
+                return "Unknown";
+        }
+    }
+
+    /// <summary>
+    /// Log and Display if you want to have a different log and pop up message
+    /// </summary>
+    /// <param name="LogLevel"></param>
+    /// <param name="xamlRoot"></param>
+    /// <param name="LogMessage"></param>
+    /// <param name="PopupMessage"></param>
+    private async void LogAndDisplayMessage(LogFactoryLogLevel.LogLevel LogLevel, XamlRoot xamlRoot, string LogMessage, string PopupMessage)
+    {
+        var PopupMessageType = GetPopupMessageType(LogLevel);
+
+        MagnetoLogger.Log(LogMessage, LogLevel);
+        await PopupInfo.ShowContentDialog(xamlRoot, PopupMessageType, PopupMessage);
+    }
+
+    #endregion
     private void TEST_Click(object sender, RoutedEventArgs e)
     {
         ViewModel.TestWaverunnerConnection();

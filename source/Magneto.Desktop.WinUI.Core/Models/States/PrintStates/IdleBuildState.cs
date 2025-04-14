@@ -11,9 +11,9 @@ using Magneto.Desktop.WinUI.Core.Contracts.Services.States;
 namespace Magneto.Desktop.WinUI.Core.Models.State.PrintStates;
 public class IdleBuildState : IPrintState
 {
-    private ActuationManager _BuildManagerSM;
+    private CommandQueueManager _BuildManagerSM;
 
-    public IdleBuildState(ActuationManager bm)
+    public IdleBuildState(CommandQueueManager bm)
     {
         var msg = "Entered IdleBuildState...";
         MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
@@ -81,9 +81,9 @@ public class IdleBuildState : IPrintState
         var sweepAxis = _BuildManagerSM.sweepController.GetSweepMotor().GetAxis();
 
         //TODO: Test updated method for getting homing positions
-        await _BuildManagerSM.AddCommand(ActuationManager.ControllerType.BUILD, powder_axis, ActuationManager.CommandType.AbsoluteMove, _BuildManagerSM.buildController.GetPowderMotor().GetHomePos());
-        await _BuildManagerSM.AddCommand(ActuationManager.ControllerType.BUILD, build_axis, ActuationManager.CommandType.AbsoluteMove, _BuildManagerSM.buildController.GetBuildMotor().GetHomePos());
-        await _BuildManagerSM.AddCommand(ActuationManager.ControllerType.SWEEP, sweepAxis, ActuationManager.CommandType.AbsoluteMove, _BuildManagerSM.sweepController.GetSweepMotor().GetHomePos());
+        await _BuildManagerSM.AddCommand(CommandQueueManager.ControllerType.BUILD, powder_axis, CommandQueueManager.CommandType.AbsoluteMove, _BuildManagerSM.buildController.GetPowderMotor().GetHomePos());
+        await _BuildManagerSM.AddCommand(CommandQueueManager.ControllerType.BUILD, build_axis, CommandQueueManager.CommandType.AbsoluteMove, _BuildManagerSM.buildController.GetBuildMotor().GetHomePos());
+        await _BuildManagerSM.AddCommand(CommandQueueManager.ControllerType.SWEEP, sweepAxis, CommandQueueManager.CommandType.AbsoluteMove, _BuildManagerSM.sweepController.GetSweepMotor().GetHomePos());
 
         // Return to idle state
         _BuildManagerSM.TransitionTo(new IdleBuildState(_BuildManagerSM));

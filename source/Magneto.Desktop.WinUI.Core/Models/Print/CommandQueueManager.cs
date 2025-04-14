@@ -21,7 +21,7 @@ namespace Magneto.Desktop.WinUI.Core.Models.Print;
 /// <summary>
 /// Coordinates printing tasks across components
 /// </summary>
-public class ActuationManager : ISubsciber, IStateMachine
+public class CommandQueueManager : ISubsciber, IStateMachine
 {
     #region Private Variables
 
@@ -145,7 +145,7 @@ public class ActuationManager : ISubsciber, IStateMachine
     /// <param name="buildController"></param> Build Controller
     /// <param name="sweepController"></param> Sweep/Powder Distribution Controller
     /// <param name="laserController"></param> Laser Controller
-    public ActuationManager(MotorController bc, MotorController sc, LaserController lc)
+    public CommandQueueManager(MotorController bc, MotorController sc, LaserController lc)
     {
         MagnetoLogger.Log("", LogFactoryLogLevel.LogLevel.VERBOSE);
 

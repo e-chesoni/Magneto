@@ -19,7 +19,7 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     /// <summary>
     /// Build manager to handle printing tasks
     /// </summary>
-    private ActuationManager _actuationManager { get; set; }
+    private CommandQueueManager _actuationManager { get; set; }
 
     /// <summary>
     /// A list of subscribers that want to receive notifications from Mission Control
@@ -46,7 +46,7 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     /// Mission control constructor
     /// </summary>
     /// <param name="bm"></param> Build manager
-    public MissionControl(ActuationManager actuationManager)
+    public MissionControl(CommandQueueManager actuationManager)
     {
         MagnetoLogger.Log("", LogFactoryLogLevel.LogLevel.VERBOSE);
 
@@ -73,7 +73,7 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
 
     #region Getters
 
-    public ActuationManager GetActuationManger()
+    public CommandQueueManager GetActuationManger()
     {
         return _actuationManager;
     }
