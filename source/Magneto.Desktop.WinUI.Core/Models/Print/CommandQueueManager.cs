@@ -311,9 +311,9 @@ public class CommandQueueManager : ISubsciber, IStateMachine
         // stop motor
         motor.StopMotor();
 
-        MagnetoLogger.Log("clearing queue", LogFactoryLogLevel.LogLevel.VERBOSE);
         // clear queue
         commandQueue.Clear();
+        MagnetoLogger.Log("🧹 Cleared command queue.e", LogFactoryLogLevel.LogLevel.WARN);
 
         // return empty task
         return tcs?.Task ?? Task.FromResult(0.0);

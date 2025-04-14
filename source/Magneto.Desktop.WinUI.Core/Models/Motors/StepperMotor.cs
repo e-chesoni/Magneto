@@ -360,7 +360,33 @@ public class StepperMotor : IStepperMotor
     /// nMVAx
     /// Where n is the axis
     /// And x is the number of mm to move
+    private ExecStatus ValidateDesiredPosition(double desiredPos)
+    {
+        // Check if desired position is out of range
+        if (desiredPos < _minPos || desiredPos > _maxPos)
+        {
+            // If it is, log error and exit method
+            MagnetoLogger.Log($"Invalid position: {desiredPos} for {_motorName}. _minPos is {_minPos} and _maxPos is {_maxPos}. Aborting motor move operation.", LogFactoryLogLevel.LogLevel.ERROR);
+            return ExecStatus.Failure;
+        }
+        else
+        {
+            return ExecStatus.Success;
+        }
+    }
+    private async Task HandleCheckPosition(double desiredPos)
+    {
+        while (!STOP_MOVE_FLAG) // If motor stop requested, exit this loop that continues to check position until it is reached
+        {
+            // Asynchronously wait until the desired position is reached
+            await CheckPosAsync(desiredPos);
+        }
 
+        // reset stop move flag
+        STOP_MOVE_FLAG = false;
+
+        return;
+    }
     /// <summary>
     /// Move motor to an absolute position
     /// </summary>
@@ -368,6 +394,7 @@ public class StepperMotor : IStepperMotor
     /// <returns></returns> Returns completed task when finished
     public async Task MoveMotorAbsAsync(double value) // here, value is the position we want to reach
     {
+        STOP_MOVE_FLAG = false;
         // Get the motors initial position
         var initialPos = await GetPosAsync();
 
@@ -387,15 +414,15 @@ public class StepperMotor : IStepperMotor
             // Check if serial port assigned to motor is open
             if (MagnetoSerialConsole.OpenSerialPort(_motorPort))
             {
-                // If port is open:
-                // Create move command
+                // clear stop flag before issuing move command
+                //STOP_MOVE_FLAG = false;
+                // Create movement command
                 var motorCmd = $"{_motorAxis}{moveCmd}{value}";
-
                 // Send move command to motor port
                 MagnetoSerialConsole.SerialWrite(_motorPort, motorCmd);
                 MagnetoLogger.Log($"Moving {_motorName} motor on axis {_motorAxis}. Command Sent: {motorCmd}", LogFactoryLogLevel.LogLevel.VERBOSE);
 
-                await HandleCheckPosition(desiredPos);
+                //await HandleCheckPosition(desiredPos);
             }
             else
             {
@@ -409,41 +436,12 @@ public class StepperMotor : IStepperMotor
             MagnetoLogger.Log("Invalid position requested", LogFactoryLogLevel.LogLevel.ERROR);
             return;
         }
-
-        //HandleSerialCommunication(desiredPos, value, true);
-    }
-
-    private ExecStatus ValidateDesiredPosition(double desiredPos)
-    {
-        // Check if desired position is out of range
-        if (desiredPos < _minPos || desiredPos > _maxPos)
-        {
-            // If it is, log error and exit method
-            MagnetoLogger.Log($"Invalid position: {desiredPos} for {_motorName}. _minPos is {_minPos} and _maxPos is {_maxPos}. Aborting motor move operation.", LogFactoryLogLevel.LogLevel.ERROR);
-            return ExecStatus.Failure;
-        }
-        else
-        {
-            return ExecStatus.Success;
-        }
-    }
-
-    private async Task HandleCheckPosition(double desiredPos)
-    {
-        while (!STOP_MOVE_FLAG) // If motor stop requested, exit this loop that continues to check position until it is reached
-        {
-            // Asynchronously wait until the desired position is reached
-            await CheckPosAsync(desiredPos);
-        }
-
-        // reset stop move flag
-        STOP_MOVE_FLAG = false;
-
-        return;
     }
 
     public async Task MoveMotorRelAsync(double value)
     {
+        // clear stop flag before issuing move command
+        //STOP_MOVE_FLAG = false;
         await _moveLock.WaitAsync(); // Acquire lock
         try
         {
@@ -452,9 +450,10 @@ public class StepperMotor : IStepperMotor
 
             if (MagnetoSerialConsole.OpenSerialPort(_motorPort))
             {
+                // create movement command
                 var motorCmd = $"{_motorAxis}{moveCmd}{value}";
+                // Send move command to motor port
                 MagnetoSerialConsole.SerialWrite(_motorPort, motorCmd);
-
                 MagnetoLogger.Log(
                     $"[{moveId}] Moving {_motorName} motor on axis {_motorAxis} {value}mm relative to current position. " +
                     $"Command Sent: {motorCmd}",
@@ -530,6 +529,7 @@ public class StepperMotor : IStepperMotor
     #endregion
 
     #region Movement Helpers
+    /*
     public async Task WaitUntilAtTargetAsync(double targetPos, double tolerance = 0.01)
     {
         int maxAttempts = 100;
@@ -560,9 +560,42 @@ public class StepperMotor : IStepperMotor
 
         MagnetoLogger.Log($"Timed out waiting for motor to reach {targetPos}", LogFactoryLogLevel.LogLevel.ERROR);
     }
+    */
+    public async Task WaitUntilAtTargetAsync(double targetPos, double tolerance = 0.01)
+    {
+        int maxAttempts = 100;
+        int delayMs = 50;
+        int attempts = 0;
+
+        while (attempts < maxAttempts)
+        {
+            if (STOP_MOVE_FLAG)
+            {
+                MagnetoLogger.Log($"🛑 Aborting wait for {_motorName}; stop requested.", LogFactoryLogLevel.LogLevel.WARN);
+                return;
+            }
+
+            var currentPos = await GetPosAsync();
+
+            if (Math.Abs(currentPos - targetPos) <= tolerance)
+            {
+                return;
+            }
+
+            await Task.Delay(delayMs);
+            attempts++;
+        }
+
+        MagnetoLogger.Log($"⏰ Timed out waiting for {_motorName} to reach {targetPos}", LogFactoryLogLevel.LogLevel.ERROR);
+    }
 
     public async Task<double> GetPosAsync()
     {
+        if (STOP_MOVE_FLAG)
+        {
+            MagnetoLogger.Log($"🛑 Position check aborted for {_motorName} due to STOP_MOVE_FLAG", LogFactoryLogLevel.LogLevel.WARN);
+            return -1.0;
+        }
         await _moveLock.WaitAsync();
         try
         {

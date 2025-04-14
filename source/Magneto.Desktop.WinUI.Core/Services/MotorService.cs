@@ -227,7 +227,7 @@ public class MotorService : IMotorService
         await _commandQueueManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.AbsoluteMove, motor.GetHomePos());
         return 1;
     }
-    public async Task<int> StopMotor(StepperMotor motor)
+    public async Task<int> StopMotorAndClearQueue(StepperMotor motor)
     {
         await _commandQueueManager.HandleStopRequest(motor);
         return 1;

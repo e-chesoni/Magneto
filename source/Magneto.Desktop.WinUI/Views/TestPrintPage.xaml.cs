@@ -27,6 +27,7 @@ using Windows.Storage.Pickers;
 using WinRT.Interop;
 using SAMLIGHT_CLIENT_CTRL_EXLib;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace Magneto.Desktop.WinUI.Views;
 
@@ -304,7 +305,7 @@ public sealed partial class TestPrintPage : Page
         var buildTextBox = _motorPageService.GetBuildPositionTextBox();
         var powderTextBox = _motorPageService.GetPowderPositionTextBox();
         var sweepTextBox = _motorPageService.GetSweepPositionTextBox();
-        if (buildMotor != null)
+        if ((buildMotor != null) && (!_motorPageService.GetSweepMotor().STOP_MOVE_FLAG))
         {
             //_motorPageService.HandleHomeMotorAndUpdateTextBox(buildMotor, buildTextBox);
             await _motorPageService.HomeMotorAndUpdateTextBox(buildMotor);
@@ -314,7 +315,7 @@ public sealed partial class TestPrintPage : Page
             MagnetoLogger.Log("Build Motor is null, cannot home motor.", LogFactoryLogLevel.LogLevel.ERROR);
         }
 
-        if (powderMotor != null)
+        if ((powderMotor != null) && (!_motorPageService.GetSweepMotor().STOP_MOVE_FLAG))
         {
             //_motorPageService.HandleHomeMotorAndUpdateTextBox(powderMotor, powderTextBox);
             await _motorPageService.HomeMotorAndUpdateTextBox(powderMotor);
@@ -324,7 +325,7 @@ public sealed partial class TestPrintPage : Page
             MagnetoLogger.Log("Powder Motor is null, cannot home motor.", LogFactoryLogLevel.LogLevel.ERROR);
         }
 
-        if (sweepMotor != null)
+        if ((sweepMotor != null) && (!_motorPageService.GetSweepMotor().STOP_MOVE_FLAG))
         {
             //_motorPageService.HandleHomeMotorAndUpdateTextBox(sweepMotor, sweepTextBox);
             await _motorPageService.HomeMotorAndUpdateTextBox(sweepMotor);
@@ -341,9 +342,9 @@ public sealed partial class TestPrintPage : Page
         _waverunnerPageService.StopMark();
 
         // stop motors
-        _motorPageService.StopSweepMotor();
-        _motorPageService.StopBuildMotor();
-        _motorPageService.StopPowderMotor();
+        _motorPageService.StopSweepMotorAndUpdateTextBox();
+        _motorPageService.StopBuildMotorAndUpdateTextBox();
+        _motorPageService.StopPowderMotorAndUpdateTextBox();
     }
 
     #endregion
@@ -447,17 +448,17 @@ public sealed partial class TestPrintPage : Page
 
     private void StopBuildMotorInCalibrateButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.StopBuildMotor();
+        _motorPageService.StopBuildMotorAndUpdateTextBox();
     }
 
     private void StopPowderMotorInCalibrateButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.StopPowderMotor();
+        _motorPageService.StopPowderMotorAndUpdateTextBox();
     }
 
     private void StopSweepMotorInCalibrateButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.StopSweepMotor();
+        _motorPageService.StopSweepMotorAndUpdateTextBox();
     }
 
     #endregion
@@ -585,18 +586,11 @@ public sealed partial class TestPrintPage : Page
         // stop mark
         _waverunnerPageService.StopMark();
         // stop motors
-        _motorPageService.StopSweepMotor();
-        _motorPageService.StopBuildMotor();
-        _motorPageService.StopPowderMotor();
+        _motorPageService.StopSweepMotorAndUpdateTextBox();
+        _motorPageService.StopBuildMotorAndUpdateTextBox();
+        _motorPageService.StopPowderMotorAndUpdateTextBox();
     }
      #endregion
-
-    public enum ControllerType
-    {
-        BUILD, // Corresponds to build motors
-        SWEEP, // Corresponds to sweep motor
-        LASER // Corresponds to Waverunner
-    }
 
     private void WaitForMark()
     {
@@ -694,14 +688,33 @@ public sealed partial class TestPrintPage : Page
     }
 
     #region Print Manual Move Methods
-    private void StopMotorsHelper()
+    private async void StopMotorsHelper()
     {
-        _motorPageService.StopSweepMotor();
-        _motorPageService.StopBuildMotor();
-        _motorPageService.StopPowderMotor();
+        _motorPageService.StopAllMotorsAndClearQueue();
+        /*
+        _motorPageService.StopSweepMotorAndUpdateTextBox();
+        _motorPageService.StopBuildMotorAndUpdateTextBox();
+        _motorPageService.StopPowderMotorAndUpdateTextBox();
+        */
+        var buildConfig = MagnetoConfig.GetMotorByName("build");
+        var sweepConfig = MagnetoConfig.GetMotorByName("sweep");
+        MagnetoLogger.Log("✉️Writing to COM to stop", LogFactoryLogLevel.LogLevel.WARN);
+        MagnetoSerialConsole.SerialWrite(buildConfig.COMPort, "1STP"); // build motor is on axis 1
+        MagnetoSerialConsole.SerialWrite(buildConfig.COMPort, "2STP");
+        MagnetoSerialConsole.SerialWrite(sweepConfig.COMPort, "1STP"); // sweep motor is on axis 1
+        _motorPageService.GetBuildMotor().STOP_MOVE_FLAG = true;
+        _motorPageService.GetPowderMotor().STOP_MOVE_FLAG = true;
+        _motorPageService.GetSweepMotor().STOP_MOVE_FLAG = true;
+        /*
+        MagnetoLogger.Log("퍌Calling stop directly on motor", LogFactoryLogLevel.LogLevel.WARN);
+        _motorPageService.GetSweepMotor().StopMotor();
+        _motorPageService.GetSweepMotor().StopMotor();
+        _motorPageService.GetSweepMotor().StopMotor();
+        */
+        await _motorPageService.WaitUntilAtTargetAsync(_motorPageService.GetSweepMotor(), 0);
+        
     }
     #endregion
-
 
     #region Enable/Disable Panel Methods
     private void ToggleCalibrationPanelButtonLock_Click(object sender, RoutedEventArgs e)

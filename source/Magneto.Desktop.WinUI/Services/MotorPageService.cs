@@ -209,28 +209,37 @@ public class MotorPageService
             return false;
         }
     }
-    public async void StopBuildMotor()
+    public async void StopBuildMotorAndUpdateTextBox()
     {
         var motor = _motorService.GetBuildMotor();
         var msg = $"stopping {motor.GetMotorName()} motor";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
-        await _motorService.StopMotor(motor);
+        await _motorService.StopMotorAndClearQueue(motor);
+        await UpdateMotorPositionTextBox(motor);
     }
-    public async void StopPowderMotor()
+    public async void StopPowderMotorAndUpdateTextBox()
     {
         var motor = _motorService.GetPowderMotor();
         var msg = $"stopping {motor.GetMotorName()} motor";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
-        await _motorService.StopMotor(motor);
+        await _motorService.StopMotorAndClearQueue(motor);
+        await UpdateMotorPositionTextBox(motor);
     }
-    public async void StopSweepMotor()
+    public async void StopSweepMotorAndUpdateTextBox()
     {
         var motor = _motorService.GetSweepMotor();
         var msg = $"stopping {motor.GetMotorName()} motor";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
-        await _motorService.StopMotor(motor);
+        await _motorService.StopMotorAndClearQueue(motor);
+        await UpdateMotorPositionTextBox(motor);
     }
 
+    public async void StopAllMotorsAndClearQueue()
+    {
+        await _motorService.StopMotorAndClearQueue(_motorService.GetBuildMotor());
+        await _motorService.StopMotorAndClearQueue(_motorService.GetPowderMotor());
+        await _motorService.StopMotorAndClearQueue(_motorService.GetSweepMotor());
+    }
     public async Task<int> HomeMotorAndUpdateTextBox(StepperMotor motor)
     {
         printUiControlGroupHelper.SelectMotor(motor);

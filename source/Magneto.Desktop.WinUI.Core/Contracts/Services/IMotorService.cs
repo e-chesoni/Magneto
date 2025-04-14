@@ -25,7 +25,7 @@ public interface IMotorService
     Task<int> MoveMotorRel(StepperMotor motor, double distance);
     Task<int> LayerMove(double layerThickness, double supplyAmplifier);
     bool MotorsRunning();
-    Task<int> StopMotor(StepperMotor motor);
+    Task<int> StopMotorAndClearQueue(StepperMotor motor);
     Task<int> HomeMotor(StepperMotor motor);
     public Task<int> WaitUntilAtTargetAsync(StepperMotor motor, double targetPos);
 }
