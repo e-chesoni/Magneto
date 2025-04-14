@@ -146,8 +146,6 @@ public class TestPrintViewModel : ObservableRecipient
     public Func<StepperMotor> GetPowderMotor => _motorService.GetPowderMotor;
     public Func<StepperMotor> GetSweepMotor => _motorService.GetSweepMotor;
 
-
-
     public void StepPowderMotor(string distanceString, bool moveUp)
     {
         StepMotorHelper(distanceString, moveUp, _motorService.GetPowderMotor);

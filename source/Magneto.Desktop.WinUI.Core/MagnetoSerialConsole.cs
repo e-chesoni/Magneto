@@ -310,7 +310,7 @@ public static class MagnetoSerialConsole
             }
             catch (Exception e)
             {
-                MagnetoLogger.Log(e.ToString(), LogFactoryLogLevel.LogLevel.ERROR);
+                MagnetoLogger.Log($"Logging error: {e.ToString()}", LogFactoryLogLevel.LogLevel.ERROR);
                 _success = false;
             }
 
@@ -322,7 +322,6 @@ public static class MagnetoSerialConsole
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
             _success = false;
         }
-
         return _success;
     }
 

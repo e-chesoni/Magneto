@@ -27,4 +27,5 @@ public interface IMotorService
     bool MotorsRunning();
     Task<int> StopMotor(StepperMotor motor);
     Task<int> HomeMotor(StepperMotor motor);
+    public Task<int> WaitUntilAtTargetAsync(StepperMotor motor, double targetPos);
 }

@@ -59,7 +59,6 @@ public class MotorService : IMotorService
             }
         }
     }
-
     public void HandleMotorInit(string motorName, StepperMotor motor, out StepperMotor motorField)
     {
         if (motor != null)
@@ -228,6 +227,12 @@ public class MotorService : IMotorService
     {
         //await motor.StopMotor();
         await _commandQueueManager.HandleStopRequest(motor);
+        return 1;
+    }
+
+    public async Task<int> WaitUntilAtTargetAsync(StepperMotor motor, double targetPos)
+    {
+        await motor.WaitUntilAtTargetAsync(targetPos);
         return 1;
     }
     #endregion

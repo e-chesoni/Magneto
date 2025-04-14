@@ -85,19 +85,19 @@ public class MotorPageService
     #endregion
 
     #region Motor Movement Methods
-    public async Task<int> MoveMotorAbs(StepperMotor motor, TextBox textBox)
+    public async Task<(int status, double targetPos)> MoveMotorAbs(StepperMotor motor, TextBox textBox)
     {
         if (textBox == null || !double.TryParse(textBox.Text, out var value))
         {
             var msg = $"invalid input in {motor.GetMotorName} text box.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            return 0;
+            return (0,0);
         }
         else
         {
-            var dist = double.Parse(textBox.Text);
-            await _motorService.MoveMotorAbs(motor, dist);
-            return 1;
+            var targetPos = double.Parse(textBox.Text);
+            await _motorService.MoveMotorAbs(motor, targetPos);
+            return (1, targetPos);
         }
     }
     public async Task<(int status, double targetPos)> MoveMotorRel(StepperMotor motor, TextBox textBox, bool moveUp)
@@ -126,7 +126,12 @@ public class MotorPageService
             return (1, targetPos);
         }
     }
-
+    public async Task<int> WaitUntilAtTargetAsync(StepperMotor motor, double targetPos)
+    {
+        //await motor.WaitUntilAtTargetAsync(targetPos);
+        await _motorService.WaitUntilAtTargetAsync(motor, targetPos);
+        return 1;
+    }
     /// <summary>
     /// Homes sweep motor (moves right to min position 0), moves powder motor up 2x layer height, moves build motor down by layer height, then sweeps material onto build plate
     /// (moves sweep motor left to max sweep position)
@@ -317,7 +322,6 @@ public class MotorPageService
             MagnetoLogger.Log($"Cannot home {motor.GetMotorName()} motor: motor value is null.", LogFactoryLogLevel.LogLevel.ERROR);
         }
     }
-
     public void HandleHomeMotor(StepperMotor motor)
     {
         MagnetoLogger.Log("Homing Motor.", LogFactoryLogLevel.LogLevel.VERBOSE);
@@ -372,30 +376,26 @@ public class MotorPageService
 
     public async void MoveMotorAndUpdateUI(StepperMotor motor, TextBox textBox, bool moveIsAbs, bool increment, XamlRoot xamlRoot)
     {
+        int res;
+        double targetPos;
         if (motor == null)
         {
             _ = PopupInfo.ShowContentDialog(xamlRoot, "Error", "Failed to select motor. Motor is null.");
             return;
         }
-
         printUiControlGroupHelper.SelectMotor(motor);
-
-        int res;
-        double targetPos = 0;
-
         if (moveIsAbs)
         {
-            res = await MoveMotorAbs(motor, textBox);
+            (res, targetPos) = await MoveMotorAbs(motor, textBox);
         }
         else
         {
             (res, targetPos) = await MoveMotorRel(motor, textBox, increment);
         }
-
         if (res == 1)
         {
             // 🔒 Wait until motor reaches final position
-            await motor.WaitUntilAtTargetAsync(targetPos); // TODO: go through _motorService
+            await WaitUntilAtTargetAsync(motor, targetPos); // TODO: go through _motorService
             await UpdateMotorPositionTextBox(motor); // TODO: TEST--may cause issues
         }
         else
