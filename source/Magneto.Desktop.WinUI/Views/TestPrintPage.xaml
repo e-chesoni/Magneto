@@ -13,7 +13,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="6*"/>
                 <RowDefinition Height="5"/>
-                <RowDefinition Height="16*"/>
+                <RowDefinition Height="12*"/>
                 <RowDefinition Height="5"/>
             </Grid.RowDefinitions>
             
@@ -89,8 +89,16 @@
                                             Click="StepBuildMotorDownButton_Click"></Button>
                                     </Grid>
                                 </Grid>
-                                <Button Grid.Row="4" x:Name="StopBuildMotorButton" HorizontalAlignment="Center" Height="30" Content="Stop B" Click="StopBuildMotorButton_Click"></Button>
+                                <Grid Grid.Row="4" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="10"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Button Grid.Column="0" x:Name="EnableBuildButton" HorizontalAlignment="Center" Height="30" Content="Enable" Background="Green" Click="EnableBuildCalibrationButton_Click"></Button>
+                                    <Button Grid.Column="2" x:Name="StopBuildMotorButton" HorizontalAlignment="Center" Height="30" Content="Stop" Background="Red" Click="StopBuildMotorButton_Click"></Button>
                             </Grid>
+                        </Grid>
 
                             <Grid Grid.Column="1">
                                 <Grid.RowDefinitions>
@@ -144,8 +152,16 @@
                                         <Button Grid.Column="1" x:Name="StepPowderMotorDownButton" HorizontalAlignment="Center" Height="30" Content="D" Click="StepPowderMotorDownButton_Click"></Button>
                                     </Grid>
                                 </Grid>
-                                <Button Grid.Row="4" x:Name="StopPowderMotorButton" HorizontalAlignment="Center" Height="30" Content="Stop P" Click="StopPowderMotorButton_Click"></Button>
+                                <Grid Grid.Row="4" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="10"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Button Grid.Column="0" x:Name="EnablePowderButton" HorizontalAlignment="Center" Height="30" Content="Enable" Background="Green" Click="EnablePowderCalibrationButton_Click"></Button>
+                                    <Button Grid.Column="2" x:Name="StopPowderMotorButton" HorizontalAlignment="Center" Height="30" Content="Stop" Background="Red" Click="StopPowderMotorButton_Click"></Button>
                             </Grid>
+                        </Grid>
 
                             <Grid Grid.Column="2">
                                 <Grid.RowDefinitions>
@@ -197,21 +213,31 @@
                                         <Button Grid.Column="1" x:Name="StepSweepMotorRightInCalibrateButton" HorizontalAlignment="Center" Height="30" Content="R" Click="StepSweepMotorRightInCalibrateButton_Click"></Button>
                                     </Grid>
                                 </Grid>
-                                <Button Grid.Row="4" x:Name="StopSweepMotorButton" HorizontalAlignment="Center" Height="30" Content="Stop S" Click="StopSweepMotorButton_Click"></Button>
+                                <Grid Grid.Row="4" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="10"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Button Grid.Column="0" x:Name="EnableSweepButton" HorizontalAlignment="Center" Height="30" Content="Enable" Background="Green" Click="EnablePowderCalibrationButton_Click"></Button>
+                                    <Button Grid.Column="2" x:Name="StopSweepMotorButton" HorizontalAlignment="Center" Height="30" Content="Stop" Background="Red" Click="StopSweepMotorButton_Click"></Button>
+                            </Grid>
                             </Grid>
                         </Grid>
 
-                        <Grid Grid.Row="2" HorizontalAlignment="Stretch">
+                        <Grid Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
                             <Button Grid.Column="0" x:Name="HomeAllMotorsInCalibrationPanelButton" HorizontalAlignment="Center" VerticalAlignment="Top" Height="30" Margin="2" Content="Home All Motors"
                                 Click="HomeAllMotorsInCalibrationPanelButton_Click"></Button>
-                            <Button Grid.Column="1" x:Name="EnableMotorsButton" HorizontalAlignment="Center" VerticalAlignment="Top" Height="30" Margin="2" Background="Green" Content="Enable Motors"
+                            <Button Grid.Column="2" x:Name="EnableMotorsButton" HorizontalAlignment="Center" VerticalAlignment="Top" Height="30" Margin="2" Background="Green" Content="Enable Motors"
                                 Click="EnableMotorsButton_Click"></Button>
-                            <Button Grid.Column="2" x:Name="StopAllMotorsInCalibrationPanelButton" HorizontalAlignment="Center" VerticalAlignment="Top" Height="30" Margin="2" Background="Red" Content="Stop All Motors"
+                            <Button Grid.Column="4" x:Name="StopAllMotorsInCalibrationPanelButton" HorizontalAlignment="Center" VerticalAlignment="Top" Height="30" Margin="2" Background="Red" Content="Stop All Motors"
                                 Click="StopAllMotorsInCalibrationPanelButton_Click"></Button>
                     </Grid>
 
@@ -220,23 +246,23 @@
             <Border Grid.Row="2" BorderBrush="Gray" BorderThickness="2" CornerRadius="5" Padding="5">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="2*"/>
+                        <RowDefinition Height="2*"/> <!--0-->
                         <RowDefinition Height="5"/>
-                        <RowDefinition Height="8*"/>
-                        <RowDefinition Height="1*"/>
-                        <RowDefinition Height="8*"/>
+                        <RowDefinition Height="4*"/> <!--2-->
+                        <RowDefinition Height="5"/>
+                        <RowDefinition Height="1*"/> <!--4-->
+                        <RowDefinition Height="5"/>
+                        <RowDefinition Height="6*"/> <!--6-->
                         <RowDefinition Height="5"/>
                     </Grid.RowDefinitions>
-                    <Grid Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,10">
+                    <Grid Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
-                            <!-- TextBox takes needed space -->
                             <ColumnDefinition Width="10"/>
-                            <!-- Small spacer -->
                             <ColumnDefinition Width="Auto"/>
-                            <!-- Browse button -->
                             <ColumnDefinition Width="10"/>
-                            <!-- Small spacer -->
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="10"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <TextBox Grid.Column="0" 
@@ -253,6 +279,13 @@
                                 HorizontalAlignment="Center"
                                 Click="BrowseButton_Click"/>
                         <Button Grid.Column="4"
+                                Content="Delete Print"
+                                Height="40" 
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Margin="2"
+                                Click="DeletePrintButton_Click"/>
+                        <Button Grid.Column="6"
                                 Content="TEST"
                                 Width="150"
                                 Height="40"
@@ -265,126 +298,103 @@
                             <RowDefinition Height="1*"/>
                             <RowDefinition Height="1*"/>
                             <RowDefinition Height="1*"/>
-                            <RowDefinition Height="1*"/>
-                            <RowDefinition Height="1*"/>
                         </Grid.RowDefinitions>
-                        <Grid Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0">
+                        <Grid Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="10"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <Grid Grid.Column="0">
-                                <TextBlock Text="Current Slice: "
+                            <TextBlock Grid.Column="0"
+                                       Text="Current Slice: "
                                            VerticalAlignment="Center"
                                            HorizontalAlignment="Right"/>
-                            </Grid>
-                            <Grid Grid.Column="2">
-                                <TextBox x:Name="CurrentSliceTextBox"
-                                         Width="200"
-                                         VerticalAlignment="Center"
-                                         HorizontalAlignment="Center"
-                                         IsEnabled="False"/>
-                            </Grid>
-                        </Grid>
-                        
-                        <Grid Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="10"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="10"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <Grid Grid.Column="0">
-                                <TextBlock Text="Layer Thickness: "
-                                           VerticalAlignment="Center"
-                                           HorizontalAlignment="Right"/>
-                            </Grid>
-                            <Grid Grid.Column="2">
-                                <TextBox x:Name="LayerThicknessTextBox"
-                                         Width="10"
-                                         VerticalAlignment="Center"
-                                         HorizontalAlignment="Center"/>
-                            </Grid>
-                            <Grid Grid.Column="4">
-                                <Button Content="Set"
-                                        Background="Green"/>
-                            </Grid>
-                        </Grid>
-                        
-                        <Grid Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="10"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="10"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <Grid Grid.Column="0">
-                                <TextBlock Text="Supply Amplifier: "
-                                           VerticalAlignment="Center"
-                                           HorizontalAlignment="Right"/>
-                            </Grid>
-                            <Grid Grid.Column="2">
-                                <TextBox x:Name="SupplyAmplifierTextBox"
-                                         Width="10"
-                                         VerticalAlignment="Center"
-                                         HorizontalAlignment="Center"/>
-                            </Grid>
-                            <Grid Grid.Column="4">
-                                <Button Content="Set"
-                                        Background="Green"/>
-                            </Grid>
                         </Grid>
 
-                        <Grid Grid.Row="3" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0">
+                        <Grid Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="3*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Row 0: Labels -->
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Layer:" 
+                                        VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,2"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="File Name:" 
+                                        VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,2"/>
+                            <TextBlock Grid.Row="0" Grid.Column="2" Text="Layer Thickness:" 
+                                        VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,2"/>
+                            <TextBlock Grid.Row="0" Grid.Column="3" Text="Power:" 
+                                        VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,2"/>
+                            <TextBlock Grid.Row="0" Grid.Column="4" Text="Scan Speed:" 
+                                        VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,2"/>
+                            <TextBlock Grid.Row="0" Grid.Column="5" Text="Hatch Spacing:" 
+                                        VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,2"/>
+                            <TextBlock Grid.Row="0" Grid.Column="6" Text="Energy Density:" 
+                                        VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,2"/>
+                            <TextBlock Grid.Row="0" Grid.Column="7" Text="Slices to mark:" 
+                                        VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,2"/>
+                            <TextBlock Grid.Row="0" Grid.Column="8" Text="Supply Amplifier:" 
+                                        VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,2"/>
+
+                            <!-- Row 1: Inputs -->
+                            <TextBox Grid.Row="1" Grid.Column="0" x:Name="LayerTextBox" 
+                                    VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="10,2"/>
+                            <TextBox Grid.Row="1" Grid.Column="1" x:Name="CurrentSliceTextBox"
+                                     Width="300"
+                                     VerticalAlignment="Center"
+                                     HorizontalAlignment="Center"
+                                     Margin="10,2"
+                                     IsEnabled="False"/>
+                            <TextBox Grid.Row="1" Grid.Column="2" x:Name="LayerThicknessTextBox" 
+                                    VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="10,2"/>
+                            <TextBox Grid.Row="1" Grid.Column="3" x:Name="PowerTextBox" 
+                                    VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="10,2" IsEnabled="False"/>
+                            <TextBox Grid.Row="1" Grid.Column="4" x:Name="ScanSpeedTextBox" 
+                                    VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="10,2" IsEnabled="False"/>
+                            <TextBox Grid.Row="1" Grid.Column="5" x:Name="HatchSpacingTextBox" 
+                                    VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="10,2" IsEnabled="False"/>
+                            <TextBox Grid.Row="1" Grid.Column="6" x:Name="EnergyDensityTextBox" 
+                                    VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="10,2" IsEnabled="False"/>
+                            <TextBox Grid.Row="1" Grid.Column="7" x:Name="SlicesToMarkTextBox"
+                                    VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="10,2"/>
+                            <TextBox Grid.Row="1" Grid.Column="8" x:Name="SupplyAmplifierTextBox"
+                                    VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="10,2"/>
+                            <CheckBox Grid.Row="1" Grid.Column="9" x:Name="StartWithMarkCheckbox"
+                                      Content="Start with mark"
+                                      IsChecked="True"/>
+                        </Grid>
+
+                        <Grid Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="10"/>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="10"/>
                                 <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="10"/>
-                                <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <Grid Grid.Column="0">
-                                <TextBlock Text="Slices to mark: "
-                                           VerticalAlignment="Center"
-                                           HorizontalAlignment="Right"/>
-                            </Grid>
-                            <Grid Grid.Column="2">
-                                <TextBox x:Name="MultiLayerMoveInputTextBox"
-                                         VerticalAlignment="Center"
-                                         Width="5"/>
-                            </Grid>
-                            <Grid Grid.Column="4">
-                                <Button x:Name="PrintLayersButton"
+                                <Button Grid.Column="0"
+                                        x:Name="PrintLayersButton"
                                         Height="30" 
                                         HorizontalAlignment="Center" 
                                         VerticalAlignment="Center" 
                                         Margin="2" 
                                         Content="Mark"
-                                        Background="Red"
                                         Click="PrintLayersButton_Click"/>
-                            </Grid>
-                            <Grid Grid.Column="6">
-                                <CheckBox x:Name="StartWithMarkCheckbox"
-                                          Content="Start with mark"
-                                          IsChecked="True"/>
-                            </Grid>
-                        </Grid>
-
-                        <Grid Grid.Row="4" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="10"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="10"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <Grid Grid.Column="0">
-                                <Button x:Name="StopMultiLayerMoveButton"
+                                <Button Grid.Column="2"
+                                        x:Name="StopMultiLayerMoveButton"
                                         Content="Stop"
                                         Height="30" 
                                         HorizontalAlignment="Center"
@@ -392,29 +402,17 @@
                                         Margin="2"
                                         Background="Red"
                                         Click="StopButton_Click"></Button>
-                            </Grid>
-                            <Grid Grid.Column="2">
-                                <Button
-                                    Content="Reset"
-                                    Height="30" 
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center"
-                                    Margin="2"/>
-                            </Grid>
-                            <Grid Grid.Column="4">
-                                <Button
-                                    Content="Delete Print"
-                                    Height="30" 
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center"
-                                    Margin="2"
-                                    Click="DeletePrintButton_Click"/>
-                            </Grid>
+                                <Button Grid.Column="4"
+                                        Content="Reset"
+                                        Height="30" 
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Margin="2"/>
                         </Grid>
                         
                     </Grid>
                     
-                    <Grid Grid.Row="3">
+                    <Grid Grid.Row="4">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="1*"/>
                             <ColumnDefinition Width="1*"/>
@@ -495,7 +493,8 @@
                                        Padding="2,0"/>
                         </StackPanel>
                     </Grid>
-                    <Grid Grid.Row="4">
+                    
+                    <Grid Grid.Row="6">
                         <controls:DataGrid
                              Grid.Row="1"
                              AutoGenerateColumns="False"

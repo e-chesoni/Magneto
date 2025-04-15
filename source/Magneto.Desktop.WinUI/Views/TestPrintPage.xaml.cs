@@ -581,7 +581,7 @@ public sealed partial class TestPrintPage : Page
         var fullPath = "";
         var layerThickness = 0.03; // TODO: Replace with read from layerThickness text box
         var amplifier = 2; // TODO: Replace with read from amplifier text box
-        if (string.IsNullOrWhiteSpace(MultiLayerMoveInputTextBox.Text) || !int.TryParse(MultiLayerMoveInputTextBox.Text, out var layers))
+        if (string.IsNullOrWhiteSpace(SlicesToMarkTextBox.Text) || !int.TryParse(SlicesToMarkTextBox.Text, out var layers))
         {
             var msg = "MultiLayerMoveInputTextBox text is not a valid integer.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
@@ -909,5 +909,15 @@ public sealed partial class TestPrintPage : Page
     private void TEST_Click(object sender, RoutedEventArgs e)
     {
         ViewModel.TestWaverunnerConnection();
+    }
+    
+    private void EnableBuildCalibrationButton_Click(object sender, RoutedEventArgs e)
+    {
+    }
+    private void EnablePowderCalibrationButton_Click(object sender, RoutedEventArgs e)
+    {
+    }
+    private void EnableSweepCalibrationButton_Click(object sender, RoutedEventArgs e)
+    {
     }
 }
