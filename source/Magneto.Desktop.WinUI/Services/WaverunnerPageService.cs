@@ -19,6 +19,8 @@ using static System.Net.Mime.MediaTypeNames;
 using Microsoft.UI;
 using Magneto.Desktop.WinUI.Popups;
 using Magneto.Desktop.WinUI.Core;
+using Magneto.Desktop.WinUI.Core.Contracts.Services;
+using Magneto.Desktop.WinUI.Contracts.Services;
 
 namespace Magneto.Desktop.WinUI.Services;
 public class WaverunnerPageService
@@ -26,7 +28,9 @@ public class WaverunnerPageService
     /// <summary>
     /// WaveRunner client control interface
     /// </summary>
-    private static readonly ScSamlightClientCtrlEx cci = new();
+    private static readonly ScSamlightClientCtrlEx cci = new(); // TODO: Remove once service is set up
+
+    private readonly IWaverunnerService _waverunnerService;
 
     /// <summary>
     /// Default job directory (to search for job files)
@@ -113,51 +117,22 @@ public class WaverunnerPageService
         _redPointerEnabled = false;
     }
 
-    public WaverunnerPageService(TextBox jobFileSearchDirectory, TextBox jobFileNameTextBox,
-                                 Button toggleRedPointerButton, Button startMarkButton)
+    public WaverunnerPageService(TextBox printDirectoryTextBox, Button startMarkButton)
     {
-        this.JobDirectoryTextBox = jobFileSearchDirectory;
-        this.JobFileNameTextBox = jobFileNameTextBox;
-        this.ToggleRedPointerButton = toggleRedPointerButton;
+        _waverunnerService = App.GetService<IWaverunnerService>();
         this.StartMarkButton = startMarkButton;
-        this.IsMarkingText = null;
-
         // Set default job directory
         _defaultJobDirectory = @"C:\Scanner Application\Scanner Software\jobfiles";
         _jobDirectory = _defaultJobDirectory;
-        this.JobDirectoryTextBox.Text = _jobDirectory;
-
-        // Set default job file
-        _defaultJobName = "center_crosshair_OAT.sjf";
-        this.JobFileNameTextBox.Text = _defaultJobName;
-
         // ASSUMPTION: Red pointer is off when application starts
         // Have not found way to check red pointer status in SAMLight docs 
         // Initialize red pointer to off
         _redPointerEnabled = false;
     }
 
-    public WaverunnerPageService(TextBox printDirectoryTextBox, Button startMarkButton)
+    public WaverunnerPageService()
     {
-        //this.JobFileSearchDirectory = jobFileSearchDirectory;
-        //this.JobFileNameTextBox = jobFileNameTextBox;
-        //this.ToggleRedPointerButton = toggleRedPointerButton;
-        this.StartMarkButton = startMarkButton;
-        //this.IsMarkingText = null;
-
-        // Set default job directory
-        _defaultJobDirectory = @"C:\Scanner Application\Scanner Software\jobfiles";
-        _jobDirectory = _defaultJobDirectory;
-        //this.JobDirectory.Text = _jobDirectory;
-
-        // Set default job file
-        //_defaultJobName = "center_crosshair_OAT.sjf";
-        //this.JobFileNameTextBox.Text = _defaultJobName;
-
-        // ASSUMPTION: Red pointer is off when application starts
-        // Have not found way to check red pointer status in SAMLight docs 
-        // Initialize red pointer to off
-        _redPointerEnabled = false;
+    
     }
 
     #region Setters
@@ -180,18 +155,15 @@ public class WaverunnerPageService
     /// <returns>return 0 if successful; -1 if failed</returns>
     public ExecStatus TestWaverunnerConnection(XamlRoot xamlRoot)
     {
-        try
+        if (_waverunnerService.TestConnection() == 1)
         {
-            // Show hello world message box in SAMlight
-            cci.ScExecCommand((int)ScComSAMLightClientCtrlExecCommandConstants.scComSAMLightClientCtrlExecCommandTest);
             return ExecStatus.Success;
         }
-        catch (System.Exception exception)
+        else
         {
             // TODO: Use Log & Display once it's extrapolated from TestPrintPage.xaml.cs
-            var logMsg = $"CCI Error! \n {Convert.ToString(exception)}";
             var displayMsg = "Unable to say hello to waverunner. Is the application open?";
-            MagnetoLogger.Log(logMsg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
+            MagnetoLogger.Log(displayMsg, LogFactoryLogLevel.LogLevel.ERROR);
             _ = PopupInfo.ShowContentDialog(xamlRoot, "Warning", displayMsg);
             return ExecStatus.Failure;
         }

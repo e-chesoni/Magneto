@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Magneto.Desktop.WinUI.Contracts.Services;
 public interface IWaverunnerService
 {
-    void TestConnection();
+    int TestConnection();
     int StartRedPointer(string filePath);
     int StopRedPointer();
     Task<int> MarkEntityAsync(string filePath);

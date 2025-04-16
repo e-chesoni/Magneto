@@ -28,6 +28,7 @@ using WinRT.Interop;
 using SAMLIGHT_CLIENT_CTRL_EXLib;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Magneto.Desktop.WinUI.Contracts.Services;
 
 namespace Magneto.Desktop.WinUI.Views;
 
@@ -251,7 +252,7 @@ public sealed partial class TestPrintPage : Page
         _printControlGroupHelper = new PrintUIControlGroupHelper(_calibrateMotorUIControlGroup);
 
         // Initialize motor page service
-        _motorPageService = new MotorPageService(_missionControl.GetActuationManger(), _printControlGroupHelper);
+        _motorPageService = new MotorPageService(_printControlGroupHelper);
 
         // initialize Waverunner page service
         _waverunnerPageService = new WaverunnerPageService(PrintDirectoryInputTextBox, PrintLayersButton);
@@ -908,7 +909,7 @@ public sealed partial class TestPrintPage : Page
     #endregion
     private void TEST_Click(object sender, RoutedEventArgs e)
     {
-        ViewModel.TestWaverunnerConnection();
+        _waverunnerPageService.TestWaverunnerConnection(this.XamlRoot);
     }
     
     private void EnableBuildCalibrationButton_Click(object sender, RoutedEventArgs e)

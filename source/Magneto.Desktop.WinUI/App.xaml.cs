@@ -156,7 +156,7 @@ public partial class App : Application
             });
 
             // Peripheral Services
-            services.AddSingleton<IWaverunnerService, WaverunerServiceTEST>();
+            services.AddSingleton<IWaverunnerService, WaverunerService>();
             services.AddSingleton<IMotorService, MotorService>();
 
             // MongoDb Services

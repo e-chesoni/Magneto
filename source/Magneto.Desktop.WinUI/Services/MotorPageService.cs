@@ -26,7 +26,7 @@ public class MotorPageService
     private readonly IMotorService _motorService;
     public PrintUIControlGroupHelper printUiControlGroupHelper { get; set; }
 
-    public MotorPageService(CommandQueueManager am, PrintUIControlGroupHelper printCtlGrpHelper)
+    public MotorPageService(PrintUIControlGroupHelper printCtlGrpHelper)
     {
         _motorService = App.GetService<IMotorService>();
         _motorService.HandleStartUp();

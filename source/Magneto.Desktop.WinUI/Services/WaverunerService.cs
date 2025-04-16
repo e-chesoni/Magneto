@@ -10,22 +10,22 @@ using Microsoft.UI.Xaml;
 using SAMLIGHT_CLIENT_CTRL_EXLib;
 
 namespace Magneto.Desktop.WinUI.Services;
-public class WaverunerServiceTEST : IWaverunnerService
+public class WaverunerService : IWaverunnerService
 {
     private static readonly ScSamlightClientCtrlEx cci = new();
 
-    public WaverunerServiceTEST()
+    public WaverunerService()
     {
             
     }
 
-    public void TestConnection()
+    public int TestConnection()
     {
         try
         {
             // Show hello world message box in SAMlight
             cci.ScExecCommand((int)ScComSAMLightClientCtrlExecCommandConstants.scComSAMLightClientCtrlExecCommandTest);
-            return;
+            return 1;
         }
         catch (System.Exception exception)
         {
@@ -33,7 +33,7 @@ public class WaverunerServiceTEST : IWaverunnerService
             var logMsg = $"CCI Error! \n {Convert.ToString(exception)}";
             var displayMsg = "Unable to say hello to waverunner. Is the application open?";
             MagnetoLogger.Log(logMsg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
-            return;
+            return 0;
         }
     }
     public int StartRedPointer(string filePath)
