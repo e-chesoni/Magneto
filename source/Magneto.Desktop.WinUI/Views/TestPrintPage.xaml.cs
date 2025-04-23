@@ -785,9 +785,61 @@ public sealed partial class TestPrintPage : Page
             PopulatePageText();
         }
     }
+
+    // TODO: Move to helper class for conversions
+    private (int result, double value) ConvertTextBoxTextToDouble(TextBox textBox)
+    {
+        if (textBox == null || !double.TryParse(textBox.Text, out var value))
+        {
+            var msg = $"Text box input is invalid.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            return (0, 0);
+        }
+        else
+        {
+            var val = double.Parse(textBox.Text);
+            return (1, val);
+        }
+    }
     private async void PrintLayersButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        await ViewModel.HandleMarkEntityAsync();
+        int res;
+        double thickness;
+        double power;
+        double scanSpeed;
+        double hatchSpacing;
+        var startWithMark = StartWithMarkCheckbox.IsEnabled;
+
+        (res, thickness) = ConvertTextBoxTextToDouble(LayerThicknessTextBox);
+        if (res == 0)
+        {
+            var msg = $"Layer thickness text box input is invalid.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            return;
+        }
+        (res, power) = ConvertTextBoxTextToDouble(PowerTextBox);
+        if (res == 0)
+        {
+            var msg = $"Layer thickness text box input is invalid.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            return;
+        }
+        (res, scanSpeed) = ConvertTextBoxTextToDouble(ScanSpeedTextBox);
+        if (res == 0)
+        {
+            var msg = $"Layer thickness text box input is invalid.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            return;
+        }
+        (res, hatchSpacing) = ConvertTextBoxTextToDouble(HatchSpacingTextBox);
+        if (res == 0)
+        {
+            var msg = $"Layer thickness text box input is invalid.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            return;
+        }
+
+        await ViewModel.PrintLayer(startWithMark, thickness, power, scanSpeed, hatchSpacing);
         PopulatePageText();
     }
     private async void DeletePrintButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)

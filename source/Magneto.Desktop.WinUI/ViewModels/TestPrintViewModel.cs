@@ -82,7 +82,7 @@ public class TestPrintViewModel : ObservableRecipient
     public async Task SetCurrentPrintAsync(string directoryPath)
     {
         currentPrint = await _printService.GetPrintByDirectory(directoryPath);
-        await UpdateSliceDisplay(); // ✅ await this now
+        await GetNextSliceAndUpdateDisplay(); // ✅ await this now
     }
     #endregion
 
@@ -224,7 +224,7 @@ public class TestPrintViewModel : ObservableRecipient
     #endregion
 
     #region Helpers
-    private async Task UpdateSliceDisplay()
+    private async Task GetNextSliceAndUpdateDisplay()
     {
         sliceCollection.Clear();
         await LoadSliceDataAsync();
@@ -252,10 +252,11 @@ public class TestPrintViewModel : ObservableRecipient
         currentSlice.power = power;
         currentSlice.scanSpeed = scanSpeed;
         currentSlice.hatchSpacing = hatchSpacing;
+        currentSlice.energyDensity = power / (thickness * scanSpeed * hatchSpacing);
         currentSlice.marked = true;
         await _sliceService.EditSlice(currentSlice);
     }
-    // TODO: put layer movement logic here
+
     public async Task HandleMarkEntityAsync()
     {
         // Get entity to mark
@@ -276,7 +277,8 @@ public class TestPrintViewModel : ObservableRecipient
         if (startWithMark)
         {
             // TODO: set waverunner mark parameters (not yet implemented)
-            // await _waverunnerService(power, scanSpeed, hatchSpacing);
+            // await _waverunnerService.UpdatePen(power, scanSpeed); // calls UpdatePower(power) and UpdateScanSpeed(scanSpeed); may expand parameters in the future
+            
             // mark
             await HandleMarkEntityAsync();
             // wait for making to finish
@@ -289,10 +291,12 @@ public class TestPrintViewModel : ObservableRecipient
             //await _motorPageService.LayerMove(thickness);
             //while (_motorPageService.MotorsRunning()) { await Task.Delay(100); }
         }
-        // TODO: update slice collection
+        else
+        {
+            // TODO: layer move first, then mark
+        }
         await UpdateSliceCollectionAsync(thickness, power, scanSpeed, hatchSpacing);
-        // TODO: update display
-        await UpdateSliceDisplay(); // this should update currentSlice
+        await GetNextSliceAndUpdateDisplay(); // this should update currentSlice
     }
 
     #endregion
