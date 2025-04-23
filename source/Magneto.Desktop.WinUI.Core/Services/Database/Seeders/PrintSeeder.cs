@@ -23,7 +23,7 @@ public class PrintSeeder : IPrintSeeder
     }
     public async Task CreatePrintFromDirectory(string directoryPath)
     {
-        var files = _fileService.GetSliceFilesFromDirectoryPath(directoryPath).ToList();
+        var files = _fileService.GetFiles(directoryPath).ToList();
         if (!files.Any()) return;
 
         var printId = ObjectId.GenerateNewId().ToString(); // works because declared Bson on print model

@@ -25,13 +25,11 @@ using Magneto.Desktop.WinUI.Contracts.Services;
 namespace Magneto.Desktop.WinUI.Services;
 public class WaverunnerPageService
 {
+    private readonly IWaverunnerService _waverunnerService;
     /// <summary>
     /// WaveRunner client control interface
     /// </summary>
     private static readonly ScSamlightClientCtrlEx cci = new(); // TODO: Remove once service is set up
-
-    private readonly IWaverunnerService _waverunnerService;
-
     /// <summary>
     /// Default job directory (to search for job files)
     /// </summary>
@@ -54,10 +52,9 @@ public class WaverunnerPageService
 
     private bool _redPointerEnabled { get; set; }
 
-    #region Enumerators
-
+    #region Status Enumerators
     /// <summary>
-    /// WaveRunner Execution statuses
+    /// Waverunner Execution statuses
     /// </summary>
     public enum ExecStatus
     {
@@ -76,21 +73,14 @@ public class WaverunnerPageService
         OnlyRedPointerEntities = 4,
         OutermostBorder = 5
     }
-
     #endregion
 
     #region UI Variables
-
     public TextBox JobDirectoryTextBox { get; set; }
-
     public TextBox JobFileNameTextBox { get; set; }
-
     public Button ToggleRedPointerButton { get; set; }
-
     public Button StartMarkButton { get; set; }
-
     public TextBlock? IsMarkingText { get; set; }
-
     #endregion
 
     public WaverunnerPageService(TextBox jobFileSearchDirectory, TextBox jobFileNameTextBox,
@@ -168,11 +158,9 @@ public class WaverunnerPageService
             return ExecStatus.Failure;
         }
     }
-
     #endregion
 
     #region Helper Functions
-
     private ExecStatus PrintDirectoryFiles(string targetDirectory)
     {
         var msg = "";
@@ -213,7 +201,6 @@ public class WaverunnerPageService
             return ExecStatus.Success;
         }
     }
-
     private ExecStatus FindFile(string fileName, XamlRoot xamlRoot)
     {
         // Check if the file exists
@@ -232,11 +219,9 @@ public class WaverunnerPageService
             return ExecStatus.Success;
         }
     }
-
     #endregion
 
     #region File Path Methods
-
     // TODO: put in a try/catch block in case update fails
     public ExecStatus UpdateDirectory()
     {
@@ -341,11 +326,9 @@ public class WaverunnerPageService
         }
         else { return ExecStatus.Success; }
     }
-
     #endregion
 
     #region Marking Methods
-
     public double GetLastMark()
     {
         var msg = "Get last mark requested...";
@@ -533,11 +516,9 @@ public class WaverunnerPageService
 
         return ExecStatus.Success;
     }
-
     #endregion
 
     #region Logging Methods
-
     // TODO: integrate with log & display extrapolation from TestPrintPage.xaml.cs
     public void UpdateUIMarkStatusAndLogMessage(string uiMessage, Core.Contracts.Services.LogFactoryLogLevel.LogLevel logLevel, string logMessage = null)
     {
@@ -547,6 +528,5 @@ public class WaverunnerPageService
         // Use the provided log level for logging
         MagnetoLogger.Log(logMessage ?? uiMessage, logLevel);
     }
-
     #endregion
 }
