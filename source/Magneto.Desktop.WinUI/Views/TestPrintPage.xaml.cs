@@ -548,7 +548,7 @@ public sealed partial class TestPrintPage : Page
     {
         //KillAll(); // TODO: TEST; does the same as below, but has not always worked in methods
         // stop mark
-        _waverunnerPageService.StopMark();
+        _waverunnerPageService.StopMark(this.Content.XamlRoot);
         // stop motors
         _motorPageService.StopSweepMotorAndUpdateTextBox();
         _motorPageService.StopBuildMotorAndUpdateTextBox();

@@ -38,20 +38,16 @@ public class FileService : IFileService
     #region Validation
     public int ValidateFilePath(string directoryPath, string fileName)
     {
-        MagnetoLogger.Log("Getting job...", LogFactoryLogLevel.LogLevel.VERBOSE);
-        var fullPathToJob = Path.Combine(directoryPath, fileName);
-
-        // TODO: Use log & display for error messaging in future
-        if (!Directory.Exists(directoryPath))
+        MagnetoLogger.Log("Generating full path...", LogFactoryLogLevel.LogLevel.VERBOSE);
+        var fullPath = Path.Combine(directoryPath, fileName);
+        return ValidateFilePath(fullPath);
+    }
+    public int ValidateFilePath(string fullPath)
+    {
+        if (!File.Exists(fullPath))
         {
-            var msg = "Directory does not exist. Cannot get job.";
+            var msg = $"File not found. File path {fullPath} is invalid";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            return 0;
-        }
-        if (!File.Exists(fullPathToJob))
-        {
-            var msg = $"File not found: {fullPathToJob}";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
             return 0;
         }
         return 1;

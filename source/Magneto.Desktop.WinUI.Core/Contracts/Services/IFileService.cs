@@ -10,6 +10,7 @@ public interface IFileService
 
     #region Validation
     int ValidateFilePath(string directoryPath, string fileName);
+    int ValidateFilePath(string fullPath);
     #endregion
 
     #region Finders

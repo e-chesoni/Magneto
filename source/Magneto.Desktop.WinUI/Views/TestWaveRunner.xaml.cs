@@ -55,7 +55,6 @@ public sealed partial class TestWaveRunner : Page
 
     #endregion
 
-
     #region Button Methods
 
     private void SayHelloButton_Click(object sender, RoutedEventArgs e)
@@ -65,7 +64,7 @@ public sealed partial class TestWaveRunner : Page
 
     private void GetLastMarkButton_Click(object sender, RoutedEventArgs e)
     {
-        _waverunnerPageService.GetLastMark();
+        _waverunnerPageService.GetLastMark(this.Content.XamlRoot);
     }
 
     private void UpdateDirectoryButton_Click(object sender, RoutedEventArgs e)
@@ -102,7 +101,7 @@ public sealed partial class TestWaveRunner : Page
 
     private void StopMarkButton_Click(object sender, RoutedEventArgs e)
     {
-        _waverunnerPageService.StopMark();
+        _waverunnerPageService.StopMark(this.Content.XamlRoot);
     }
 
     #endregion

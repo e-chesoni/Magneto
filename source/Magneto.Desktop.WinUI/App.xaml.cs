@@ -86,22 +86,7 @@ public partial class App : Application
             services.AddSingleton<ISampleDataService, SampleDataService>();
             services.AddSingleton<ISamplePrintService, SamplePrintService>();
             services.AddSingleton<IFileService, FileService>();
-            /*
-            services.AddSingleton<IMotorController, MotorController>();
-            services.AddSingleton<ActuationManager>(provider =>
-            {
-                var buildController = MotorFactory.CreateBuildController();
-                var sweepController = MotorFactory.CreateSweepController();
-                var laserController = new LaserController();
 
-                return new ActuationManager(buildController, sweepController, laserController);
-            });
-            services.AddSingleton<MissionControl>(provider =>
-            {
-                var actuationManager = provider.GetRequiredService<ActuationManager>();
-                return new MissionControl(actuationManager);
-            });
-            */
             // Motors
             services.AddSingleton(MotorFactory.CreateMotor("powder"));
             services.AddSingleton(MotorFactory.CreateMotor("build"));
