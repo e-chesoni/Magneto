@@ -37,15 +37,16 @@ namespace Magneto.Desktop.WinUI.Views;
 /// </summary>
 public sealed partial class TestPrintPage : Page
 {
-    #region Motor Variables
     /*
+    #region Motor Variables
     private StepperMotor? _powderMotor;
     private StepperMotor? _buildMotor;
     private StepperMotor? _sweepMotor;
     private ActuationManager? _am;
-    */
     #endregion
+    */
 
+    /*
     #region WaveRunner Variables
 
     /// <summary>
@@ -97,9 +98,10 @@ public sealed partial class TestPrintPage : Page
     }
 
     #endregion
+    */
 
+    /*
     #region Layer/Print Variables
-
     private double _currentLayerThickness;
 
     private double _desiredPrintHeight;
@@ -110,8 +112,9 @@ public sealed partial class TestPrintPage : Page
 
     private double _totalPrintHeight { get; set; }
 
-    //private readonly Dictionary<double, int> _printHistoryDictionary = new Dictionary<double, int>();
+    private readonly Dictionary<double, int> _printHistoryDictionary = new Dictionary<double, int>();
     #endregion
+    */
 
     #region Services
     // TODO: make these singletons initialized in app.xaml.cs
@@ -121,9 +124,7 @@ public sealed partial class TestPrintPage : Page
     #endregion
 
     #region Flags
-
     private bool KILL_OPERATION;
-
     #endregion
 
     #region UI Helper Variables
@@ -135,15 +136,11 @@ public sealed partial class TestPrintPage : Page
     private PrintSettingsUIControlGroup _layerSettingsUIControlGroup { get; set; }
     */
     private PrintUIControlGroupHelper? _printControlGroupHelper { get; set; }
-
     private bool _calibrationPanelEnabled = true;
     /*
     private bool _fileSettingsSectionEnabled = true;
-
     private bool _layerSettingsSectionEnabled = true;
-
     private bool _settingsPanelEnabled = true;
-
     private bool _printPanelEnabled = true;
     */
     #endregion
@@ -165,14 +162,13 @@ public sealed partial class TestPrintPage : Page
 
     #endregion
 
+    /*
     #region Test Page Setup
-
     /// <summary>
     /// Sets up test motors for powder, build, and sweep operations by retrieving configurations 
     /// and initializing the respective StepperMotor objects. Logs success or error for each motor setup.
     /// Assumes motor order in configuration corresponds to powder, build, and sweep.
     /// </summary>
-    /*
     private async void SetUpTestMotors()
     {
         if (MissionControl == null)
@@ -210,8 +206,8 @@ public sealed partial class TestPrintPage : Page
             MagnetoLogger.Log($"Unable to find {motorName} motor", LogFactoryLogLevel.LogLevel.ERROR);
         }
     }
-    */
     #endregion
+    */
 
     #region Constructor
     /// <summary>
@@ -231,12 +227,9 @@ public sealed partial class TestPrintPage : Page
         KILL_OPERATION = false;
         //this.motorService = motorService;
     }
-
     #endregion
 
-
     #region Page Initialization Methods
-
     private void InitPageServices() // combine page services initialization because motor services uses one of the UI groups
     {
         // UI page groups
@@ -270,9 +263,7 @@ public sealed partial class TestPrintPage : Page
     */
     #endregion
 
-
     #region Navigation Methods
-
     /// <summary>
     /// Handle page startup tasks
     /// </summary>
@@ -494,7 +485,6 @@ public sealed partial class TestPrintPage : Page
         PopulateGridWithLastThree(PrintHistoryGrid);
     }
     */
-
     // TODO: remove when done testing\
     /*
     private void AddDummyPrintHistory()
@@ -565,7 +555,7 @@ public sealed partial class TestPrintPage : Page
         _motorPageService.StopPowderMotorAndUpdateTextBox();
     }
      #endregion
-
+    /*
     private void WaitForMark()
     {
         _ = _waverunnerPageService.MarkEntityAsync();
@@ -607,9 +597,7 @@ public sealed partial class TestPrintPage : Page
                     // MARK
                     msg = $"marking layer {i} in multi-layer print";
                     MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-                    //_ = _waverunnerPageService.MarkEntityAsync();
-                    // TOOD: TEST
-                    await ViewModel.HandleMarkEntityAsync();
+                    _ = _waverunnerPageService.MarkEntityAsync();
                     while (_waverunnerPageService.GetMarkStatus() != 0) // wait until mark ends before proceeding
                     {
                         // wait
@@ -660,8 +648,8 @@ public sealed partial class TestPrintPage : Page
             KILL_OPERATION = false;
         }
     }
-
-    #region Print Manual Move Methods
+    */
+    #region E-Stop Helper
     private void StopMotorsHelper()
     {
         // TODO: Does not work when moved to page service (only one motor stops)...no idea why...
@@ -705,7 +693,6 @@ public sealed partial class TestPrintPage : Page
         _motorPageService.printUiControlGroupHelper.DisableUIControlGroup(_calibrateMotorUIControlGroup);
         EnableMotorsButton.Content = "Enable Calibration";
     }
-
     #endregion
 
     #region POC Page Text Managers
@@ -789,7 +776,7 @@ public sealed partial class TestPrintPage : Page
     // TODO: Move to helper class for conversions
     private (int result, double value) ConvertTextBoxTextToDouble(TextBox textBox)
     {
-        if (textBox == null || !double.TryParse(textBox.Text, out var value))
+        if (textBox == null || !double.TryParse(textBox.Text, out _))
         {
             var msg = $"Text box input is invalid.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
@@ -801,6 +788,20 @@ public sealed partial class TestPrintPage : Page
             return (1, val);
         }
     }
+    private (int result, Int64 value) ConvertTextBoxTextInt(TextBox textBox)
+    {
+        if (textBox == null || !Int64.TryParse(textBox.Text, out _))
+        {
+            var msg = $"Text box input is invalid.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            return (0, 0);
+        }
+        else
+        {
+            var val = Int64.Parse(textBox.Text);
+            return (1, val);
+        }
+    }
     private async void PrintLayersButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
         int res;
@@ -808,8 +809,15 @@ public sealed partial class TestPrintPage : Page
         double power;
         double scanSpeed;
         double hatchSpacing;
+        double amplifier;
+        Int64 slicesToMark;
         var startWithMark = StartWithMarkCheckbox.IsEnabled;
-
+        if (startWithMark)
+        {
+            var msg = $"Start with mark requested.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
+        }
+        // Check for valid data in required text boxes
         (res, thickness) = ConvertTextBoxTextToDouble(LayerThicknessTextBox);
         if (res == 0)
         {
@@ -838,9 +846,26 @@ public sealed partial class TestPrintPage : Page
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             return;
         }
-
-        await ViewModel.PrintLayer(startWithMark, thickness, power, scanSpeed, hatchSpacing);
-        PopulatePageText();
+        (res, amplifier) = ConvertTextBoxTextToDouble(SupplyAmplifierTextBox);
+        if (res == 0)
+        {
+            var msg = $"Supply amplifier text box input is invalid.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            return;
+        }
+        (res, slicesToMark) = ConvertTextBoxTextInt(SlicesToMarkTextBox);
+        if (res == 0)
+        {
+            var msg = $"Slices to mark text box input is invalid.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            return;
+        }
+        // Print requested layers
+        for (var i = 0; i < slicesToMark; i++)
+        {
+            await ViewModel.PrintLayer(startWithMark, thickness, power, scanSpeed, hatchSpacing, amplifier);
+            PopulatePageText();
+        }
     }
     private async void DeletePrintButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {

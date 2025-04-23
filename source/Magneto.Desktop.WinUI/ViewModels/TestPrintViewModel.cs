@@ -272,24 +272,20 @@ public class TestPrintViewModel : ObservableRecipient
         //await _waverunnerService.MarkEntityAsync(entity);
     }
 
-    public async Task PrintLayer(bool startWithMark, double thickness, double power, double scanSpeed, double hatchSpacing)
+    public async Task PrintLayer(bool startWithMark, double thickness, double power, double scanSpeed, double hatchSpacing, double amplifier)
     {
         if (startWithMark)
         {
             // TODO: set waverunner mark parameters (not yet implemented)
             // await _waverunnerService.UpdatePen(power, scanSpeed); // calls UpdatePower(power) and UpdateScanSpeed(scanSpeed); may expand parameters in the future
-            
             // mark
             await HandleMarkEntityAsync();
-            // wait for making to finish
-            while (_waverunnerService.GetMarkStatus() != 0) // wait until mark ends before proceeding
-            {
-                // wait
-                Task.Delay(100).Wait();
-            }
-            // layer move (TODO: get slice thickness)
-            //await _motorPageService.LayerMove(thickness);
-            //while (_motorPageService.MotorsRunning()) { await Task.Delay(100); }
+            // wait for mark to complete
+            while (_waverunnerService.GetMarkStatus() != 0) { Task.Delay(100).Wait(); }
+            // layer move
+            await _motorService.LayerMove(thickness, amplifier);
+            // wait for layer move to complete
+            while (_motorService.MotorsRunning()) { await Task.Delay(100); }
         }
         else
         {
