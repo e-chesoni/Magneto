@@ -40,39 +40,6 @@ public class TestPrintViewModel : ObservableRecipient
         _motorService = motorService;
         _waverunnerService = waverunnerService;
     }
-    /*
-    public string DistanceText
-    {
-        get
-        {
-            return _distanceText;
-        }
-        set
-        {
-            _distanceText = value;
-            OnPropertyChanged(nameof(DistanceText)); // Implement INotifyPropertyChanged
-        }
-    }
-
-    public string PositionText
-    {
-        get
-        {
-            return _positionText;
-        }
-        set
-        {
-            _positionText = value;
-            OnPropertyChanged(nameof(PositionText)); // Implement INotifyPropertyChanged
-        }
-    }
-    private void SetDistance(int distance)
-    {
-        //_distance = distance;
-        //_distanceText = distance.ToString();
-    }
-    */
-
     public void TestWaverunnerConnection()
     {
         _waverunnerService.TestConnection();
