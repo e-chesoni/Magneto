@@ -281,15 +281,15 @@ public class TestPrintPageStateMachine
 
     #region Lock, Unlock, and Toggle Helpers
 
-    private void EnableCalibrationPanel()
+    private void UnlockCalibrationPanel()
     {
-        _motorPageService.printUiControlGroupHelper.EnableUIControlGroup(_motorPageService.printUiControlGroupHelper.calibrateMotorControlGroup);
+        _motorPageService.UnlockCalibrationPanel();
         ToggleCalibrationPanelLockButton.Content = "Unlock Calibration";
     }
 
-    private void DisableCalibrationPanel()
+    private void LockCalibrationPanel()
     {
-        _motorPageService.printUiControlGroupHelper.DisableUIControlGroup(_motorPageService.printUiControlGroupHelper.calibrateMotorControlGroup);
+        _motorPageService.LockCalibrationPanel();
         ToggleCalibrationPanelLockButton.Content = "Lock Calibration";
     }
 

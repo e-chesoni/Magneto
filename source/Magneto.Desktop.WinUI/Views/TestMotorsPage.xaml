@@ -14,20 +14,20 @@
     <Grid x:Name="ContentArea">
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="1*"/>
-                <RowDefinition Height="10*"/>
-                <RowDefinition Height="3*"/>
-                <RowDefinition Height="1*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="10"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="10"/>
             </Grid.RowDefinitions>
-            <Grid Grid.Row="1">
+            <Grid Grid.Row="0">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="10*"/>
-                    <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="10*"/>
-                    <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="10*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="10"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="10"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="10"/>
                 </Grid.ColumnDefinitions>
-
                 <Grid Grid.Column="0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -35,223 +35,280 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
-                    <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="24"
-                                   Text="Build Motor">
-                    </TextBlock>
-                    <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Height="200" Text="Placeholder for build motor animation"></TextBlock>
-
-                    <Button Grid.Row="2" x:Name="SelectBuildMotorButton" Content="Build Motor" Grid.Column="1"
-                            Height="60" Width="150" Margin="5" HorizontalAlignment="Center" Background="DimGray"
-                            Click="SelectBuildMotorButton_Click">
-                    </Button>
-
-                    <Grid Grid.Row="3">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <TextBlock Grid.Column="0" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Max Position:"></TextBlock>
-                        <TextBlock  Grid.Column="1" Grid.Row="0"  x:Name="BuildMaxPos" Width="50" Height ="20" Margin="10" 
-                                      Text="..."></TextBlock>
-                        <TextBlock Grid.Column="0" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Min Position:"></TextBlock>
-                        <TextBlock  Grid.Column="1" Grid.Row="1"  x:Name="BuildMinPos" Width="50" Height ="20" Margin="10" 
-                                      Text="..."></TextBlock>
-                        <TextBlock Grid.Column="0" Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Current Position:"></TextBlock>
-                        <TextBox  Grid.Column="1" Grid.Row="2"  x:Name="BuildPositionTextBox" Width="50" Height ="20" Margin="10" 
-                                      Text="..."></TextBox>
-                        <Button Grid.Column="2" Grid.Row="2" Grid.ColumnSpan="2" x:Name="GetBuildPositionButton" Content="Get Build Position" Height="30" Width="150" Margin="10" HorizontalAlignment="Center"
-                                        Background="DimGray" Click="GetBuildPositionButton_Click">
-                        </Button>
-                        <TextBlock Grid.Column="0" Grid.Row="3" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Increment Position:"></TextBlock>
-                        <TextBox  Grid.Column="1" Grid.Row="3"  x:Name="IncrBuildPositionTextBox" Width="50" Height ="20" Margin="10" 
-                                      Text="..."></TextBox>
-                        <Button Grid.Column="2" Grid.Row="3"  x:Name="IncrBuild" Content="U" Height="30" Width="40" Margin="10" HorizontalAlignment="Center"
-                                    Background="DimGray" Click="IncrBuild_Click">
-                        </Button>
-                        <Button Grid.Column="4" Grid.Row="3"  x:Name="DecrBuild" Content="D" Height="30" Width="40" Margin="10" HorizontalAlignment="Center"
-                                    Background="DimGray" Click="DecrBuild_Click">
-                        </Button>
-                        <TextBlock Grid.Column="0" Grid.Row="4" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Move to Position:"></TextBlock>
-                        <TextBox  Grid.Column="1" Grid.Row="4"  x:Name="BuildAbsMoveTextBox" Width="50" Height ="20" Margin="10" 
-                                      Text="..."></TextBox>
-                        <Button Grid.Column="2" Grid.Row="4" Grid.ColumnSpan="2" x:Name="AbsMoveBuildButton" Content="Absolute Move" Height="30" Width="150" Margin="10" HorizontalAlignment="Center"
-                                        Background="DimGray" Click="AbsMoveBuildButton_Click">
-                        </Button>
-                        <Button Grid.Column="1" Grid.Row="5" x:Name="HomeBuildMotorButton" Content="Home Build Motor" Height="30" Margin="10" HorizontalAlignment="Center" Background="DimGray"
-                                        Click="HomeBuildMotorButton_Click">
-                        </Button>
-                    </Grid>
+                    <TextBlock Grid.Row="0" 
+                               HorizontalAlignment="Center" 
+                               VerticalAlignment="Center" 
+                               FontSize="24"
+                               Text="Build Motor"/>
+                    <TextBlock Grid.Row="1" 
+                               HorizontalAlignment="Center" 
+                               VerticalAlignment="Center" 
+                               Height="200" 
+                               Text="Placeholder for build motor animation"/>
                 </Grid>
-
-                <!-- Spacer for column 1 -->
-                <!-- Change background colors to adjust spacing -->
-                <Grid Grid.Column="1" Background="Transparent"/>
-
                 <Grid Grid.Column="2">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="auto" />
-                        <ColumnDefinition Width="auto" />
-                        <ColumnDefinition Width="auto" />
-                    </Grid.ColumnDefinitions>
-                    <Grid Grid.Column="0">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-
-                        <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="24"
-                                   Text="Powder Motor">
-                        </TextBlock>
-                        <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Height="200" Text="Placeholder for powder motor animation"></TextBlock>
-
-                        <Button Grid.Row="2"  x:Name="SelectPowderMotorButton" Content="Powder Motor" Grid.Column="0"
-                                    Height="60" Width="150" Margin="5" HorizontalAlignment="Center"
-                                    Background="DimGray" Click="SelectPowderMotorButton_Click">
-                        </Button>
-
-                        <Grid Grid.Row="3">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            <TextBlock Grid.Column="0" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Max Position:"></TextBlock>
-                            <TextBlock  Grid.Column="1" Grid.Row="0"  x:Name="PowderMaxPos" Width="50" Height ="20" Margin="10" 
-                                      Text="..."></TextBlock>
-                            <TextBlock Grid.Column="0" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Min Position:"></TextBlock>
-                            <TextBlock  Grid.Column="1" Grid.Row="1"  x:Name="PowderMinPos" Width="50" Height ="20" Margin="10" 
-                                      Text="..."></TextBlock>
-                            <TextBlock Grid.Column="0" Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Current Position:"></TextBlock>
-                            <TextBox  Grid.Column="1" Grid.Row="2"  x:Name="PowderPositionTextBox" Width="50" Height ="20" Margin="10" 
-                                      Text="..."></TextBox>
-                            <Button Grid.Column="2" Grid.Row="2" Grid.ColumnSpan="2" x:Name="GetPowderPositionButton" Content="Get Powder Position" Height="30" Width="150" Margin="10" HorizontalAlignment="Center"
-                                        Background="DimGray" Click="GetPowderPositionButton_Click">
-                            </Button>
-                            <TextBlock Grid.Column="0" Grid.Row="3" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Increment Position:"></TextBlock>
-                            <TextBox  Grid.Column="1" Grid.Row="3"  x:Name="IncrPowderPositionTextBox" Width="50" Height ="20" Margin="10" 
-                                      Text="..."></TextBox>
-                            <Button Grid.Column="2" Grid.Row="3"  x:Name="IncrPowder" Content="U" Height="30" Width="40" Margin="10" HorizontalAlignment="Center"
-                                    Background="DimGray" Click="IncrPowder_Click">
-                            </Button>
-                            <Button Grid.Column="4" Grid.Row="3"  x:Name="DecrPowder" Content="D" Height="30" Width="40" Margin="10" HorizontalAlignment="Center"
-                                    Background="DimGray" Click="DecrPowder_Click">
-                            </Button>
-                            <TextBlock Grid.Column="0" Grid.Row="4" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Move to Position:"></TextBlock>
-                            <TextBox  Grid.Column="1" Grid.Row="4"  x:Name="PowderAbsMoveTextBox" Width="50" Height ="20" Margin="10" 
-                                      Text="..."></TextBox>
-                            <Button Grid.Column="2" Grid.Row="4" Grid.ColumnSpan="2" x:Name="AbsMovePowderButton" Content="Absolute Move" Height="30" Width="150" Margin="10" HorizontalAlignment="Center"
-                                        Background="DimGray" Click="AbsMovePowderButton_Click">
-                            </Button>
-                            <Button Grid.Column="1" Grid.Row="5" x:Name="HomePowderMotorButton" Content="Home Powder Motor" Height="30" Margin="10" HorizontalAlignment="Center" Background="DimGray"
-                                        Click="HomePowderMotorButton_Click">
-                            </Button>
-                        </Grid>
-
-                    </Grid>
-
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" 
+                               HorizontalAlignment="Center" 
+                               VerticalAlignment="Center" 
+                               FontSize="24"
+                               Text="Build Motor"/>
+                                    <TextBlock Grid.Row="1" 
+                               HorizontalAlignment="Center" 
+                               VerticalAlignment="Center" 
+                               Height="200" 
+                               Text="Placeholder for build motor animation"/>
                 </Grid>
-
-                <!-- Spacer for column 3 -->
-                <!-- Change background colors to adjust spacing -->
-                <Grid Grid.Column="3" Background="Transparent"/>
-
                 <Grid Grid.Column="4">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" 
+                               HorizontalAlignment="Center" 
+                               VerticalAlignment="Center" 
+                               FontSize="24"
+                               Text="Build Motor"/>
+                                    <TextBlock Grid.Row="1" 
+                               HorizontalAlignment="Center" 
+                               VerticalAlignment="Center" 
+                               Height="200" 
+                               Text="Placeholder for build motor animation"/>
+                </Grid>
+
+            </Grid>
+            <Grid Grid.Row="2">
+                <!-- Calibrate Motors -->
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16"
+              Text="Calibrate Motors"></TextBlock>
+
+                <Grid Grid.Row="1">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="auto" />
-                        <ColumnDefinition Width="auto" />
-                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
+
                     <Grid Grid.Column="0">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="2*"/>
+                            <RowDefinition Height="2*"/>
+                            <RowDefinition Height="2*"/>
+                            <RowDefinition Height="2*"/>
                         </Grid.RowDefinitions>
-
-                        <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="24"
-                                   Text="Sweep Motor">
-                        </TextBlock>
-                        <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Height="200" Text="Placeholder for sweep motor animation"></TextBlock>
-
-                        <Button Grid.Row="2" x:Name="SelectSweepMotorButton" Content="Sweep Motor" Grid.Column="2"
-                                    Height="60" Width="150" Margin="5" HorizontalAlignment="Center"
-                                    Background="DimGray" Click="SelectSweepMotorButton_Click">
-                        </Button>
-
+                        <Button Grid.Column="0" x:Name="SelectBuildMotorButton" HorizontalAlignment="Center" Height="30" Content="Build Motor" Click="SelectBuildMotorButton_Click"></Button>
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="2*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12"
+                                       Text="Current Position:"></TextBlock>
+                            <TextBox Grid.Column="1" x:Name="BuildMotorCurrentPositionTextBox" Height="30" Margin="2" Text=" "></TextBox>
+                            <Button Grid.Column="2" x:Name="GetBuildMotorCurrentPositionButton" HorizontalAlignment="Center" Height="30" Content="Get Position"
+                                    Click="GetBuildMotorCurrentPositionButton_Click"></Button>
+                        </Grid>
+                        <Grid Grid.Row="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12"
+                                       Text="Move to Absolute Position:"></TextBlock>
+                            <TextBox Grid.Column="1" x:Name="BuildMotorAbsPositionTextBox" Height ="30" Margin="2" Text=""></TextBox>
+                            <Button Grid.Column="2" x:Name="MoveBuildToAbsPositionButton" HorizontalAlignment="Center" Height="30" Content="Go" Click="MoveBuildToAbsPositionButton_Click"></Button>
+                        </Grid>
                         <Grid Grid.Row="3">
                             <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="2*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12"
+                                       Text="Step:"></TextBlock>
+                            <TextBox Grid.Column="1" x:Name="BuildMotorStepTextBox" Height ="30" Margin="2" 
+                                     Text=" "></TextBox>
+                            <Grid Grid.Column="2" HorizontalAlignment="Center">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Button Grid.Column="0" x:Name="StepBuildMotorUpButton" HorizontalAlignment="Center" Height="30" Margin="2" Content="U"
+                                        Click="StepBuildMotorUpButton_Click"/>
+                                <Button Grid.Column="1" x:Name="StepBuildMotorDownButton" HorizontalAlignment="Center" Height="30" Content="D"
+                                        Click="StepBuildMotorDownButton_Click"/>
+                            </Grid>
+                        </Grid>
+                        <Grid Grid.Row="4" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,10">
+                            <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="10"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            <TextBlock Grid.Column="0" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Max Position:"></TextBlock>
-                            <TextBlock  Grid.Column="1" Grid.Row="0"  x:Name="SweepMaxPos" Width="50" Height ="20" Margin="10" 
-                                      Text="..."></TextBlock>
-                            <TextBlock Grid.Column="0" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Min Position:"></TextBlock>
-                            <TextBlock  Grid.Column="1" Grid.Row="1"  x:Name="SweepMinPos" Width="50" Height ="20" Margin="10" 
-                                      Text="..."></TextBlock>
-                            <TextBlock Grid.Column="0" Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Current Position:"></TextBlock>
-                            <TextBox  Grid.Column="1" Grid.Row="2"  x:Name="SweepPositionTextBox" Width="50" Height ="20" Margin="10" 
-                                      Text="..."></TextBox>
-                            <Button Grid.Column="2" Grid.Row="2" Grid.ColumnSpan="2" x:Name="GetSweepPositionButton" Content="Get Sweep Position" Height="30" Width="150" Margin="10" HorizontalAlignment="Center"
-                                        Background="DimGray" Click="GetSweepPositionButton_Click">
-                            </Button>
-                            <TextBlock Grid.Column="0" Grid.Row="3" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Increment Position By:"></TextBlock>
-                            <TextBox  Grid.Column="1" Grid.Row="3"  x:Name="IncrSweepPositionTextBox" Width="50" Height ="20" Margin="10" 
-                                      Text="..."></TextBox>
-                            <Button Grid.Column="2" Grid.Row="3"  x:Name="IncrSweep" Content="L" Height="30" Width="40" Margin="10" HorizontalAlignment="Center"
-                                    Background="DimGray" Click="IncrSweep_Click">
-                            </Button>
-                            <Button Grid.Column="4" Grid.Row="3"  x:Name="DecrSweep" Content="R" Height="30" Width="40" Margin="10" HorizontalAlignment="Center"
-                                    Background="DimGray" Click="DecrSweep_Click">
-                            </Button>
-                            <TextBlock Grid.Column="0" Grid.Row="4" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Move to Position:"></TextBlock>
-                            <TextBox  Grid.Column="1" Grid.Row="4"  x:Name="SweepAbsMoveTextBox" Width="50" Height ="20" Margin="10" 
-                                      Text="..."></TextBox>
-                            <Button Grid.Column="2" Grid.Row="4" Grid.ColumnSpan="2" x:Name="AbsMoveSweepButton" Content="Absolute Move" Height="30" Width="150" Margin="10" HorizontalAlignment="Center"
-                                        Background="DimGray" Click="AbsMoveSweepButton_Click">
-                            </Button>
-                            <Button Grid.Column="1" Grid.Row="5" x:Name="HomeSweepMotorButton" Content="Home Sweep Motor" Height="30" Margin="10" HorizontalAlignment="Center" Background="DimGray"
-                                        Click="HomeSweepMotorButton_Click">
-                            </Button>
+                            <Button Grid.Column="0" x:Name="EnableBuildButton" HorizontalAlignment="Center" Height="30" Content="Enable" Background="Green" Click="EnableBuildMotorButton_Click"/>
+                            <Button Grid.Column="2" x:Name="StopBuildMotorButton" HorizontalAlignment="Center" Height="30" Content="Stop" Background="Red" Click="StopBuildMotorButton_Click"/>
+                        </Grid>
+                    </Grid>
+
+                    <Grid Grid.Column="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="2*"/>
+                            <RowDefinition Height="2*"/>
+                            <RowDefinition Height="2*"/>
+                            <RowDefinition Height="2*"/>
+                        </Grid.RowDefinitions>
+                        <Button Grid.Column="0" x:Name="SelectPowderMotorButton" HorizontalAlignment="Center" Height="30" Content="Powder Motor" Click="SelectPowderMotorButton_Click"/>
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="2*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12"
+                                       Text="Current Position:"/>
+                            <TextBox Grid.Column="1" x:Name="PowderMotorCurrentPositionTextBox" Height="30" Margin="2" Text=" "/>
+                            <Button Grid.Column="2" x:Name="GetPowderMotorCurrentPositionButton" HorizontalAlignment="Center" Height="30" Content="Get Position"
+                                    Click="GetPowderMotorCurrentPositionButton_Click"/>
+                        </Grid>
+                        <Grid Grid.Row="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12"
+                                       Text="Move to Absolute Position:"/>
+                            <TextBox Grid.Column="1" x:Name="PowderMotorAbsPositionTextBox" Height ="30" Margin="2" Text=""/>
+                            <Button Grid.Column="2" x:Name="MovePowderToAbsPositionButton" HorizontalAlignment="Center" Height="30" Content="Go" Click="MovePowderToAbsPositionButton_Click"/>
+                        </Grid>
+                        <Grid Grid.Row="3">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="2*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12"
+                                       Text="Step:"/>
+                            <TextBox Grid.Column="1" x:Name="PowderMotorStepTextBox" Height ="30" Margin="2" 
+                                     Text=" "></TextBox>
+                            <Grid Grid.Column="2" HorizontalAlignment="Center">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Button Grid.Column="0" x:Name="StepPowderMotorUpButton" HorizontalAlignment="Center" Height="30" Margin="2" Content="U"
+                                        Click="StepPowderMotorUpButton_Click"/>
+                                <Button Grid.Column="1" x:Name="StepPowderMotorDownButton" HorizontalAlignment="Center" Height="30" Content="D" Click="StepPowderMotorDownButton_Click"/>
+                            </Grid>
+                        </Grid>
+                        <Grid Grid.Row="4" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0" x:Name="EnablePowderButton" HorizontalAlignment="Center" Height="30" Content="Enable" Background="Green" Click="EnablePowderMotorButton_Click"></Button>
+                            <Button Grid.Column="2" x:Name="StopPowderMotorButton" HorizontalAlignment="Center" Height="30" Content="Stop" Background="Red" Click="StopPowderMotorButton_Click"></Button>
+                        </Grid>
+                    </Grid>
+
+                    <Grid Grid.Column="2">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="2*"/>
+                            <RowDefinition Height="2*"/>
+                            <RowDefinition Height="2*"/>
+                            <RowDefinition Height="2*"/>
+                        </Grid.RowDefinitions>
+                        <Button Grid.Column="0" x:Name="SelectSweepMotorButton" HorizontalAlignment="Center" Height="30" Content="Sweep Motor" Click="SelectSweepMotorButton_Click"></Button>
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="2*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12" Text="Current Position:"></TextBlock>
+                            <TextBox Grid.Column="1" x:Name="SweepMotorCurrentPositionTextBox" Height="30" Margin="2" Text=" "></TextBox>
+                            <Button Grid.Column="2" x:Name="GetSweepMotorCurrentPositionButton" HorizontalAlignment="Center" Height="30" Content="Get Position"
+                                    Click="GetSweepMotorCurrentPositionButton_Click"></Button>
+                        </Grid>
+                        <Grid Grid.Row="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12"
+                                       Text="Move to Absolute Position:"></TextBlock>
+                            <TextBox Grid.Column="1" x:Name="SweepMotorAbsPositionTextBox" Height ="30" Margin="2" Text=""></TextBox>
+                            <Button Grid.Column="2" x:Name="MoveSweepToAbsPositionButton" HorizontalAlignment="Center" Height="30" Content="Go" Click="MoveSweepToAbsPositionButton_Click"></Button>
+                        </Grid>
+                        <Grid Grid.Row="3">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="2*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12"
+                        Text="Step:"></TextBlock>
+                            <TextBox Grid.Column="1" x:Name="SweepMotorStepTextBox" Height ="30" Margin="2" 
+                        Text=" "></TextBox>
+                            <Grid Grid.Column="2" HorizontalAlignment="Center">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Button Grid.Column="0" x:Name="StepSweepMotorLeftButton" HorizontalAlignment="Center" Height="30" Margin="2" Content="L" Click="StepSweepMotorLeftButton_Click"></Button>
+                                <Button Grid.Column="1" x:Name="StepSweepMotorRightButton" HorizontalAlignment="Center" Height="30" Content="R" Click="StepSweepMotorRightButton_Click"></Button>
+                            </Grid>
+                        </Grid>
+                        <Grid Grid.Row="4" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0" x:Name="EnableSweepButton" HorizontalAlignment="Center" Height="30" Content="Enable" Background="Green" Click="EnableSweepMotorButton_Click"></Button>
+                            <Button Grid.Column="2" x:Name="StopSweepMotorButton" HorizontalAlignment="Center" Height="30" Content="Stop" Background="Red" Click="StopSweepMotorButton_Click"></Button>
                         </Grid>
                     </Grid>
                 </Grid>
+
+                <Grid Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="0" x:Name="HomeAllMotorsButton" HorizontalAlignment="Center" VerticalAlignment="Top" Height="30" Margin="2" Content="Home All Motors"
+                            Click="HomeAllMotorsButton_Click"/>
+                    <Button Grid.Column="2" x:Name="EnableMotorsButton" HorizontalAlignment="Center" VerticalAlignment="Top" Height="30" Margin="2" Background="Green" Content="Enable Motors"
+                            Click="EnableMotorsButton_Click"/>
+                    <Button Grid.Column="4" x:Name="StopAllMotorsButton" HorizontalAlignment="Center" VerticalAlignment="Top" Height="30" Margin="2" Background="Red" Content="Stop All Motors"
+                            Click="StopAllMotorsButton_Click"/>
+                </Grid>
+
             </Grid>
-            <Button Grid.Row="2" x:Name="HomeAllMotorsButton" Content="Home All Motors" Height="60" Margin="10" HorizontalAlignment="Center" Background="DimGray"
-                                        Click="HomeAllMotorsButton_Click">
-            </Button>
+
         </Grid>
         
 

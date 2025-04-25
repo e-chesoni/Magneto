@@ -37,177 +37,13 @@ namespace Magneto.Desktop.WinUI.Views;
 /// </summary>
 public sealed partial class TestPrintPage : Page
 {
-    /*
-    #region Motor Variables
-    private StepperMotor? _powderMotor;
-    private StepperMotor? _buildMotor;
-    private StepperMotor? _sweepMotor;
-    private ActuationManager? _am;
-    #endregion
-    */
-
-    /*
-    #region WaveRunner Variables
-
-    /// <summary>
-    /// WaveRunner client control interface
-    /// </summary>
-    private static readonly ScSamlightClientCtrlEx cci = new();
-
-    /// <summary>
-    /// Default job directory (to search for job files)
-    /// </summary>
-    private string? _defaultJobDirectory { get; set; }
-
-    /// <summary>
-    /// Default job file name
-    /// </summary>
-    private string? _defaultJobName { get; set; }
-
-    /// <summary>
-    /// Job directory (to search for files) -- can be defined by the user
-    /// </summary>
-    private string? _jobDirectory { get; set; }
-
-    /// <summary>
-    /// Full file path to entity
-    /// </summary>
-    private string? _fullJobFilePath { get; set; }
-
-    private bool? _redPointerEnabled { get; set; }
-
-    /// <summary>
-    /// WaveRunner Execution statuses
-    /// </summary>
-    public enum ExecStatus
-    {
-        Success = 0,
-        Failure = -1,
-    }
-
-    /// <summary>
-    /// RedPointer Modes
-    /// </summary>
-    public enum RedPointerMode
-    {
-        IndividualOutline = 1,
-        TotalOutline = 2,
-        IndividualBorder = 3,
-        OnlyRedPointerEntities = 4,
-        OutermostBorder = 5
-    }
-
-    #endregion
-    */
-
-    /*
-    #region Layer/Print Variables
-    private double _currentLayerThickness;
-
-    private double _desiredPrintHeight;
-
-    private double _totalLayersToPrint { get; set; }
-
-    private int _layersPrinted { get; set; }
-
-    private double _totalPrintHeight { get; set; }
-
-    private readonly Dictionary<double, int> _printHistoryDictionary = new Dictionary<double, int>();
-    #endregion
-    */
-
-    #region Services
-    // TODO: make these singletons initialized in app.xaml.cs
-    //private readonly IMotorService? _motorService;
+    private MissionControl _missionControl { get; set; }
+    public TestPrintViewModel ViewModel { get; }
     private MotorPageService? _motorPageService;
     private WaverunnerPageService? _waverunnerPageService;
-    #endregion
-
-    #region Flags
-    private bool KILL_OPERATION;
-    #endregion
-
-    #region UI Helper Variables
-
     private MotorUIControlGroup? _calibrateMotorUIControlGroup { get; set; }
-    /*
-    private MotorUIControlGroup _inPrintMotorUIControlGroup { get; set; }
-    private PrintSettingsUIControlGroup _printSettingsUIControlGroup { get; set; }
-    private PrintSettingsUIControlGroup _layerSettingsUIControlGroup { get; set; }
-    */
-    private PrintUIControlGroupHelper? _printControlGroupHelper { get; set; }
-    private bool _calibrationPanelEnabled = true;
-    /*
-    private bool _fileSettingsSectionEnabled = true;
-    private bool _layerSettingsSectionEnabled = true;
-    private bool _settingsPanelEnabled = true;
-    private bool _printPanelEnabled = true;
-    */
-    #endregion
 
-    #region Core Page Functionality Variables
-
-    /// <summary>
-    /// Central control that gets passed from page to page
-    /// </summary>
-    private MissionControl _missionControl { get; set; }
-
-    /// <summary>
-    /// TestPrintViewModel view model
-    /// </summary>
-    public TestPrintViewModel ViewModel
-    {
-        get;
-    }
-
-    #endregion
-
-    /*
-    #region Test Page Setup
-    /// <summary>
-    /// Sets up test motors for powder, build, and sweep operations by retrieving configurations 
-    /// and initializing the respective StepperMotor objects. Logs success or error for each motor setup.
-    /// Assumes motor order in configuration corresponds to powder, build, and sweep.
-    /// </summary>
-    private async void SetUpTestMotors()
-    {
-        if (MissionControl == null)
-        {
-            MagnetoLogger.Log("MissionControl is null. Unable to set up motors.", LogFactoryLogLevel.LogLevel.ERROR);
-            await PopupInfo.ShowContentDialog(this.Content.XamlRoot,"Error", "MissionControl is not Connected.");
-            return;
-        }
-
-        SetUpMotor("powder", MissionControl.GetPowderMotor(), out _powderMotor);
-        SetUpMotor("build", MissionControl.GetBuildMotor(), out _buildMotor);
-        SetUpMotor("sweep", MissionControl.GetSweepMotor(), out _sweepMotor);
-
-        _am = MissionControl.GetActuationManger();
-
-        //GetMotorPositions(); // TOOD: Fix--all positions are 0 on page load even if they're not...
-    }
-    /// <summary>
-    /// Gets motor from mission control and assigns each motor to a private variable for easy access in the TestPrintPage class
-    /// </summary>
-    /// <param name="motorName">Motor name</param>
-    /// <param name="motor">The actual stepper motor</param>
-    /// <param name="motorField">Variable to assign motor to</param>
-    private void SetUpMotor(string motorName, StepperMotor motor, out StepperMotor motorField)
-    {
-        if (motor != null)
-        {
-            motorField = motor;
-            var msg = $"Found motor in config with name {motor.GetMotorName()}. Setting this to {motorName} motor in test.";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-        }
-        else
-        {
-            motorField = null;
-            MagnetoLogger.Log($"Unable to find {motorName} motor", LogFactoryLogLevel.LogLevel.ERROR);
-        }
-    }
-    #endregion
-    */
+    private bool KILL_OPERATION; // TODO: may remove later; used in old layer move to check for e-stop
 
     #region Constructor
     /// <summary>
@@ -219,10 +55,6 @@ public sealed partial class TestPrintPage : Page
         ViewModel = App.GetService<TestPrintViewModel>();
         _missionControl = App.GetService<MissionControl>();
         InitializeComponent();
-        var msg = "Landed on Test Print Page";
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
-        MagnetoSerialConsole.LogAvailablePorts();
-
         // set up flags
         KILL_OPERATION = false;
         //this.motorService = motorService;
@@ -236,31 +68,18 @@ public sealed partial class TestPrintPage : Page
         _calibrateMotorUIControlGroup = new MotorUIControlGroup(SelectBuildMotorButton, SelectPowderMotorButton, SelectSweepMotorButton,
                                                                 BuildMotorCurrentPositionTextBox, PowderMotorCurrentPositionTextBox, SweepMotorCurrentPositionTextBox,
                                                                 GetBuildMotorCurrentPositionButton, GetPowderMotorCurrentPositionButton, GetSweepMotorCurrentPositionButton,
-                                                                BuildMotorAbsPositionTextBox, PowderMotorAbsPositionTextBox, SweepMotorAbsPositionTextBox, // NEW abs position text box features
+                                                                BuildMotorAbsPositionTextBox, PowderMotorAbsPositionTextBox, SweepMotorAbsPositionTextBox,
                                                                 BuildMotorStepTextBox, PowderMotorStepTextBox, SweepMotorStepTextBox,
-                                                                StepBuildMotorUpButton, StepBuildMotorDownButton, StepPowderMotorUpButton, StepPowderMotorDownButton, StepSweepMotorLeftInCalibrateButton, StepSweepMotorRightInCalibrateButton,
+                                                                StepBuildMotorUpButton, StepBuildMotorDownButton, StepPowderMotorUpButton, StepPowderMotorDownButton, StepSweepMotorLeftButton, StepSweepMotorRightButton,
                                                                 StopBuildMotorButton, StopPowderMotorButton, StopSweepMotorButton,
-                                                                HomeAllMotorsInCalibrationPanelButton, StopAllMotorsInCalibrationPanelButton);
-
-        _printControlGroupHelper = new PrintUIControlGroupHelper(_calibrateMotorUIControlGroup);
-
-        // Initialize motor page service
-        _motorPageService = new MotorPageService(_printControlGroupHelper);
-
+                                                                HomeAllMotorsButton, StopAllMotorsButton);
+        // initialize motor page service
+        _motorPageService = new MotorPageService(new PrintUIControlGroupHelper(_calibrateMotorUIControlGroup));
         // initialize Waverunner page service
         _waverunnerPageService = new WaverunnerPageService(PrintDirectoryInputTextBox, PrintLayersButton);
-
-        // Set default job file
-        //_waverunnerPageService.SetDefaultJobFileName("2025-01-13_5x5_square_top_left.sjf");
+        // populate motor positions on page load
         _motorPageService.HandleGetAllPositions();
     }
-    /*
-    private void SetDefaultPrintSettings()
-    {
-        _currentLayerThickness = 0.03; // set default layer height to be 0.03mm based on first steel print
-        _desiredPrintHeight = 5; // set default print height to be mm
-    }
-    */
     #endregion
 
     #region Navigation Methods
@@ -270,37 +89,33 @@ public sealed partial class TestPrintPage : Page
     /// <param name="e"></param>
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
-        // Get mission control (passed over when navigating from previous page)
         base.OnNavigatedTo(e);
-
-        // Set mission control after navigating to new page
-        //_missionControl = (MissionControl)e.Parameter;
-
         InitPageServices();
-        //SetDefaultPrintSettings();
-        _calibrationPanelEnabled = true;
-
-        var msg = string.Format("TestPrintPage::OnNavigatedTo -- {0}", _missionControl.FriendlyMessage);
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
     }
-
     #endregion
-
 
     #region Motor Helpers
     private async Task HomeMotorsHelper()
     {
-        var msg = "Homing all motors";
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+        string? msg;
+        if (_motorPageService == null)
+        {
+            msg = "_motorPageService is null. Cannot home motors.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+            return;
+        }
+        else
+        {
+            msg = "Homing all motors";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+        }
+
         var buildMotor = _motorPageService.GetBuildMotor();
         var powderMotor = _motorPageService.GetPowderMotor();
         var sweepMotor = _motorPageService.GetSweepMotor();
-        var buildTextBox = _motorPageService.GetBuildPositionTextBox();
-        var powderTextBox = _motorPageService.GetPowderPositionTextBox();
-        var sweepTextBox = _motorPageService.GetSweepPositionTextBox();
+
         if ((buildMotor != null) && (!_motorPageService.GetSweepMotor().STOP_MOVE_FLAG))
         {
-            //_motorPageService.HandleHomeMotorAndUpdateTextBox(buildMotor, buildTextBox);
             await _motorPageService.HomeMotorAndUpdateTextBox(buildMotor);
         }
         else
@@ -310,7 +125,6 @@ public sealed partial class TestPrintPage : Page
 
         if ((powderMotor != null) && (!_motorPageService.GetSweepMotor().STOP_MOVE_FLAG))
         {
-            //_motorPageService.HandleHomeMotorAndUpdateTextBox(powderMotor, powderTextBox);
             await _motorPageService.HomeMotorAndUpdateTextBox(powderMotor);
         }
         else
@@ -320,7 +134,6 @@ public sealed partial class TestPrintPage : Page
 
         if ((sweepMotor != null) && (!_motorPageService.GetSweepMotor().STOP_MOVE_FLAG))
         {
-            //_motorPageService.HandleHomeMotorAndUpdateTextBox(sweepMotor, sweepTextBox);
             await _motorPageService.HomeMotorAndUpdateTextBox(sweepMotor);
         }
         else
@@ -331,18 +144,17 @@ public sealed partial class TestPrintPage : Page
     #endregion
 
     #region Calibration Panel Methods
-
     private void SelectBuildMotorButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.printUiControlGroupHelper.SelectMotor(_motorPageService.GetBuildMotor());
+        _motorPageService.SelectBuildMotor();
     }
     private void SelectPowderMotorButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.printUiControlGroupHelper.SelectMotor(_motorPageService.GetPowderMotor());
+        _motorPageService.SelectPowderMotor();
     }
     private void SelectSweepMotorButton_Click(object sender, RoutedEventArgs e)
     {
-        _motorPageService.printUiControlGroupHelper.SelectMotor(_motorPageService.GetSweepMotor());
+        _motorPageService.SelectSweepMotor();
     }
     private async void GetBuildMotorCurrentPositionButton_Click(object sender, RoutedEventArgs e)
     {
@@ -393,21 +205,21 @@ public sealed partial class TestPrintPage : Page
         var motor = _motorPageService.GetPowderMotor();
         _motorPageService.HandleRelMove(motor, _motorPageService.GetPowderStepTextBox(), false, this.Content.XamlRoot);
     }
-    private void StepSweepMotorLeftInCalibrateButton_Click(object sender, RoutedEventArgs e)
+    private void StepSweepMotorLeftButton_Click(object sender, RoutedEventArgs e)
     {
         var motor = _motorPageService.GetSweepMotor();
         _motorPageService.HandleRelMove(motor, _motorPageService.GetSweepStepTextBox(), true, this.Content.XamlRoot);
     }
-    private void StepSweepMotorRightInCalibrateButton_Click(object sender, RoutedEventArgs e)
+    private void StepSweepMotorRightButton_Click(object sender, RoutedEventArgs e)
     {
         var motor = _motorPageService.GetSweepMotor();
         _motorPageService.HandleRelMove(motor, _motorPageService.GetSweepStepTextBox(), false, this.Content.XamlRoot);
     }
-    private async void HomeAllMotorsInCalibrationPanelButton_Click(object sender, RoutedEventArgs e)
+    private async void HomeAllMotorsButton_Click(object sender, RoutedEventArgs e)
     {
         await HomeMotorsHelper();
     }
-    private void StopAllMotorsInCalibrationPanelButton_Click(object sender, RoutedEventArgs e)
+    private void StopAllMotorsButton_Click(object sender, RoutedEventArgs e)
     {
         StopMotorsHelper();
     }
@@ -426,121 +238,6 @@ public sealed partial class TestPrintPage : Page
         MagnetoSerialConsole.SerialWrite(sweepConfig.COMPort, "1STP");
         sweepMotor.STOP_MOVE_FLAG = true;
     }
-    #endregion
-
-    #region Print Summary Methods
-    /*
-    // Dynamically populate a Grid
-    public void PopulateGridWithLastThree(Grid targetGrid)
-    {
-        // Retrieve last 3 entries
-        IEnumerable<KeyValuePair<double, int>> lastThreeEntries = _printHistoryDictionary.Reverse().Take(3);
-
-        // Clear existing rows
-        targetGrid.RowDefinitions.Clear();
-        targetGrid.Children.Clear();
-
-        // Add a header row
-        targetGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        TextBlock header1 = new TextBlock { Text = "Layer Height", FontWeight = FontWeights.Bold, Margin = new Thickness(5) };
-        Grid.SetColumn(header1, 0);
-        targetGrid.Children.Add(header1);
-
-        TextBlock header2 = new TextBlock { Text = "Number of Layers", FontWeight = FontWeights.Bold, Margin = new Thickness(5) };
-        Grid.SetColumn(header2, 1);
-        targetGrid.Children.Add(header2);
-
-        // Add rows for the last 3 entries
-        int rowIndex = 1;
-        foreach (KeyValuePair<double, int> entry in lastThreeEntries)
-        {
-            targetGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-
-            // Add Layer Height
-            TextBlock layerHeightText = new TextBlock
-            {
-                Text = entry.Key.ToString("0.00") + " mm",
-                Margin = new Thickness(5)
-            };
-            Grid.SetRow(layerHeightText, rowIndex);
-            Grid.SetColumn(layerHeightText, 0);
-            targetGrid.Children.Add(layerHeightText);
-
-            // Add Number of Layers
-            TextBlock layerCountText = new TextBlock
-            {
-                Text = entry.Value.ToString(),
-                Margin = new Thickness(5)
-            };
-            Grid.SetRow(layerCountText, rowIndex);
-            Grid.SetColumn(layerCountText, 1);
-            targetGrid.Children.Add(layerCountText);
-
-            rowIndex++;
-        }
-    }
-
-    private void TestPrintHistoryPopulate()
-    {
-        PopulateGridWithLastThree(PrintHistoryGrid);
-    }
-    */
-    // TODO: remove when done testing\
-    /*
-    private void AddDummyPrintHistory()
-    {
-        _printHistoryDictionary[0.03] = 1;  // 1 layers printed at 0.03mm
-        _printHistoryDictionary[0.05] = 2;  // 2 layers printed at 0.05mm
-        _printHistoryDictionary[0.08] = 3;  // 3 layers printed at 0.08mm
-    }
-
-    private void StartNewPrintButton_Click(object sender, RoutedEventArgs e)
-    {
-        // TODO: Remove print history dummy values when done testing
-        //AddDummyPrintHistory();
-        //TestPrintHistoryPopulate();
-
-        // update layers printed
-        //updateLayerTrackingUI();
-        UnlockPrintManager();
-    }
-    private void DisplayLayersPrinted()
-    {
-        // Display layers printed
-        _layersPrinted = _printHistoryDictionary.Any() ? _printHistoryDictionary.Values.Sum() : 0;
-        LayersPrintedTextBlock.Text = _layersPrinted.ToString();
-        RemainingLayersToPrint.Text = (_totalLayersToPrint - _layersPrinted).ToString();
-        PopulateGridWithLastThree(PrintHistoryGrid); // TODO: Test
-    }
-    private void updateLayerTrackingUI()
-    {
-        if (_printHistoryDictionary.Count == 0)
-        {
-            // create a new entry for first layer; set to 0
-            _printHistoryDictionary[_currentLayerThickness] = 0;
-        } else { // search print history for current layer thickness
-            if (!_printHistoryDictionary.ContainsKey(_currentLayerThickness)) // if no thickness, insert new entry
-            {
-                _printHistoryDictionary[_currentLayerThickness] = 1;
-            }
-            else {
-                _printHistoryDictionary[_currentLayerThickness]++; // increment matching entry
-            }
-        }
-        DisplayLayersPrinted();
-    }
-
-    private int incrementLayersPrinted()
-    {
-        updateLayerTrackingUI();
-        return _layersPrinted;
-    }
-
-    private void CancelPrintButton_Click(object sender, RoutedEventArgs e)
-    {
-        _printHistoryDictionary.Clear();
-    }
-    */
     #endregion
 
     #region Print Layer Move Methods
@@ -649,7 +346,7 @@ public sealed partial class TestPrintPage : Page
         }
     }
     */
-    #region E-Stop Helper
+    #region Movement Helpers
     private void StopMotorsHelper()
     {
         // TODO: Does not work when moved to page service (only one motor stops)...no idea why...
@@ -665,12 +362,9 @@ public sealed partial class TestPrintPage : Page
         buildMotor.STOP_MOVE_FLAG = true;
         powderMotor.STOP_MOVE_FLAG = true;
         sweepMotor.STOP_MOVE_FLAG = true;
-        _motorPageService.printUiControlGroupHelper.ChangeSelectButtonsBackground(_calibrateMotorUIControlGroup, Colors.Red);
+        _motorPageService.ChangeSelectButtonsBackground(Colors.Red);
         LockCalibrationPanel();
     }
-    #endregion
-
-    #region Enable/Disable Panel Methods
     private void EnableMotorsButton_Click(object sender, RoutedEventArgs e)
     {
         var buildMotor = _motorPageService.GetBuildMotor();
@@ -680,17 +374,19 @@ public sealed partial class TestPrintPage : Page
         powderMotor.STOP_MOVE_FLAG = false;
         sweepMotor.STOP_MOVE_FLAG = false;
         UnlockCalibrationPanel();
-        _motorPageService.printUiControlGroupHelper.ChangeSelectButtonsBackground(_calibrateMotorUIControlGroup, Colors.DarkGray);
+        _motorPageService.ChangeSelectButtonsBackground(Colors.DarkGray);
     }
+    #endregion
+
+    #region Locks
     private void UnlockCalibrationPanel()
     {
-        _motorPageService.printUiControlGroupHelper.EnableUIControlGroup(_calibrateMotorUIControlGroup);
-        EnableMotorsButton.Content = "Enable Calibration";
+        _motorPageService.UnlockCalibrationPanel();
+        EnableMotorsButton.Content = "Lock Calibration";
     }
-
     private void LockCalibrationPanel()
     {
-        _motorPageService.printUiControlGroupHelper.DisableUIControlGroup(_calibrateMotorUIControlGroup);
+        _motorPageService.LockCalibrationPanel();
         EnableMotorsButton.Content = "Enable Calibration";
     }
     #endregion
@@ -989,13 +685,13 @@ public sealed partial class TestPrintPage : Page
         _waverunnerPageService.TestWaverunnerConnection(this.XamlRoot);
     }
     
-    private void EnableBuildCalibrationButton_Click(object sender, RoutedEventArgs e)
+    private void EnableBuildMotorButton_Click(object sender, RoutedEventArgs e)
     {
     }
-    private void EnablePowderCalibrationButton_Click(object sender, RoutedEventArgs e)
+    private void EnablePowderMotorButton_Click(object sender, RoutedEventArgs e)
     {
     }
-    private void EnableSweepCalibrationButton_Click(object sender, RoutedEventArgs e)
+    private void EnableSweepMotorButton_Click(object sender, RoutedEventArgs e)
     {
     }
 }

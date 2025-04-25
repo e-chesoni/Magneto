@@ -17,34 +17,9 @@ public class PrintUIControlGroupHelper
 {
     public MotorUIControlGroup calibrateMotorControlGroup { get; set; }
 
-    public MotorUIControlGroup printMotorControlGroup { get; set; }
-
-    public PrintSettingsUIControlGroup settingsControlGroup{ get; set; }
-
-    public PrintSettingsUIControlGroup layerControlGroup { get; set; }
-
-    public PrintUIControlGroupHelper()
-    {
-
-    }
-
     public PrintUIControlGroupHelper(MotorUIControlGroup calibrateMotorControlGroup)
     {
         this.calibrateMotorControlGroup = calibrateMotorControlGroup;
-    }
-
-    public PrintUIControlGroupHelper(MotorUIControlGroup calibrateMotorControlGroup, MotorUIControlGroup printMotorControlGroup)
-    {
-        this.calibrateMotorControlGroup = calibrateMotorControlGroup;
-        this.printMotorControlGroup = printMotorControlGroup;
-    }
-
-    public PrintUIControlGroupHelper(MotorUIControlGroup calibrateMotorControlGroup, MotorUIControlGroup printMotorControlGroup, PrintSettingsUIControlGroup settingsControlGroup, PrintSettingsUIControlGroup layerControlGroup)
-    {
-        this.calibrateMotorControlGroup = calibrateMotorControlGroup;
-        this.printMotorControlGroup = printMotorControlGroup;
-        this.settingsControlGroup = settingsControlGroup;
-        this.layerControlGroup = layerControlGroup;
     }
 
     #region Select Motor Helper Methods
@@ -56,19 +31,26 @@ public class PrintUIControlGroupHelper
     /// <param name="motor">The StepperMotor to be selected as the current test motor.</param>
     /// <param name="positionTextBox">The TextBox associated with the motor, to be cleared upon selection.</param>
     /// <param name="thisMotorSelected">A reference to a boolean flag indicating the selection status of this motor.</param>
-    public void SelectButtonBackgroundGreen(StepperMotor motor, MotorUIControlGroup buttonGrp)
+    public void SelectButtonBackgroundGreen(StepperMotor motor)
     {
         // Update button backgrounds and selection flags
-        buttonGrp.selectBuildButton.Background = new SolidColorBrush(motor.GetMotorName() == "build" ? Colors.Green : Colors.DimGray);
-        buttonGrp.selectPowderButton.Background = new SolidColorBrush(motor.GetMotorName() == "powder" ? Colors.Green : Colors.DimGray);
-        buttonGrp.selectSweepButton.Background = new SolidColorBrush(motor.GetMotorName() == "sweep" ? Colors.Green : Colors.DimGray);
+        calibrateMotorControlGroup.selectBuildButton.Background = new SolidColorBrush(motor.GetMotorName() == "build" ? Colors.Green : Colors.DimGray);
+        calibrateMotorControlGroup.selectPowderButton.Background = new SolidColorBrush(motor.GetMotorName() == "powder" ? Colors.Green : Colors.DimGray);
+        calibrateMotorControlGroup.selectSweepButton.Background = new SolidColorBrush(motor.GetMotorName() == "sweep" ? Colors.Green : Colors.DimGray);
     }
-    public void ChangeSelectButtonsBackground(MotorUIControlGroup buttonGrp, Windows.UI.Color color)
+    public void ChangeSelectButtonsBackground(Windows.UI.Color color)
     {
         // Update button backgrounds and selection flags
-        buttonGrp.selectBuildButton.Background = new SolidColorBrush(color);
-        buttonGrp.selectPowderButton.Background = new SolidColorBrush(color);
-        buttonGrp.selectSweepButton.Background = new SolidColorBrush(color);
+        calibrateMotorControlGroup.selectBuildButton.Background = new SolidColorBrush(color);
+        calibrateMotorControlGroup.selectPowderButton.Background = new SolidColorBrush(color);
+        calibrateMotorControlGroup.selectSweepButton.Background = new SolidColorBrush(color);
+    }
+    #endregion
+
+    #region Getters
+    public UIControlGroup GetCalibrationControlGroup()
+    {
+        return calibrateMotorControlGroup; 
     }
     #endregion
 
@@ -81,7 +63,7 @@ public class PrintUIControlGroupHelper
     {
         if (motor != null)
         {
-            SelectButtonBackgroundGreen(motor, calibrateMotorControlGroup);
+            SelectButtonBackgroundGreen(motor);
         }
         else
         {
@@ -93,7 +75,7 @@ public class PrintUIControlGroupHelper
     {
         if (motor != null)
         {
-            SelectButtonBackgroundGreen(motor, printMotorControlGroup);
+            SelectButtonBackgroundGreen(motor);
 
         }
         else
