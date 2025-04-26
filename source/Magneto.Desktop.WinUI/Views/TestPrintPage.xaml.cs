@@ -98,51 +98,36 @@ public sealed partial class TestPrintPage : Page
     #endregion
 
     #region Motor Helpers
-    private async Task HomeMotorsHelper()
+    private async Task<int> HomeIfStopFlagIsFalse(string motorName)
     {
         string? msg;
         if (_motorPageService == null)
         {
             msg = "_motorPageService is null. Cannot home motors.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-            return;
+            return 0;
         }
         else
         {
             msg = "Homing all motors";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
         }
-
-        var buildMotor = _motorPageService.GetBuildMotor();
-        var powderMotor = _motorPageService.GetPowderMotor();
-        var sweepMotor = _motorPageService.GetSweepMotor();
-
-        if ((buildMotor != null) && (!_motorPageService.GetSweepMotor().STOP_MOVE_FLAG))
+        if (_motorPageService.CheckMotorStopFlag(motorName))
         {
-            await _motorPageService.HomeMotorAndUpdateTextBox(buildMotorName);
+            MagnetoLogger.Log($"{motorName} motor stop flag is up cannot home motor.", LogFactoryLogLevel.LogLevel.ERROR);
+            return 0;
         }
         else
         {
-            MagnetoLogger.Log("Build Motor is null or stop flag is up cannot home motor.", LogFactoryLogLevel.LogLevel.ERROR);
+            await _motorPageService.HomeMotorAndUpdateTextBox(motorName);
+            return 1;
         }
-
-        if ((powderMotor != null) && (!_motorPageService.GetSweepMotor().STOP_MOVE_FLAG))
-        {
-            await _motorPageService.HomeMotorAndUpdateTextBox(powderMotorName);
-        }
-        else
-        {
-            MagnetoLogger.Log("Powder Motor is null or stop flag is up cannot home motor.", LogFactoryLogLevel.LogLevel.ERROR);
-        }
-
-        if ((sweepMotor != null) && (!_motorPageService.GetSweepMotor().STOP_MOVE_FLAG))
-        {
-            await _motorPageService.HomeMotorAndUpdateTextBox(sweepMotorName);
-        }
-        else
-        {
-            MagnetoLogger.Log("Sweep Motor is null or stop flag is up cannot home motor.", LogFactoryLogLevel.LogLevel.ERROR);
-        }
+    }
+    private async Task HomeMotorsHelper()
+    {
+        await HomeIfStopFlagIsFalse("build");
+        await HomeIfStopFlagIsFalse("powder");
+        await HomeIfStopFlagIsFalse("sweep");
     }
     #endregion
 
