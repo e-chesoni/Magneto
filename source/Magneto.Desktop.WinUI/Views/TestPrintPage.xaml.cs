@@ -42,6 +42,9 @@ public sealed partial class TestPrintPage : Page
     private MotorPageService? _motorPageService;
     private WaverunnerPageService? _waverunnerPageService;
     private MotorUIControlGroup? _calibrateMotorUIControlGroup { get; set; }
+    private static readonly string buildMotorName = "build";
+    private static readonly string powderMotorName = "powder";
+    private static readonly string sweepMotorName = "sweep";
 
     private bool KILL_OPERATION; // TODO: may remove later; used in old layer move to check for e-stop
 
@@ -116,7 +119,7 @@ public sealed partial class TestPrintPage : Page
 
         if ((buildMotor != null) && (!_motorPageService.GetSweepMotor().STOP_MOVE_FLAG))
         {
-            await _motorPageService.HomeMotorAndUpdateTextBox(buildMotor);
+            await _motorPageService.HomeMotorAndUpdateTextBox(buildMotorName);
         }
         else
         {
@@ -125,7 +128,7 @@ public sealed partial class TestPrintPage : Page
 
         if ((powderMotor != null) && (!_motorPageService.GetSweepMotor().STOP_MOVE_FLAG))
         {
-            await _motorPageService.HomeMotorAndUpdateTextBox(powderMotor);
+            await _motorPageService.HomeMotorAndUpdateTextBox(powderMotorName);
         }
         else
         {
@@ -134,7 +137,7 @@ public sealed partial class TestPrintPage : Page
 
         if ((sweepMotor != null) && (!_motorPageService.GetSweepMotor().STOP_MOVE_FLAG))
         {
-            await _motorPageService.HomeMotorAndUpdateTextBox(sweepMotor);
+            await _motorPageService.HomeMotorAndUpdateTextBox(sweepMotorName);
         }
         else
         {
@@ -171,49 +174,49 @@ public sealed partial class TestPrintPage : Page
     private void MoveBuildToAbsPositionButton_Click(object sender, RoutedEventArgs e)
     {
         var buildMotor = _motorPageService.GetBuildMotor();
-        _motorPageService.HandleAbsMove(buildMotor, _motorPageService.GetBuildAbsMoveTextBox(), this.Content.XamlRoot);
+        _motorPageService.HandleAbsMove(buildMotorName, _motorPageService.GetBuildAbsMoveTextBox(), this.Content.XamlRoot);
     }
     private void MovePowderToAbsPositionButton_Click(object sender, RoutedEventArgs e)
     {
         var powderMotor = _motorPageService.GetPowderMotor();
-        _motorPageService.HandleAbsMove(powderMotor, _motorPageService.GetPowderAbsMoveTextBox(), this.Content.XamlRoot);
+        _motorPageService.HandleAbsMove(powderMotorName, _motorPageService.GetPowderAbsMoveTextBox(), this.Content.XamlRoot);
     }
     private void MoveSweepToAbsPositionButton_Click(object sender, RoutedEventArgs e)
     {
         var sweepMotor = _motorPageService.GetSweepMotor();
-        _motorPageService.HandleAbsMove(sweepMotor, _motorPageService.GetSweepAbsMoveTextBox(), this.Content.XamlRoot);
+        _motorPageService.HandleAbsMove(sweepMotorName, _motorPageService.GetSweepAbsMoveTextBox(), this.Content.XamlRoot);
     }
     private void StepBuildMotorUpButton_Click(object sender, RoutedEventArgs e)
     {
         MagnetoLogger.Log("step build up clicked", LogFactoryLogLevel.LogLevel.VERBOSE);
-        var motor = _motorPageService.GetBuildMotor();
-        _motorPageService.HandleRelMove(motor, _motorPageService.GetBuildStepTextBox(), true, this.Content.XamlRoot);
+        //var motor = _motorPageService.GetBuildMotor();
+        _motorPageService.HandleRelMove(buildMotorName, _motorPageService.GetBuildStepTextBox(), true, this.Content.XamlRoot);
     }
     private void StepBuildMotorDownButton_Click(object sender, RoutedEventArgs e)
     {
         MagnetoLogger.Log("step build down clicked", LogFactoryLogLevel.LogLevel.VERBOSE);
-        var motor = _motorPageService.GetBuildMotor();
-        _motorPageService.HandleRelMove(motor, _motorPageService.GetBuildStepTextBox(), false, this.Content.XamlRoot);
+        //var motor = _motorPageService.GetBuildMotor();
+        _motorPageService.HandleRelMove(buildMotorName, _motorPageService.GetBuildStepTextBox(), false, this.Content.XamlRoot);
     }
     private void StepPowderMotorUpButton_Click(object sender, RoutedEventArgs e)
     {
-        var motor = _motorPageService.GetPowderMotor();
-        _motorPageService.HandleRelMove(motor, _motorPageService.GetPowderStepTextBox(), true, this.Content.XamlRoot);
+        //var motor = _motorPageService.GetPowderMotor();
+        _motorPageService.HandleRelMove(powderMotorName, _motorPageService.GetPowderStepTextBox(), true, this.Content.XamlRoot);
     }
     private void StepPowderMotorDownButton_Click(object sender, RoutedEventArgs e)
     {
-        var motor = _motorPageService.GetPowderMotor();
-        _motorPageService.HandleRelMove(motor, _motorPageService.GetPowderStepTextBox(), false, this.Content.XamlRoot);
+        //var motor = _motorPageService.GetPowderMotor();
+        _motorPageService.HandleRelMove(powderMotorName, _motorPageService.GetPowderStepTextBox(), false, this.Content.XamlRoot);
     }
     private void StepSweepMotorLeftButton_Click(object sender, RoutedEventArgs e)
     {
-        var motor = _motorPageService.GetSweepMotor();
-        _motorPageService.HandleRelMove(motor, _motorPageService.GetSweepStepTextBox(), true, this.Content.XamlRoot);
+        //var motor = _motorPageService.GetSweepMotor();
+        _motorPageService.HandleRelMove(sweepMotorName, _motorPageService.GetSweepStepTextBox(), true, this.Content.XamlRoot);
     }
     private void StepSweepMotorRightButton_Click(object sender, RoutedEventArgs e)
     {
-        var motor = _motorPageService.GetSweepMotor();
-        _motorPageService.HandleRelMove(motor, _motorPageService.GetSweepStepTextBox(), false, this.Content.XamlRoot);
+        //var motor = _motorPageService.GetSweepMotor();
+        _motorPageService.HandleRelMove(sweepMotorName, _motorPageService.GetSweepStepTextBox(), false, this.Content.XamlRoot);
     }
     private async void HomeAllMotorsButton_Click(object sender, RoutedEventArgs e)
     {

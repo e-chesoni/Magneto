@@ -38,6 +38,14 @@ public class PrintUIControlGroupHelper
         calibrateMotorControlGroup.selectPowderButton.Background = new SolidColorBrush(motor.GetMotorName() == "powder" ? Colors.Green : Colors.DimGray);
         calibrateMotorControlGroup.selectSweepButton.Background = new SolidColorBrush(motor.GetMotorName() == "sweep" ? Colors.Green : Colors.DimGray);
     }
+    public void SelectButtonBackgroundGreen(string motorName)
+    {
+        string motorNameToLower = motorName.ToLower();
+        // Update button backgrounds and selection flags
+        calibrateMotorControlGroup.selectBuildButton.Background = new SolidColorBrush(motorNameToLower == "build" ? Colors.Green : Colors.DimGray);
+        calibrateMotorControlGroup.selectPowderButton.Background = new SolidColorBrush(motorNameToLower == "powder" ? Colors.Green : Colors.DimGray);
+        calibrateMotorControlGroup.selectSweepButton.Background = new SolidColorBrush(motorNameToLower == "sweep" ? Colors.Green : Colors.DimGray);
+    }
     public void ChangeSelectButtonsBackground(Windows.UI.Color color)
     {
         // Update button backgrounds and selection flags
@@ -71,19 +79,12 @@ public class PrintUIControlGroupHelper
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
         }
     }
-    public void SelectMotorInPrint(StepperMotor motor)
-    {
-        if (motor != null)
-        {
-            SelectButtonBackgroundGreen(motor);
 
-        }
-        else
-        {
-            var msg = "Build Motor is null.";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-        }
+    public void SelectMotor(string motorName)
+    {
+        SelectButtonBackgroundGreen(motorName);
     }
+
     public void EnableUIControlGroup(UIControlGroup controlGrp)
     {
         foreach (var control in controlGrp.GetControlGroupEnuerable())

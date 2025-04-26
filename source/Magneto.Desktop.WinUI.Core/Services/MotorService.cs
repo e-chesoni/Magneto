@@ -152,6 +152,33 @@ public class MotorService : IMotorService
     {
         return await motor.GetPosAsync();
     }
+    public async Task<double> GetMotorPositionAsync(string motorName)
+    {
+        switch (motorName)
+        {
+            case "build":
+                return await GetBuildMotorPositionAsync();
+            case "powder":
+                return await GetPowderMotorPositionAsync();
+            case "sweep":
+                return await GetSweepMotorPositionAsync();
+            default:
+                MagnetoLogger.Log($"Could not get {motorName} motor position. Invalid motor name given: {motorName}.", LogFactoryLogLevel.LogLevel.ERROR);
+                return 0;
+        }
+    }
+    public async Task<double> GetBuildMotorPositionAsync()
+    {
+        return await buildMotor.GetPosAsync();
+    }
+    public async Task<double> GetPowderMotorPositionAsync()
+    {
+        return await powderMotor.GetPosAsync();
+    }
+    public async Task<double> GetSweepMotorPositionAsync()
+    {
+        return await sweepMotor.GetPosAsync();
+    }
     #endregion
 
     #region Checks
@@ -166,6 +193,22 @@ public class MotorService : IMotorService
         {
             return false;
         }
+    }
+    public bool CheckMotorStopFlag(string motorName)
+    {
+        switch (motorName)
+        {
+            case "build":
+                return buildMotor.STOP_MOVE_FLAG;
+            case "powder":
+                return powderMotor.STOP_MOVE_FLAG;
+            case "sweep":
+                return sweepMotor.STOP_MOVE_FLAG;
+            default:
+                MagnetoLogger.Log($"Could not check motor stop flag. Invalid motor name given: {motorName}.", LogFactoryLogLevel.LogLevel.ERROR);
+                return true;
+        }
+    
     }
     #endregion
 
@@ -208,11 +251,34 @@ public class MotorService : IMotorService
         }
         return 1;
     }
-    public async Task<int> MoveMotorAbs(StepperMotor motor, double target)
+    private async Task<int> MoveMotorAbs(StepperMotor motor, double target)
     {
         await _commandQueueManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.AbsoluteMove, target);
         return 1;
     }
+    public async Task<int> MoveMotorAbs(string motorName, double target)
+    {
+        switch (motorName)
+        {
+            case "build":
+                await MoveBuildMotorAbs(target);
+                break;
+            case "powder":
+                await MovePowderMotorAbs(target);
+                break;
+            case "sweep":
+                await MoveSweepMotorAbs(target);
+                break;
+            default:
+                MagnetoLogger.Log($"Could not check motor stop flag. Invalid motor name given: {motorName}.", LogFactoryLogLevel.LogLevel.ERROR);
+                return 0;
+        }
+        return 1;
+    }
+    public async Task<int> MoveBuildMotorAbs(double target) => await MoveMotorAbs(buildMotor, target);
+    public async Task<int> MovePowderMotorAbs(double target) => await MoveMotorAbs(powderMotor, target);
+    public async Task<int> MoveSweepMotorAbs(double target) => await MoveMotorAbs(sweepMotor, target);
+
     public async Task<int> MoveMotorRel(StepperMotor motor, double distance)
     {
         // NOTE: when called, you must await the return to get the integer value
@@ -222,20 +288,115 @@ public class MotorService : IMotorService
         await _commandQueueManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.RelativeMove, distance);
         return 1;
     }
+    public async Task<int> MoveMotorRel(string motorName, double distance)
+    {
+        switch (motorName)
+        {
+            case "build":
+                await MoveBuildMotorRel(distance);
+                break;
+            case "powder":
+                await MovePowderMotorRel(distance);
+                break;
+            case "sweep":
+                await MoveSweepMotorRel(distance);
+                break;
+            default:
+                MagnetoLogger.Log($"Could not check motor stop flag. Invalid motor name given: {motorName}.", LogFactoryLogLevel.LogLevel.ERROR);
+                return 0;
+        }
+        return 1;
+    }
+    public async Task<int> MoveBuildMotorRel(double distance) => await MoveMotorRel(buildMotor, distance);
+    public async Task<int> MovePowderMotorRel(double distance) => await MoveMotorRel(powderMotor, distance);
+    public async Task<int> MoveSweepMotorRel(double distance) => await MoveMotorRel(sweepMotor, distance);
+
+    public async Task<int> MoveBuildMotor(bool moveAbs, double value)
+    {
+        if (moveAbs) return await MoveMotorAbs(buildMotor, value);
+        else return await MoveMotorRel(buildMotor, value);
+    }
+    public async Task<int> MovePowderMotor(bool moveAbs, double value)
+    {
+        if (moveAbs) return await MoveMotorAbs(powderMotor, value);
+        else return await MoveMotorRel(powderMotor, value);
+    }
+    public async Task<int> MoveSweepMotor(bool moveAbs, double value)
+    {
+        if (moveAbs) return await MoveMotorAbs(sweepMotor, value);
+        else return await MoveMotorRel(sweepMotor, value);
+    }
+
     public async Task<int> HomeMotor(StepperMotor motor)
     {
         await _commandQueueManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.AbsoluteMove, motor.GetHomePos());
         return 1;
     }
+
+    private async Task<int> HomeMotorHelper(StepperMotor motor)
+    {
+        await _commandQueueManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.AbsoluteMove, motor.GetHomePos());
+        return 1;
+    }
+
+    public async Task<int> HomeMotor(string motorName)
+    {
+        switch (motorName)
+        {
+            case "build":
+                await HomeMotorHelper(buildMotor);
+                break;
+            case "powder":
+                await HomeMotorHelper(powderMotor);
+                break;
+            case "sweep":
+                await HomeMotorHelper(sweepMotor);
+                break;
+            default:
+                MagnetoLogger.Log($"Cannot wait until motor reaches position. Invalid motor name given: {motorName}.", LogFactoryLogLevel.LogLevel.ERROR);
+                return 0;
+        }
+        return 1;
+        return 1;
+    }
+
+    public async Task<int> HomeBuildMotor() => await HomeMotor(buildMotor);
+    public async Task<int> HomePowderMotor() => await HomeMotor(powderMotor);
+    public async Task<int> HomeSweepMotor() => await HomeMotor(sweepMotor);
+
+
+
     public async Task<int> StopMotorAndClearQueue(StepperMotor motor)
     {
         await _commandQueueManager.HandleStopRequest(motor);
         return 1;
     }
 
-    public async Task<int> WaitUntilAtTargetAsync(StepperMotor motor, double targetPos)
+    private async Task<int> WaitUntilAtTargetAsync(StepperMotor motor, double targetPos)
     {
         await motor.WaitUntilAtTargetAsync(targetPos);
+        return 1;
+    }
+    public async Task<int> WaitUntilBuildReachesTargetAsync(double targetPos) => await WaitUntilAtTargetAsync(buildMotor, targetPos);
+    public async Task<int> WaitUntilPowderReachesTargetAsync(double targetPos) => await WaitUntilAtTargetAsync(powderMotor, targetPos);
+    public async Task<int> WaitUntilSweepReachesTargetAsync(double targetPos) => await WaitUntilAtTargetAsync(sweepMotor, targetPos);
+    public async Task<int> WaitUntilMotorHomedAsync(string motorName)
+    {
+        switch (motorName)
+        {
+            case "build":
+                await buildMotor.WaitUntilAtTargetAsync(buildMotor.GetHomePos());
+                break;
+            case "powder":
+                await powderMotor.WaitUntilAtTargetAsync(powderMotor.GetHomePos());
+                break;
+            case "sweep":
+                await sweepMotor.WaitUntilAtTargetAsync(sweepMotor.GetHomePos());
+                break;
+            default:
+                MagnetoLogger.Log($"Cannot wait until motor reaches position. Invalid motor name given: {motorName}.", LogFactoryLogLevel.LogLevel.ERROR);
+                return 0;
+        }
         return 1;
     }
     #endregion
