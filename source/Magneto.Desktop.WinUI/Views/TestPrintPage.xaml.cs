@@ -97,6 +97,52 @@ public sealed partial class TestPrintPage : Page
     }
     #endregion
 
+    #region Helpers
+    private async Task<int> HomeIfStopFlagIsFalse(string motorName)
+    {
+        string? msg;
+        if (_motorPageService == null)
+        {
+            msg = "_motorPageService is null. Cannot home motors.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+            return 0;
+        }
+        else
+        {
+            msg = "Homing all motors";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+        }
+        if (_motorPageService.CheckMotorStopFlag(motorName))
+        {
+            MagnetoLogger.Log($"{motorName} motor stop flag is up cannot home motor.", LogFactoryLogLevel.LogLevel.ERROR);
+            return 0;
+        }
+        else
+        {
+            await _motorPageService.HomeMotorAndUpdateUI(motorName);
+            return 1;
+        }
+    }
+    private async Task HomeMotorsHelper()
+    {
+        await HomeIfStopFlagIsFalse("build");
+        await HomeIfStopFlagIsFalse("powder");
+        await HomeIfStopFlagIsFalse("sweep");
+    }
+    private void StopMotorsHelper()
+    {
+        if (_motorPageService == null)
+        {
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to stop motors.");
+            return;
+        }
+        _motorPageService.StopBuildMotorAndUpdateTextBox();
+        _motorPageService.StopPowderMotorAndUpdateTextBox();
+        _motorPageService.StopSweepMotorAndUpdateTextBox();
+        _motorPageService.ChangeSelectButtonsBackground(Colors.Red);
+    }
+    #endregion
+
     #region Calibration Panel Methods
     #region Calibration Selectors
     private void SelectBuildMotorButton_Click(object sender, RoutedEventArgs e)
@@ -424,52 +470,6 @@ public sealed partial class TestPrintPage : Page
         }
     }
     */
-
-    #region Helpers
-    private async Task<int> HomeIfStopFlagIsFalse(string motorName)
-    {
-        string? msg;
-        if (_motorPageService == null)
-        {
-            msg = "_motorPageService is null. Cannot home motors.";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-            return 0;
-        }
-        else
-        {
-            msg = "Homing all motors";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-        }
-        if (_motorPageService.CheckMotorStopFlag(motorName))
-        {
-            MagnetoLogger.Log($"{motorName} motor stop flag is up cannot home motor.", LogFactoryLogLevel.LogLevel.ERROR);
-            return 0;
-        }
-        else
-        {
-            await _motorPageService.HomeMotorAndUpdateUI(motorName);
-            return 1;
-        }
-    }
-    private async Task HomeMotorsHelper()
-    {
-        await HomeIfStopFlagIsFalse("build");
-        await HomeIfStopFlagIsFalse("powder");
-        await HomeIfStopFlagIsFalse("sweep");
-    }
-    private void StopMotorsHelper()
-    {
-        if (_motorPageService == null)
-        {
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to stop motors.");
-            return;
-        }
-        _motorPageService.StopBuildMotorAndUpdateTextBox();
-        _motorPageService.StopPowderMotorAndUpdateTextBox();
-        _motorPageService.StopSweepMotorAndUpdateTextBox();
-        _motorPageService.ChangeSelectButtonsBackground(Colors.Red);
-    }
-    #endregion
 
     #region Locking
     private void UnlockCalibrationPanel()
@@ -799,6 +799,8 @@ public sealed partial class TestPrintPage : Page
     }
 
     #endregion
+    
+    // TODO: Remove after testing
     private void TEST_Click(object sender, RoutedEventArgs e)
     {
         _waverunnerPageService.TestWaverunnerConnection(this.XamlRoot);
