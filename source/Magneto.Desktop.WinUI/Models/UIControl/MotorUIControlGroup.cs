@@ -40,98 +40,10 @@ public class MotorUIControlGroup : UIControlGroup
     public TextBox? sweepAbsMoveTextBox { get; set; } = null;
 
     public Button? homeAllMotorsButton { get; set; } = null;
+    public Button? enableMotorsButton { get; set; } = null;
     public Button? stopAllMotorsButton { get; set; } = null;
 
     public IEnumerable<object> controlEnumerable;
-    public MotorUIControlGroup(Button selectBuildBtn, Button selectPowderBtn, Button selectSweepBtn)
-    {
-        selectBuildButton = selectBuildBtn;
-        selectPowderButton = selectPowderBtn;
-        selectSweepButton = selectSweepBtn;
-
-        controlEnumerable = new List<object>
-            {
-                selectBuildButton,
-                selectPowderButton,
-                selectSweepButton
-            };
-    }
-
-    // For motor test page control buttons
-    public MotorUIControlGroup(Button selectBuildBtn, Button selectPowderBtn, Button selectSweepBtn,
-                               TextBox buildPosTB, TextBox powderPosTB, TextBox sweepPosTB,
-                               TextBox buildStepTB, TextBox powderStepTB, TextBox sweepStepTB,
-                               TextBox buildAbsMoveTB, TextBox powderAbsMoveTB, TextBox sweepAbsMoveTB)
-    {
-        selectBuildButton = selectBuildBtn;
-        selectPowderButton = selectPowderBtn;
-        selectSweepButton = selectSweepBtn;
-
-        buildPositionTextBox = buildPosTB;
-        powderPositionTextBox = powderPosTB;
-        sweepPositionTextBox = sweepPosTB;
-
-        buildStepTextBox = buildStepTB;
-        powderStepTextBox = powderStepTB;
-        sweepStepTextBox = sweepStepTB;
-
-        // TODO: add abs move text boxes here and above
-        buildAbsMoveTextBox = buildAbsMoveTB;
-        powderAbsMoveTextBox = powderAbsMoveTB;
-        sweepAbsMoveTextBox = sweepAbsMoveTB;
-
-        controlEnumerable = new List<object>
-            {
-                selectBuildButton,
-                selectPowderButton,
-                selectSweepButton
-            };
-    }
-
-    // for in print control buttons on print test page
-    public MotorUIControlGroup(Button selectBuildBtn, Button selectPowderBtn, Button selectSweepBtn,
-                        TextBox buildPosTB, TextBox powderPosTB, TextBox sweepPosTB,
-                        TextBox buildStepTB, TextBox powderStepTB, TextBox sweepStepTB,
-                        Button incrBuildBtn, Button decrBuildBtn, Button incrPowderBtn, Button decrPowderBtn, Button incrSweepBtn, Button decrSweepBtn,
-                        Button stopBuildBtn, Button stopPowderBtn, Button stopSweepBtn,
-                        Button homeAllBtn, Button stopAllBtn)
-    {
-        selectBuildButton = selectBuildBtn;
-        selectPowderButton = selectPowderBtn;
-        selectSweepButton = selectSweepBtn;
-
-        buildPositionTextBox = buildPosTB;
-        powderPositionTextBox = powderPosTB;
-        sweepPositionTextBox = sweepPosTB;
-
-        buildStepTextBox = buildStepTB;
-        powderStepTextBox = powderStepTB;
-        sweepStepTextBox = sweepStepTB;
-
-        incrBuildButton = incrBuildBtn;
-        decrBuildButton = decrBuildBtn;
-        incrPowderButton = incrPowderBtn;
-        decrPowderButton = decrPowderBtn;
-        incrSweepButton = incrSweepBtn;
-        decrSweepButton = decrSweepBtn;
-
-        stopBuildMotorButton = stopBuildBtn;
-        stopPowderMotorButton = stopPowderBtn;
-        stopSweepMotorButton = stopSweepBtn;
-
-        homeAllMotorsButton = homeAllBtn;
-        stopAllMotorsButton = stopAllBtn;
-
-        controlEnumerable = new List<object>
-            {
-                selectBuildButton, selectPowderButton, selectSweepButton,
-                buildPositionTextBox, powderPositionTextBox, sweepPositionTextBox,
-                buildStepTextBox, powderStepTextBox, sweepStepTextBox,
-                incrBuildButton, decrBuildButton, incrPowderButton, decrPowderButton, incrSweepButton, decrSweepButton,
-                stopBuildMotorButton, stopPowderMotorButton, stopSweepMotorButton,
-                homeAllMotorsButton // NOTE: NEVER add e-stop to list (list can disable all buttons and e-stop should never be disabled)
-            };
-    }
 
     // for calibrate button control group on print test page
     public MotorUIControlGroup(Button selectBuildBtn, Button selectPowderBtn, Button selectSweepBtn,
@@ -141,7 +53,7 @@ public class MotorUIControlGroup : UIControlGroup
                                TextBox buildStepTB, TextBox powderStepTB, TextBox sweepStepTB,
                                Button incrBuildBtn, Button decrBuildBtn, Button incrPowderBtn, Button decrPowderBtn, Button incrSweepBtn, Button decrSweepBtn,
                                Button stopBuildBtn, Button stopPowderBtn, Button stopSweepBtn,
-                               Button homeAllBtn, Button stopAllBtn)
+                               Button homeAllBtn, Button enableMotorsBtn, Button stopAllBtn)
     {
         selectBuildButton = selectBuildBtn;
         selectPowderButton = selectPowderBtn;
@@ -175,6 +87,7 @@ public class MotorUIControlGroup : UIControlGroup
         stopSweepMotorButton = stopSweepBtn;
 
         homeAllMotorsButton = homeAllBtn;
+        enableMotorsButton = enableMotorsBtn;
         stopAllMotorsButton = stopAllBtn;
 
         controlEnumerable = new List<object>

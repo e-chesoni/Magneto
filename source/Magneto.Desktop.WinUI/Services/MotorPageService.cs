@@ -6,6 +6,7 @@ using Magneto.Desktop.WinUI.Helpers;
 using Magneto.Desktop.WinUI.Popups;
 using Magneto.Desktop.WinUI.Core;
 using MongoDB.Driver;
+using Microsoft.UI;
 
 namespace Magneto.Desktop.WinUI;
 public class MotorPageService
@@ -279,12 +280,25 @@ public class MotorPageService
     }
     #endregion
     #endregion
-    
+
     #region Enablers
-    public void EnableBuildMotor() => _motorService.EnableBuildMotor();
-    public void EnablePowderMotor() => _motorService.EnablePowderMotor();
-    public void EnableSweepMotor() => _motorService.EnableBuildMotor();
-    public void EnableMotors() => _motorService.EnableMotors();
+    public void EnableBuildMotor()
+    {
+        _motorService.EnableBuildMotor();
+    }
+    public void EnablePowderMotor()
+    {
+        _motorService.EnablePowderMotor();
+    }
+    public void EnableSweepMotor()
+    {
+        _motorService.EnableBuildMotor();
+    }
+    public void EnableMotors()
+    {
+        _motorService.EnableMotors();
+        ChangeSelectButtonsBackground(Colors.DarkGray);
+    }
     #endregion
 
     #region Checkers

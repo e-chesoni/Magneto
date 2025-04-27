@@ -94,6 +94,10 @@ public class PrintUIControlGroupHelper
                 c.IsEnabled = true;
             }
         }
+        if (calibrateMotorControlGroup.enableMotorsButton != null)
+        {
+            //calibrateMotorControlGroup.enableMotorsButton.Content = "Lock Motors";
+        }
     }
 
     public void DisableUIControlGroup(UIControlGroup controlGrp)
@@ -104,6 +108,10 @@ public class PrintUIControlGroupHelper
             {
                 c.IsEnabled = false;
             }
+        }
+        if (calibrateMotorControlGroup.enableMotorsButton != null)
+        {
+            //calibrateMotorControlGroup.enableMotorsButton.Content = "Unlock Motors";
         }
     }
 

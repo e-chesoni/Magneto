@@ -79,7 +79,7 @@ public sealed partial class TestMotorsPage : Page
                                                                 BuildMotorStepTextBox, PowderMotorStepTextBox, SweepMotorStepTextBox,
                                                                 StepBuildMotorUpButton, StepBuildMotorDownButton, StepPowderMotorUpButton, StepPowderMotorDownButton, StepSweepMotorLeftButton, StepSweepMotorRightButton,
                                                                 StopBuildMotorButton, StopPowderMotorButton, StopSweepMotorButton,
-                                                                HomeAllMotorsButton, StopMotorsButton);
+                                                                HomeAllMotorsButton, EnableMotorsButton, StopMotorsButton);
         // initialize motor page service
         _motorPageService = new MotorPageService(new PrintUIControlGroupHelper(_calibrateMotorUIControlGroup));
 
@@ -384,7 +384,6 @@ public sealed partial class TestMotorsPage : Page
             return;
         }
         _motorPageService.EnableMotors();
-        _motorPageService.ChangeSelectButtonsBackground(Colors.DarkGray);
     }
     #endregion
 

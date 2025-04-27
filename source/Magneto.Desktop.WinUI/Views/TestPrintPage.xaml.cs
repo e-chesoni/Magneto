@@ -75,7 +75,7 @@ public sealed partial class TestPrintPage : Page
                                                                 BuildMotorStepTextBox, PowderMotorStepTextBox, SweepMotorStepTextBox,
                                                                 StepBuildMotorUpButton, StepBuildMotorDownButton, StepPowderMotorUpButton, StepPowderMotorDownButton, StepSweepMotorLeftButton, StepSweepMotorRightButton,
                                                                 StopBuildMotorButton, StopPowderMotorButton, StopSweepMotorButton,
-                                                                HomeAllMotorsButton, StopMotorsButton);
+                                                                HomeAllMotorsButton, EnableMotorsButton, StopMotorsButton);
         // initialize motor page service
         _motorPageService = new MotorPageService(new PrintUIControlGroupHelper(_calibrateMotorUIControlGroup));
         // initialize Waverunner page service
@@ -371,7 +371,6 @@ public sealed partial class TestPrintPage : Page
         }
         _motorPageService.EnableMotors();
         UnlockCalibrationPanel();
-        _motorPageService.ChangeSelectButtonsBackground(Colors.DarkGray);
     }
     #endregion
     #endregion
@@ -480,7 +479,7 @@ public sealed partial class TestPrintPage : Page
             return;
         }
         _motorPageService.UnlockCalibrationPanel();
-        EnableMotorsButton.Content = "Lock Calibration";
+        EnableMotorsButton.Content = "Lock Motors";
     }
     private void LockCalibrationPanel()
     {
@@ -490,7 +489,7 @@ public sealed partial class TestPrintPage : Page
             return;
         }
         _motorPageService.LockCalibrationPanel();
-        EnableMotorsButton.Content = "Enable Calibration";
+        EnableMotorsButton.Content = "Unlock Motors";
     }
     #endregion
 
