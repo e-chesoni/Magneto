@@ -179,6 +179,22 @@ public class MotorService : IMotorService
     {
         return await sweepMotor.GetPosAsync();
     }
+    public async Task<(int res, double position)> HandleGetPositionAsync(string motorNameLowerCase)
+    {
+        switch (motorNameLowerCase)
+        {
+            case "build":
+                return (1, await GetBuildMotorPositionAsync());
+            case "powder":
+                return (1, await GetPowderMotorPositionAsync());
+            case "sweep":
+                return (1, await GetSweepMotorPositionAsync());
+            default:
+                var msg = $"Invalid motor name. Could not get {motorNameLowerCase} motor position.";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+                return (0, 0.0);
+        }
+    }
     #endregion
 
     #region Checks

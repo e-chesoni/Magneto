@@ -292,31 +292,26 @@ public class MotorPageService
     }
     public async Task HandleGetPosition(string motorName, TextBox textBox, bool selectMotor)
     {
+        var motorNameToLower = motorName.ToLower();
+        int res; 
+        double pos;
         var msg = "Get position button clicked...";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-        var motorNameToLower = motorName.ToLower();
-        double? pos;
-        // TODO: Move switch to motor service
-        switch (motorNameToLower)
+        // get position of requested motor
+        (res, pos) = await _motorService.HandleGetPositionAsync(motorNameToLower);
+        // check request result
+        if (res == 0)
         {
-            case "build":
-                pos = await _motorService.GetBuildMotorPositionAsync(); 
-                break;
-            case "powder":
-                pos = await _motorService.GetPowderMotorPositionAsync();
-                break;
-            case "sweep":
-                pos = await _motorService.GetSweepMotorPositionAsync();
-                break;
-            default:
-                msg = $"Invalid motor name. Could not get {motorNameToLower} motor position.";
-                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-                return;
+            msg = $"Unable to handle getting {motorNameToLower} motor position.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            return;
         }
+        // if get position was successful, validate text box
         if (textBox != null) // Full error checking in UITextHelper
         {
             UpdateUITextHelper.UpdateUIText(textBox, pos.ToString());
         }
+        // if select motor is true, select the button too
         if (selectMotor)
         {
             _printUiControlGroupHelper.SelectMotor(motorNameToLower);
@@ -355,59 +350,27 @@ public class MotorPageService
     }
     public async Task<int> UpdateMotorPositionTextBox(string motorName)
     {
-        var motorNameLower = motorName.ToLower();
-        double position;
-        MagnetoLogger.Log("Updating motor position text box.", LogFactoryLogLevel.LogLevel.SUCCESS);
-
-        try
+        var motorNameToLower = motorName.ToLower();
+        int res;
+        double pos;
+        var msg = "Updating motor position text box.";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
+        // get position of requested motor
+        (res, pos) = await _motorService.HandleGetPositionAsync(motorNameToLower);
+        // check request result
+        if (res == 0)
         {
-            // TODO: move switch to motor service
-            switch (motorNameLower)
-            {
-                case "build":
-                    position = await _motorService.GetBuildMotorPositionAsync();
-                    break;
-                case "powder":
-                    position = await _motorService.GetPowderMotorPositionAsync();
-                    break;
-                case "sweep":
-                    position = await _motorService.GetSweepMotorPositionAsync();
-                    break;
-                default:
-                    MagnetoLogger.Log($"❌Invalid motor name: {motorName}", LogFactoryLogLevel.LogLevel.ERROR);
-                    return -1;
-            }
-
-            var textBox = GetMotorPositonTextBox(motorNameLower);
-            if (textBox != null)
-            {
-                textBox.Text = position.ToString();
-            }
+            msg = $"Unable to handle getting {motorNameToLower} motor position.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             return 0;
         }
-        catch (Exception ex)
+
+        var textBox = GetMotorPositonTextBox(motorNameToLower);
+        if (textBox != null)
         {
-            MagnetoLogger.Log($"❌Failed to get motor position: {ex.Message}", LogFactoryLogLevel.LogLevel.ERROR);
-            return -1;
+            textBox.Text = pos.ToString();
         }
-    }
-    public async void MoveMotorAndUpdateUI(string motorName, TextBox textBox, bool moveIsAbs, bool increment, XamlRoot xamlRoot)
-    {
-        switch (motorName)
-        {
-            case "build":
-                await MoveBuildMotorAndUpdateUI(textBox, moveIsAbs, increment, xamlRoot);
-                break;
-            case "powder":
-                await MovePowderMotorAndUpdateUI(textBox, moveIsAbs, increment, xamlRoot);
-                break;
-            case "sweep":
-                await MoveSweepMotorAndUpdateUI(textBox, moveIsAbs, increment, xamlRoot);
-                break;
-            default:
-                _ = PopupInfo.ShowContentDialog(xamlRoot, "Error", "Invalid motor name given.");
-                return;
-        }
+        return 0;
     }
     public async Task MoveBuildMotorAndUpdateUI(TextBox textBox, bool moveIsAbs, bool increment, XamlRoot xamlRoot)
     {
@@ -464,6 +427,24 @@ public class MotorPageService
             MagnetoLogger.Log($"Waiting for build motor to move {targetPos}", LogFactoryLogLevel.LogLevel.ERROR);
             await _motorService.WaitUntilSweepReachesTargetAsync(targetPos);
             await UpdateMotorPositionTextBox(sweepMotorName);
+        }
+    }
+    public async void MoveMotorAndUpdateUI(string motorName, TextBox textBox, bool moveIsAbs, bool increment, XamlRoot xamlRoot)
+    {
+        switch (motorName)
+        {
+            case "build":
+                await MoveBuildMotorAndUpdateUI(textBox, moveIsAbs, increment, xamlRoot);
+                break;
+            case "powder":
+                await MovePowderMotorAndUpdateUI(textBox, moveIsAbs, increment, xamlRoot);
+                break;
+            case "sweep":
+                await MoveSweepMotorAndUpdateUI(textBox, moveIsAbs, increment, xamlRoot);
+                break;
+            default:
+                _ = PopupInfo.ShowContentDialog(xamlRoot, "Error", "Invalid motor name given.");
+                return;
         }
     }
     #endregion

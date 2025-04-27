@@ -21,6 +21,7 @@ public interface IMotorService
     Task<double> GetBuildMotorPositionAsync();
     Task<double> GetPowderMotorPositionAsync();
     Task<double> GetSweepMotorPositionAsync();
+    Task<(int res, double position)> HandleGetPositionAsync(string motorNameLowerCase);
     void ConfigurePortEventHandlers();
     void IntializeMotors();
     void HandleMotorInit(string motorNameLowerCase, StepperMotor motor, out StepperMotor motorField);
