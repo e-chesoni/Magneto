@@ -303,8 +303,8 @@
                             Click="HomeAllMotorsButton_Click"/>
                     <Button Grid.Column="2" x:Name="EnableMotorsButton" HorizontalAlignment="Center" VerticalAlignment="Top" Height="30" Margin="2" Background="Green" Content="Enable Motors"
                             Click="EnableMotorsButton_Click"/>
-                    <Button Grid.Column="4" x:Name="StopAllMotorsButton" HorizontalAlignment="Center" VerticalAlignment="Top" Height="30" Margin="2" Background="Red" Content="Stop All Motors"
-                            Click="StopAllMotorsButton_Click"/>
+                    <Button Grid.Column="4" x:Name="StopMotorsButton" HorizontalAlignment="Center" VerticalAlignment="Top" Height="30" Margin="2" Background="Red" Content="Stop All Motors"
+                            Click="StopMotorsButton_Click"/>
                 </Grid>
 
             </Grid>

@@ -79,10 +79,7 @@ public sealed partial class TestMotorsPage : Page
                                                                 BuildMotorStepTextBox, PowderMotorStepTextBox, SweepMotorStepTextBox,
                                                                 StepBuildMotorUpButton, StepBuildMotorDownButton, StepPowderMotorUpButton, StepPowderMotorDownButton, StepSweepMotorLeftButton, StepSweepMotorRightButton,
                                                                 StopBuildMotorButton, StopPowderMotorButton, StopSweepMotorButton,
-                                                                HomeAllMotorsButton, StopAllMotorsButton);
-        // create control group helper to pass to motor page service (coordinates button color changes etc.)
-        //_printControlGroupHelper = new PrintUIControlGroupHelper(_calibrateMotorUIControlGroup);
-
+                                                                HomeAllMotorsButton, StopMotorsButton);
         // initialize motor page service
         _motorPageService = new MotorPageService(new PrintUIControlGroupHelper(_calibrateMotorUIControlGroup));
 
@@ -90,85 +87,7 @@ public sealed partial class TestMotorsPage : Page
         _motorPageService.HandleGetAllPositions();
     }
 
-    #region Selectors
-    private void SelectBuildMotorButton_Click(object sender, RoutedEventArgs e)
-    {
-        _motorPageService.SelectBuildMotor();
-    }
-    private void SelectPowderMotorButton_Click(object sender, RoutedEventArgs e)
-    {
-        _motorPageService.SelectPowderMotor();
-    }
-    private void SelectSweepMotorButton_Click(object sender, RoutedEventArgs e)
-    {
-        _motorPageService.SelectSweepMotor();
-    }
-    #endregion
-
-    #region Get Position
-    private async void GetBuildMotorCurrentPositionButton_Click(object sender, RoutedEventArgs e)
-    {
-        await _motorPageService.HandleGetPosition(_motorPageService.GetBuildMotor(), _motorPageService.GetBuildPositionTextBox(), true);
-    }
-    private async void GetPowderMotorCurrentPositionButton_Click(object sender, RoutedEventArgs e)
-    {
-        await _motorPageService.HandleGetPosition(_motorPageService.GetPowderMotor(), _motorPageService.GetPowderPositionTextBox(), true);
-    }
-    private async void GetSweepMotorCurrentPositionButton_Click(object sender, RoutedEventArgs e)
-    {
-        await _motorPageService.HandleGetPosition(_motorPageService.GetSweepMotor(), _motorPageService.GetSweepPositionTextBox(), true);
-    }
-    #endregion
-
-    #region Movement Helpers
-    /*
-    private async Task HomeMotorsHelperOLD()
-    {
-        string? msg;
-        if (_motorPageService == null)
-        {
-            msg = "_motorPageService is null. Cannot home motors.";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-            return;
-        }
-        else
-        {
-            msg = "Homing all motors";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-        }
-
-        var buildMotor = _motorPageService.GetBuildMotor();
-        var powderMotor = _motorPageService.GetPowderMotor();
-        var sweepMotor = _motorPageService.GetSweepMotor();
-
-        if ((buildMotor != null) && (!_motorPageService.GetSweepMotor().STOP_MOVE_FLAG))
-        {
-            await _motorPageService.HomeMotorAndUpdateTextBox(buildMotor);
-        }
-        else
-        {
-            MagnetoLogger.Log("Build Motor is null or stop flag is up cannot home motor.", LogFactoryLogLevel.LogLevel.ERROR);
-        }
-
-        if ((powderMotor != null) && (!_motorPageService.GetSweepMotor().STOP_MOVE_FLAG))
-        {
-            await _motorPageService.HomeMotorAndUpdateTextBox(powderMotor);
-        }
-        else
-        {
-            MagnetoLogger.Log("Powder Motor is null or stop flag is up cannot home motor.", LogFactoryLogLevel.LogLevel.ERROR);
-        }
-
-        if ((sweepMotor != null) && (!_motorPageService.GetSweepMotor().STOP_MOVE_FLAG))
-        {
-            await _motorPageService.HomeMotorAndUpdateTextBox(sweepMotor);
-        }
-        else
-        {
-            MagnetoLogger.Log("Sweep Motor is null or stop flag is up cannot home motor.", LogFactoryLogLevel.LogLevel.ERROR);
-        }
-    }
-    */
+    #region Helpers
     private async Task<int> HomeIfStopFlagIsFalse(string motorName)
     {
         string? msg;
@@ -202,6 +121,25 @@ public sealed partial class TestMotorsPage : Page
     }
     private void StopMotorsHelper()
     {
+        if (_motorPageService == null)
+        {
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to stop motors.");
+            return;
+        }
+        _motorPageService.StopBuildMotorAndUpdateTextBox();
+        _motorPageService.StopPowderMotorAndUpdateTextBox();
+        _motorPageService.StopSweepMotorAndUpdateTextBox();
+        _motorPageService.ChangeSelectButtonsBackground(Colors.Red);
+    }
+
+    // Keep as a reference; still seeing some bugs when stopping motors with new method
+    private void StopMotorsHelperOLD()
+    {
+        if (_motorPageService == null)
+        {
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to stop motors.");
+            return;
+        }
         // TODO: Does not work when moved to page service (only one motor stops)...no idea why...
         var buildConfig = MagnetoConfig.GetMotorByName("build");
         var sweepConfig = MagnetoConfig.GetMotorByName("sweep");
@@ -217,138 +155,235 @@ public sealed partial class TestMotorsPage : Page
         sweepMotor.STOP_MOVE_FLAG = true;
         _motorPageService.ChangeSelectButtonsBackground(Colors.Red);
     }
-    private void EnableMotorsButton_Click(object sender, RoutedEventArgs e)
+    #endregion
+
+    #region Selectors
+    private void SelectBuildMotorButton_Click(object sender, RoutedEventArgs e)
     {
-        var buildMotor = _motorPageService.GetBuildMotor();
-        var powderMotor = _motorPageService.GetPowderMotor();
-        var sweepMotor = _motorPageService.GetSweepMotor();
-        buildMotor.STOP_MOVE_FLAG = false;
-        powderMotor.STOP_MOVE_FLAG = false;
-        sweepMotor.STOP_MOVE_FLAG = false;
-        _motorPageService.ChangeSelectButtonsBackground(Colors.DarkGray);
+        if (_motorPageService == null)
+        {
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to select build motor.");
+            return;
+        }
+        _motorPageService.SelectBuildMotor();
+    }
+    private void SelectPowderMotorButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_motorPageService == null)
+        {
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to select powder motor.");
+            return;
+        }
+        _motorPageService.SelectPowderMotor();
+    }
+    private void SelectSweepMotorButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_motorPageService == null)
+        {
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to select sweep motor.");
+            return;
+        }
+        _motorPageService.SelectSweepMotor();
     }
     #endregion
 
-    #region Motor Movement
+    #region Position Getters
+    private async void GetBuildMotorCurrentPositionButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_motorPageService == null)
+        {
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to get build motor position.");
+            return;
+        }
+        await _motorPageService.HandleGetPosition(buildMotorName, _motorPageService.GetBuildPositionTextBox(), true);
+    }
+    private async void GetPowderMotorCurrentPositionButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_motorPageService == null)
+        {
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to get powder motor position.");
+            return;
+        }
+        await _motorPageService.HandleGetPosition(powderMotorName, _motorPageService.GetPowderPositionTextBox(), true);
+    }
+    private async void GetSweepMotorCurrentPositionButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_motorPageService == null)
+        {
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to get sweep motor position");
+            return;
+        }
+        await _motorPageService.HandleGetPosition(sweepMotorName, _motorPageService.GetSweepPositionTextBox(), true);
+    }
+    #endregion
+
+    #region Absolute Movers
     private void MoveBuildToAbsPositionButton_Click(object sender, RoutedEventArgs e)
     {
-        var buildMotor = _motorPageService.GetBuildMotor();
+        if (_motorPageService == null)
+        {
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to move build motor.");
+            return;
+        }
         _motorPageService.HandleAbsMove(buildMotorName, _motorPageService.GetBuildAbsMoveTextBox(), this.Content.XamlRoot);
     }
     private void MovePowderToAbsPositionButton_Click(object sender, RoutedEventArgs e)
     {
-        var powderMotor = _motorPageService.GetPowderMotor();
+        if (_motorPageService == null)
+        {
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to move powder motor.");
+            return;
+        }
         _motorPageService.HandleAbsMove(powderMotorName, _motorPageService.GetPowderAbsMoveTextBox(), this.Content.XamlRoot);
     }
     private void MoveSweepToAbsPositionButton_Click(object sender, RoutedEventArgs e)
     {
-        var sweepMotor = _motorPageService.GetSweepMotor();
+        if (_motorPageService == null)
+        {
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to move sweep motor.");
+            return;
+        }
         _motorPageService.HandleAbsMove(sweepMotorName, _motorPageService.GetSweepAbsMoveTextBox(), this.Content.XamlRoot);
     }
+    #endregion
+
+    #region Steppers
     private void StepBuildMotorUpButton_Click(object sender, RoutedEventArgs e)
     {
-        MagnetoLogger.Log("step build up clicked", LogFactoryLogLevel.LogLevel.VERBOSE);
-        //var motor = _motorPageService.GetBuildMotor();
+        if (_motorPageService == null)
+        {
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to build motor up.");
+            return;
+        }
         _motorPageService.HandleRelMove(buildMotorName, _motorPageService.GetBuildStepTextBox(), true, this.Content.XamlRoot);
     }
     private void StepBuildMotorDownButton_Click(object sender, RoutedEventArgs e)
     {
-        MagnetoLogger.Log("step build down clicked", LogFactoryLogLevel.LogLevel.VERBOSE);
-        //var motor = _motorPageService.GetBuildMotor();
+        if (_motorPageService == null)
+        {
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to move build motor down.");
+            return;
+        }
         _motorPageService.HandleRelMove(buildMotorName, _motorPageService.GetBuildStepTextBox(), false, this.Content.XamlRoot);
     }
     private void StepPowderMotorUpButton_Click(object sender, RoutedEventArgs e)
     {
-        //var motor = _motorPageService.GetPowderMotor();
+        if (_motorPageService == null)
+        {
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to move powder motor up.");
+            return;
+        }
         _motorPageService.HandleRelMove(powderMotorName, _motorPageService.GetPowderStepTextBox(), true, this.Content.XamlRoot);
     }
     private void StepPowderMotorDownButton_Click(object sender, RoutedEventArgs e)
     {
-        //var motor = _motorPageService.GetPowderMotor();
+        if (_motorPageService == null)
+        {
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to move powder motor down.");
+            return;
+        }
         _motorPageService.HandleRelMove(powderMotorName, _motorPageService.GetPowderStepTextBox(), false, this.Content.XamlRoot);
     }
     private void StepSweepMotorLeftButton_Click(object sender, RoutedEventArgs e)
     {
-        //var motor = _motorPageService.GetSweepMotor();
+        if (_motorPageService == null)
+        {
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to move sweep motor left.");
+            return;
+        }
         _motorPageService.HandleRelMove(sweepMotorName, _motorPageService.GetSweepStepTextBox(), true, this.Content.XamlRoot);
     }
     private void StepSweepMotorRightButton_Click(object sender, RoutedEventArgs e)
     {
-        //var motor = _motorPageService.GetSweepMotor();
+        if (_motorPageService == null)
+        {
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to move sweep motor right.");
+            return;
+        }
         _motorPageService.HandleRelMove(sweepMotorName, _motorPageService.GetSweepStepTextBox(), false, this.Content.XamlRoot);
     }
-    private async void HomeBuildMotorButton_Click(object sender, RoutedEventArgs e)
-    {
-        var buildMotor = _motorPageService.GetBuildMotor();
-        if ((buildMotor != null) && (!_motorPageService.GetSweepMotor().STOP_MOVE_FLAG))
-        {
-            //_motorPageService.HandleHomeMotorAndUpdateTextBox(buildMotor, buildTextBox);
-            await _motorPageService.HomeMotorAndUpdateTextBox(buildMotorName);
-        }
-        else
-        {
-            MagnetoLogger.Log("Build Motor is null or stop flag is up cannot home motor.", LogFactoryLogLevel.LogLevel.ERROR);
-        }
-    }
+    #endregion
 
-    private async void HomePowderMotorButton_Click(object sender, RoutedEventArgs e)
-    {
-        var powderMotor = _motorPageService.GetPowderMotor();
-        if ((powderMotor != null) && (!_motorPageService.GetSweepMotor().STOP_MOVE_FLAG))
-        {
-            //_motorPageService.HandleHomeMotorAndUpdateTextBox(powderMotor, powderTextBox);
-            await _motorPageService.HomeMotorAndUpdateTextBox(powderMotorName);
-        }
-        else
-        {
-            MagnetoLogger.Log("Powder Motor is null or stop flag is up cannot home motor.", LogFactoryLogLevel.LogLevel.ERROR);
-        }
-    }
-    private async void HomeSweepMotorButton_Click(object sender, RoutedEventArgs e)
-    {
-        var sweepMotor = _motorPageService.GetSweepMotor();
-        if ((sweepMotor != null) && (!_motorPageService.GetSweepMotor().STOP_MOVE_FLAG))
-        {
-            //_motorPageService.HandleHomeMotorAndUpdateTextBox(sweepMotor, sweepTextBox);
-            await _motorPageService.HomeMotorAndUpdateTextBox(sweepMotorName);
-        }
-        else
-        {
-            MagnetoLogger.Log("Sweep Motor is null or stop flag is up cannot home motor.", LogFactoryLogLevel.LogLevel.ERROR);
-        }
-    }
-    private void StopBuildMotorButton_Click(object sender, RoutedEventArgs e)
-    {
-        _motorPageService.StopBuildMotorAndUpdateTextBox();
-    }
-    private void StopPowderMotorButton_Click(object sender, RoutedEventArgs e)
-    {
-        _motorPageService.StopPowderMotorAndUpdateTextBox();
-    }
-    private void StopSweepMotorButton_Click(object sender, RoutedEventArgs e)
-    {
-        var sweepConfig = MagnetoConfig.GetMotorByName("sweep");
-        var sweepMotor = _motorPageService.GetSweepMotor();
-        MagnetoSerialConsole.SerialWrite(sweepConfig.COMPort, "1STP");
-        sweepMotor.STOP_MOVE_FLAG = true;
-    }
-    // TODO: implement enable buttons
-    private void EnableBuildMotorButton_Click(object sender, RoutedEventArgs e)
-    {
-    }
-    private void EnablePowderMotorButton_Click(object sender, RoutedEventArgs e)
-    {
-    }
-    private void EnableSweepMotorButton_Click(object sender, RoutedEventArgs e)
-    {
-    }
+    #region Homing
     private async void HomeAllMotorsButton_Click(object sender, RoutedEventArgs e)
     {
         await HomeMotorsHelper();
     }
-    private void StopAllMotorsButton_Click(object sender, RoutedEventArgs e)
+    #endregion
+
+    #region Stoppers
+    private void StopBuildMotorButton_Click(object sender, RoutedEventArgs e)
     {
-        StopMotorsHelper();
+        if (_motorPageService == null)
+        {
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to stop build motor.");
+            return;
+        }
+        _motorPageService.StopBuildMotorAndUpdateTextBox();
+    }
+    private void StopPowderMotorButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_motorPageService == null)
+        {
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to stop powder motor.");
+            return;
+        }
+        _motorPageService.StopPowderMotorAndUpdateTextBox();
+    }
+    private void StopSweepMotorButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_motorPageService == null)
+        {
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to stop sweep motor.");
+            return;
+        }
+        _motorPageService.StopSweepMotorAndUpdateTextBox();
+    }
+    private void StopMotorsButton_Click(object sender, RoutedEventArgs e)
+    {
+        StopMotorsHelperOLD();
     }
     #endregion
+
+    #region Enablers
+    // TODO: Implement enablers
+    private void EnableBuildMotorButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_motorPageService == null)
+        {
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Cannot enable build motor.");
+            return;
+        }
+        _motorPageService.EnableBuildMotor();
+    }
+    private void EnablePowderMotorButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_motorPageService == null)
+        {
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Cannot enable powder motor.");
+            return;
+        }
+        _motorPageService.EnablePowderMotor();
+    }
+    private void EnableSweepMotorButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_motorPageService == null)
+        {
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Cannot enable sweep motor.");
+            return;
+        }
+        _motorPageService.EnableSweepMotor();
+    }
+    private void EnableMotorsButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_motorPageService == null)
+        {
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to enable motors.");
+            return;
+        }
+        _motorPageService.EnableMotors();
+        _motorPageService.ChangeSelectButtonsBackground(Colors.DarkGray);
+    }
+    #endregion
+
 }

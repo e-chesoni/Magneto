@@ -47,8 +47,7 @@ public class WaverunerService : IWaverunnerService
         {
             // TODO: Use Log & Display once it's extrapolated from TestPrintPage.xaml.cs
             var logMsg = $"CCI Error! \n {Convert.ToString(exception)}";
-            var displayMsg = "Unable to say hello to waverunner. Is the application open?";
-            MagnetoLogger.Log(logMsg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
+            MagnetoLogger.Log(logMsg, LogFactoryLogLevel.LogLevel.ERROR);
             return 0;
         }
     }
