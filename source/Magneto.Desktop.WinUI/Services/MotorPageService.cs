@@ -33,28 +33,27 @@ public class MotorPageService
     }
     #endregion
 
-    public bool CheckMotorStopFlag(string motorName)
+    #region Selectors
+    public void SelectBuildMotor()
     {
-        return _motorService.CheckMotorStopFlag(motorName.ToLower());
+        _printUiControlGroupHelper.SelectMotor(buildMotorName);
     }
-    public void EnableBuildMotor() =>_motorService.EnableBuildMotor();
-    public void EnablePowderMotor() => _motorService.EnablePowderMotor();
-    public void EnableSweepMotor() => _motorService.EnableBuildMotor();
-    public void EnableMotors() =>_motorService.EnableMotors();
+    public void SelectPowderMotor()
+    {
+        _printUiControlGroupHelper.SelectMotor(powderMotorName);
+    }
+    public void SelectSweepMotor()
+    {
+        _printUiControlGroupHelper.SelectMotor(sweepMotorName);
+    }
+    public void ChangeSelectButtonsBackground(Windows.UI.Color color)
+    {
+        _printUiControlGroupHelper.ChangeSelectButtonsBackground(color);
+    }
+    #endregion
 
-    #region Getters
-    public StepperMotor GetBuildMotor()
-    {
-        return _motorService.GetBuildMotor();
-    }
-    public StepperMotor GetPowderMotor()
-    {
-        return _motorService.GetPowderMotor();
-    }
-    public StepperMotor GetSweepMotor()
-    {
-        return _motorService.GetSweepMotor();
-    }
+    #region Positioning
+    #region Position Getters
     public TextBox GetBuildPositionTextBox()
     {
         return _printUiControlGroupHelper.calibrateMotorControlGroup.buildPositionTextBox;
@@ -67,52 +66,48 @@ public class MotorPageService
     {
         return _printUiControlGroupHelper.calibrateMotorControlGroup.sweepPositionTextBox;
     }
-    public TextBox GetBuildStepTextBox()
+    #endregion
+    #region Position Handlers
+    public async Task HandleGetPosition(string motorName, TextBox textBox, bool selectMotor)
     {
-        return _printUiControlGroupHelper.calibrateMotorControlGroup.buildStepTextBox;
+        var motorNameToLower = motorName.ToLower();
+        int res;
+        double pos;
+        var msg = "Get position button clicked...";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+        // get position of requested motor
+        (res, pos) = await _motorService.HandleGetPositionAsync(motorNameToLower);
+        // check request result
+        if (res == 0)
+        {
+            msg = $"Unable to handle getting {motorNameToLower} motor position.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            return;
+        }
+        // if get position was successful, validate text box
+        if (textBox != null) // Full error checking in UITextHelper
+        {
+            UpdateUITextHelper.UpdateUIText(textBox, pos.ToString());
+        }
+        // if select motor is true, select the button too
+        if (selectMotor)
+        {
+            _printUiControlGroupHelper.SelectMotor(motorNameToLower);
+        }
     }
-    public TextBox GetPowderStepTextBox()
+    public async void HandleGetAllPositions()
     {
-        return _printUiControlGroupHelper.calibrateMotorControlGroup.powderStepTextBox;
-    }
-    public TextBox GetSweepStepTextBox()
-    {
-        return _printUiControlGroupHelper.calibrateMotorControlGroup.sweepStepTextBox;
-    }
-    public TextBox GetBuildAbsMoveTextBox()
-    {
-        return _printUiControlGroupHelper.calibrateMotorControlGroup.buildAbsMoveTextBox;
-    }
-    public TextBox GetPowderAbsMoveTextBox()
-    {
-        return _printUiControlGroupHelper.calibrateMotorControlGroup.powderAbsMoveTextBox;
-    }
-    public TextBox GetSweepAbsMoveTextBox()
-    {
-        return _printUiControlGroupHelper.calibrateMotorControlGroup.sweepAbsMoveTextBox;
+        var msg = "Get position button clicked...";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+        await HandleGetPosition(buildMotorName, GetBuildPositionTextBox(), false);
+        await HandleGetPosition(powderMotorName, GetPowderPositionTextBox(), false);
+        await HandleGetPosition(sweepMotorName, GetSweepPositionTextBox(), false);
     }
     #endregion
-
-    #region Selectors
-    public void SelectBuildMotor()
-    {
-        _printUiControlGroupHelper.SelectMotor(GetBuildMotor());
-    }
-    public void SelectPowderMotor()
-    {
-        _printUiControlGroupHelper.SelectMotor(GetPowderMotor());
-    }
-    public void SelectSweepMotor()
-    {
-        _printUiControlGroupHelper.SelectMotor(GetSweepMotor());
-    }
-    public void ChangeSelectButtonsBackground(Windows.UI.Color color)
-    {
-        _printUiControlGroupHelper.ChangeSelectButtonsBackground(color);
-    }
     #endregion
 
-    #region Motor Movement Methods
+    #region Movement
+    #region Main Movement Commands
     public async Task<(int status, double targetPos)> MoveMotorAbs(string motorName, TextBox textBox)
     {
         var motorNameLower = motorName.ToLower();
@@ -153,18 +148,7 @@ public class MotorPageService
             return (1, targetPos);
         }
     }
-    public async Task<int> WaitUntilMotorHomedAsync(string motorName)
-    {
-        //await motor.WaitUntilAtTargetAsync(targetPos);
-        await _motorService.WaitUntilMotorHomedAsync(motorName);
-        return 1;
-    }
-    /// <summary>
-    /// Homes sweep motor (moves right to min position 0), moves powder motor up 2x layer height, moves build motor down by layer height, then sweeps material onto build plate
-    /// (moves sweep motor left to max sweep position)
-    /// </summary>
-    /// <param name="layerThickness"></param>
-    /// <returns></returns>
+    // TODO: remove old layer move after new one is vetted
     /*
     public async Task<int> LayerMoveOLD(double layerThickness)
     {
@@ -201,7 +185,7 @@ public class MotorPageService
         return 1;
     }
     */
-    public async Task<int> LayerMove(double layerThickness, double amplifier)
+    public async Task<int> ExecuteLayerMove(double layerThickness, double amplifier)
     {
         var buildMotor = _motorService.GetBuildMotor();
         var powderMotor = _motorService.GetPowderMotor();
@@ -224,18 +208,30 @@ public class MotorPageService
         await _motorService.MoveMotorRel(sweepMotor, maxSweepPosition);
         return 1; // TODO: implement failure return
     }
-    public bool MotorsRunning()
+    #endregion
+
+    #region Movement Handlers
+    public void HandleAbsMove(string motorName, TextBox textBox, XamlRoot xamlRoot)
     {
-        // if queue is not empty, motors are running
-        if (_motorService.MotorsRunning())
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        var motorNameLower = motorName.ToLower();
+        var msg = $"{motorNameLower} abs move button clicked.";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
+        var moveIsAbs = true;
+        var moveUp = true; // Does not matter what we put here; unused in absolute move
+        MoveMotorAndUpdateUI(motorName, textBox, moveIsAbs, moveUp, xamlRoot);
     }
+
+    public void HandleRelMove(string motorName, TextBox textBox, bool moveUp, XamlRoot xamlRoot)
+    {
+        var motorNameLower = motorName.ToLower();
+        var msg = $"{motorNameLower} rel move button clicked.";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
+        var moveIsAbs = false;
+        MoveMotorAndUpdateUI(motorName, textBox, moveIsAbs, moveUp, xamlRoot);
+    }
+    #endregion
+
+    #region Stoppers
     public async void StopBuildMotorAndUpdateTextBox()
     {
         var msg = $"stopping {buildMotorName} motor";
@@ -258,6 +254,7 @@ public class MotorPageService
         await UpdateMotorPositionTextBox(sweepMotorName);
     }
     // Keep as a reference; still seeing bugs when stop buttons are clicked
+    /*
     public void StopMotorsWithFlag()
     {
         var buildConfig = MagnetoConfig.GetMotorByName("build");
@@ -270,74 +267,71 @@ public class MotorPageService
         GetPowderMotor().STOP_MOVE_FLAG = true;
         GetSweepMotor().STOP_MOVE_FLAG = true;
     }
-    public async Task<int> HomeMotorAndUpdateTextBox(string motorName)
+    */
+    #endregion
+
+    #region Wait for move to complete
+    public async Task<int> WaitUntilMotorHomedAsync(string motorName)
     {
-        _printUiControlGroupHelper.SelectMotor(motorName);
-        await _motorService.HomeMotor(motorName);
-        await WaitUntilMotorHomedAsync(motorName);
-        await UpdateMotorPositionTextBox(motorName); // TODO: This should probably wait until the motor is done moving...
+        //await motor.WaitUntilAtTargetAsync(targetPos);
+        await _motorService.WaitUntilMotorHomedAsync(motorName);
         return 1;
     }
-
+    #endregion
+    #endregion
+    
+    #region Enablers
+    public void EnableBuildMotor() => _motorService.EnableBuildMotor();
+    public void EnablePowderMotor() => _motorService.EnablePowderMotor();
+    public void EnableSweepMotor() => _motorService.EnableBuildMotor();
+    public void EnableMotors() => _motorService.EnableMotors();
     #endregion
 
-    #region Movement Handlers
-    public async void HandleGetAllPositions()
+    #region Checkers
+    public bool MotorsRunning()
     {
-        var msg = "Get position button clicked...";
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-        await HandleGetPosition(buildMotorName, GetBuildPositionTextBox(), false);
-        await HandleGetPosition(powderMotorName, GetPowderPositionTextBox(), false);
-        await HandleGetPosition(sweepMotorName, GetSweepPositionTextBox(), false);
-    }
-    public async Task HandleGetPosition(string motorName, TextBox textBox, bool selectMotor)
-    {
-        var motorNameToLower = motorName.ToLower();
-        int res; 
-        double pos;
-        var msg = "Get position button clicked...";
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-        // get position of requested motor
-        (res, pos) = await _motorService.HandleGetPositionAsync(motorNameToLower);
-        // check request result
-        if (res == 0)
+        // if queue is not empty, motors are running
+        if (_motorService.MotorsRunning())
         {
-            msg = $"Unable to handle getting {motorNameToLower} motor position.";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            return;
+            return true;
         }
-        // if get position was successful, validate text box
-        if (textBox != null) // Full error checking in UITextHelper
+        else
         {
-            UpdateUITextHelper.UpdateUIText(textBox, pos.ToString());
-        }
-        // if select motor is true, select the button too
-        if (selectMotor)
-        {
-            _printUiControlGroupHelper.SelectMotor(motorNameToLower);
+            return false;
         }
     }
-    public void HandleAbsMove(string motorName, TextBox textBox, XamlRoot xamlRoot)
+    public bool CheckMotorStopFlag(string motorName)
     {
-        var motorNameLower = motorName.ToLower();
-        var msg = $"{motorNameLower} abs move button clicked.";
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
-        var moveIsAbs = true;
-        var moveUp = true; // Does not matter what we put here; unused in absolute move
-        MoveMotorAndUpdateUI(motorName, textBox, moveIsAbs, moveUp, xamlRoot);
-    }
-
-    public void HandleRelMove(string motorName, TextBox textBox, bool moveUp, XamlRoot xamlRoot)
-    {
-        var motorNameLower = motorName.ToLower();
-        var msg = $"{motorNameLower} rel move button clicked.";
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
-        var moveIsAbs = false;
-        MoveMotorAndUpdateUI(motorName, textBox, moveIsAbs, moveUp, xamlRoot);
+        return _motorService.CheckMotorStopFlag(motorName.ToLower());
     }
     #endregion
 
-    #region Move and Update UI Method
+    #region UI
+    #region Text Box Getters
+    public TextBox GetBuildStepTextBox()
+    {
+        return _printUiControlGroupHelper.calibrateMotorControlGroup.buildStepTextBox;
+    }
+    public TextBox GetPowderStepTextBox()
+    {
+        return _printUiControlGroupHelper.calibrateMotorControlGroup.powderStepTextBox;
+    }
+    public TextBox GetSweepStepTextBox()
+    {
+        return _printUiControlGroupHelper.calibrateMotorControlGroup.sweepStepTextBox;
+    }
+    public TextBox GetBuildAbsMoveTextBox()
+    {
+        return _printUiControlGroupHelper.calibrateMotorControlGroup.buildAbsMoveTextBox;
+    }
+    public TextBox GetPowderAbsMoveTextBox()
+    {
+        return _printUiControlGroupHelper.calibrateMotorControlGroup.powderAbsMoveTextBox;
+    }
+    public TextBox GetSweepAbsMoveTextBox()
+    {
+        return _printUiControlGroupHelper.calibrateMotorControlGroup.sweepAbsMoveTextBox;
+    }
     public TextBox? GetMotorPositonTextBox(string motorNameLower)
     {
         return motorNameLower switch
@@ -348,6 +342,9 @@ public class MotorPageService
             _ => null
         };
     }
+    #endregion
+
+    #region Move and Update UI Methods
     public async Task<int> UpdateMotorPositionTextBox(string motorName)
     {
         var motorNameToLower = motorName.ToLower();
@@ -447,6 +444,15 @@ public class MotorPageService
                 return;
         }
     }
+    public async Task<int> HomeMotorAndUpdateUI(string motorName)
+    {
+        _printUiControlGroupHelper.SelectMotor(motorName);
+        await _motorService.HomeMotor(motorName);
+        await WaitUntilMotorHomedAsync(motorName);
+        await UpdateMotorPositionTextBox(motorName); // TODO: This should probably wait until the motor is done moving...
+        return 1;
+    }
+    #endregion
     #endregion
 }
 

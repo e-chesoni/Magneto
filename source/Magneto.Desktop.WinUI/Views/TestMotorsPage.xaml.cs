@@ -109,7 +109,7 @@ public sealed partial class TestMotorsPage : Page
         }
         else
         {
-            await _motorPageService.HomeMotorAndUpdateTextBox(motorName);
+            await _motorPageService.HomeMotorAndUpdateUI(motorName);
             return 1;
         }
     }
@@ -133,6 +133,7 @@ public sealed partial class TestMotorsPage : Page
     }
 
     // Keep as a reference; still seeing some bugs when stopping motors with new method
+    /*
     private void StopMotorsHelperOLD()
     {
         if (_motorPageService == null)
@@ -155,6 +156,7 @@ public sealed partial class TestMotorsPage : Page
         sweepMotor.STOP_MOVE_FLAG = true;
         _motorPageService.ChangeSelectButtonsBackground(Colors.Red);
     }
+    */
     #endregion
 
     #region Selectors
@@ -247,7 +249,7 @@ public sealed partial class TestMotorsPage : Page
     }
     #endregion
 
-    #region Steppers
+    #region Relative Movers
     private void StepBuildMotorUpButton_Click(object sender, RoutedEventArgs e)
     {
         if (_motorPageService == null)
@@ -341,7 +343,7 @@ public sealed partial class TestMotorsPage : Page
     }
     private void StopMotorsButton_Click(object sender, RoutedEventArgs e)
     {
-        StopMotorsHelperOLD();
+        StopMotorsHelper();
     }
     #endregion
 

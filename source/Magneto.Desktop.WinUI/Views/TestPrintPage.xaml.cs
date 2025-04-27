@@ -188,7 +188,7 @@ public sealed partial class TestPrintPage : Page
     }
     #endregion
 
-    #region Calibration Steppers
+    #region Calibration Relative Movers
     private void StepBuildMotorUpButton_Click(object sender, RoutedEventArgs e)
     {
         if (_motorPageService == null)
@@ -447,7 +447,7 @@ public sealed partial class TestPrintPage : Page
         }
         else
         {
-            await _motorPageService.HomeMotorAndUpdateTextBox(motorName);
+            await _motorPageService.HomeMotorAndUpdateUI(motorName);
             return 1;
         }
     }
