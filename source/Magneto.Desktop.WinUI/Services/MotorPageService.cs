@@ -239,6 +239,7 @@ public class MotorPageService
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
         await _motorService.StopMotorAndClearQueue(buildMotorName);
         await UpdateMotorPositionTextBox(buildMotorName);
+        _printUiControlGroupHelper.DisableMotorControls(_printUiControlGroupHelper.GetCalibrationControlGroup(), buildMotorName);
     }
     public async void StopPowderMotorAndUpdateTextBox()
     {
@@ -246,6 +247,7 @@ public class MotorPageService
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
         await _motorService.StopMotorAndClearQueue(powderMotorName);
         await UpdateMotorPositionTextBox(powderMotorName);
+        _printUiControlGroupHelper.DisableMotorControls(_printUiControlGroupHelper.GetCalibrationControlGroup(), powderMotorName);
     }
     public async void StopSweepMotorAndUpdateTextBox()
     {
@@ -253,6 +255,7 @@ public class MotorPageService
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
         await _motorService.StopMotorAndClearQueue(sweepMotorName);
         await UpdateMotorPositionTextBox(sweepMotorName);
+        _printUiControlGroupHelper.DisableMotorControls(_printUiControlGroupHelper.GetCalibrationControlGroup(), sweepMotorName);
     }
     // Keep as a reference; still seeing bugs when stop buttons are clicked
     /*
@@ -285,19 +288,21 @@ public class MotorPageService
     public void EnableBuildMotor()
     {
         _motorService.EnableBuildMotor();
+        _printUiControlGroupHelper.EnableMotorControls(_printUiControlGroupHelper.GetCalibrationControlGroup(), buildMotorName);
     }
     public void EnablePowderMotor()
     {
         _motorService.EnablePowderMotor();
+        _printUiControlGroupHelper.EnableMotorControls(_printUiControlGroupHelper.GetCalibrationControlGroup(), powderMotorName);
     }
     public void EnableSweepMotor()
     {
         _motorService.EnableBuildMotor();
+        _printUiControlGroupHelper.EnableMotorControls(_printUiControlGroupHelper.GetCalibrationControlGroup(), sweepMotorName);
     }
     public void EnableMotors()
     {
         _motorService.EnableMotors();
-        ChangeSelectButtonsBackground(Colors.DarkGray);
     }
     #endregion
 

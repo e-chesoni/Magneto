@@ -23,21 +23,6 @@ public class PrintUIControlGroupHelper
     }
 
     #region Select Motor Helper Methods
-
-    /// <summary>
-    /// Selects the given StepperMotor as the current test motor, updates the UI to reflect this selection,
-    /// and toggles the selection status. Clears the position text box and updates the background color of motor selection buttons.
-    /// </summary>
-    /// <param name="motor">The StepperMotor to be selected as the current test motor.</param>
-    /// <param name="positionTextBox">The TextBox associated with the motor, to be cleared upon selection.</param>
-    /// <param name="thisMotorSelected">A reference to a boolean flag indicating the selection status of this motor.</param>
-    public void SelectButtonBackgroundGreen(StepperMotor motor)
-    {
-        // Update button backgrounds and selection flags
-        calibrateMotorControlGroup.selectBuildButton.Background = new SolidColorBrush(motor.GetMotorName() == "build" ? Colors.Green : Colors.DimGray);
-        calibrateMotorControlGroup.selectPowderButton.Background = new SolidColorBrush(motor.GetMotorName() == "powder" ? Colors.Green : Colors.DimGray);
-        calibrateMotorControlGroup.selectSweepButton.Background = new SolidColorBrush(motor.GetMotorName() == "sweep" ? Colors.Green : Colors.DimGray);
-    }
     public void SelectButtonBackgroundGreen(string motorName)
     {
         string motorNameToLower = motorName.ToLower();
@@ -63,23 +48,6 @@ public class PrintUIControlGroupHelper
     #endregion
 
     #region Select Motor Helper Methods
-
-    /// <summary>
-    /// Wrapper for motor build motor selection code
-    /// </summary>
-    public void SelectMotor(StepperMotor motor)
-    {
-        if (motor != null)
-        {
-            SelectButtonBackgroundGreen(motor);
-        }
-        else
-        {
-            var msg = $"{motor.GetMotorName()} motor is null.";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-        }
-    }
-
     public void SelectMotor(string motorName)
     {
         SelectButtonBackgroundGreen(motorName);
@@ -87,31 +55,73 @@ public class PrintUIControlGroupHelper
 
     public void EnableUIControlGroup(UIControlGroup controlGrp)
     {
-        foreach (var control in controlGrp.GetControlGroupEnuerable())
-        {
-            if (control is Control c && c != null)
-            {
-                c.IsEnabled = true;
-            }
-        }
-        if (calibrateMotorControlGroup.enableMotorsButton != null)
-        {
-            //calibrateMotorControlGroup.enableMotorsButton.Content = "Lock Motors";
-        }
+        EnableGroupHelper(controlGrp.GetControlGroupEnuerable());
     }
 
     public void DisableUIControlGroup(UIControlGroup controlGrp)
     {
-        foreach (var control in controlGrp.GetControlGroupEnuerable())
+        DisableGroupHelper(controlGrp.GetControlGroupEnuerable());
+    }
+
+    private void DisableGroupHelper(IEnumerable<object> controls)
+    {
+        foreach (var control in controls)
         {
             if (control is Control c && c != null)
             {
                 c.IsEnabled = false;
             }
         }
-        if (calibrateMotorControlGroup.enableMotorsButton != null)
+    }
+    private void EnableGroupHelper(IEnumerable<object> controls)
+    {
+        foreach (var control in controls)
         {
-            //calibrateMotorControlGroup.enableMotorsButton.Content = "Unlock Motors";
+            if (control is Control c && c != null)
+            {
+                c.IsEnabled = true;
+            }
+        }
+    }
+    public void EnableMotorControls(UIControlGroup controlGrp, string motorNameLowerCase)
+    {
+        string msg;
+        switch (motorNameLowerCase)
+        {
+            case "build":
+                EnableGroupHelper(controlGrp.GetBuildControlGroupEnuerable());
+                break;
+            case "powder":
+                EnableGroupHelper(controlGrp.GetPowderControlGroupEnuerable());
+                break;
+            case "sweep":
+                EnableGroupHelper(controlGrp.GetSweepControlGroupEnuerable());
+                break;
+            default:
+                msg = $"Unable to enable {motorNameLowerCase} controls. Invalid motor name given: {motorNameLowerCase}";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+                break;
+        }
+    }
+
+    public void DisableMotorControls(UIControlGroup controlGrp, string motorNameLowerCase)
+    {
+        string msg;
+        switch (motorNameLowerCase)
+        {
+            case "build":
+                DisableGroupHelper(controlGrp.GetBuildControlGroupEnuerable());
+                break;
+            case "powder":
+                DisableGroupHelper(controlGrp.GetPowderControlGroupEnuerable());
+                break;
+            case "sweep":
+                DisableGroupHelper(controlGrp.GetSweepControlGroupEnuerable());
+                break;
+            default:
+                msg = $"Unable to disable {motorNameLowerCase} controls. Invalid motor name given: {motorNameLowerCase}";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+                break;
         }
     }
 

@@ -76,6 +76,7 @@ public sealed partial class TestMotorsPage : Page
                                                                 BuildMotorCurrentPositionTextBox, PowderMotorCurrentPositionTextBox, SweepMotorCurrentPositionTextBox,
                                                                 GetBuildMotorCurrentPositionButton, GetPowderMotorCurrentPositionButton, GetSweepMotorCurrentPositionButton,
                                                                 BuildMotorAbsPositionTextBox, PowderMotorAbsPositionTextBox, SweepMotorAbsPositionTextBox,
+                                                                MoveBuildToAbsPositionButton, MovePowderToAbsPositionButton, MoveSweepToAbsPositionButton,
                                                                 BuildMotorStepTextBox, PowderMotorStepTextBox, SweepMotorStepTextBox,
                                                                 StepBuildMotorUpButton, StepBuildMotorDownButton, StepPowderMotorUpButton, StepPowderMotorDownButton, StepSweepMotorLeftButton, StepSweepMotorRightButton,
                                                                 StopBuildMotorButton, StopPowderMotorButton, StopSweepMotorButton,
@@ -129,7 +130,6 @@ public sealed partial class TestMotorsPage : Page
         _motorPageService.StopBuildMotorAndUpdateTextBox();
         _motorPageService.StopPowderMotorAndUpdateTextBox();
         _motorPageService.StopSweepMotorAndUpdateTextBox();
-        _motorPageService.ChangeSelectButtonsBackground(Colors.Red);
     }
 
     // Keep as a reference; still seeing some bugs when stopping motors with new method
@@ -344,6 +344,7 @@ public sealed partial class TestMotorsPage : Page
     private void StopMotorsButton_Click(object sender, RoutedEventArgs e)
     {
         StopMotorsHelper();
+        LockCalibrationPanel();
     }
     #endregion
 
@@ -384,7 +385,30 @@ public sealed partial class TestMotorsPage : Page
             return;
         }
         _motorPageService.EnableMotors();
+        UnlockCalibrationPanel();
     }
     #endregion
 
+    #region Locking
+    private void UnlockCalibrationPanel()
+    {
+        if (_motorPageService == null)
+        {
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Cannot unlock calibration panel.");
+            return;
+        }
+        _motorPageService.UnlockCalibrationPanel();
+        //EnableMotorsButton.Content = "Lock Motors";
+    }
+    private void LockCalibrationPanel()
+    {
+        if (_motorPageService == null)
+        {
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Cannot lock calibration panel.");
+            return;
+        }
+        _motorPageService.LockCalibrationPanel();
+        //EnableMotorsButton.Content = "Unlock Motors";
+    }
+    #endregion
 }

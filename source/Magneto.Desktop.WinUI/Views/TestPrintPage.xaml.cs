@@ -72,6 +72,7 @@ public sealed partial class TestPrintPage : Page
                                                                 BuildMotorCurrentPositionTextBox, PowderMotorCurrentPositionTextBox, SweepMotorCurrentPositionTextBox,
                                                                 GetBuildMotorCurrentPositionButton, GetPowderMotorCurrentPositionButton, GetSweepMotorCurrentPositionButton,
                                                                 BuildMotorAbsPositionTextBox, PowderMotorAbsPositionTextBox, SweepMotorAbsPositionTextBox,
+                                                                MoveBuildToAbsPositionButton, MovePowderToAbsPositionButton, MoveSweepToAbsPositionButton,
                                                                 BuildMotorStepTextBox, PowderMotorStepTextBox, SweepMotorStepTextBox,
                                                                 StepBuildMotorUpButton, StepBuildMotorDownButton, StepPowderMotorUpButton, StepPowderMotorDownButton, StepSweepMotorLeftButton, StepSweepMotorRightButton,
                                                                 StopBuildMotorButton, StopPowderMotorButton, StopSweepMotorButton,
@@ -139,7 +140,6 @@ public sealed partial class TestPrintPage : Page
         _motorPageService.StopBuildMotorAndUpdateTextBox();
         _motorPageService.StopPowderMotorAndUpdateTextBox();
         _motorPageService.StopSweepMotorAndUpdateTextBox();
-        _motorPageService.ChangeSelectButtonsBackground(Colors.Red);
     }
     #endregion
 
@@ -479,7 +479,7 @@ public sealed partial class TestPrintPage : Page
             return;
         }
         _motorPageService.UnlockCalibrationPanel();
-        EnableMotorsButton.Content = "Lock Motors";
+        //EnableMotorsButton.Content = "Lock Motors";
     }
     private void LockCalibrationPanel()
     {
@@ -489,7 +489,7 @@ public sealed partial class TestPrintPage : Page
             return;
         }
         _motorPageService.LockCalibrationPanel();
-        EnableMotorsButton.Content = "Unlock Motors";
+        //EnableMotorsButton.Content = "Unlock Motors";
     }
     #endregion
 

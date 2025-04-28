@@ -10,4 +10,7 @@ namespace Magneto.Desktop.WinUI.Models.UIControl;
 public interface UIControlGroup
 {
     public IEnumerable<object> GetControlGroupEnuerable();
+    public IEnumerable<object> GetBuildControlGroupEnuerable();
+    public IEnumerable<object> GetPowderControlGroupEnuerable();
+    public IEnumerable<object> GetSweepControlGroupEnuerable();
 }
