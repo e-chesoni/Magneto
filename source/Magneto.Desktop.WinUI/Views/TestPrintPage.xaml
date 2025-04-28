@@ -22,14 +22,18 @@
                     <!-- Calibrate Motors -->
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="10"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="10"/>
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
-                        
-                        <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16"
-                                  Text="Calibrate Motors"></TextBlock>
-                        
-                        <Grid Grid.Row="1">
+
+                    <TextBlock Grid.Row="0" 
+                                   HorizontalAlignment="Center" 
+                                   VerticalAlignment="Center" 
+                                   FontSize="16"
+                                   Text="Calibrate Motors"/>
+                    <Grid Grid.Row="2">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="*"/>
@@ -224,14 +228,13 @@
                             </Grid>
                             </Grid>
                         </Grid>
-
-                        <Grid Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="10"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="10"/>
-                                <ColumnDefinition Width="Auto"/>
+                    <Grid Grid.Row="4" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <Button Grid.Column="0" x:Name="HomeAllMotorsButton" HorizontalAlignment="Center" VerticalAlignment="Top" Height="30" Margin="2" Content="Home All Motors"
                                 Click="HomeAllMotorsButton_Click"/>

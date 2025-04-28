@@ -19,71 +19,63 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="10"/>
             </Grid.RowDefinitions>
-            <Grid Grid.Row="0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="10"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="10"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="10"/>
-                </Grid.ColumnDefinitions>
-                <Grid Grid.Column="0">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    <TextBlock Grid.Row="0" 
-                               HorizontalAlignment="Center" 
-                               VerticalAlignment="Center" 
-                               FontSize="24"
-                               Text="Build Motor"/>
-                    <TextBlock Grid.Row="1" 
-                               HorizontalAlignment="Center" 
-                               VerticalAlignment="Center" 
-                               Height="200" 
-                               Text="Placeholder for build motor animation"/>
-                </Grid>
-                <Grid Grid.Column="2">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    <TextBlock Grid.Row="0" 
-                               HorizontalAlignment="Center" 
-                               VerticalAlignment="Center" 
-                               FontSize="24"
-                               Text="Build Motor"/>
-                                    <TextBlock Grid.Row="1" 
-                               HorizontalAlignment="Center" 
-                               VerticalAlignment="Center" 
-                               Height="200" 
-                               Text="Placeholder for build motor animation"/>
-                </Grid>
-                <Grid Grid.Column="4">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    <TextBlock Grid.Row="0" 
-                               HorizontalAlignment="Center" 
-                               VerticalAlignment="Center" 
-                               FontSize="24"
-                               Text="Build Motor"/>
-                                    <TextBlock Grid.Row="1" 
-                               HorizontalAlignment="Center" 
-                               VerticalAlignment="Center" 
-                               Height="200" 
-                               Text="Placeholder for build motor animation"/>
-                </Grid>
 
+            <Grid Grid.Row="0" HorizontalAlignment="Center">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="40">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" 
+                       HorizontalAlignment="Center" 
+                       VerticalAlignment="Center" 
+                       FontSize="24"
+                       Text="Build Motor"/>
+                        <TextBlock Grid.Row="1" 
+                       HorizontalAlignment="Center" 
+                       VerticalAlignment="Center" 
+                       Height="200" 
+                       Text="Placeholder for build motor animation"/>
+                    </Grid>
+
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" 
+                       HorizontalAlignment="Center" 
+                       VerticalAlignment="Center" 
+                       FontSize="24"
+                       Text="Powder Motor"/>
+                        <TextBlock Grid.Row="1" 
+                       HorizontalAlignment="Center" 
+                       VerticalAlignment="Center" 
+                       Height="200" 
+                       Text="Placeholder for powder motor animation"/>
+                    </Grid>
+
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" 
+                       HorizontalAlignment="Center" 
+                       VerticalAlignment="Center" 
+                       FontSize="24"
+                       Text="Sweep Motor"/>
+                        <TextBlock Grid.Row="1" 
+                       HorizontalAlignment="Center" 
+                       VerticalAlignment="Center" 
+                       Height="200" 
+                       Text="Placeholder for sweep motor animation"/>
+                    </Grid>
+                </StackPanel>
             </Grid>
+
+
             <Grid Grid.Row="2">
                 <!-- Calibrate Motors -->
                 <Grid.RowDefinitions>
@@ -92,10 +84,7 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16"
-              Text="Calibrate Motors"></TextBlock>
-
-                <Grid Grid.Row="1">
+                <Grid Grid.Row="0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
