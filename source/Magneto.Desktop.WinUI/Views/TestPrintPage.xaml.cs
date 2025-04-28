@@ -29,6 +29,7 @@ using SAMLIGHT_CLIENT_CTRL_EXLib;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Magneto.Desktop.WinUI.Contracts.Services;
+using CommunityToolkit.WinUI.Helpers;
 
 namespace Magneto.Desktop.WinUI.Views;
 
@@ -83,6 +84,19 @@ public sealed partial class TestPrintPage : Page
         _waverunnerPageService = new WaverunnerPageService(PrintDirectoryInputTextBox, PrintLayersButton);
         // populate motor positions on page load
         _motorPageService.HandleGetAllPositions();
+        // populate changeable pen settings
+        if (_waverunnerPageService.WaverunnerRunning() != 0)
+        {
+            // get pen settings
+            LaserPowerTextBox.Text = _waverunnerPageService.GetLaserPower().ToString();
+            ScanSpeedTextBox.Text = _waverunnerPageService.GetMarkSpeed().ToString();
+        }
+        else
+        {
+            // use default power and scan speed
+            LaserPowerTextBox.Text = _waverunnerPageService.GetDefaultLaserPower().ToString();
+            ScanSpeedTextBox.Text = _waverunnerPageService.GetDefaultMarkSpeed().ToString();
+        }
     }
     #endregion
 
@@ -494,6 +508,66 @@ public sealed partial class TestPrintPage : Page
     #endregion
 
     #region Print Methods
+    private void LaserPowerTextBox_LostFocus(object sender, RoutedEventArgs e)
+    {
+        string msg;
+        if (double.TryParse(LaserPowerTextBox.Text, out var power))
+        {
+            if (power < 50 || power > 500) // TODO: Verify allowable range
+            {
+                msg = "⚠️ Laser power out of range (should be 50–500 W)";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
+                _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", msg);
+                LaserPowerTextBox.Foreground = new SolidColorBrush(Colors.Red);
+                // TODO: disable marking buttons
+
+            }
+            else
+            {
+                // Valid input, reset text color back to normal (white)
+                LaserPowerTextBox.Foreground = new SolidColorBrush(Colors.WhiteSmoke);
+            }
+        }
+        else
+        {
+            msg = "⚠️ Invalid number entered for laser power.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", msg);
+            LaserPowerTextBox.Foreground = new SolidColorBrush(Colors.Red);
+            // TODO: disable marking buttons
+
+        }
+    }
+    private void ScanSpeedTextBox_LostFocus(object sender, RoutedEventArgs e)
+    {
+        string msg;
+        if (double.TryParse(ScanSpeedTextBox.Text, out var scanSpeed))
+        {
+            if (scanSpeed < 100 || scanSpeed > 3000) // TODO: Verify allowable range
+            {
+                msg = "⚠️ Scan speed out of range (should be 100-3000 mm/s)";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
+                _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", msg);
+                ScanSpeedTextBox.Foreground = new SolidColorBrush(Colors.Red);
+                // TODO: disable marking buttons
+
+            }
+            else
+            {
+                ScanSpeedTextBox.Foreground = new SolidColorBrush(Colors.WhiteSmoke);
+            }
+        }
+        else
+        {
+            msg = "⚠️ Invalid number entered for scan speed.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", msg);
+            ScanSpeedTextBox.Foreground = new SolidColorBrush(Colors.Red);
+            // TODO: disable marking buttons
+
+        }
+    }
+
     private void PausePrintButton_Click(object sender, RoutedEventArgs e)
     {
         if (_waverunnerPageService == null)
@@ -506,6 +580,11 @@ public sealed partial class TestPrintPage : Page
         // stop motors
         StopMotorsHelper();
         // TODO: Update print status to "paused"
+
+    }
+    private void RemarkLayerButton_Click(object sender, RoutedEventArgs e)
+    {
+        // TODO: implement remarking
     }
     #endregion
 
@@ -532,30 +611,35 @@ public sealed partial class TestPrintPage : Page
                         var duration = print.duration;
                         var localStart = print.startTime.ToLocalTime();
                         var localEnd = print.endTime?.ToLocalTime();
-                        Debug.WriteLine($"📅 start: {print.startTime}, end: {print.endTime}, duration: {print.duration}");
+                        var msg = $"📅 start: {localStart}, end: {localEnd}, duration: {print.duration}";
+                        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
                         DurationTextBlock.Text = duration?.ToString(@"hh\:mm\:ss") ?? "—";
                     }
                     else
                     {
-                        Debug.WriteLine("❌ Slice image path is null or empty.");
+                        MagnetoLogger.Log("❌ Slice image path is null or empty.", LogFactoryLogLevel.LogLevel.ERROR);
+                        _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Cannot find slice.");
                         return;
                     }
                 }
                 else
                 {
-                    Debug.WriteLine("❌ Current slice is null.");
+                    MagnetoLogger.Log("❌ Current slice is null.", LogFactoryLogLevel.LogLevel.ERROR);
+                    _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Current slice missing.");
                     return;
                 }
             }
             else
             {
-                Debug.WriteLine("❌ Directory path is null or empty.");
+                MagnetoLogger.Log("❌ Directory path is null or empty.", LogFactoryLogLevel.LogLevel.ERROR);
+                _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Cannot find directory.");
                 return;
             }
         }
         else
         {
-            Debug.WriteLine("❌ Current print is null.");
+            MagnetoLogger.Log("❌ Current print is null.", LogFactoryLogLevel.LogLevel.ERROR);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Cannot find print.");
             return;
         }
     }
@@ -587,6 +671,7 @@ public sealed partial class TestPrintPage : Page
         }
     }
 
+    #region Text Box Text Converters
     // TODO: Move to helper class for conversions
     private (int result, double value) ConvertTextBoxTextToDouble(TextBox textBox)
     {
@@ -616,7 +701,9 @@ public sealed partial class TestPrintPage : Page
             return (1, val);
         }
     }
-    private async void PrintLayersButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    #endregion
+
+    private async void MarkButton_Click(object sender, RoutedEventArgs e)
     {
         int res;
         double thickness;
@@ -639,24 +726,24 @@ public sealed partial class TestPrintPage : Page
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             return;
         }
-        (res, power) = ConvertTextBoxTextToDouble(PowerTextBox);
+        (res, power) = ConvertTextBoxTextToDouble(LaserPowerTextBox);
         if (res == 0)
         {
-            var msg = $"Layer thickness text box input is invalid.";
+            var msg = $"Power text box input is invalid.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             return;
         }
         (res, scanSpeed) = ConvertTextBoxTextToDouble(ScanSpeedTextBox);
         if (res == 0)
         {
-            var msg = $"Layer thickness text box input is invalid.";
+            var msg = $"Scan speed text box input is invalid.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             return;
         }
         (res, hatchSpacing) = ConvertTextBoxTextToDouble(HatchSpacingTextBox);
         if (res == 0)
         {
-            var msg = $"Layer thickness text box input is invalid.";
+            var msg = $"Hatching text box input is invalid.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             return;
         }

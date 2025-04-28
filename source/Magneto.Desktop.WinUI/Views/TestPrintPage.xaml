@@ -355,18 +355,14 @@
                             <!-- Row 1: Inputs -->
                             <TextBox Grid.Row="1" Grid.Column="0" x:Name="LayerTextBox" 
                                     VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="10,2" IsEnabled="False"/>
-                            <TextBox Grid.Row="1" Grid.Column="1" x:Name="CurrentSliceTextBox"
-                                     Width="300"
-                                     VerticalAlignment="Center"
-                                     HorizontalAlignment="Center"
-                                     Margin="10,2"
-                                     IsEnabled="False"/>
+                            <TextBox Grid.Row="1" Grid.Column="1" x:Name="CurrentSliceTextBox" Width="300" 
+                                     VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,2" IsEnabled="False"/>
                             <TextBox Grid.Row="1" Grid.Column="2" x:Name="LayerThicknessTextBox" 
                                     VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="10,2"/>
-                            <TextBox Grid.Row="1" Grid.Column="3" x:Name="PowerTextBox" 
-                                    VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="10,2" IsEnabled="False"/>
+                            <TextBox Grid.Row="1" Grid.Column="3" x:Name="LaserPowerTextBox" 
+                                     VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="10,2" LostFocus="LaserPowerTextBox_LostFocus" />
                             <TextBox Grid.Row="1" Grid.Column="4" x:Name="ScanSpeedTextBox" 
-                                    VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="10,2" IsEnabled="False"/>
+                                     VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="10,2" LostFocus="ScanSpeedTextBox_LostFocus"/>
                             <TextBox Grid.Row="1" Grid.Column="5" x:Name="HatchSpacingTextBox" 
                                     VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="10,2" IsEnabled="False"/>
                             <TextBox Grid.Row="1" Grid.Column="6" x:Name="EnergyDensityTextBox" 
@@ -395,8 +391,8 @@
                                         VerticalAlignment="Center" 
                                         Margin="2" 
                                         Content="Mark"
-                                        Click="PrintLayersButton_Click"/>
-                                <Button Grid.Column="2"
+                                        Click="MarkButton_Click"/>
+                            <Button Grid.Column="2"
                                         x:Name="PausePrintButton"
                                         Content="Stop"
                                         Height="30" 
@@ -404,13 +400,17 @@
                                         VerticalAlignment="Center"
                                         Margin="2"
                                         Background="Red"
-                                        Click="PausePrintButton_Click"></Button>
+                                        Click="PausePrintButton_Click"/>
                                 <Button Grid.Column="4"
-                                        Content="Reset"
+                                        x:Name="RemarkLayerButton"
+                                        Content="Remark Layer"
                                         Height="30" 
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
-                                        Margin="2"/>
+                                        Margin="2"
+                                        Background="Blue"
+                                        Click="RemarkLayerButton_Click"
+                                        IsEnabled="False"/>
                         </Grid>
                         
                     </Grid>

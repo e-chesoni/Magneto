@@ -27,7 +27,7 @@ public class WaverunnerPageService
     #endregion
 
     #region UI Variables
-    public Button ToggleRedPointerButton { get; set; }
+    public Button? ToggleRedPointerButton { get; set; }
     public Button StartMarkButton { get; set; }
     public TextBlock? IsMarkingText { get; set; }
     #endregion
@@ -65,13 +65,8 @@ public class WaverunnerPageService
         _redPointerEnabled = false;
     }
 
-    public WaverunnerPageService()
-    {
-    
-    }
-
     #region Connectivity Test Methods
-
+    public int WaverunnerRunning() => _waverunnerService.IsRunning();
     /// <summary>
     /// Test magneto connection to waverunner
     /// </summary>
@@ -89,6 +84,13 @@ public class WaverunnerPageService
             return ExecStatus.Failure;
         }
     }
+    #endregion
+
+    #region Pen Methods
+    public double GetDefaultLaserPower() => _waverunnerService.GetDefaultLaserPower();
+    public double GetDefaultMarkSpeed() => _waverunnerService.GetDefaultMarkSpeed();
+    public double GetMarkSpeed() => _waverunnerService.GetMarkSpeed();
+    public double GetLaserPower() => _waverunnerService.GetLaserPower();
     #endregion
 
     #region Marking Methods

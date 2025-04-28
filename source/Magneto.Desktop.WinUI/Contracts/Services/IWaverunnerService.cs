@@ -9,6 +9,13 @@ public interface IWaverunnerService
 {
     int IsRunning();
     int TestConnection();
+    int GetPenNumber(string entityName);
+    double GetMarkSpeed();
+    double GetLaserPower();
+    double GetDefaultMarkSpeed();
+    double GetDefaultLaserPower();
+    void SetMarkSpeed(double markSpeed);
+    void SetLaserPower(double power);
     int StartRedPointer(string filePath);
     int StopRedPointer();
     (int status, double markTIme) GetLastMark();

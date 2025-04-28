@@ -14,6 +14,8 @@ namespace Magneto.Desktop.WinUI.Services;
 public class WaverunerService : IWaverunnerService
 {
     private static readonly ScSamlightClientCtrlEx cci = new();
+    private double _defaultMarkSpeed = 800; // mm/s
+    private double _defaultLaserPower = 300; // W
     /// <summary>
     /// RedPointer Modes
     /// </summary>
@@ -29,12 +31,11 @@ public class WaverunerService : IWaverunnerService
     {
             
     }
-
+    #region Connection Checkers
     public int IsRunning()
     {
         return cci.ScIsRunning(); // 0 if not running, 1 if running
     }
-
     public int TestConnection()
     {
         try
@@ -51,6 +52,43 @@ public class WaverunerService : IWaverunnerService
             return 0;
         }
     }
+    #endregion
+
+    #region Pen Methods
+    #region Pen Getters
+    public int GetPenNumber(string entityName)
+    {
+        return cci.ScGetEntityLongData(entityName, (int)ScComSAMLightClientCtrlFlags.scComSAMLightClientCtrlLongDataIdEntityGetPen);
+    }
+    public double GetMarkSpeed() // mm per second
+    {
+        return cci.ScGetDoubleValue((int)ScComSAMLightClientCtrlValueTypes.scComSAMLightClientCtrlDoubleValueTypeMarkSpeed);
+    }
+    // Get laser power
+    public double GetLaserPower() // Watts
+    {
+        return cci.ScGetDoubleValue((int)ScComSAMLightClientCtrlValueTypes.scComSAMLightClientCtrlDoubleValueTypeLaserPower);
+    }
+    public double GetDefaultMarkSpeed() => _defaultMarkSpeed;
+    public double GetDefaultLaserPower() => _defaultLaserPower;
+    #endregion
+
+    #region Pen Setters
+    //TODO: Figure out how to implement error checking with these void commands
+    // Set mark speed
+    public void SetMarkSpeed(double markSpeed) // mm per second
+    {
+       cci.ScSetDoubleValue((int)ScComSAMLightClientCtrlValueTypes.scComSAMLightClientCtrlDoubleValueTypeMarkSpeed, markSpeed); // returns void
+    }
+    // Set laser power
+    public void SetLaserPower(double power) // Watts
+    {
+        cci.ScSetDoubleValue((int)ScComSAMLightClientCtrlValueTypes.scComSAMLightClientCtrlDoubleValueTypeLaserPower, power); // returns void
+    }
+    #endregion
+    #endregion
+
+    #region Red Pointer Methods
     public static int SetRedPointerMode(RedPointerMode mode)
     {
         // Returns void
@@ -59,7 +97,6 @@ public class WaverunerService : IWaverunnerService
         // TODO: Replace once we figure out how to interact with error codes form SAM
         return 1;
     }
-
     public int StartRedPointer(string filePath)
     {
         if (cci.ScIsRunning() == 0)
@@ -82,7 +119,9 @@ public class WaverunerService : IWaverunnerService
         // TODO: Replace once we figure out how to interact with error codes form SAM
         return 1;
     }
+    #endregion
 
+    #region Mark Methods
     public (int status, double markTIme) GetLastMark()
     {
         var msg = "Get last mark requested...";
@@ -158,4 +197,5 @@ public class WaverunerService : IWaverunnerService
         cci.ScStopMarking();
         return 1;
     }
+    #endregion
 }

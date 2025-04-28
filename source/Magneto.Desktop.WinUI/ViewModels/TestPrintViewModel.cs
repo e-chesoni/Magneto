@@ -58,13 +58,13 @@ public class TestPrintViewModel : ObservableRecipient
     {
         if (_sliceService == null)
         {
-            Debug.WriteLine("❌Slice service is null.");
+            MagnetoLogger.Log("❌Slice service is null.", LogFactoryLogLevel.LogLevel.ERROR);
             return null;
         }
 
         if (currentPrint == null)
         {
-            Debug.WriteLine("❌Current print is null.");
+            MagnetoLogger.Log("❌Current print is null.", LogFactoryLogLevel.LogLevel.ERROR);
             return null;
         }
 
@@ -72,14 +72,14 @@ public class TestPrintViewModel : ObservableRecipient
 
         if (printComplete)
         {
-            Debug.WriteLine("✅Print is complete. Returning last marked slice.");
+            MagnetoLogger.Log("✅Print is complete. Returning last marked slice.", LogFactoryLogLevel.LogLevel.SUCCESS);
             // update print in db
             await CompleteCurrentPrintAsync();
             return await _sliceService.GetLastSlice(currentPrint);
         }
         else
         {
-            Debug.WriteLine("➡️Print is not complete. Returning next unmarked slice.");
+            MagnetoLogger.Log("➡️Print is not complete. Returning next unmarked slice.", LogFactoryLogLevel.LogLevel.VERBOSE);
             return await _sliceService.GetNextSlice(currentPrint);
         }
     }
@@ -95,7 +95,7 @@ public class TestPrintViewModel : ObservableRecipient
     {
         if (currentSlice == null)
         {
-            Debug.WriteLine("❌Current slice is null.");
+            MagnetoLogger.Log("❌Current slice is null.", LogFactoryLogLevel.LogLevel.ERROR);
             return "";
         }
         return currentSlice.filePath;
@@ -110,7 +110,7 @@ public class TestPrintViewModel : ObservableRecipient
 
         if (existingPrint != null)
         {
-            Debug.WriteLine($"❌Print with this file path {fullPath} already exists in the database. Canceling new print.");
+            MagnetoLogger.Log($"❌Print with this file path {fullPath} already exists in the database. Canceling new print.", LogFactoryLogLevel.LogLevel.ERROR);
         }
         else
         {
@@ -128,7 +128,7 @@ public class TestPrintViewModel : ObservableRecipient
         var print = currentPrint;
         if (print == null)
         {
-            Debug.WriteLine("❌Cannot update print; print is null.");
+            MagnetoLogger.Log("❌Cannot update print; print is null.", LogFactoryLogLevel.LogLevel.ERROR);
             return;
         }
         else
@@ -158,13 +158,13 @@ public class TestPrintViewModel : ObservableRecipient
             // check for null values
             if (currentPrint == null)
             {
-                Debug.WriteLine("❌ No print found in DB.");
+                MagnetoLogger.Log("❌ No print found in DB.", LogFactoryLogLevel.LogLevel.ERROR);
                 return;
             }
 
             if (string.IsNullOrEmpty(currentPrint.id))
             {
-                Debug.WriteLine("❌ Print ID is null or empty.");
+                MagnetoLogger.Log("❌ Print ID is null or empty.", LogFactoryLogLevel.LogLevel.ERROR);
                 return;
             }
 
@@ -173,13 +173,13 @@ public class TestPrintViewModel : ObservableRecipient
             var slices = await _printService.GetSlicesByPrintId(currentPrint.id);
             foreach (var s in slices)
             {
-                Debug.WriteLine($"Adding slice: {s.filePath}");
+                MagnetoLogger.Log($"Adding slice: {s.filePath}", LogFactoryLogLevel.LogLevel.VERBOSE);
                 sliceCollection.Add(s);
             }
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Error loading data: {ex.Message}");
+            MagnetoLogger.Log($"Error loading data: {ex.Message}", LogFactoryLogLevel.LogLevel.ERROR);
         }
     }
     public void ClearData()
@@ -205,16 +205,16 @@ public class TestPrintViewModel : ObservableRecipient
     {
         if (currentSlice == null)
         {
-            Debug.WriteLine("❌Current slice is null.");
+            MagnetoLogger.Log("❌Current slice is null.", LogFactoryLogLevel.LogLevel.ERROR);
             return;
         }
 
         if (currentSlice.marked)
         {
-            Debug.WriteLine("❌Slice already marked. Canceling operation");
+            MagnetoLogger.Log("❌Slice already marked. Canceling operation", LogFactoryLogLevel.LogLevel.ERROR);
             return;
         }
-        Debug.WriteLine($"✅ Marking slice {currentSlice.fileName}.");
+        MagnetoLogger.Log($"✅ Marking slice {currentSlice.fileName}.", LogFactoryLogLevel.LogLevel.SUCCESS);
         currentSlice.layerThickness = thickness;
         currentSlice.power = power;
         currentSlice.scanSpeed = scanSpeed;
@@ -230,25 +230,37 @@ public class TestPrintViewModel : ObservableRecipient
         var entity = GetSliceFilePath();
         if (string.IsNullOrEmpty(entity))
         {
-            Debug.WriteLine("❌Slice full path is null.");
+            MagnetoLogger.Log("❌Slice full path is null.", LogFactoryLogLevel.LogLevel.ERROR);
             return;
         }
-        Debug.WriteLine($"✅Marking slice at {entity}.");
+        MagnetoLogger.Log($"✅Marking slice at {entity}.", LogFactoryLogLevel.LogLevel.SUCCESS);
         // TODO: TEST
-        // TODO: mark slice
+        // mark slice
         //await _waverunnerService.MarkEntityAsync(entity);
     }
 
-    public async Task PrintLayer(bool startWithMark, double thickness, double power, double scanSpeed, double hatchSpacing, double amplifier)
+    public async Task<int>PrintLayer(bool startWithMark, double thickness, double power, double scanSpeed, double hatchSpacing, double amplifier)
     {
+        string msg;
+        // TODO: Uncomment laser methods after testing motor movement
+        /*
+        if (_waverunnerService.IsRunning() == 0)
+        {
+            msg = $"Waverunner is not running";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            return 0;
+        }
+        */
+        // update pen settings
+        //_waverunnerService.SetLaserPower(power);
+        //_waverunnerService.SetMarkSpeed(scanSpeed);
         if (startWithMark)
         {
-            // TODO: set waverunner mark parameters (not yet implemented)
-            // await _waverunnerService.UpdatePen(power, scanSpeed); // calls UpdatePower(power) and UpdateScanSpeed(scanSpeed); may expand parameters in the future
             // mark
-            await HandleMarkEntityAsync();
+            //await HandleMarkEntityAsync();
             // wait for mark to complete
-            while (_waverunnerService.GetMarkStatus() != 0) { Task.Delay(100).Wait(); }
+            //while (_waverunnerService.GetMarkStatus() != 0) { Task.Delay(100).Wait(); }
+
             // layer move
             await _motorService.LayerMove(thickness, amplifier);
             // wait for layer move to complete
@@ -256,12 +268,21 @@ public class TestPrintViewModel : ObservableRecipient
         }
         else
         {
-            // TODO: layer move first, then mark
+            // layer move
+            await _motorService.LayerMove(thickness, amplifier);
+            // wait for layer move to complete
+            while (_motorService.MotorsRunning()) { await Task.Delay(100); }
+            
+            // mark
+            //await HandleMarkEntityAsync();
+            // wait for mark to complete
+            //while (_waverunnerService.GetMarkStatus() != 0) { Task.Delay(100).Wait(); }
+
         }
         await UpdateSliceCollectionAsync(thickness, power, scanSpeed, hatchSpacing);
         await GetNextSliceAndUpdateDisplay(); // this should update currentSlice
+        return 1;
     }
-
     #endregion
 
     #region Navigation
