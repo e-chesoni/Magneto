@@ -251,7 +251,6 @@ public class MotorService : IMotorService
     #region Movement
     public async Task<int> LayerMove(double layerThickness, double supplyAmplifier)
     {
-        //var powderAmplifier = 2.5; // Quan requested we change this from 4-2.5 to conserve powder
         var lowerBuildForSweepDist = 2;
         // safeguard max sweep position
         var maxSweepPos = _commandQueueManager.GetSweepMotor().GetMaxPos() - 2;

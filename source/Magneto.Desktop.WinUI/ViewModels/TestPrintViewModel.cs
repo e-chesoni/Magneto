@@ -219,7 +219,7 @@ public class TestPrintViewModel : ObservableRecipient
         currentSlice.power = power;
         currentSlice.scanSpeed = scanSpeed;
         currentSlice.hatchSpacing = hatchSpacing;
-        currentSlice.energyDensity = power / (thickness * scanSpeed * hatchSpacing);
+        currentSlice.energyDensity = Math.Round(power / (thickness * scanSpeed * hatchSpacing),2);
         currentSlice.marked = true;
         await _sliceService.EditSlice(currentSlice);
     }
@@ -239,7 +239,7 @@ public class TestPrintViewModel : ObservableRecipient
         //await _waverunnerService.MarkEntityAsync(entity);
     }
 
-    public async Task<int>PrintLayer(bool startWithMark, double thickness, double power, double scanSpeed, double hatchSpacing, double amplifier)
+    public async Task<int>PrintLayer(MotorPageService motorPageService, XamlRoot xamlRoot, bool startWithMark, double thickness, double power, double scanSpeed, double hatchSpacing, double amplifier)
     {
         string msg;
         // TODO: Uncomment laser methods after testing motor movement
@@ -262,12 +262,15 @@ public class TestPrintViewModel : ObservableRecipient
             //while (_waverunnerService.GetMarkStatus() != 0) { Task.Delay(100).Wait(); }
 
             // layer move
-            await _motorService.LayerMove(thickness, amplifier);
+            //await _motorService.LayerMove(thickness, amplifier);
+            await motorPageService.ExecuteLayerMove(xamlRoot, thickness, amplifier);
+
             // wait for layer move to complete
-            while (_motorService.MotorsRunning()) { await Task.Delay(100); }
+            while (motorPageService.MotorsRunning()) { await Task.Delay(100); }
         }
         else
         {
+            // TODO: Update layer move commands to use motor page service
             // layer move
             await _motorService.LayerMove(thickness, amplifier);
             // wait for layer move to complete

@@ -22,15 +22,30 @@ namespace Magneto.Desktop.WinUI.Views;
 /// </summary>
 public sealed partial class TestPrintPage : Page
 {
+    // core
     private MissionControl _missionControl { get; set; }
     public TestPrintViewModel ViewModel { get; }
     private MotorPageService? _motorPageService;
     private WaverunnerPageService? _waverunnerPageService;
+
+    // UI control groups
     private UIControlGroupMotors? _calibrateMotorUIControlGroup { get; set; }
     private UIControlGroupWaverunner? _waverunnerUiControlGroup { get; set; }
+
+    // motor names for motor service calls
     private static readonly string buildMotorName = "build";
     private static readonly string powderMotorName = "powder";
     private static readonly string sweepMotorName = "sweep";
+
+    // boundaries for print settings
+    private double _layerThicknessLower;
+    private double _layerThicknessUpper;
+    private double _laserPowerLower;
+    private double _laserPowerUpper;
+    private double _scanSpeedLower;
+    private double _scanSpeedUpper;
+    private double _supplyAmplifierLower;
+    private double _supplyAmplifierUpper;
 
     private bool KILL_OPERATION; // TODO: may remove later; used in old layer move to check for e-stop
 
@@ -89,6 +104,16 @@ public sealed partial class TestPrintPage : Page
         }
         HatchSpacingTextBox.Text = _waverunnerPageService.GetDefaultHatchSpacing().ToString();
         SupplyAmplifierTextBox.Text = _waverunnerPageService.GetDefaultSupplyAmplifier().ToString();
+
+        // set upper and lower bounds for print settings
+        _layerThicknessLower = 0.005;
+        _layerThicknessUpper = 2.0;
+        _laserPowerLower = 50;
+        _laserPowerUpper = 500;
+        _scanSpeedLower = 100;
+        _scanSpeedUpper = 3000;
+        _supplyAmplifierLower = 0;
+        _supplyAmplifierUpper = 10;
     }
     #endregion
 
@@ -495,22 +520,10 @@ public sealed partial class TestPrintPage : Page
         }
         _motorPageService.LockCalibrationPanel();
     }
-    private void LockPrintSettings()
-    {
-        if (_waverunnerPageService == null)
-        {
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Cannot lock print settings panel.");
-            return;
-        }
-    }
-
-    private void UnlockPrintSettings()
-    {
-    
-    }
     #endregion
 
     #region Print Methods
+    #region Text Validation
     /// <summary>
     /// Checks print settings text boxes; if all required parameters are entered and valid, enables mark button
     /// </summary>
@@ -559,8 +572,8 @@ public sealed partial class TestPrintPage : Page
                 MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
                 return 0;
             }
-            // TODO: round energy density to 2 decimals
-            EnergyDensityTextBox.Text = _waverunnerPageService.GetEnergyDensity(thickness, power, scanSpeed, hatchSpacing).ToString();
+            // round energy density to 2 decimals
+            EnergyDensityTextBox.Text = Math.Round(_waverunnerPageService.GetEnergyDensity(thickness, power, scanSpeed, hatchSpacing),2).ToString();
         }
         // if all text boxes are not empty, check for validity, else return 0
         if (layerInputEntered && fileNameInputEntered && thicknessInputEntered && powerInputEntered && scanSpeedInputEntered && slicesToMarkInputEntered && supplyAmplifierInputEntered)
@@ -572,56 +585,19 @@ public sealed partial class TestPrintPage : Page
     private int CheckForValidInputs()
     {
         // if one text box is invalid, return 0
-        if ((LayerThicknessIsValid() <= 0) || (PowerIsValid() <= 0) || (ScanSpeedIsValid() <= 0))
+        if ((TextBoxInputIsValid(LayerThicknessTextBox, _layerThicknessLower, _layerThicknessUpper) <= 0) || 
+            (TextBoxInputIsValid(LaserPowerTextBox, _laserPowerLower, _laserPowerUpper) <= 0) || 
+            (TextBoxInputIsValid(ScanSpeedTextBox, _scanSpeedLower, _scanSpeedUpper) <= 0))
         {
             return 0;
         }
         return 1;
     }
-    private int LayerThicknessIsValid()
+    private int TextBoxInputIsValid(TextBox textBox, double lowerBound, double upperBound)
     {
-        string msg;
-        if (double.TryParse(LayerThicknessTextBox.Text, out var thickness))
+        if (double.TryParse(textBox.Text, out var value))
         {
-            if (thickness < 0.005 || thickness > 5) // TODO: Verify allowable range
-            {
-                return 0;
-            }
-            else
-            {
-                return 1;
-            }
-        }
-        else
-        {
-            return -1;
-        }
-    }
-    private int PowerIsValid()
-    {
-        string msg;
-        if (double.TryParse(LaserPowerTextBox.Text, out var power))
-        {
-            if (power < 50 || power > 500) // TODO: Verify allowable range
-            {
-                return 0;
-            }
-            else
-            {
-                return 1;
-            }
-        }
-        else
-        {
-            return 0;
-        }
-    }
-    private int ScanSpeedIsValid()
-    {
-        string msg;
-        if (double.TryParse(ScanSpeedTextBox.Text, out var scanSpeed))
-        {
-            if (scanSpeed < 100 || scanSpeed > 3000) // TODO: Verify allowable range
+            if (value <= lowerBound || value > upperBound)
             {
                 return 0;
             }
@@ -638,14 +614,14 @@ public sealed partial class TestPrintPage : Page
     private void LayerThicknessTextBox_LostFocus(object sender, RoutedEventArgs e)
     {
         string msg;
-        var layerThicknessIsValid = LayerThicknessIsValid();
+        var layerThicknessIsValid = TextBoxInputIsValid(LayerThicknessTextBox, _layerThicknessLower, _layerThicknessUpper);
         if (_waverunnerPageService is null)
         {
             return;
         }
         if (layerThicknessIsValid == 0)
         {
-            msg = "⚠️ Layer thickness out of range (should 0.005-5 mm)";
+            msg = $"⚠️ Layer thickness out of range (should {_layerThicknessLower}-{_layerThicknessUpper} mm)";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", msg);
             LayerThicknessTextBox.Foreground = new SolidColorBrush(Colors.Red);
@@ -672,14 +648,14 @@ public sealed partial class TestPrintPage : Page
     private void LaserPowerTextBox_LostFocus(object sender, RoutedEventArgs e)
     {
         string msg;
-        var powerIsValid = PowerIsValid();
+        var powerIsValid = TextBoxInputIsValid(LaserPowerTextBox, _laserPowerLower, _laserPowerUpper);
         if (_waverunnerPageService is null)
         {
             return;
         }
         if (powerIsValid == 0)
         {
-            msg = "⚠️ Laser power out of range (should be 50–500 W)";
+            msg = $"⚠️ Laser power out of range (should be {_laserPowerLower}–{_laserPowerUpper} W)";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", msg);
             LaserPowerTextBox.Foreground = new SolidColorBrush(Colors.Red);
@@ -708,14 +684,14 @@ public sealed partial class TestPrintPage : Page
     private void ScanSpeedTextBox_LostFocus(object sender, RoutedEventArgs e)
     {
         string msg;
-        var scanSpeedIsValid = ScanSpeedIsValid();
+        var scanSpeedIsValid = TextBoxInputIsValid(ScanSpeedTextBox, _scanSpeedLower, _scanSpeedUpper);
         if (_waverunnerPageService is null)
         {
             return;
         }
         if (scanSpeedIsValid == 0)
         {
-            msg = "⚠️ Scan speed out of range (should be 100-3000 mm/s)";
+            msg = $"⚠️ Scan speed out of range (should be {_scanSpeedLower}-{_scanSpeedUpper} mm/s)";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", msg);
             ScanSpeedTextBox.Foreground = new SolidColorBrush(Colors.Red);
@@ -740,9 +716,82 @@ public sealed partial class TestPrintPage : Page
             }
         }
     }
-
-    // TODO: implement lost focus checks for slices to mark and supply amplifiers
-
+    private async void SlicesToMarkTextBox_LostFocus(object sender, RoutedEventArgs e)
+    {
+        string msg;
+        // get slices to mark lower bound
+        var totalSlices = await ViewModel.GetTotalSlicesAsync();
+        var slicesMarked = await ViewModel.GetSlicesMarkedAsync();
+        var slicesRemaining = totalSlices - slicesMarked;
+        var slicesToMarkUpper = Convert.ToDouble(slicesRemaining); // explicit conversion is not necessary, but good to be deliberate
+        // lower bound is 0 (marking no slices doesn't make much sense)
+        var slicesToMarkLower = 0;
+        // validate text box input
+        var slicesToMarkValid = TextBoxInputIsValid(SlicesToMarkTextBox, slicesToMarkLower, slicesToMarkUpper);
+        if (_waverunnerPageService is null)
+        {
+            return;
+        }
+        if (slicesToMarkValid == 0)
+        {
+            msg = $"⚠️ Slices to mark out of range (should be {slicesToMarkLower}-{slicesToMarkUpper} slices)";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", msg);
+            SlicesToMarkTextBox.Foreground = new SolidColorBrush(Colors.Red);
+            _waverunnerPageService.LockMarking();
+        }
+        else if (slicesToMarkValid == -1)
+        {
+            msg = "⚠️ Invalid number entered for slices to mark.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", msg);
+            SlicesToMarkTextBox.Foreground = new SolidColorBrush(Colors.Red);
+            _waverunnerPageService.LockMarking();
+        }
+        else
+        {
+            SlicesToMarkTextBox.Foreground = new SolidColorBrush(Colors.WhiteSmoke);
+            if (ReadyToPrint() == 1)
+            {
+                _waverunnerPageService.UnlockMarking();
+            }
+        }
+    }
+    private void SupplyAmplifierTextBox_LostFocus(object sender, RoutedEventArgs e)
+    {
+        string msg;
+        var scanSpeedIsValid = TextBoxInputIsValid(SupplyAmplifierTextBox, _supplyAmplifierLower, _supplyAmplifierUpper);
+        if (_waverunnerPageService is null)
+        {
+            return;
+        }
+        if (scanSpeedIsValid == 0)
+        {
+            msg = $"⚠️ Supply amplifier out of range (should be {_supplyAmplifierLower}-{_supplyAmplifierUpper} mm/s)";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", msg);
+            SupplyAmplifierTextBox.Foreground = new SolidColorBrush(Colors.Red);
+            // TODO: disable marking buttons
+            _waverunnerPageService.LockMarking();
+        }
+        else if (scanSpeedIsValid == -1)
+        {
+            msg = "⚠️ Invalid number entered for supply amplifier.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", msg);
+            SupplyAmplifierTextBox.Foreground = new SolidColorBrush(Colors.Red);
+            // TODO: disable marking buttons
+            _waverunnerPageService.LockMarking();
+        }
+        else
+        {
+            SupplyAmplifierTextBox.Foreground = new SolidColorBrush(Colors.WhiteSmoke);
+            if (ReadyToPrint() == 1)
+            {
+                _waverunnerPageService.UnlockMarking();
+            }
+        }
+    }
     private void PausePrintButton_Click(object sender, RoutedEventArgs e)
     {
         if (_waverunnerPageService == null)
@@ -763,7 +812,10 @@ public sealed partial class TestPrintPage : Page
     }
     #endregion
 
-    #region POC Page Text Managers
+
+    #endregion
+
+    #region Manage Text Population & Clearing
     private async void PopulatePageText()
     {
         var print = ViewModel.currentPrint;
@@ -938,9 +990,10 @@ public sealed partial class TestPrintPage : Page
             return;
         }
         // Print requested layers
+        MagnetoLogger.Log($"Printing {slicesToMark} layers, each {thickness}mm thick, at {power}W, scan speed equal to {scanSpeed}mm/s, and {hatchSpacing}mm hatch spacing. Powder amplifier for each layer is: {amplifier}.", LogFactoryLogLevel.LogLevel.ERROR);
         for (var i = 0; i < slicesToMark; i++)
         {
-            await ViewModel.PrintLayer(startWithMark, thickness, power, scanSpeed, hatchSpacing, amplifier);
+            await ViewModel.PrintLayer(_motorPageService, this.Content.XamlRoot, startWithMark, thickness, power, scanSpeed, hatchSpacing, amplifier);
             PopulatePageText();
         }
     }

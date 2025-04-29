@@ -109,10 +109,10 @@ public class MotorPageService
 
     #region Movement
     #region Main Movement Commands
-    public async Task<(int status, double targetPos)> MoveMotorAbs(string motorName, TextBox textBox)
+    public async Task<(int status, double targetPos)> MoveMotorAbs(string motorName, TextBox textBoxToRead)
     {
         var motorNameLower = motorName.ToLower();
-        if (textBox == null || !double.TryParse(textBox.Text, out _))
+        if (textBoxToRead == null || !double.TryParse(textBoxToRead.Text, out _))
         {
             var msg = $"invalid input in {motorName} text box.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
@@ -120,15 +120,15 @@ public class MotorPageService
         }
         else
         {
-            var targetPos = double.Parse(textBox.Text);
+            var targetPos = double.Parse(textBoxToRead.Text);
             await _motorService.MoveMotorAbs(motorNameLower, targetPos);
             return (1, targetPos);
         }
     }
-    public async Task<(int status, double targetPos)> MoveMotorRel(string motorName, TextBox textBox, bool moveUp)
+    public async Task<(int status, double targetPos)> MoveMotorRel(string motorName, TextBox textBoxToRead, bool moveUp)
     {
         var motorNameLower = motorName.ToLower();
-        if (textBox == null || !double.TryParse(textBox.Text, out var _))
+        if (textBoxToRead == null || !double.TryParse(textBoxToRead.Text, out var _))
         {
             var msg = $"invalid input in {motorNameLower} text box.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
@@ -137,9 +137,9 @@ public class MotorPageService
         else
         {
             // Convert distance to an absolute number to avoid confusing user
-            var dist = Math.Abs(double.Parse(textBox.Text));
+            var dist = Math.Abs(double.Parse(textBoxToRead.Text));
             // Update the text box with corrected distance
-            textBox.Text = dist.ToString();
+            textBoxToRead.Text = dist.ToString();
             // Add sign to distance based on moveUp boolean
             var distance = moveUp ? dist : -dist;
             MagnetoLogger.Log($"Moving motor distance of {distance}", LogFactoryLogLevel.LogLevel.SUCCESS);
@@ -186,15 +186,21 @@ public class MotorPageService
         return 1;
     }
     */
-    public async Task<int> ExecuteLayerMove(double layerThickness, double amplifier)
+    public async Task<int> ExecuteLayerMove(XamlRoot xamlRoot, double layerThickness, double amplifier)
     {
         var buildMotor = _motorService.GetBuildMotor();
         var powderMotor = _motorService.GetPowderMotor();
         var sweepMotor = _motorService.GetSweepMotor();
         var maxSweepPosition = _motorService.GetMaxSweepPosition();
         var clearance = 2;
+        
+        // TODO: Finish updating execute layer move to use MoveMotorAndUpdateUI()
+
+        // all moves are relative
+        var moveIsAbs = false;
         // 1. move build motor down for sweep
         await _motorService.MoveMotorRel(buildMotor, -clearance);
+        //MoveMotorAndUpdateUI(buildMotorName, 2, moveIsAbs, false, xamlRoot);
         // 2. home sweep motor
         await _motorService.HomeMotor(sweepMotor);
         // 3. move build motor back up to last mark height
@@ -218,7 +224,7 @@ public class MotorPageService
         var msg = $"{motorNameLower} abs move button clicked.";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
         var moveIsAbs = true;
-        var moveUp = true; // Does not matter what we put here; unused in absolute move
+        var moveUp = true;
         MoveMotorAndUpdateUI(motorName, textBox, moveIsAbs, moveUp, xamlRoot);
     }
 
@@ -388,6 +394,7 @@ public class MotorPageService
         }
         return 0;
     }
+    // TODO: write MoveMotorAndUpdateUI command that take value instead of text box to read
     public async Task MoveBuildMotorAndUpdateUI(TextBox textBox, bool moveIsAbs, bool increment, XamlRoot xamlRoot)
     {
         int res;

@@ -368,9 +368,9 @@
                             <TextBox Grid.Row="1" Grid.Column="6" x:Name="EnergyDensityTextBox" 
                                     VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="10,2" IsEnabled="False"/>
                             <TextBox Grid.Row="1" Grid.Column="7" x:Name="SlicesToMarkTextBox"
-                                    VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="10,2"/>
+                                    VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="10,2" LostFocus="SlicesToMarkTextBox_LostFocus"/>
                             <TextBox Grid.Row="1" Grid.Column="8" x:Name="SupplyAmplifierTextBox"
-                                    VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="10,2"/>
+                                    VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="10,2" LostFocus="SupplyAmplifierTextBox_LostFocus"/>
                             <CheckBox Grid.Row="1" Grid.Column="9" x:Name="StartWithMarkCheckBox"
                                       Content="Start with mark"
                                       IsChecked="True"/>
