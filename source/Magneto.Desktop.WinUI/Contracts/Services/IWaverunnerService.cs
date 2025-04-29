@@ -14,6 +14,9 @@ public interface IWaverunnerService
     double GetLaserPower();
     double GetDefaultMarkSpeed();
     double GetDefaultLaserPower();
+    double GetDefaultHatchSpacing();
+    double GetDefaultSupplyAmplifier();
+    double CalculateEnergyDensity(double layerThickness, double power, double scanSpeed, double hatchSpacing);
     void SetMarkSpeed(double markSpeed);
     void SetLaserPower(double power);
     int StartRedPointer(string filePath);

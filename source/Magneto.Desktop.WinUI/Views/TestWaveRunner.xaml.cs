@@ -36,11 +36,8 @@ namespace Magneto.Desktop.WinUI;
 
 public sealed partial class TestWaveRunner : Page
 {
-    private WaverunnerPageService _waverunnerPageService;
-    public TestWaverunnerViewModel ViewModel
-    {
-        get;
-    }
+    private WaverunnerPageService? _waverunnerPageService;
+    public TestWaverunnerViewModel ViewModel { get; }
 
     #region Constructor
     public TestWaveRunner()
@@ -53,8 +50,7 @@ public sealed partial class TestWaveRunner : Page
     #region Initial Setup
     private void InitWaverunnerPageService()
     {
-        _waverunnerPageService = new WaverunnerPageService(JobPathTextBox,
-                                                           ToggleRedPointerButton, StartMarkButton, IsMarkingText);
+        _waverunnerPageService = new WaverunnerPageService(ToggleRedPointerButton, StartMarkButton, IsMarkingText);
     }
     #endregion
 

@@ -9,7 +9,7 @@ using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-namespace Magneto.Desktop.WinUI.Helpers;
+namespace Magneto.Desktop.WinUI.Models.UIControl;
 public static class UpdateUITextHelper
 {
     public static void UpdateUIText(TextBlock textBlock, string update)

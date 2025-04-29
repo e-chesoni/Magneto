@@ -6,6 +6,7 @@ using Magneto.Desktop.WinUI.Popups;
 using Magneto.Desktop.WinUI.Core;
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Contracts.Services;
+using Magneto.Desktop.WinUI.Models.UIControl;
 
 namespace Magneto.Desktop.WinUI.Services;
 public class WaverunnerPageService
@@ -30,10 +31,12 @@ public class WaverunnerPageService
     public Button? ToggleRedPointerButton { get; set; }
     public Button StartMarkButton { get; set; }
     public TextBlock? IsMarkingText { get; set; }
+    private UIControlGroupWrapper _uiControlGroupWrapper { get; set; }
+
+    public UIControlGroupWaverunner? _waverunnerUiControlGroup { get; set; }
     #endregion
 
-    public WaverunnerPageService(TextBox jobFileSearchDirectory,
-                                 Button toggleRedPointerButton, Button startMarkButton, TextBlock isMarkingText)
+    public WaverunnerPageService(Button toggleRedPointerButton, Button startMarkButton, TextBlock isMarkingText)
     {
         // Load services
         _waverunnerService = App.GetService<IWaverunnerService>();
@@ -50,20 +53,17 @@ public class WaverunnerPageService
         _redPointerEnabled = false;
     }
 
-    public WaverunnerPageService(TextBox printDirectoryTextBox, Button startMarkButton)
+    public WaverunnerPageService(UIControlGroupWrapper uiControlGroupWrapper)
     {
-        // Load services
         _waverunnerService = App.GetService<IWaverunnerService>();
         _fileService = App.GetService<IFileService>();
-        
-        // Assign UI elements
-        this.StartMarkButton = startMarkButton;
+        _uiControlGroupWrapper = uiControlGroupWrapper;
+        _waverunnerUiControlGroup = uiControlGroupWrapper.waverunnerControlGroup
+                                     ?? throw new ArgumentNullException(nameof(uiControlGroupWrapper.waverunnerControlGroup), "Print Control Group must not be null.");
 
-        // ASSUMPTION: Red pointer is off when application starts
-        // Have not found way to check red pointer status in SAMLight docs 
-        // Initialize red pointer to off
-        _redPointerEnabled = false;
+        this.StartMarkButton = _waverunnerUiControlGroup.printLayersButton;
     }
+
 
     #region Connectivity Test Methods
     public int WaverunnerRunning() => _waverunnerService.IsRunning();
@@ -86,9 +86,21 @@ public class WaverunnerPageService
     }
     #endregion
 
+    public void UnlockMarking()
+    {
+        _uiControlGroupWrapper.EnableMarkButtons();
+    }
+    public void LockMarking()
+    {
+        _uiControlGroupWrapper.DisableMarkButtons();
+    }
+
     #region Pen Methods
     public double GetDefaultLaserPower() => _waverunnerService.GetDefaultLaserPower();
     public double GetDefaultMarkSpeed() => _waverunnerService.GetDefaultMarkSpeed();
+    public double GetDefaultHatchSpacing() => _waverunnerService.GetDefaultHatchSpacing();
+    public double GetDefaultSupplyAmplifier() => _waverunnerService.GetDefaultSupplyAmplifier();
+    public double GetEnergyDensity(double thickness, double power, double scanSpeed, double hatchSpacing) => _waverunnerService.CalculateEnergyDensity(thickness, power, scanSpeed, hatchSpacing);
     public double GetMarkSpeed() => _waverunnerService.GetMarkSpeed();
     public double GetLaserPower() => _waverunnerService.GetLaserPower();
     #endregion
@@ -133,12 +145,18 @@ public class WaverunnerPageService
         if (_waverunnerService.IsRunning() == 0)
         {
             msg = $"Cannot toggle red pointer. Waverunner is not running.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             _ = PopupInfo.ShowContentDialog(xamlRoot, "Error", msg);
             return 0;
         }
-
+        if (ToggleRedPointerButton == null)
+        {
+            msg = $"Waverunner page service could not find toggle red pointer button.";
+            MagnetoLogger.Log("ToggleRedPointerButton is null", LogFactoryLogLevel.LogLevel.ERROR);
+            _ = PopupInfo.ShowContentDialog(xamlRoot, "Error", msg);
+            return 0;
+        }
         _redPointerEnabled = !_redPointerEnabled;
-
         if (_redPointerEnabled)
         {
             MagnetoLogger.Log("Starting Red Pointer", LogFactoryLogLevel.LogLevel.SUCCESS);
@@ -156,8 +174,8 @@ public class WaverunnerPageService
             MagnetoLogger.Log("Stopping Red Pointer", LogFactoryLogLevel.LogLevel.SUCCESS);
             StopRedPointer();
             ToggleRedPointerButton.Background = (SolidColorBrush)Microsoft.UI.Xaml.Application.Current.Resources["ButtonBackgroundThemeBrush"];
-            // Re-enable StartMarkButton only if _fullJobFilePath is still valid
-            //StartMarkButton.IsEnabled = !string.IsNullOrEmpty(_jobFilePath) && File.Exists(_jobFilePath);
+            // TODO: Test if filePath is still valid
+            StartMarkButton.IsEnabled = !string.IsNullOrEmpty(filePath) && File.Exists(filePath);
             if (IsMarkingText != null)
             {
                 IsMarkingText.Text = "Red pointer off.";

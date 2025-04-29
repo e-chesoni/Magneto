@@ -333,32 +333,32 @@
                             </Grid.ColumnDefinitions>
 
                             <!-- Row 0: Labels -->
-                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Layer:" 
+                            <TextBlock Grid.Row="0" Grid.Column="0" x:Name="LayerTextBlock" Text="Layer:" 
                                         VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,2"/>
-                            <TextBlock Grid.Row="0" Grid.Column="1" Text="File Name:" 
+                            <TextBlock Grid.Row="0" Grid.Column="1" x:Name="FileNameTextBlock"  Text="File Name:" 
                                         VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,2"/>
-                            <TextBlock Grid.Row="0" Grid.Column="2" Text="Layer Thickness:" 
+                            <TextBlock Grid.Row="0" Grid.Column="2" x:Name="LayerThicknessTextBlock"  Text="Layer Thickness:" 
                                         VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,2"/>
-                            <TextBlock Grid.Row="0" Grid.Column="3" Text="Power:" 
+                            <TextBlock Grid.Row="0" Grid.Column="3" x:Name="LaserPowerTextBlock"  Text="Power:" 
                                         VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,2"/>
-                            <TextBlock Grid.Row="0" Grid.Column="4" Text="Scan Speed:" 
+                            <TextBlock Grid.Row="0" Grid.Column="4" x:Name="ScanSpeedTextBlock"  Text="Scan Speed:" 
                                         VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,2"/>
-                            <TextBlock Grid.Row="0" Grid.Column="5" Text="Hatch Spacing:" 
+                            <TextBlock Grid.Row="0" Grid.Column="5" x:Name="HatchSpacingTextBlock"  Text="Hatch Spacing:" 
                                         VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,2"/>
-                            <TextBlock Grid.Row="0" Grid.Column="6" Text="Energy Density:" 
+                            <TextBlock Grid.Row="0" Grid.Column="6" x:Name="EnergyDensityTextBlock"  Text="Energy Density:" 
                                         VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,2"/>
-                            <TextBlock Grid.Row="0" Grid.Column="7" Text="Slices to mark:" 
+                            <TextBlock Grid.Row="0" Grid.Column="7" x:Name="SlicesToMarkTextBlock"  Text="Slices to mark:" 
                                         VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,2"/>
-                            <TextBlock Grid.Row="0" Grid.Column="8" Text="Supply Amplifier:" 
+                            <TextBlock Grid.Row="0" Grid.Column="8" x:Name="SupplyAmplifierTextBlock"  Text="Supply Amplifier:" 
                                         VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,2"/>
 
                             <!-- Row 1: Inputs -->
                             <TextBox Grid.Row="1" Grid.Column="0" x:Name="LayerTextBox" 
                                     VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="10,2" IsEnabled="False"/>
-                            <TextBox Grid.Row="1" Grid.Column="1" x:Name="CurrentSliceTextBox" Width="300" 
+                            <TextBox Grid.Row="1" Grid.Column="1" x:Name="FileNameTextBox" Width="300" 
                                      VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,2" IsEnabled="False"/>
                             <TextBox Grid.Row="1" Grid.Column="2" x:Name="LayerThicknessTextBox" 
-                                    VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="10,2"/>
+                                    VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="10,2" LostFocus="LayerThicknessTextBox_LostFocus"/>
                             <TextBox Grid.Row="1" Grid.Column="3" x:Name="LaserPowerTextBox" 
                                      VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="10,2" LostFocus="LaserPowerTextBox_LostFocus" />
                             <TextBox Grid.Row="1" Grid.Column="4" x:Name="ScanSpeedTextBox" 
@@ -371,7 +371,7 @@
                                     VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="10,2"/>
                             <TextBox Grid.Row="1" Grid.Column="8" x:Name="SupplyAmplifierTextBox"
                                     VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="10,2"/>
-                            <CheckBox Grid.Row="1" Grid.Column="9" x:Name="StartWithMarkCheckbox"
+                            <CheckBox Grid.Row="1" Grid.Column="9" x:Name="StartWithMarkCheckBox"
                                       Content="Start with mark"
                                       IsChecked="True"/>
                         </Grid>
@@ -384,13 +384,14 @@
                                 <ColumnDefinition Width="10"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                                <Button Grid.Column="0"
+                            <Button Grid.Column="0"
                                         x:Name="PrintLayersButton"
                                         Height="30" 
                                         HorizontalAlignment="Center" 
                                         VerticalAlignment="Center" 
                                         Margin="2" 
                                         Content="Mark"
+                                        IsEnabled="False"
                                         Click="MarkButton_Click"/>
                             <Button Grid.Column="2"
                                         x:Name="PausePrintButton"
@@ -401,7 +402,7 @@
                                         Margin="2"
                                         Background="Red"
                                         Click="PausePrintButton_Click"/>
-                                <Button Grid.Column="4"
+                            <Button Grid.Column="4"
                                         x:Name="RemarkLayerButton"
                                         Content="Remark Layer"
                                         Height="30" 

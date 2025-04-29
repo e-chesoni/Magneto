@@ -16,6 +16,8 @@ public class WaverunerService : IWaverunnerService
     private static readonly ScSamlightClientCtrlEx cci = new();
     private double _defaultMarkSpeed = 800; // mm/s
     private double _defaultLaserPower = 300; // W
+    private double _defaultHatchSpacing = 0.12;
+    private double _defaultSupplyAmplifier = 2;
     /// <summary>
     /// RedPointer Modes
     /// </summary>
@@ -71,7 +73,11 @@ public class WaverunerService : IWaverunnerService
     }
     public double GetDefaultMarkSpeed() => _defaultMarkSpeed;
     public double GetDefaultLaserPower() => _defaultLaserPower;
+    public double GetDefaultHatchSpacing() => _defaultHatchSpacing;
+    public double GetDefaultSupplyAmplifier() => _defaultSupplyAmplifier;
     #endregion
+
+    public double CalculateEnergyDensity(double layerThickness, double power, double scanSpeed, double hatchSpacing) => power / (layerThickness * scanSpeed * hatchSpacing);
 
     #region Pen Setters
     //TODO: Figure out how to implement error checking with these void commands

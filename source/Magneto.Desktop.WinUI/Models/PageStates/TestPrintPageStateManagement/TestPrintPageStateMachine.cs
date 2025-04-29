@@ -200,8 +200,8 @@ public class TestPrintPageStateMachine
 
     #endregion
 
-    private MotorUIControlGroup _calibrateMotorUIControlGroup { get; set; }
-    private MotorUIControlGroup _inPrintMotorUIControlGroup { get; set; }
+    private UIControlGroupMotors _calibrateMotorUIControlGroup { get; set; }
+    private UIControlGroupMotors _inPrintMotorUIControlGroup { get; set; }
 
     #region Test Page Setup
 

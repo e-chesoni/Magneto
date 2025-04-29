@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.UI.Xaml.Controls;
+﻿using Microsoft.UI.Xaml.Controls;
 
 namespace Magneto.Desktop.WinUI.Models.UIControl;
-public class MotorUIControlGroup : UIControlGroup
+public class UIControlGroupMotors : IUIControlGroupMotors
 {
     public Button? selectBuildButton { get; set; } = null;
     public Button? selectPowderButton { get; set; } = null;
@@ -53,7 +48,7 @@ public class MotorUIControlGroup : UIControlGroup
     public IEnumerable<object> sweepEnumerable;
 
     // for calibrate button control group on print test page
-    public MotorUIControlGroup(Button selectBuildBtn, Button selectPowderBtn, Button selectSweepBtn,
+    public UIControlGroupMotors(Button selectBuildBtn, Button selectPowderBtn, Button selectSweepBtn,
                                TextBox buildPosTB, TextBox powderPosTB, TextBox sweepPosTB,
                                Button getBuildPosBtn, Button getPowderPosBtn, Button getSweepPosBtn,
                                TextBox buildAbsMoveTB, TextBox powderAbsMoveTB, TextBox sweepAbsMoveTB,
@@ -133,21 +128,9 @@ public class MotorUIControlGroup : UIControlGroup
             homeAllMotorsButton
         };
     }
-    IEnumerable<object> UIControlGroup.GetControlGroupEnuerable()
-    {
-        return controlEnumerable;
-    }
-    IEnumerable<object> UIControlGroup.GetBuildControlGroupEnuerable()
-    {
-        return buildEnumerable;
-    }
-    IEnumerable<object> UIControlGroup.GetPowderControlGroupEnuerable()
-    {
-        return powderEnumerable;
-    }
-    IEnumerable<object> UIControlGroup.GetSweepControlGroupEnuerable()
-    {
-        return sweepEnumerable;
-    }
+    IEnumerable<object> IUIControlGroupMotors.GetControlGroupEnuerable() => controlEnumerable;
+    IEnumerable<object> IUIControlGroupMotors.GetBuildControlGroupEnuerable() => buildEnumerable;
+    IEnumerable<object> IUIControlGroupMotors.GetPowderControlGroupEnuerable() => powderEnumerable;
+    IEnumerable<object> IUIControlGroupMotors.GetSweepControlGroupEnuerable() => sweepEnumerable;
 }
 

@@ -2,54 +2,54 @@
 using Microsoft.UI.Xaml.Controls;
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Models.Motors;
-using Magneto.Desktop.WinUI.Helpers;
 using Magneto.Desktop.WinUI.Popups;
 using Magneto.Desktop.WinUI.Core;
 using MongoDB.Driver;
 using Microsoft.UI;
+using Magneto.Desktop.WinUI.Models.UIControl;
 
 namespace Magneto.Desktop.WinUI;
 public class MotorPageService
 {
     private readonly IMotorService _motorService;
-    private PrintUIControlGroupHelper _printUiControlGroupHelper { get; set; }
+    private UIControlGroupWrapper _uiControlGroupHelper { get; set; }
     public static readonly string buildMotorName =  "build";
     public static readonly string powderMotorName = "powder";
     public static readonly string sweepMotorName = "sweep";
-    public MotorPageService(PrintUIControlGroupHelper printCtlGrpHelper)
+    public MotorPageService(UIControlGroupWrapper printCtlGrpHelper)
     {
         _motorService = App.GetService<IMotorService>();
         _motorService.HandleStartUp();
-        _printUiControlGroupHelper = new PrintUIControlGroupHelper(printCtlGrpHelper.calibrateMotorControlGroup);
+        _uiControlGroupHelper = printCtlGrpHelper;
     }
 
     #region Locks
     public void UnlockCalibrationPanel()
     {
-        _printUiControlGroupHelper.EnableUIControlGroup(_printUiControlGroupHelper.GetCalibrationControlGroup());
+        _uiControlGroupHelper.EnableUIControlGroup(_uiControlGroupHelper.GetCalibrationControlGroup());
     }
     public void LockCalibrationPanel()
     {
-        _printUiControlGroupHelper.DisableUIControlGroup(_printUiControlGroupHelper.GetCalibrationControlGroup());
+        _uiControlGroupHelper.DisableUIControlGroup(_uiControlGroupHelper.GetCalibrationControlGroup());
     }
     #endregion
 
     #region Selectors
     public void SelectBuildMotor()
     {
-        _printUiControlGroupHelper.SelectMotor(buildMotorName);
+        _uiControlGroupHelper.SelectMotor(buildMotorName);
     }
     public void SelectPowderMotor()
     {
-        _printUiControlGroupHelper.SelectMotor(powderMotorName);
+        _uiControlGroupHelper.SelectMotor(powderMotorName);
     }
     public void SelectSweepMotor()
     {
-        _printUiControlGroupHelper.SelectMotor(sweepMotorName);
+        _uiControlGroupHelper.SelectMotor(sweepMotorName);
     }
     public void ChangeSelectButtonsBackground(Windows.UI.Color color)
     {
-        _printUiControlGroupHelper.ChangeSelectButtonsBackground(color);
+        _uiControlGroupHelper.ChangeMotorButtonsTo(color);
     }
     #endregion
 
@@ -57,15 +57,15 @@ public class MotorPageService
     #region Position Getters
     public TextBox GetBuildPositionTextBox()
     {
-        return _printUiControlGroupHelper.calibrateMotorControlGroup.buildPositionTextBox;
+        return _uiControlGroupHelper.calibrateMotorControlGroup.buildPositionTextBox;
     }
     public TextBox GetPowderPositionTextBox()
     {
-        return _printUiControlGroupHelper.calibrateMotorControlGroup.powderPositionTextBox;
+        return _uiControlGroupHelper.calibrateMotorControlGroup.powderPositionTextBox;
     }
     public TextBox GetSweepPositionTextBox()
     {
-        return _printUiControlGroupHelper.calibrateMotorControlGroup.sweepPositionTextBox;
+        return _uiControlGroupHelper.calibrateMotorControlGroup.sweepPositionTextBox;
     }
     #endregion
     #region Position Handlers
@@ -93,7 +93,7 @@ public class MotorPageService
         // if select motor is true, select the button too
         if (selectMotor)
         {
-            _printUiControlGroupHelper.SelectMotor(motorNameToLower);
+            _uiControlGroupHelper.SelectMotor(motorNameToLower);
         }
     }
     public async void HandleGetAllPositions()
@@ -239,7 +239,7 @@ public class MotorPageService
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
         await _motorService.StopMotorAndClearQueue(buildMotorName);
         await UpdateMotorPositionTextBox(buildMotorName);
-        _printUiControlGroupHelper.DisableMotorControls(_printUiControlGroupHelper.GetCalibrationControlGroup(), buildMotorName);
+        _uiControlGroupHelper.DisableMotorControls(_uiControlGroupHelper.GetCalibrationControlGroup(), buildMotorName);
     }
     public async void StopPowderMotorAndUpdateTextBox()
     {
@@ -247,7 +247,7 @@ public class MotorPageService
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
         await _motorService.StopMotorAndClearQueue(powderMotorName);
         await UpdateMotorPositionTextBox(powderMotorName);
-        _printUiControlGroupHelper.DisableMotorControls(_printUiControlGroupHelper.GetCalibrationControlGroup(), powderMotorName);
+        _uiControlGroupHelper.DisableMotorControls(_uiControlGroupHelper.GetCalibrationControlGroup(), powderMotorName);
     }
     public async void StopSweepMotorAndUpdateTextBox()
     {
@@ -255,7 +255,7 @@ public class MotorPageService
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
         await _motorService.StopMotorAndClearQueue(sweepMotorName);
         await UpdateMotorPositionTextBox(sweepMotorName);
-        _printUiControlGroupHelper.DisableMotorControls(_printUiControlGroupHelper.GetCalibrationControlGroup(), sweepMotorName);
+        _uiControlGroupHelper.DisableMotorControls(_uiControlGroupHelper.GetCalibrationControlGroup(), sweepMotorName);
     }
     // Keep as a reference; still seeing bugs when stop buttons are clicked
     /*
@@ -288,17 +288,17 @@ public class MotorPageService
     public void EnableBuildMotor()
     {
         _motorService.EnableBuildMotor();
-        _printUiControlGroupHelper.EnableMotorControls(_printUiControlGroupHelper.GetCalibrationControlGroup(), buildMotorName);
+        _uiControlGroupHelper.EnableMotorControls(_uiControlGroupHelper.GetCalibrationControlGroup(), buildMotorName);
     }
     public void EnablePowderMotor()
     {
         _motorService.EnablePowderMotor();
-        _printUiControlGroupHelper.EnableMotorControls(_printUiControlGroupHelper.GetCalibrationControlGroup(), powderMotorName);
+        _uiControlGroupHelper.EnableMotorControls(_uiControlGroupHelper.GetCalibrationControlGroup(), powderMotorName);
     }
     public void EnableSweepMotor()
     {
         _motorService.EnableBuildMotor();
-        _printUiControlGroupHelper.EnableMotorControls(_printUiControlGroupHelper.GetCalibrationControlGroup(), sweepMotorName);
+        _uiControlGroupHelper.EnableMotorControls(_uiControlGroupHelper.GetCalibrationControlGroup(), sweepMotorName);
     }
     public void EnableMotors()
     {
@@ -329,35 +329,35 @@ public class MotorPageService
     #region Text Box Getters
     public TextBox GetBuildStepTextBox()
     {
-        return _printUiControlGroupHelper.calibrateMotorControlGroup.buildStepTextBox;
+        return _uiControlGroupHelper.calibrateMotorControlGroup.buildStepTextBox;
     }
     public TextBox GetPowderStepTextBox()
     {
-        return _printUiControlGroupHelper.calibrateMotorControlGroup.powderStepTextBox;
+        return _uiControlGroupHelper.calibrateMotorControlGroup.powderStepTextBox;
     }
     public TextBox GetSweepStepTextBox()
     {
-        return _printUiControlGroupHelper.calibrateMotorControlGroup.sweepStepTextBox;
+        return _uiControlGroupHelper.calibrateMotorControlGroup.sweepStepTextBox;
     }
     public TextBox GetBuildAbsMoveTextBox()
     {
-        return _printUiControlGroupHelper.calibrateMotorControlGroup.buildAbsMoveTextBox;
+        return _uiControlGroupHelper.calibrateMotorControlGroup.buildAbsMoveTextBox;
     }
     public TextBox GetPowderAbsMoveTextBox()
     {
-        return _printUiControlGroupHelper.calibrateMotorControlGroup.powderAbsMoveTextBox;
+        return _uiControlGroupHelper.calibrateMotorControlGroup.powderAbsMoveTextBox;
     }
     public TextBox GetSweepAbsMoveTextBox()
     {
-        return _printUiControlGroupHelper.calibrateMotorControlGroup.sweepAbsMoveTextBox;
+        return _uiControlGroupHelper.calibrateMotorControlGroup.sweepAbsMoveTextBox;
     }
     public TextBox? GetMotorPositonTextBox(string motorNameLower)
     {
         return motorNameLower switch
         {
-            "build" => _printUiControlGroupHelper.calibrateMotorControlGroup.buildPositionTextBox,
-            "powder" => _printUiControlGroupHelper.calibrateMotorControlGroup.powderPositionTextBox,
-            "sweep" => _printUiControlGroupHelper.calibrateMotorControlGroup.sweepPositionTextBox,
+            "build" => _uiControlGroupHelper.calibrateMotorControlGroup.buildPositionTextBox,
+            "powder" => _uiControlGroupHelper.calibrateMotorControlGroup.powderPositionTextBox,
+            "sweep" => _uiControlGroupHelper.calibrateMotorControlGroup.sweepPositionTextBox,
             _ => null
         };
     }
@@ -465,7 +465,7 @@ public class MotorPageService
     }
     public async Task<int> HomeMotorAndUpdateUI(string motorName)
     {
-        _printUiControlGroupHelper.SelectMotor(motorName);
+        _uiControlGroupHelper.SelectMotor(motorName);
         await _motorService.HomeMotor(motorName);
         await WaitUntilMotorHomedAsync(motorName);
         await UpdateMotorPositionTextBox(motorName); // TODO: This should probably wait until the motor is done moving...

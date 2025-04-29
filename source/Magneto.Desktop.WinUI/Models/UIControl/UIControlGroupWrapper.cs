@@ -6,34 +6,68 @@ using System.Threading.Tasks;
 using Magneto.Desktop.WinUI.Core;
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Models.Motors;
-using Magneto.Desktop.WinUI.Models.UIControl;
 using Microsoft.UI;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using static Magneto.Desktop.WinUI.MotorPageService;
 
-namespace Magneto.Desktop.WinUI.Helpers;
-public class PrintUIControlGroupHelper
+namespace Magneto.Desktop.WinUI.Models.UIControl;
+public class UIControlGroupWrapper
 {
-    public MotorUIControlGroup calibrateMotorControlGroup { get; set; }
+    public UIControlGroupMotors? calibrateMotorControlGroup { get; set; }
+    public UIControlGroupWaverunner? waverunnerControlGroup { get; set; }
 
-    public PrintUIControlGroupHelper(MotorUIControlGroup calibrateMotorControlGroup)
+    public UIControlGroupWrapper(UIControlGroupMotors calibrateMotorControlGroup)
     {
         this.calibrateMotorControlGroup = calibrateMotorControlGroup;
     }
 
-    #region Select Motor Helper Methods
-    public void SelectButtonBackgroundGreen(string motorName)
+    public UIControlGroupWrapper(UIControlGroupWaverunner printControlGroup)
     {
-        string motorNameToLower = motorName.ToLower();
+        this.waverunnerControlGroup = printControlGroup;
+    }
+
+    public UIControlGroupWrapper(UIControlGroupMotors calibrateMotorControlGroup, UIControlGroupWaverunner printControlGroup)
+    {
+        this.calibrateMotorControlGroup = calibrateMotorControlGroup;
+        this.waverunnerControlGroup = printControlGroup;
+    }
+
+    #region Select Motor Helper Methods
+    public void ChangeSelectedMotorButtonGreen(string selectedMotorName)
+    {
+        var motorNameToLower = selectedMotorName.ToLower();
+        if (calibrateMotorControlGroup == null)
+        {
+            var msg = "❌ Calibrate control group is null.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            return;
+        }
+        if (calibrateMotorControlGroup.selectBuildButton == null || calibrateMotorControlGroup.selectPowderButton == null || calibrateMotorControlGroup.selectSweepButton == null)
+        {
+            var msg = "❌ One of the select buttons is null.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            return;
+        }
         // Update button backgrounds and selection flags
         calibrateMotorControlGroup.selectBuildButton.Background = new SolidColorBrush(motorNameToLower == "build" ? Colors.Green : Colors.DimGray);
         calibrateMotorControlGroup.selectPowderButton.Background = new SolidColorBrush(motorNameToLower == "powder" ? Colors.Green : Colors.DimGray);
         calibrateMotorControlGroup.selectSweepButton.Background = new SolidColorBrush(motorNameToLower == "sweep" ? Colors.Green : Colors.DimGray);
     }
-    public void ChangeSelectButtonsBackground(Windows.UI.Color color)
+    public void ChangeMotorButtonsTo(Windows.UI.Color color)
     {
-        // Update button backgrounds and selection flags
+        if (calibrateMotorControlGroup == null)
+        {
+            var msg = "❌ Calibrate control group is null.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            return;
+        }
+        if (calibrateMotorControlGroup.selectBuildButton == null || calibrateMotorControlGroup.selectPowderButton == null || calibrateMotorControlGroup.selectSweepButton == null)
+        {
+            var msg = "❌ One of the select buttons is null.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            return;
+        }
         calibrateMotorControlGroup.selectBuildButton.Background = new SolidColorBrush(color);
         calibrateMotorControlGroup.selectPowderButton.Background = new SolidColorBrush(color);
         calibrateMotorControlGroup.selectSweepButton.Background = new SolidColorBrush(color);
@@ -41,27 +75,16 @@ public class PrintUIControlGroupHelper
     #endregion
 
     #region Getters
-    public UIControlGroup GetCalibrationControlGroup()
-    {
-        return calibrateMotorControlGroup; 
-    }
+    public IUIControlGroupMotors GetCalibrationControlGroup() => calibrateMotorControlGroup;
+    public IUIControlGroupWaverunner GetWaverunnerControlGroup() => waverunnerControlGroup;
     #endregion
 
     #region Select Motor Helper Methods
-    public void SelectMotor(string motorName)
-    {
-        SelectButtonBackgroundGreen(motorName);
-    }
+    public void SelectMotor(string motorName) => ChangeSelectedMotorButtonGreen(motorName);
 
-    public void EnableUIControlGroup(UIControlGroup controlGrp)
-    {
-        EnableGroupHelper(controlGrp.GetControlGroupEnuerable());
-    }
+    public void EnableUIControlGroup(IUIControlGroupMotors controlGrp) => EnableGroupHelper(controlGrp.GetControlGroupEnuerable());
 
-    public void DisableUIControlGroup(UIControlGroup controlGrp)
-    {
-        DisableGroupHelper(controlGrp.GetControlGroupEnuerable());
-    }
+    public void DisableUIControlGroup(IUIControlGroupMotors controlGrp) => DisableGroupHelper(controlGrp.GetControlGroupEnuerable());
 
     private void DisableGroupHelper(IEnumerable<object> controls)
     {
@@ -83,7 +106,7 @@ public class PrintUIControlGroupHelper
             }
         }
     }
-    public void EnableMotorControls(UIControlGroup controlGrp, string motorNameLowerCase)
+    public void EnableMotorControls(IUIControlGroupMotors controlGrp, string motorNameLowerCase)
     {
         string msg;
         switch (motorNameLowerCase)
@@ -104,7 +127,7 @@ public class PrintUIControlGroupHelper
         }
     }
 
-    public void DisableMotorControls(UIControlGroup controlGrp, string motorNameLowerCase)
+    public void DisableMotorControls(IUIControlGroupMotors controlGrp, string motorNameLowerCase)
     {
         string msg;
         switch (motorNameLowerCase)
@@ -124,6 +147,10 @@ public class PrintUIControlGroupHelper
                 break;
         }
     }
+    public void EnableWaverunnerSettingsControls() => EnableGroupHelper(waverunnerControlGroup.GetSettingsEnuerable());
+    public void DisableWaverunnerSettingsControls() => DisableGroupHelper(waverunnerControlGroup.GetSettingsEnuerable());
+    public void EnableMarkButtons() => EnableGroupHelper(waverunnerControlGroup.GetButtonGroupEnuerable());
+    public void DisableMarkButtons() => DisableGroupHelper(waverunnerControlGroup.GetButtonGroupEnuerable());
 
     #endregion
 

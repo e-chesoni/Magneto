@@ -46,7 +46,7 @@ public sealed partial class TestMotorsPage : Page
     private MissionControl? _missionControl { get; set; }
     public TestMotorsViewModel ViewModel { get; }
     private MotorPageService? _motorPageService;
-    private MotorUIControlGroup? _calibrateMotorUIControlGroup { get; set; }
+    private UIControlGroupMotors? _calibrateMotorUIControlGroup { get; set; }
     private static readonly string buildMotorName = "build";
     private static readonly string powderMotorName = "powder";
     private static readonly string sweepMotorName = "sweep";
@@ -72,7 +72,7 @@ public sealed partial class TestMotorsPage : Page
     private void InitPageServices() // combine page services initialization because motor services uses one of the UI groups
     {
         // UI page groups
-        _calibrateMotorUIControlGroup = new MotorUIControlGroup(SelectBuildMotorButton, SelectPowderMotorButton, SelectSweepMotorButton,
+        _calibrateMotorUIControlGroup = new UIControlGroupMotors(SelectBuildMotorButton, SelectPowderMotorButton, SelectSweepMotorButton,
                                                                 BuildMotorCurrentPositionTextBox, PowderMotorCurrentPositionTextBox, SweepMotorCurrentPositionTextBox,
                                                                 GetBuildMotorCurrentPositionButton, GetPowderMotorCurrentPositionButton, GetSweepMotorCurrentPositionButton,
                                                                 BuildMotorAbsPositionTextBox, PowderMotorAbsPositionTextBox, SweepMotorAbsPositionTextBox,
@@ -82,7 +82,7 @@ public sealed partial class TestMotorsPage : Page
                                                                 StopBuildMotorButton, StopPowderMotorButton, StopSweepMotorButton,
                                                                 HomeAllMotorsButton, EnableMotorsButton, StopMotorsButton);
         // initialize motor page service
-        _motorPageService = new MotorPageService(new PrintUIControlGroupHelper(_calibrateMotorUIControlGroup));
+        _motorPageService = new MotorPageService(new UIControlGroupWrapper(_calibrateMotorUIControlGroup));
 
         // populate motor positions on page load
         _motorPageService.HandleGetAllPositions();

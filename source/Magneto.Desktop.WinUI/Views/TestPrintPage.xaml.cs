@@ -1,35 +1,19 @@
-﻿using System.IO.Ports;
-using System.Reflection;
-using CommunityToolkit.WinUI.UI.Animations;
-using Magneto.Desktop.WinUI.Core;
+﻿using Magneto.Desktop.WinUI.Core;
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Models;
-using Magneto.Desktop.WinUI.Core.Models.Print;
-using Magneto.Desktop.WinUI.Core.Models.Motors;
-using Magneto.Desktop.WinUI.Helpers;
 using Magneto.Desktop.WinUI.Models.UIControl;
 using Magneto.Desktop.WinUI.Popups;
 using Magneto.Desktop.WinUI.Services;
 using Magneto.Desktop.WinUI.ViewModels;
 using Microsoft.UI;
-using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
-using Newtonsoft.Json.Bson;
-using SAMLIGHT_CLIENT_CTRL_EXLib;
-using Windows.Devices.SerialCommunication;
-using static Magneto.Desktop.WinUI.Core.Models.Print.CommandQueueManager;
-using static Magneto.Desktop.WinUI.Views.TestPrintPage;
 using System.Diagnostics;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
-using SAMLIGHT_CLIENT_CTRL_EXLib;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-using Magneto.Desktop.WinUI.Contracts.Services;
-using CommunityToolkit.WinUI.Helpers;
+using MongoDB.Driver;
 
 namespace Magneto.Desktop.WinUI.Views;
 
@@ -42,7 +26,8 @@ public sealed partial class TestPrintPage : Page
     public TestPrintViewModel ViewModel { get; }
     private MotorPageService? _motorPageService;
     private WaverunnerPageService? _waverunnerPageService;
-    private MotorUIControlGroup? _calibrateMotorUIControlGroup { get; set; }
+    private UIControlGroupMotors? _calibrateMotorUIControlGroup { get; set; }
+    private UIControlGroupWaverunner? _waverunnerUiControlGroup { get; set; }
     private static readonly string buildMotorName = "build";
     private static readonly string powderMotorName = "powder";
     private static readonly string sweepMotorName = "sweep";
@@ -69,7 +54,7 @@ public sealed partial class TestPrintPage : Page
     private void InitPageServices() // combine page services initialization because motor services uses one of the UI groups
     {
         // UI page groups
-        _calibrateMotorUIControlGroup = new MotorUIControlGroup(SelectBuildMotorButton, SelectPowderMotorButton, SelectSweepMotorButton,
+        _calibrateMotorUIControlGroup = new UIControlGroupMotors(SelectBuildMotorButton, SelectPowderMotorButton, SelectSweepMotorButton,
                                                                 BuildMotorCurrentPositionTextBox, PowderMotorCurrentPositionTextBox, SweepMotorCurrentPositionTextBox,
                                                                 GetBuildMotorCurrentPositionButton, GetPowderMotorCurrentPositionButton, GetSweepMotorCurrentPositionButton,
                                                                 BuildMotorAbsPositionTextBox, PowderMotorAbsPositionTextBox, SweepMotorAbsPositionTextBox,
@@ -78,10 +63,15 @@ public sealed partial class TestPrintPage : Page
                                                                 StepBuildMotorUpButton, StepBuildMotorDownButton, StepPowderMotorUpButton, StepPowderMotorDownButton, StepSweepMotorLeftButton, StepSweepMotorRightButton,
                                                                 StopBuildMotorButton, StopPowderMotorButton, StopSweepMotorButton,
                                                                 HomeAllMotorsButton, EnableMotorsButton, StopMotorsButton);
+        _waverunnerUiControlGroup = new UIControlGroupWaverunner(PrintDirectoryInputTextBox,
+                                                            LayerTextBlock, FileNameTextBlock, LayerThicknessTextBlock, LaserPowerTextBlock, ScanSpeedTextBlock, HatchSpacingTextBlock, EnergyDensityTextBlock, SlicesToMarkTextBlock, SupplyAmplifierTextBlock, 
+                                                            LayerTextBox, FileNameTextBox, LayerThicknessTextBox, LaserPowerTextBox, ScanSpeedTextBox, HatchSpacingTextBox, EnergyDensityTextBox, SlicesToMarkTextBox, SupplyAmplifierTextBox,
+                                                            StartWithMarkCheckBox, PrintLayersButton, PausePrintButton, RemarkLayerButton);
         // initialize motor page service
-        _motorPageService = new MotorPageService(new PrintUIControlGroupHelper(_calibrateMotorUIControlGroup));
+        _motorPageService = new MotorPageService(new UIControlGroupWrapper(_calibrateMotorUIControlGroup));
         // initialize Waverunner page service
-        _waverunnerPageService = new WaverunnerPageService(PrintDirectoryInputTextBox, PrintLayersButton);
+        //_waverunnerPageService = new WaverunnerPageService(PrintDirectoryInputTextBox, PrintLayersButton);
+        _waverunnerPageService = new WaverunnerPageService(new UIControlGroupWrapper(_waverunnerUiControlGroup));
         // populate motor positions on page load
         _motorPageService.HandleGetAllPositions();
         // populate changeable pen settings
@@ -97,6 +87,8 @@ public sealed partial class TestPrintPage : Page
             LaserPowerTextBox.Text = _waverunnerPageService.GetDefaultLaserPower().ToString();
             ScanSpeedTextBox.Text = _waverunnerPageService.GetDefaultMarkSpeed().ToString();
         }
+        HatchSpacingTextBox.Text = _waverunnerPageService.GetDefaultHatchSpacing().ToString();
+        SupplyAmplifierTextBox.Text = _waverunnerPageService.GetDefaultSupplyAmplifier().ToString();
     }
     #endregion
 
@@ -493,7 +485,6 @@ public sealed partial class TestPrintPage : Page
             return;
         }
         _motorPageService.UnlockCalibrationPanel();
-        //EnableMotorsButton.Content = "Lock Motors";
     }
     private void LockCalibrationPanel()
     {
@@ -503,70 +494,254 @@ public sealed partial class TestPrintPage : Page
             return;
         }
         _motorPageService.LockCalibrationPanel();
-        //EnableMotorsButton.Content = "Unlock Motors";
+    }
+    private void LockPrintSettings()
+    {
+        if (_waverunnerPageService == null)
+        {
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Cannot lock print settings panel.");
+            return;
+        }
+    }
+
+    private void UnlockPrintSettings()
+    {
+    
     }
     #endregion
 
     #region Print Methods
-    private void LaserPowerTextBox_LostFocus(object sender, RoutedEventArgs e)
+    /// <summary>
+    /// Checks print settings text boxes; if all required parameters are entered and valid, enables mark button
+    /// </summary>
+    /// <returns></returns>
+    private int ReadyToPrint()
+    {
+        int res;
+        double thickness;
+        double power;
+        double scanSpeed;
+        double hatchSpacing;
+        var layerInputEntered = (LayerTextBox != null && !string.IsNullOrWhiteSpace(LayerTextBox.Text));
+        var fileNameInputEntered = (FileNameTextBox != null && !string.IsNullOrWhiteSpace(FileNameTextBox.Text));
+        var thicknessInputEntered = (LayerThicknessTextBox != null && !string.IsNullOrWhiteSpace(LayerThicknessTextBox.Text));
+        var powerInputEntered = (LaserPowerTextBox != null && !string.IsNullOrWhiteSpace(LaserPowerTextBox.Text));
+        var scanSpeedInputEntered = (ScanSpeedTextBox != null && !string.IsNullOrWhiteSpace(ScanSpeedTextBox.Text));
+        var slicesToMarkInputEntered = (SlicesToMarkTextBox != null && !string.IsNullOrWhiteSpace(SlicesToMarkTextBox.Text));
+        var supplyAmplifierInputEntered = (SupplyAmplifierTextBox != null && !string.IsNullOrWhiteSpace(SupplyAmplifierTextBox.Text));
+        if (thicknessInputEntered && powerInputEntered && scanSpeedInputEntered)
+        {
+            (res, thickness) = ConvertTextBoxTextToDouble(LayerThicknessTextBox);
+            if (res == 0)
+            {
+                var msg = $"Layer thickness text box input is invalid.";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+                return 0;
+            }
+            (res, power) = ConvertTextBoxTextToDouble(LaserPowerTextBox);
+            if (res == 0)
+            {
+                var msg = $"Power text box input is invalid.";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+                return 0;
+            }
+            (res, scanSpeed) = ConvertTextBoxTextToDouble(ScanSpeedTextBox);
+            if (res == 0)
+            {
+                var msg = $"Scan speed text box input is invalid.";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+                return 0;
+            }
+            (res, hatchSpacing) = ConvertTextBoxTextToDouble(HatchSpacingTextBox);
+            if (res == 0)
+            {
+                var msg = $"Hatching text box input is invalid.";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+                return 0;
+            }
+            // TODO: round energy density to 2 decimals
+            EnergyDensityTextBox.Text = _waverunnerPageService.GetEnergyDensity(thickness, power, scanSpeed, hatchSpacing).ToString();
+        }
+        // if all text boxes are not empty, check for validity, else return 0
+        if (layerInputEntered && fileNameInputEntered && thicknessInputEntered && powerInputEntered && scanSpeedInputEntered && slicesToMarkInputEntered && supplyAmplifierInputEntered)
+        {
+            return CheckForValidInputs();
+        }
+        return 0;
+    }
+    private int CheckForValidInputs()
+    {
+        // if one text box is invalid, return 0
+        if ((LayerThicknessIsValid() <= 0) || (PowerIsValid() <= 0) || (ScanSpeedIsValid() <= 0))
+        {
+            return 0;
+        }
+        return 1;
+    }
+    private int LayerThicknessIsValid()
+    {
+        string msg;
+        if (double.TryParse(LayerThicknessTextBox.Text, out var thickness))
+        {
+            if (thickness < 0.005 || thickness > 5) // TODO: Verify allowable range
+            {
+                return 0;
+            }
+            else
+            {
+                return 1;
+            }
+        }
+        else
+        {
+            return -1;
+        }
+    }
+    private int PowerIsValid()
     {
         string msg;
         if (double.TryParse(LaserPowerTextBox.Text, out var power))
         {
             if (power < 50 || power > 500) // TODO: Verify allowable range
             {
-                msg = "⚠️ Laser power out of range (should be 50–500 W)";
-                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
-                _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", msg);
-                LaserPowerTextBox.Foreground = new SolidColorBrush(Colors.Red);
-                // TODO: disable marking buttons
-
+                return 0;
             }
             else
             {
-                // Valid input, reset text color back to normal (white)
-                LaserPowerTextBox.Foreground = new SolidColorBrush(Colors.WhiteSmoke);
+                return 1;
             }
         }
         else
         {
-            msg = "⚠️ Invalid number entered for laser power.";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", msg);
-            LaserPowerTextBox.Foreground = new SolidColorBrush(Colors.Red);
-            // TODO: disable marking buttons
-
+            return 0;
         }
     }
-    private void ScanSpeedTextBox_LostFocus(object sender, RoutedEventArgs e)
+    private int ScanSpeedIsValid()
     {
         string msg;
         if (double.TryParse(ScanSpeedTextBox.Text, out var scanSpeed))
         {
             if (scanSpeed < 100 || scanSpeed > 3000) // TODO: Verify allowable range
             {
-                msg = "⚠️ Scan speed out of range (should be 100-3000 mm/s)";
-                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
-                _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", msg);
-                ScanSpeedTextBox.Foreground = new SolidColorBrush(Colors.Red);
-                // TODO: disable marking buttons
-
+                return 0;
             }
             else
             {
-                ScanSpeedTextBox.Foreground = new SolidColorBrush(Colors.WhiteSmoke);
+                return 1;
             }
         }
         else
         {
-            msg = "⚠️ Invalid number entered for scan speed.";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
+            return 0;
+        }
+    }
+    private void LayerThicknessTextBox_LostFocus(object sender, RoutedEventArgs e)
+    {
+        string msg;
+        var layerThicknessIsValid = LayerThicknessIsValid();
+        if (_waverunnerPageService is null)
+        {
+            return;
+        }
+        if (layerThicknessIsValid == 0)
+        {
+            msg = "⚠️ Layer thickness out of range (should 0.005-5 mm)";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", msg);
+            LayerThicknessTextBox.Foreground = new SolidColorBrush(Colors.Red);
+            _waverunnerPageService.LockMarking();
+        }
+        else if (layerThicknessIsValid == -1)
+        {
+            msg = "⚠️ Invalid number entered for layer thickness.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", msg);
+            LayerThicknessTextBox.Foreground = new SolidColorBrush(Colors.Red);
+            _waverunnerPageService.LockMarking();
+        }
+        else
+        {
+            // Valid input, reset text color back to normal (white)
+            LayerThicknessTextBox.Foreground = new SolidColorBrush(Colors.WhiteSmoke);
+            if (ReadyToPrint() == 1)
+            {
+                _waverunnerPageService.UnlockMarking();
+            }
+        }
+    }
+    private void LaserPowerTextBox_LostFocus(object sender, RoutedEventArgs e)
+    {
+        string msg;
+        var powerIsValid = PowerIsValid();
+        if (_waverunnerPageService is null)
+        {
+            return;
+        }
+        if (powerIsValid == 0)
+        {
+            msg = "⚠️ Laser power out of range (should be 50–500 W)";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", msg);
+            LaserPowerTextBox.Foreground = new SolidColorBrush(Colors.Red);
+            // TODO: disable marking buttons
+            _waverunnerPageService.LockMarking();
+        }
+        else if (powerIsValid == -1)
+        {
+            msg = "⚠️ Invalid number entered for laser power.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", msg);
+            LaserPowerTextBox.Foreground = new SolidColorBrush(Colors.Red);
+            // TODO: disable marking buttons
+            _waverunnerPageService.LockMarking();
+        }
+        else
+        {
+            // Valid input, reset text color back to normal (white)
+            LaserPowerTextBox.Foreground = new SolidColorBrush(Colors.WhiteSmoke);
+            if (ReadyToPrint() == 1)
+            {
+                _waverunnerPageService.UnlockMarking();
+            }
+        }
+    }
+    private void ScanSpeedTextBox_LostFocus(object sender, RoutedEventArgs e)
+    {
+        string msg;
+        var scanSpeedIsValid = ScanSpeedIsValid();
+        if (_waverunnerPageService is null)
+        {
+            return;
+        }
+        if (scanSpeedIsValid == 0)
+        {
+            msg = "⚠️ Scan speed out of range (should be 100-3000 mm/s)";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", msg);
             ScanSpeedTextBox.Foreground = new SolidColorBrush(Colors.Red);
             // TODO: disable marking buttons
-
+            _waverunnerPageService.LockMarking();
+        }
+        else if (scanSpeedIsValid == -1)
+        {
+            msg = "⚠️ Invalid number entered for scan speed.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", msg);
+            ScanSpeedTextBox.Foreground = new SolidColorBrush(Colors.Red);
+            // TODO: disable marking buttons
+            _waverunnerPageService.LockMarking();
+        }
+        else
+        {
+            ScanSpeedTextBox.Foreground = new SolidColorBrush(Colors.WhiteSmoke);
+            if (ReadyToPrint() == 1)
+            {
+                _waverunnerPageService.UnlockMarking();
+            }
         }
     }
+
+    // TODO: implement lost focus checks for slices to mark and supply amplifiers
 
     private void PausePrintButton_Click(object sender, RoutedEventArgs e)
     {
@@ -603,7 +778,8 @@ public sealed partial class TestPrintPage : Page
                     {
                         // ✅ All values are valid — update the UI
                         PrintNameTextBlock.Text = print.name;
-                        CurrentSliceTextBox.Text = slice.fileName;
+                        LayerTextBox.Text = slice.layer.ToString();
+                        FileNameTextBox.Text = slice.fileName;
                         StatusTextBlock.Text = print?.complete == true ? "Complete" : "Incomplete";
                         SlicesMarkedTextBlock.Text = (await ViewModel.GetSlicesMarkedAsync()).ToString();
                         TotalSlicesTextBlock.Text = (await ViewModel.GetTotalSlicesAsync()).ToString();
@@ -647,7 +823,7 @@ public sealed partial class TestPrintPage : Page
     {
         PrintDirectoryInputTextBox.Text = "";
         PrintNameTextBlock.Text = "";
-        CurrentSliceTextBox.Text = "";
+        FileNameTextBox.Text = "";
         StatusTextBlock.Text = "";
         DurationTextBlock.Text = "";
         SlicesMarkedTextBlock.Text = "";
@@ -657,7 +833,7 @@ public sealed partial class TestPrintPage : Page
     #endregion
 
     #region POC Button Methods
-    private async void GetSlices_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    private async void GetSlices_Click(object sender, RoutedEventArgs e)
     {
         await ViewModel.AddPrintToDatabaseAsync(PrintDirectoryInputTextBox.Text);
         if (ViewModel.currentSlice != null)
@@ -712,7 +888,7 @@ public sealed partial class TestPrintPage : Page
         double hatchSpacing;
         double amplifier;
         Int64 slicesToMark;
-        var startWithMark = StartWithMarkCheckbox.IsEnabled;
+        var startWithMark = StartWithMarkCheckBox.IsEnabled;
         if (startWithMark)
         {
             var msg = $"Start with mark requested.";
@@ -768,7 +944,7 @@ public sealed partial class TestPrintPage : Page
             PopulatePageText();
         }
     }
-    private async void DeletePrintButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    private async void DeletePrintButton_Click(object sender, RoutedEventArgs e)
     {
         // TODO: add guards to ask user if they're sure they want to delete this print
         if (ViewModel.currentPrint == null)
@@ -784,7 +960,7 @@ public sealed partial class TestPrintPage : Page
             ClearPageText();
         }
     }
-    private async void BrowseButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    private async void BrowseButton_Click(object sender, RoutedEventArgs e)
     {
         var folderPicker = new FolderPicker();
         folderPicker.SuggestedStartLocation = PickerLocationId.Desktop;
