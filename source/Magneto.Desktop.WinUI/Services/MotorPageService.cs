@@ -149,6 +149,23 @@ public class MotorPageService
             return (1, targetPos);
         }
     }
+    public async Task<(int status, double targetPos)> MoveMotorAbs(string motorName, double targetPos)
+    {
+        var motorNameLower = motorName.ToLower();
+        await _motorService.MoveMotorAbs(motorNameLower, targetPos);
+        return (1, targetPos);
+    }
+    public async Task<(int status, double targetPos)> MoveMotorRel(string motorName, double distance, bool moveUp)
+    {
+        var motorNameLower = motorName.ToLower();
+        // Add sign to distance based on moveUp boolean
+        distance = moveUp ? distance : -distance;
+        MagnetoLogger.Log($"Moving motor distance of {distance}", LogFactoryLogLevel.LogLevel.SUCCESS);
+        var currentPos = await _motorService.GetMotorPositionAsync(motorNameLower);
+        var targetPos = currentPos + distance;
+        await _motorService.MoveMotorRel(motorNameLower, distance);
+        return (1, targetPos);
+    }
     // TODO: remove old layer move after new one is vetted
     /*
     public async Task<int> LayerMoveOLD(double layerThickness)
@@ -186,33 +203,36 @@ public class MotorPageService
         return 1;
     }
     */
-    public async Task<int> ExecuteLayerMove(XamlRoot xamlRoot, double layerThickness, double amplifier)
+    public async Task<int> ExecuteLayerMove(double layerThickness, double amplifier, XamlRoot xamlRoot)
     {
-        var buildMotor = _motorService.GetBuildMotor();
-        var powderMotor = _motorService.GetPowderMotor();
-        var sweepMotor = _motorService.GetSweepMotor();
+        MagnetoLogger.Log($"Executing layer move...", LogFactoryLogLevel.LogLevel.VERBOSE);
         var maxSweepPosition = _motorService.GetMaxSweepPosition();
         var clearance = 2;
-        
-        // TODO: Finish updating execute layer move to use MoveMotorAndUpdateUI()
+        var thicknessTimesAmplifier = layerThickness * amplifier;
 
+        // TODO: Finish updating execute layer move to use MoveMotorAndUpdateUI()
+        // public async void MoveMotorAndUpdateUISelector(string motorName, double value, bool moveIsAbs, bool moveInPositiveDirection, XamlRoot xamlRoot)
         // all moves are relative
         var moveIsAbs = false;
         // 1. move build motor down for sweep
-        await _motorService.MoveMotorRel(buildMotor, -clearance);
-        //MoveMotorAndUpdateUI(buildMotorName, 2, moveIsAbs, false, xamlRoot);
+        //await _motorService.MoveMotorRel(buildMotor, -clearance);
+        await MoveMotorAndUpdateUISelector(buildMotorName, clearance, moveIsAbs, false, xamlRoot); // false -> move down
         // 2. home sweep motor
-        await _motorService.HomeMotor(sweepMotor);
+        //await _motorService.HomeMotor(sweepMotor);
+        await HomeMotorAndUpdateUI(sweepMotorName);
         // 3. move build motor back up to last mark height
-        await _motorService.MoveMotorRel(buildMotor, clearance);
-        // 4. move powder motor up by powder amp layer height (Prof. Tertuliano recommends powder motor moves 2-3x distance of build motor)
-        await _motorService.MoveMotorRel(powderMotor, layerThickness);
+        //await _motorService.MoveMotorRel(buildMotor, clearance);
+        await MoveMotorAndUpdateUISelector(buildMotorName, clearance, moveIsAbs, true, xamlRoot); // true -> move up
+        // 4. move powder motor up by amplifier distance (Oat recommends 2-3x distance of build motor)
+        //await _motorService.MoveMotorRel(powderMotor, layerThickness);
+        await MoveMotorAndUpdateUISelector(powderMotorName, thicknessTimesAmplifier, moveIsAbs, true, xamlRoot);
         // 5. move build motor down by layer height
-        await _motorService.MoveMotorRel(buildMotor, -layerThickness);
+        //await _motorService.MoveMotorRel(buildMotor, -layerThickness);
+        await MoveMotorAndUpdateUISelector(buildMotorName, layerThickness, moveIsAbs, false, xamlRoot);
         // 6. apply material to build plate
-        await _motorService.MoveMotorRel(sweepMotor, maxSweepPosition);
+        await MoveMotorAndUpdateUISelector(sweepMotorName, maxSweepPosition, true, true, xamlRoot); // absolute move in the positive direction
         // TEMPORARY SOLUTION: repeat last command to pad queue so we can use motors running check properly
-        await _motorService.MoveMotorRel(sweepMotor, maxSweepPosition);
+        await MoveMotorAndUpdateUISelector(sweepMotorName, maxSweepPosition, true, true, xamlRoot);
         return 1; // TODO: implement failure return
     }
     #endregion
@@ -225,7 +245,7 @@ public class MotorPageService
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
         var moveIsAbs = true;
         var moveUp = true;
-        MoveMotorAndUpdateUI(motorName, textBox, moveIsAbs, moveUp, xamlRoot);
+        MoveMotorAndUpdateUISelector(motorName, textBox, moveIsAbs, moveUp, xamlRoot);
     }
 
     public void HandleRelMove(string motorName, TextBox textBox, bool moveUp, XamlRoot xamlRoot)
@@ -234,7 +254,7 @@ public class MotorPageService
         var msg = $"{motorNameLower} rel move button clicked.";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
         var moveIsAbs = false;
-        MoveMotorAndUpdateUI(motorName, textBox, moveIsAbs, moveUp, xamlRoot);
+        MoveMotorAndUpdateUISelector(motorName, textBox, moveIsAbs, moveUp, xamlRoot);
     }
     #endregion
 
@@ -394,76 +414,76 @@ public class MotorPageService
         }
         return 0;
     }
-    // TODO: write MoveMotorAndUpdateUI command that take value instead of text box to read
-    public async Task MoveBuildMotorAndUpdateUI(TextBox textBox, bool moveIsAbs, bool increment, XamlRoot xamlRoot)
+    public async Task MoveMotorAndUpdateUI(string motorName, double value, bool moveIsAbs, bool moveUp)
     {
         int res;
         double targetPos;
         if (moveIsAbs)
         {
-            (res, targetPos) = await MoveMotorAbs(buildMotorName, textBox);
+            (res, targetPos) = await MoveMotorAbs(motorName, value);
         }
         else
         {
-            (res, targetPos) = await MoveMotorRel(buildMotorName, textBox, increment);
+            (res, targetPos) = await MoveMotorRel(motorName, value, moveUp);
+        }
+        if (res == 1)
+        {
+            MagnetoLogger.Log($"Waiting for {motorName} motor to move {targetPos}", LogFactoryLogLevel.LogLevel.ERROR);
+            await _motorService.WaitUntilBuildReachesTargetAsync(targetPos);
+            await UpdateMotorPositionTextBox(motorName);
+        }
+    }
+    public async Task MoveMotorAndUpdateUI(string motorName, TextBox textBox, bool moveIsAbs, bool moveUp)
+    {
+        int res;
+        double targetPos;
+        if (moveIsAbs)
+        {
+            (res, targetPos) = await MoveMotorAbs(motorName, textBox);
+        }
+        else
+        {
+            (res, targetPos) = await MoveMotorRel(motorName, textBox, moveUp);
         }
         if (res == 1)
         {
             MagnetoLogger.Log($"Waiting for build motor to move {targetPos}", LogFactoryLogLevel.LogLevel.ERROR);
             await _motorService.WaitUntilBuildReachesTargetAsync(targetPos);
-            await UpdateMotorPositionTextBox(buildMotorName);
+            await UpdateMotorPositionTextBox(motorName);
         }
     }
-    public async Task MovePowderMotorAndUpdateUI(TextBox textBox, bool moveIsAbs, bool increment, XamlRoot xamlRoot)
-    {
-        int res;
-        double targetPos;
-        if (moveIsAbs)
-        {
-            (res, targetPos) = await MoveMotorAbs(powderMotorName, textBox);
-        }
-        else
-        {
-            (res, targetPos) = await MoveMotorRel(powderMotorName, textBox, increment);
-        }
-        if (res == 1)
-        {
-            MagnetoLogger.Log($"Waiting for build motor to move {targetPos}", LogFactoryLogLevel.LogLevel.ERROR);
-            await _motorService.WaitUntilPowderReachesTargetAsync(targetPos);
-            await UpdateMotorPositionTextBox(powderMotorName);
-        }
-    }
-    public async Task MoveSweepMotorAndUpdateUI(TextBox textBox, bool moveIsAbs, bool increment, XamlRoot xamlRoot)
-    {
-        int res;
-        double targetPos;
-        if (moveIsAbs)
-        {
-            (res, targetPos) = await MoveMotorAbs(sweepMotorName, textBox);
-        }
-        else
-        {
-            (res, targetPos) = await MoveMotorRel(sweepMotorName, textBox, increment);
-        }
-        if (res == 1)
-        {
-            MagnetoLogger.Log($"Waiting for build motor to move {targetPos}", LogFactoryLogLevel.LogLevel.ERROR);
-            await _motorService.WaitUntilSweepReachesTargetAsync(targetPos);
-            await UpdateMotorPositionTextBox(sweepMotorName);
-        }
-    }
-    public async void MoveMotorAndUpdateUI(string motorName, TextBox textBox, bool moveIsAbs, bool increment, XamlRoot xamlRoot)
+    public async void MoveMotorAndUpdateUISelector(string motorName, TextBox textBox, bool moveIsAbs, bool moveInPositiveDirection, XamlRoot xamlRoot)
     {
         switch (motorName)
         {
             case "build":
-                await MoveBuildMotorAndUpdateUI(textBox, moveIsAbs, increment, xamlRoot);
+                await MoveMotorAndUpdateUI(buildMotorName, textBox, moveIsAbs, moveInPositiveDirection);
                 break;
             case "powder":
-                await MovePowderMotorAndUpdateUI(textBox, moveIsAbs, increment, xamlRoot);
+                await MoveMotorAndUpdateUI(powderMotorName, textBox, moveIsAbs, moveInPositiveDirection);
                 break;
             case "sweep":
-                await MoveSweepMotorAndUpdateUI(textBox, moveIsAbs, increment, xamlRoot);
+                await MoveMotorAndUpdateUI(sweepMotorName, textBox, moveIsAbs, moveInPositiveDirection);
+                break;
+            default:
+                _ = PopupInfo.ShowContentDialog(xamlRoot, "Error", "Invalid motor name given.");
+                return;
+        }
+    }
+    
+    // TODO: not sure if this should be task of void...
+    public async Task MoveMotorAndUpdateUISelector(string motorName, double value, bool moveIsAbs, bool moveInPositiveDirection, XamlRoot xamlRoot)
+    {
+        switch (motorName)
+        {
+            case "build":
+                await MoveMotorAndUpdateUI(buildMotorName, value, moveIsAbs, moveInPositiveDirection);
+                break;
+            case "powder":
+                await MoveMotorAndUpdateUI(powderMotorName, value, moveIsAbs, moveInPositiveDirection);
+                break;
+            case "sweep":
+                await MoveMotorAndUpdateUI(sweepMotorName, value, moveIsAbs, moveInPositiveDirection);
                 break;
             default:
                 _ = PopupInfo.ShowContentDialog(xamlRoot, "Error", "Invalid motor name given.");

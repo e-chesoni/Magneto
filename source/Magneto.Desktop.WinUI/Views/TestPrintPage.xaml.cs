@@ -113,7 +113,7 @@ public sealed partial class TestPrintPage : Page
         _scanSpeedLower = 100;
         _scanSpeedUpper = 3000;
         _supplyAmplifierLower = 0;
-        _supplyAmplifierUpper = 10;
+        _supplyAmplifierUpper = 4;
     }
     #endregion
 
@@ -989,13 +989,20 @@ public sealed partial class TestPrintPage : Page
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             return;
         }
+        if (_motorPageService == null)
+        {
+            var msg = $"Cannot print layer. Motor page service is null.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            return;
+        }
         // Print requested layers
         MagnetoLogger.Log($"Printing {slicesToMark} layers, each {thickness}mm thick, at {power}W, scan speed equal to {scanSpeed}mm/s, and {hatchSpacing}mm hatch spacing. Powder amplifier for each layer is: {amplifier}.", LogFactoryLogLevel.LogLevel.ERROR);
         for (var i = 0; i < slicesToMark; i++)
         {
-            await ViewModel.PrintLayer(_motorPageService, this.Content.XamlRoot, startWithMark, thickness, power, scanSpeed, hatchSpacing, amplifier);
+            await ViewModel.PrintLayer(_motorPageService, startWithMark, thickness, power, scanSpeed, hatchSpacing, amplifier, this.Content.XamlRoot);
             PopulatePageText();
         }
+        _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Done!", "Requested layer(s) printed.");
     }
     private async void DeletePrintButton_Click(object sender, RoutedEventArgs e)
     {

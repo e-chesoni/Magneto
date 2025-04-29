@@ -239,7 +239,7 @@ public class TestPrintViewModel : ObservableRecipient
         //await _waverunnerService.MarkEntityAsync(entity);
     }
 
-    public async Task<int>PrintLayer(MotorPageService motorPageService, XamlRoot xamlRoot, bool startWithMark, double thickness, double power, double scanSpeed, double hatchSpacing, double amplifier)
+    public async Task<int>PrintLayer(MotorPageService motorPageService, bool startWithMark, double thickness, double power, double scanSpeed, double hatchSpacing, double amplifier, XamlRoot xamlRoot)
     {
         string msg;
         // TODO: Uncomment laser methods after testing motor movement
@@ -263,19 +263,20 @@ public class TestPrintViewModel : ObservableRecipient
 
             // layer move
             //await _motorService.LayerMove(thickness, amplifier);
-            await motorPageService.ExecuteLayerMove(xamlRoot, thickness, amplifier);
+            await motorPageService.ExecuteLayerMove(thickness, amplifier, xamlRoot);
 
             // wait for layer move to complete
             while (motorPageService.MotorsRunning()) { await Task.Delay(100); }
         }
         else
         {
-            // TODO: Update layer move commands to use motor page service
             // layer move
-            await _motorService.LayerMove(thickness, amplifier);
+            //await _motorService.LayerMove(thickness, amplifier);
+            await motorPageService.ExecuteLayerMove(thickness, amplifier, xamlRoot);
             // wait for layer move to complete
-            while (_motorService.MotorsRunning()) { await Task.Delay(100); }
-            
+            //while (_motorService.MotorsRunning()) { await Task.Delay(100); }
+            while (motorPageService.MotorsRunning()) { await Task.Delay(100); }
+
             // mark
             //await HandleMarkEntityAsync();
             // wait for mark to complete
