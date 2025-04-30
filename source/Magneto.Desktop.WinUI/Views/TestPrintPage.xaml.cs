@@ -1121,10 +1121,19 @@ public sealed partial class TestPrintPage : Page
     }
 
     #endregion
-    
+
     // TODO: Remove after testing
-    private void TEST_Click(object sender, RoutedEventArgs e)
+    private async void TEST_Click(object sender, RoutedEventArgs e)
     {
-        _waverunnerPageService.TestWaverunnerConnection(this.XamlRoot);
+        MagnetoLogger.Log("Issued program 1", LogFactoryLogLevel.LogLevel.VERBOSE);
+        _motorPageService.GetMotorService().GetBuildMotor().SendProgram1();
+        MagnetoLogger.Log("waiting for program to stop running", LogFactoryLogLevel.LogLevel.VERBOSE);
+        while (await _motorPageService.GetMotorService().GetBuildMotor().IsProgramRunningAsync())
+        {
+            await Task.Delay(100); // Prevents CPU from spinning
+        }
+        MagnetoLogger.Log("Issued program 2", LogFactoryLogLevel.LogLevel.VERBOSE);
+        _motorPageService.GetMotorService().GetPowderMotor().SendProgram2();
     }
+
 }

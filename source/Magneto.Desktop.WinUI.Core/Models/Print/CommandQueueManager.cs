@@ -115,7 +115,7 @@ public class CommandQueueManager : ISubsciber, IStateMachine
 
     private Dictionary<MotorKey, TaskCompletionSource<double>> positionTasks = new Dictionary<MotorKey, TaskCompletionSource<double>>();
     private Queue<string> commandQueue = new Queue<string>();
-    private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+    //private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
     private bool isCommandProcessing = false;
 
     // All controller types are 5 letters long
@@ -174,7 +174,6 @@ public class CommandQueueManager : ISubsciber, IStateMachine
     }
 
     #endregion
-
 
     #region Getters
 
@@ -258,7 +257,6 @@ public class CommandQueueManager : ISubsciber, IStateMachine
 
     #endregion
 
-
     #region Setters
 
     public void SetCurrentPrintHeight(double printHeight)
@@ -320,7 +318,6 @@ public class CommandQueueManager : ISubsciber, IStateMachine
     }
 
     #endregion
-
 
     #region Queue Management
 
@@ -484,7 +481,6 @@ public class CommandQueueManager : ISubsciber, IStateMachine
 
     #endregion
 
-
     #region State Machine Methods
 
     /// <summary>
@@ -538,7 +534,6 @@ public class CommandQueueManager : ISubsciber, IStateMachine
     }
 
     #endregion
-
 
     #region Subscriber Methods
 

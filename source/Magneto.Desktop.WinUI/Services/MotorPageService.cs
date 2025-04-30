@@ -7,6 +7,7 @@ using Magneto.Desktop.WinUI.Core;
 using MongoDB.Driver;
 using Microsoft.UI;
 using Magneto.Desktop.WinUI.Models.UIControl;
+using Magneto.Desktop.WinUI.Core.Services;
 
 namespace Magneto.Desktop.WinUI;
 public class MotorPageService
@@ -21,6 +22,12 @@ public class MotorPageService
         _motorService = App.GetService<IMotorService>();
         _motorService.HandleStartUp();
         _uiControlGroupHelper = printCtlGrpHelper;
+    }
+
+    // TOOD: remove exposure (currently using for testing)
+    public IMotorService GetMotorService()
+    {
+        return _motorService;
     }
 
     #region Locks
@@ -225,14 +232,14 @@ public class MotorPageService
         await MoveMotorAndUpdateUISelector(buildMotorName, clearance, moveIsAbs, true, xamlRoot); // true -> move up
         // 4. move powder motor up by amplifier distance (Oat recommends 2-3x distance of build motor)
         //await _motorService.MoveMotorRel(powderMotor, layerThickness);
-        await MoveMotorAndUpdateUISelector(powderMotorName, thicknessTimesAmplifier, moveIsAbs, true, xamlRoot);
+        //await MoveMotorAndUpdateUISelector(powderMotorName, thicknessTimesAmplifier, moveIsAbs, true, xamlRoot);
         // 5. move build motor down by layer height
         //await _motorService.MoveMotorRel(buildMotor, -layerThickness);
         await MoveMotorAndUpdateUISelector(buildMotorName, layerThickness, moveIsAbs, false, xamlRoot);
         // 6. apply material to build plate
         await MoveMotorAndUpdateUISelector(sweepMotorName, maxSweepPosition, true, true, xamlRoot); // absolute move in the positive direction
         // TEMPORARY SOLUTION: repeat last command to pad queue so we can use motors running check properly
-        await MoveMotorAndUpdateUISelector(sweepMotorName, maxSweepPosition, true, true, xamlRoot);
+        //await MoveMotorAndUpdateUISelector(sweepMotorName, maxSweepPosition, true, true, xamlRoot);
         return 1; // TODO: implement failure return
     }
     #endregion
