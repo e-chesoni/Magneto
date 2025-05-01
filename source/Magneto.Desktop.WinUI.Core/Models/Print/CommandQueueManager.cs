@@ -117,7 +117,7 @@ public class CommandQueueManager : ISubsciber, IStateMachine
     private Queue<string> commandQueue = new Queue<string>();
     private bool isCommandProcessing = false;
 
-    public LinkedList<string[]> programLinkedList = new();
+    public LinkedList<(string[], int, int)> programLinkedList = new();
 
     // All controller types are 5 letters long
     public enum ControllerType
@@ -174,14 +174,15 @@ public class CommandQueueManager : ISubsciber, IStateMachine
 
     #endregion
 
-    public void AddProgramToFront(string[] program)
+    // TODO: Use struct that is available for entire application (put in app.xaml.cs?)
+    public void AddProgramToFront(string[] program, int controller, int axis)
     {
-        programLinkedList.AddFirst(program);
+        programLinkedList.AddFirst((program, controller, axis));
     }
 
-    public void AddProgramToBack(string[] program)
+    public void AddProgramToBack(string[] program, int controller, int axis)
     {
-        programLinkedList.AddLast(program);
+        programLinkedList.AddLast((program, controller, axis));
     }
 
     public string[] GetFirstProgram()
@@ -191,7 +192,10 @@ public class CommandQueueManager : ISubsciber, IStateMachine
             MagnetoLogger.Log("Cannot remove program from front of linked list; program linked list is empty.", LogFactoryLogLevel.LogLevel.ERROR);
             return null;
         }
-        var program = programLinkedList.First.Value;
+        string[] program;
+        int controller;
+        int axis;
+        (program, controller, axis) = programLinkedList.First.Value;
         programLinkedList.RemoveFirst();
         MagnetoLogger.Log("Removing first program from linked list:", LogFactoryLogLevel.LogLevel.VERBOSE);
         foreach (var line in program)
@@ -208,7 +212,10 @@ public class CommandQueueManager : ISubsciber, IStateMachine
             MagnetoLogger.Log("Cannot remove program from back of linked list; program linked list is empty.", LogFactoryLogLevel.LogLevel.ERROR);
             return null;
         }
-        var program = programLinkedList.Last.Value;
+        string[] program;
+        int controller;
+        int axis;
+        (program, controller, axis) = programLinkedList.Last.Value;
         programLinkedList.RemoveLast();
         return program;
     }

@@ -1157,12 +1157,14 @@ public sealed partial class TestPrintPage : Page
         await _motorPageService.GetMotorService().GetBuildMotor().ReadErrors();
         await _motorPageService.GetMotorService().GetPowderMotor().ReadErrors();
         */
-        
         var target = 5;
+        var buildController = 1;
+        var buildAxis = _motorPageService.GetMotorService().GetBuildMotor().GetAxis();
+        var powderAxis = _motorPageService.GetMotorService().GetPowderMotor().GetAxis();
         var prog1 = _motorPageService.GetMotorService().GetBuildMotor().WriteAbsMoveProgram(target, false);
-        _motorPageService.GetCommandQueueManger().AddProgramToFront(prog1);
+        _motorPageService.GetCommandQueueManger().AddProgramToFront(prog1, buildController, buildAxis);
         var prog2 = _motorPageService.GetMotorService().GetPowderMotor().WriteAbsMoveProgram(target, false);
-        _motorPageService.GetCommandQueueManger().AddProgramToFront(prog1);
+        _motorPageService.GetCommandQueueManger().AddProgramToFront(prog1, buildController, powderAxis);
 
         while (_motorPageService.GetCommandQueueManger().programLinkedList.Count > 0 && !PAUSE_REQUESTED)
         {
@@ -1179,12 +1181,10 @@ public sealed partial class TestPrintPage : Page
                 }
             }
         }
-
     }
     private void StopTEST_Click(object sender, RoutedEventArgs e)
     {
         _motorPageService.GetMotorService().GetBuildMotor().Stop();
         _motorPageService.GetMotorService().GetPowderMotor().Stop();
     }
-
 }
