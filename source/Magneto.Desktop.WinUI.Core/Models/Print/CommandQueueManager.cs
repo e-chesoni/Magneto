@@ -185,12 +185,13 @@ public class CommandQueueManager : ISubsciber, IStateMachine
         programLinkedList.AddLast((program, controller, axis));
     }
 
-    public string[] GetFirstProgram()
+    public (string[], int, int) GetFirstProgram()
     {
         if (programLinkedList.Count == 0)
         {
             MagnetoLogger.Log("Cannot remove program from front of linked list; program linked list is empty.", LogFactoryLogLevel.LogLevel.ERROR);
-            return null;
+            string[] empty = new string[0];
+            return (empty, 0, 0);
         }
         string[] program;
         int controller;
@@ -202,7 +203,7 @@ public class CommandQueueManager : ISubsciber, IStateMachine
         {
             MagnetoLogger.Log($"{line}\n", LogFactoryLogLevel.LogLevel.VERBOSE);
         }
-        return program;
+        return (program, controller, axis);
     }
 
     public string[] GetLastProgram()

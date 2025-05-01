@@ -480,7 +480,7 @@ public class StepperMotor : IStepperMotor
         // get the first line
         var programDefinition = program[0];
         var programId = int.Parse(programDefinition.Substring(programDefinition.IndexOf("PGM") + 3));
-        MagnetoLogger.Log($"Clearing program id {programId} to {_motorName}", LogFactoryLogLevel.LogLevel.VERBOSE);
+        MagnetoLogger.Log($"Clearing program id {programId} on {_motorName} motor", LogFactoryLogLevel.LogLevel.VERBOSE);
         MagnetoSerialConsole.SerialWrite(_motorPort, $"{_motorAxis}ERA{programId}");
         MagnetoLogger.Log($"Sending program id {programId} to {_motorName}", LogFactoryLogLevel.LogLevel.VERBOSE);
         foreach (var line in program)

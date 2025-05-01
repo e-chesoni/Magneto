@@ -1157,28 +1157,46 @@ public sealed partial class TestPrintPage : Page
         await _motorPageService.GetMotorService().GetBuildMotor().ReadErrors();
         await _motorPageService.GetMotorService().GetPowderMotor().ReadErrors();
         */
-        var target = 5;
+        var target = 10;
         var buildController = 1;
         var buildAxis = _motorPageService.GetMotorService().GetBuildMotor().GetAxis();
         var powderAxis = _motorPageService.GetMotorService().GetPowderMotor().GetAxis();
+        
         var prog1 = _motorPageService.GetMotorService().GetBuildMotor().WriteAbsMoveProgram(target, false);
-        _motorPageService.GetCommandQueueManger().AddProgramToFront(prog1, buildController, buildAxis);
         var prog2 = _motorPageService.GetMotorService().GetPowderMotor().WriteAbsMoveProgram(target, false);
-        _motorPageService.GetCommandQueueManger().AddProgramToFront(prog1, buildController, powderAxis);
+        _motorPageService.GetCommandQueueManger().AddProgramToFront(prog1, buildController, buildAxis);
+        _motorPageService.GetCommandQueueManger().AddProgramToBack(prog2, buildController, powderAxis);
+
 
         while (_motorPageService.GetCommandQueueManger().programLinkedList.Count > 0 && !PAUSE_REQUESTED)
         {
-            var runProg = _motorPageService.GetCommandQueueManger().GetFirstProgram();
+            string[] runProg;
+            int controller;
+            int axis;
+            (runProg, controller, axis) = _motorPageService.GetCommandQueueManger().GetFirstProgram();
 
             if (runProg != null)
             {
-                //_motorPageService.GetMotorService().GetBuildMotor().AbsoluteMoveByProgram(20, false); // this moves the motor
-                _motorPageService.GetMotorService().GetBuildMotor().SendProgram(runProg); // this does not
-
-                while (await _motorPageService.GetMotorService().GetBuildMotor().IsProgramRunningAsync())
+                // TODO: figure out which  controller + axis to call send command to
+                if (axis == 1)
                 {
-                    await Task.Delay(100);
+                    _motorPageService.GetMotorService().GetBuildMotor().SendProgram(runProg);
+
+                    while (await _motorPageService.GetMotorService().GetBuildMotor().IsProgramRunningAsync())
+                    {
+                        await Task.Delay(100);
+                    }
                 }
+                else // axis == 2
+                {
+                    _motorPageService.GetMotorService().GetPowderMotor().SendProgram(runProg);
+
+                    while (await _motorPageService.GetMotorService().GetPowderMotor().IsProgramRunningAsync())
+                    {
+                        await Task.Delay(100);
+                    }
+                }
+                
             }
         }
     }
