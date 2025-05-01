@@ -305,7 +305,7 @@ public class MotorController : IMotorController
 
         if (motor != null)
         { 
-            return motor.GetStatus();
+            return motor.GetStatusOld();
         }
         else
         {

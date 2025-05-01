@@ -115,8 +115,9 @@ public class CommandQueueManager : ISubsciber, IStateMachine
 
     private Dictionary<MotorKey, TaskCompletionSource<double>> positionTasks = new Dictionary<MotorKey, TaskCompletionSource<double>>();
     private Queue<string> commandQueue = new Queue<string>();
-    //private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
     private bool isCommandProcessing = false;
+
+    public LinkedList<string[]> programLinkedList = new();
 
     // All controller types are 5 letters long
     public enum ControllerType
@@ -147,8 +148,6 @@ public class CommandQueueManager : ISubsciber, IStateMachine
     /// <param name="laserController"></param> Laser Controller
     public CommandQueueManager(MotorController bc, MotorController sc, LaserController lc)
     {
-        MagnetoLogger.Log("", LogFactoryLogLevel.LogLevel.VERBOSE);
-
         buildController = bc;
         sweepController = sc;
         laserController = lc;
@@ -175,8 +174,46 @@ public class CommandQueueManager : ISubsciber, IStateMachine
 
     #endregion
 
-    #region Getters
+    public void AddProgramToFront(string[] program)
+    {
+        programLinkedList.AddFirst(program);
+    }
 
+    public void AddProgramToBack(string[] program)
+    {
+        programLinkedList.AddLast(program);
+    }
+
+    public string[] GetFirstProgram()
+    {
+        if (programLinkedList.Count == 0)
+        {
+            MagnetoLogger.Log("Cannot remove program from front of linked list; program linked list is empty.", LogFactoryLogLevel.LogLevel.ERROR);
+            return null;
+        }
+        var program = programLinkedList.First.Value;
+        programLinkedList.RemoveFirst();
+        MagnetoLogger.Log("Removing first program from linked list:", LogFactoryLogLevel.LogLevel.VERBOSE);
+        foreach (var line in program)
+        {
+            MagnetoLogger.Log($"{line}\n", LogFactoryLogLevel.LogLevel.VERBOSE);
+        }
+        return program;
+    }
+
+    public string[] GetLastProgram()
+    {
+        if (programLinkedList.Count == 0)
+        {
+            MagnetoLogger.Log("Cannot remove program from back of linked list; program linked list is empty.", LogFactoryLogLevel.LogLevel.ERROR);
+            return null;
+        }
+        var program = programLinkedList.Last.Value;
+        programLinkedList.RemoveLast();
+        return program;
+    }
+
+    #region Getters
     public double GetCurrentPrintHeight()
     {
         return _currentPrintHeight; 
@@ -242,7 +279,7 @@ public class CommandQueueManager : ISubsciber, IStateMachine
         // TODO: Return 'ERROR' status if no motor is found
 
         // Return the status of found motor
-        return motor.GetStatus();
+        return motor.GetStatusOld();
 
     }
 
@@ -300,7 +337,6 @@ public class CommandQueueManager : ISubsciber, IStateMachine
     #endregion
 
     #region Stop request handler
-
     public Task<double> HandleStopRequest(StepperMotor motor)
     {
         TaskCompletionSource<double> tcs = null;

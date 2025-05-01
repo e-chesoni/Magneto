@@ -267,6 +267,8 @@
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="10"/>
                             <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <TextBox Grid.Column="0" 
                                  x:Name="PrintDirectoryInputTextBox"
@@ -294,6 +296,12 @@
                                 Height="40"
                                 HorizontalAlignment="Center"
                                 Click="TEST_Click"/>
+                        <Button Grid.Column="8"
+                                Content="Stop TEST"
+                                Width="150"
+                                Height="40"
+                                HorizontalAlignment="Center"
+                                Click="StopTEST_Click"/>
                     </Grid>
 
                     <Grid Grid.Row="2">

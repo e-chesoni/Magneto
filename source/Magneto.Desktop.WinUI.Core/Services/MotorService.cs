@@ -110,7 +110,7 @@ public class MotorService : IMotorService
     }
     #endregion
 
-    #region Helpers
+    #region Command Queue Helper
     /// <summary>
     /// Helper to get controller type given motor name
     /// </summary>
@@ -128,7 +128,7 @@ public class MotorService : IMotorService
     #endregion
 
     #region Getters
-    public CommandQueueManager GetActuationManager()
+    public CommandQueueManager GetCommandQueueManager()
     {
         return _commandQueueManager;
     }
@@ -227,7 +227,7 @@ public class MotorService : IMotorService
     }
     #endregion
 
-    #region Stop Flag Methods
+    #region Enablers
     public void EnableBuildMotor()
     {
         buildMotor.STOP_MOVE_FLAG = false;
@@ -249,48 +249,7 @@ public class MotorService : IMotorService
     #endregion
 
     #region Movement
-    public async Task<int> LayerMove(double layerThickness, double supplyAmplifier)
-    {
-        var lowerBuildForSweepDist = 2;
-        // safeguard max sweep position
-        var maxSweepPos = _commandQueueManager.GetSweepMotor().GetMaxPos() - 2;
-
-        if (_commandQueueManager != null)
-        {
-            // move build motor down for sweep
-            await _commandQueueManager.AddCommand(GetControllerTypeHelper(buildMotor.GetMotorName()), buildMotor.GetAxis(), CommandType.RelativeMove, -lowerBuildForSweepDist);
-
-            // home sweep motor
-            await _commandQueueManager.AddCommand(GetControllerTypeHelper(sweepMotor.GetMotorName()), sweepMotor.GetAxis(), CommandType.AbsoluteMove, sweepMotor.GetHomePos());
-
-            // move build motor back up to last mark height
-            await _commandQueueManager.AddCommand(GetControllerTypeHelper(buildMotor.GetMotorName()), buildMotor.GetAxis(), CommandType.RelativeMove, lowerBuildForSweepDist);
-
-            // move powder motor up by powder amp layer height (Prof. Tertuliano recommends powder motor moves 2-3x distance of build motor)
-            await _commandQueueManager.AddCommand(GetControllerTypeHelper(powderMotor.GetMotorName()), powderMotor.GetAxis(), CommandType.RelativeMove, (supplyAmplifier * layerThickness));
-
-            // move build motor down by layer height
-            await _commandQueueManager.AddCommand(GetControllerTypeHelper(buildMotor.GetMotorName()), buildMotor.GetAxis(), CommandType.RelativeMove, -layerThickness);
-
-            // apply material to build plate
-            await _commandQueueManager.AddCommand(GetControllerTypeHelper(sweepMotor.GetMotorName()), sweepMotor.GetAxis(), CommandType.AbsoluteMove, maxSweepPos);
-
-            // TEMPORARY SOLUTION: repeat last command to pad queue so we can use motors running check properly
-            await _commandQueueManager.AddCommand(GetControllerTypeHelper(sweepMotor.GetMotorName()), sweepMotor.GetAxis(), CommandType.AbsoluteMove, maxSweepPos); // TODO: change to wait for end command
-        }
-        else
-        {
-            var msg = $"Actuation manager is null.";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            return 0;
-        }
-        return 1;
-    }
-    private async Task<int> MoveMotorAbs(StepperMotor motor, double target)
-    {
-        await _commandQueueManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.AbsoluteMove, target);
-        return 1;
-    }
+    #region Absolute Move
     public async Task<int> MoveMotorAbs(string motorNameLowerCase, double target)
     {
         switch (motorNameLowerCase)
@@ -310,19 +269,17 @@ public class MotorService : IMotorService
         }
         return 1;
     }
+    private async Task<int> MoveMotorAbs(StepperMotor motor, double target)
+    {
+        await _commandQueueManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.AbsoluteMove, target);
+        return 1;
+    }
     public async Task<int> MoveBuildMotorAbs(double target) => await MoveMotorAbs(buildMotor, target);
     public async Task<int> MovePowderMotorAbs(double target) => await MoveMotorAbs(powderMotor, target);
     public async Task<int> MoveSweepMotorAbs(double target) => await MoveMotorAbs(sweepMotor, target);
+    #endregion
 
-    public async Task<int> MoveMotorRel(StepperMotor motor, double distance)
-    {
-        // NOTE: when called, you must await the return to get the integer value
-        //       Otherwise returns some weird string
-        MagnetoLogger.Log($"🚦called with distance {distance} on motor {motor.GetMotorName()}", LogFactoryLogLevel.LogLevel.WARN);
-        MagnetoLogger.Log($"🔁distance {distance} to {motor.GetMotorName()} via {motor.GetAxis()}", LogFactoryLogLevel.LogLevel.WARN);
-        await _commandQueueManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.RelativeMove, distance);
-        return 1;
-    }
+    #region Relative Move
     public async Task<int> MoveMotorRel(string motorNameLowerCase, double distance)
     {
         switch (motorNameLowerCase)
@@ -342,38 +299,26 @@ public class MotorService : IMotorService
         }
         return 1;
     }
+    private async Task<int> MoveMotorRel(StepperMotor motor, double distance)
+    {
+        // NOTE: when called, you must await the return to get the integer value
+        //       Otherwise returns some weird string
+        MagnetoLogger.Log($"🚦called with distance {distance} on motor {motor.GetMotorName()}", LogFactoryLogLevel.LogLevel.WARN);
+        MagnetoLogger.Log($"🔁distance {distance} to {motor.GetMotorName()} via {motor.GetAxis()}", LogFactoryLogLevel.LogLevel.WARN);
+        await _commandQueueManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.RelativeMove, distance);
+        return 1;
+    }
     public async Task<int> MoveBuildMotorRel(double distance) => await MoveMotorRel(buildMotor, distance);
     public async Task<int> MovePowderMotorRel(double distance) => await MoveMotorRel(powderMotor, distance);
     public async Task<int> MoveSweepMotorRel(double distance) => await MoveMotorRel(sweepMotor, distance);
+    #endregion
 
-    public async Task<int> MoveBuildMotor(bool moveAbs, double value)
-    {
-        if (moveAbs) return await MoveMotorAbs(buildMotor, value);
-        else return await MoveMotorRel(buildMotor, value);
-    }
-    public async Task<int> MovePowderMotor(bool moveAbs, double value)
-    {
-        if (moveAbs) return await MoveMotorAbs(powderMotor, value);
-        else return await MoveMotorRel(powderMotor, value);
-    }
-    public async Task<int> MoveSweepMotor(bool moveAbs, double value)
-    {
-        if (moveAbs) return await MoveMotorAbs(sweepMotor, value);
-        else return await MoveMotorRel(sweepMotor, value);
-    }
-
-    public async Task<int> HomeMotor(StepperMotor motor)
-    {
-        await _commandQueueManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.AbsoluteMove, motor.GetHomePos());
-        return 1;
-    }
-
+    #region Homing
     private async Task<int> HomeMotorHelper(StepperMotor motor)
     {
         await _commandQueueManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.AbsoluteMove, motor.GetHomePos());
         return 1;
     }
-
     public async Task<int> HomeMotor(string motorNameLowerCase)
     {
         switch (motorNameLowerCase)
@@ -393,17 +338,17 @@ public class MotorService : IMotorService
         }
         return 1;
     }
-
+    public async Task<int> HomeMotor(StepperMotor motor)
+    {
+        await _commandQueueManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.AbsoluteMove, motor.GetHomePos());
+        return 1;
+    }
     public async Task<int> HomeBuildMotor() => await HomeMotor(buildMotor);
     public async Task<int> HomePowderMotor() => await HomeMotor(powderMotor);
     public async Task<int> HomeSweepMotor() => await HomeMotor(sweepMotor);
+    #endregion
 
-    public async Task<int> StopMotorAndClearQueue(StepperMotor motor)
-    {
-        await _commandQueueManager.HandleStopRequest(motor);
-        return 1;
-    }
-
+    #region Stop and Clear Command Queue
     public async Task<int> StopMotorAndClearQueue(string motorNameLowerCase)
     {
         switch (motorNameLowerCase)
@@ -422,10 +367,11 @@ public class MotorService : IMotorService
                 return 0;
                 
         }
-
         return 1;
     }
+    #endregion
 
+    #region Wait Until Target Reached
     private async Task<int> WaitUntilAtTargetAsync(StepperMotor motor, double targetPos)
     {
         await motor.WaitUntilAtTargetAsync(targetPos);
@@ -453,5 +399,6 @@ public class MotorService : IMotorService
         }
         return 1;
     }
+    #endregion
     #endregion
 }

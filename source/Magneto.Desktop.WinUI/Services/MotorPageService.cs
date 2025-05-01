@@ -8,6 +8,7 @@ using MongoDB.Driver;
 using Microsoft.UI;
 using Magneto.Desktop.WinUI.Models.UIControl;
 using Magneto.Desktop.WinUI.Core.Services;
+using Magneto.Desktop.WinUI.Core.Models.Print;
 
 namespace Magneto.Desktop.WinUI;
 public class MotorPageService
@@ -29,7 +30,10 @@ public class MotorPageService
     {
         return _motorService;
     }
-
+    public CommandQueueManager GetCommandQueueManger()
+    {
+        return _motorService.GetCommandQueueManager();
+    }
     #region Locks
     public void UnlockCalibrationPanel()
     {

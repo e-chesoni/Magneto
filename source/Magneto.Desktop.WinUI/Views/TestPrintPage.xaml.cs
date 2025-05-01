@@ -1122,18 +1122,69 @@ public sealed partial class TestPrintPage : Page
 
     #endregion
 
+    private bool PAUSE_REQUESTED;
     // TODO: Remove after testing
     private async void TEST_Click(object sender, RoutedEventArgs e)
     {
-        MagnetoLogger.Log("Issued program 1", LogFactoryLogLevel.LogLevel.VERBOSE);
-        _motorPageService.GetMotorService().GetBuildMotor().SendProgram1();
+        double pos;
+        if (_motorPageService == null)
+        {
+            return;
+        }
+        
+        await _motorPageService.GetMotorService().GetBuildMotor().ReadErrors();
+        await _motorPageService.GetMotorService().GetPowderMotor().ReadErrors();
+        /*
+        MagnetoLogger.Log("Issuing program 1", LogFactoryLogLevel.LogLevel.VERBOSE);
+        _motorPageService.GetMotorService().GetBuildMotor().AbsoluteMoveByProgram(20, false);
         MagnetoLogger.Log("waiting for program to stop running", LogFactoryLogLevel.LogLevel.VERBOSE);
         while (await _motorPageService.GetMotorService().GetBuildMotor().IsProgramRunningAsync())
         {
             await Task.Delay(100); // Prevents CPU from spinning
         }
-        MagnetoLogger.Log("Issued program 2", LogFactoryLogLevel.LogLevel.VERBOSE);
-        _motorPageService.GetMotorService().GetPowderMotor().SendProgram2();
+        pos = await _motorPageService.GetMotorService().GetBuildMotor().GetPosition(2);
+        BuildMotorCurrentPositionTextBox.Text = pos.ToString();
+
+        MagnetoLogger.Log("Issuing program 2", LogFactoryLogLevel.LogLevel.VERBOSE);
+        _motorPageService.GetMotorService().GetPowderMotor().AbsoluteMoveByProgram(20, false);
+
+        while (await _motorPageService.GetMotorService().GetPowderMotor().IsProgramRunningAsync())
+        {
+            await Task.Delay(100); // Prevents CPU from spinning
+        }
+        pos = await _motorPageService.GetMotorService().GetPowderMotor().GetPosition(2);
+        PowderMotorCurrentPositionTextBox.Text = pos.ToString();
+        await _motorPageService.GetMotorService().GetBuildMotor().ReadErrors();
+        await _motorPageService.GetMotorService().GetPowderMotor().ReadErrors();
+        */
+        
+        var target = 5;
+        var prog1 = _motorPageService.GetMotorService().GetBuildMotor().WriteAbsMoveProgram(target, false);
+        _motorPageService.GetCommandQueueManger().AddProgramToFront(prog1);
+        var prog2 = _motorPageService.GetMotorService().GetPowderMotor().WriteAbsMoveProgram(target, false);
+        _motorPageService.GetCommandQueueManger().AddProgramToFront(prog1);
+
+        while (_motorPageService.GetCommandQueueManger().programLinkedList.Count > 0 && !PAUSE_REQUESTED)
+        {
+            var runProg = _motorPageService.GetCommandQueueManger().GetFirstProgram();
+
+            if (runProg != null)
+            {
+                //_motorPageService.GetMotorService().GetBuildMotor().AbsoluteMoveByProgram(20, false); // this moves the motor
+                _motorPageService.GetMotorService().GetBuildMotor().SendProgram(runProg); // this does not
+
+                while (await _motorPageService.GetMotorService().GetBuildMotor().IsProgramRunningAsync())
+                {
+                    await Task.Delay(100);
+                }
+            }
+        }
+
+    }
+    private void StopTEST_Click(object sender, RoutedEventArgs e)
+    {
+        _motorPageService.GetMotorService().GetBuildMotor().Stop();
+        _motorPageService.GetMotorService().GetPowderMotor().Stop();
     }
 
 }

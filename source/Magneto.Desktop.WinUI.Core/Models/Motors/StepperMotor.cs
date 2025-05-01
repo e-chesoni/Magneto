@@ -5,6 +5,7 @@ using System.Diagnostics;
 using Newtonsoft.Json.Linq;
 using Magneto.Desktop.WinUI.Core.Contracts;
 using System.IO.Ports;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Magneto.Desktop.WinUI.Core.Models.Motors;
 
@@ -42,11 +43,6 @@ public class StepperMotor : IStepperMotor
     ///  The axis that the motor is attached to
     /// </summary>
     private int _motorAxis { get; set; }
-
-    /// <summary>
-    /// Calculated motor position
-    /// </summary>
-    double _calculatedPos;
 
     /// <summary>
     /// Motor status
@@ -286,7 +282,7 @@ public class StepperMotor : IStepperMotor
     /// </summary>
     /// <param name="newStatus"></param>
     /// <returns></returns> Returns the status of the motor
-    public MotorStatus GetStatus()
+    public MotorStatus GetStatusOld()
     {
         return _status;
     }
@@ -402,12 +398,23 @@ public class StepperMotor : IStepperMotor
     }
 
     // Helper method to check if a given status bit is set
-    private bool CheckStatusHelper(int status, STATUS_BIT bit)
+    private async Task<string> RequestStatusAsync() => await MagnetoSerialConsole.RequestResponseAsync(_motorPort, $"{_motorAxis}STA?", TimeSpan.FromSeconds(5));
+    private async Task<string> RequestPositionAsync() => await MagnetoSerialConsole.RequestResponseAsync(_motorPort, $"{_motorAxis}POS?", TimeSpan.FromSeconds(5));
+    private async Task<string> RequestReadAndClearErrorsAsync() => await MagnetoSerialConsole.RequestResponseAsync(_motorPort, $"{_motorAxis}ERR?", TimeSpan.FromSeconds(5));
+    public void Stop()
     {
-        MagnetoLogger.Log("Checking bit.", LogFactoryLogLevel.LogLevel.VERBOSE);
+        MagnetoSerialConsole.SerialWrite(_motorPort, $"{_motorAxis}STP");
+    }
+    public void StopAll()
+    {
+        MagnetoSerialConsole.SerialWrite(_motorPort, $"0STP");
+    }
+    private bool BitIsSet(int status, STATUS_BIT bit)
+    {
+        MagnetoLogger.Log($"Checking if bit {(int)bit} is set.", LogFactoryLogLevel.LogLevel.VERBOSE);
         return (status & (1 << (int)bit)) != 0;
     }
-    private async Task<int> GetBitStatus()
+    private async Task<int> GetStatus()
     {
         MagnetoLogger.Log("Getting bit status.", LogFactoryLogLevel.LogLevel.VERBOSE);
 
@@ -416,61 +423,107 @@ public class StepperMotor : IStepperMotor
             MagnetoLogger.Log("Port Closed.", LogFactoryLogLevel.LogLevel.ERROR);
             return -1;
         }
+        // status is an 8-bit number; each bit indicates whether a specific status is "triggered"
+        var status = await RequestStatusAsync(); // example status: #8
+        return int.Parse(status.TrimStart('#'));
+    }
+    public async Task<double> GetPosition(int decimals)
+    {
+        decimals = decimals > 6 ? 6 : decimals;
+        MagnetoLogger.Log($"Getting {_motorName} position.", LogFactoryLogLevel.LogLevel.VERBOSE);
 
-        var response = await MagnetoSerialConsole.RequestResponseAsync(_motorPort, $"{_motorAxis}STA?", TimeSpan.FromSeconds(5));
-
-        // Remove leading '#' and parse the number
-        return int.Parse(response.TrimStart('#'));
+        if (!MagnetoSerialConsole.OpenSerialPort(_motorPort))
+        {
+            MagnetoLogger.Log("Port Closed.", LogFactoryLogLevel.LogLevel.ERROR);
+            return -1;
+        }
+        var response = await RequestPositionAsync(); // example position: #-20.000000,-20.000200
+        // Get everything after # and before ,
+        var trimmed = response.TrimStart('#');
+        var commaIndex = trimmed.IndexOf(',');
+        var value = commaIndex >= 0 ? trimmed.Substring(0, commaIndex) : trimmed;
+        var pos = double.Parse(value);
+        // round position to  requested number of decimal places
+        return Math.Round(pos, decimals);
     }
 
     public async Task<bool> IsProgramRunningAsync()
     {
-        MagnetoLogger.Log("Checking to see if program is running..", LogFactoryLogLevel.LogLevel.VERBOSE);
-        var status = await GetBitStatus();
-        return CheckStatusHelper(status, STATUS_BIT.PROGRAM_RUNNING);
+        MagnetoLogger.Log("Checking to see if program is running...", LogFactoryLogLevel.LogLevel.VERBOSE);
+        var status = await GetStatus();
+        return BitIsSet(status, STATUS_BIT.PROGRAM_RUNNING);
+    }
+    private string[] WriteAbsoluteMoveProgramHelper(double position)
+    {
+        var programId = _motorAxis;
+        var program = new[]
+        {
+            $"{_motorAxis}PGM{programId}",
+            $"{_motorAxis}MVA{position}",
+            $"{_motorAxis}WST",
+            $"{_motorAxis}END"
+        };
+        MagnetoLogger.Log("Program:", LogFactoryLogLevel.LogLevel.VERBOSE);
+        foreach (var line in program)
+        {
+            MagnetoLogger.Log($"{line}\n", LogFactoryLogLevel.LogLevel.VERBOSE);
+        }
+        return program;
+    }
+    public string[] WriteAbsMoveProgram(double position, bool moveUp)
+    {
+        position = moveUp ? position : -position;
+        return WriteAbsoluteMoveProgramHelper(position);
+    }
+    public void SendProgram(string[] program)
+    {
+        // get the first line
+        var programDefinition = program[0];
+        var programId = int.Parse(programDefinition.Substring(programDefinition.IndexOf("PGM") + 3));
+        MagnetoLogger.Log($"Clearing program id {programId} to {_motorName}", LogFactoryLogLevel.LogLevel.VERBOSE);
+        MagnetoSerialConsole.SerialWrite(_motorPort, $"{_motorAxis}ERA{programId}");
+        MagnetoLogger.Log($"Sending program id {programId} to {_motorName}", LogFactoryLogLevel.LogLevel.VERBOSE);
+        foreach (var line in program)
+        {
+            var motorCmd = line + "\n"; // insert line terminator
+            MagnetoSerialConsole.SerialWrite(_motorPort, motorCmd);
+        }
+        MagnetoLogger.Log($"Executing program id {programId} on {_motorName}", LogFactoryLogLevel.LogLevel.VERBOSE);
+        MagnetoSerialConsole.SerialWrite(_motorPort, $"{_motorAxis}EXC{programId}");
     }
 
-    public void SendProgram1()
+    // TODO: get all errors from status call
+    public async Task<string> ReadErrors()
     {
-        /*
-        MagnetoSerialConsole.SerialWrite(_motorPort, "2MVR-10");
-        MagnetoSerialConsole.SerialWrite(_motorPort, "2WST"); // does not stop other axis from moving
-        MagnetoSerialConsole.SerialWrite(_motorPort, "1WST");
-        MagnetoSerialConsole.SerialWrite(_motorPort, "1MVR-10");
-        */
-        // commands to execute
-        var programLines = new[]
+        string msg;
+        var status = await GetStatus();
+        if (BitIsSet(status, STATUS_BIT.ONE_OR_MORE_ERRORS))
         {
-            "1PGM1", // begin recording program; save as program 3
-            "1MVA-10",
-            "1WST",
-            "1END" // end recording program
-        };
-        MagnetoSerialConsole.SerialWrite(_motorPort, "1ERA1"); // erase before executing just in case
+            var errors = await RequestReadAndClearErrorsAsync();
+            MagnetoLogger.Log($"Error(s) on {_motorName}: {errors} \n Errors will be cleared after report", LogFactoryLogLevel.LogLevel.ERROR);
+            return errors;
+        }
+        msg = $"No errors on {_motorName}.";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
+        return msg;
+    }
+
+    public void AbsoluteMoveByProgram(double position, bool moveUp)
+    {
+        var programId = _motorAxis;
+        position = moveUp ? position : -position;
+        // commands to execute
+        var programLines = WriteAbsoluteMoveProgramHelper(position);
+        // call erase to make sure there's no existing program with the same id
+        MagnetoSerialConsole.SerialWrite(_motorPort, $"{_motorAxis}ERA{programId}");
+        // create program
         foreach (var line in programLines)
         {
             var motorCmd = line + "\n"; // insert line terminator
             MagnetoSerialConsole.SerialWrite(_motorPort, motorCmd);
         }
-        MagnetoSerialConsole.SerialWrite(_motorPort, "1EXC1");
-    }
-    public void SendProgram2()
-    {
-        // Build the program block
-        var programLines = new[]
-        {
-            "2PGM2", // begin recording program; save as program 3
-            "2MVA-10",
-            "2WST",
-            "2END" // end recording program
-        };
-        MagnetoSerialConsole.SerialWrite(_motorPort, "2ERA2");
-        foreach (var line in programLines)
-        {
-            var motorCmd = line + "\n";
-            MagnetoSerialConsole.SerialWrite(_motorPort, motorCmd);
-        }
-        MagnetoSerialConsole.SerialWrite(_motorPort, "2EXC2");
+        // run program
+        MagnetoSerialConsole.SerialWrite(_motorPort, $"{_motorAxis}EXC{programId}");
     }
 
     /// <summary>
