@@ -14,6 +14,7 @@ using System.Diagnostics;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
 using MongoDB.Driver;
+using static Magneto.Desktop.WinUI.Core.Models.Constants;
 
 namespace Magneto.Desktop.WinUI.Views;
 
@@ -1157,41 +1158,64 @@ public sealed partial class TestPrintPage : Page
         await _motorPageService.GetMotorService().GetBuildMotor().ReadErrors();
         await _motorPageService.GetMotorService().GetPowderMotor().ReadErrors();
         */
-        var target = 10;
-        var buildController = 1;
+        var target1 = 10;
+        var target2 = 20;
+        Controller buildSupplyController = Controller.BUILD_AND_SUPPLY;
+        Controller sweepCoontroller = Controller.SWEEP;
         var buildAxis = _motorPageService.GetMotorService().GetBuildMotor().GetAxis();
         var powderAxis = _motorPageService.GetMotorService().GetPowderMotor().GetAxis();
-        
-        var prog1 = _motorPageService.GetMotorService().GetBuildMotor().WriteAbsMoveProgram(target, false);
-        var prog2 = _motorPageService.GetMotorService().GetPowderMotor().WriteAbsMoveProgram(target, false);
-        _motorPageService.GetCommandQueueManger().AddProgramToFront(prog1, buildController, buildAxis);
-        _motorPageService.GetCommandQueueManger().AddProgramToBack(prog2, buildController, powderAxis);
+        var sweepAxis = _motorPageService.GetMotorService().GetSweepMotor().GetAxis();
 
+        var prog1 = _motorPageService.GetMotorService().GetBuildMotor().WriteAbsMoveProgram(target1, false);
+        var prog2 = _motorPageService.GetMotorService().GetPowderMotor().WriteAbsMoveProgram(target1, false);
+        var prog3 = _motorPageService.GetMotorService().GetSweepMotor().WriteAbsMoveProgram(target1, true); // sweep moves in positive direction
+        var prog4 = _motorPageService.GetMotorService().GetBuildMotor().WriteAbsMoveProgram(target2, false);
+        var prog5 = _motorPageService.GetMotorService().GetPowderMotor().WriteAbsMoveProgram(target2, false);
+        var prog6 = _motorPageService.GetMotorService().GetSweepMotor().WriteAbsMoveProgram(target2, true);
+        
+        // add last command first
+        _motorPageService.GetCommandQueueManger().AddProgramToFront(prog6, sweepCoontroller, sweepAxis);
+        _motorPageService.GetCommandQueueManger().AddProgramToFront(prog5, buildSupplyController, powderAxis);
+        _motorPageService.GetCommandQueueManger().AddProgramToFront(prog4, buildSupplyController, buildAxis);
+        _motorPageService.GetCommandQueueManger().AddProgramToFront(prog3, sweepCoontroller, sweepAxis);
+        _motorPageService.GetCommandQueueManger().AddProgramToFront(prog2, buildSupplyController, powderAxis);
+        _motorPageService.GetCommandQueueManger().AddProgramToFront(prog1, buildSupplyController, buildAxis);
 
         while (_motorPageService.GetCommandQueueManger().programLinkedList.Count > 0 && !PAUSE_REQUESTED)
         {
             string[] runProg;
-            int controller;
+            Controller controller;
             int axis;
             (runProg, controller, axis) = _motorPageService.GetCommandQueueManger().GetFirstProgram();
 
             if (runProg != null)
             {
-                // TODO: figure out which  controller + axis to call send command to
-                if (axis == 1)
+                if (controller == Controller.BUILD_AND_SUPPLY)
                 {
-                    _motorPageService.GetMotorService().GetBuildMotor().SendProgram(runProg);
-
-                    while (await _motorPageService.GetMotorService().GetBuildMotor().IsProgramRunningAsync())
+                    if (axis == 1)
                     {
-                        await Task.Delay(100);
+                        _motorPageService.GetMotorService().GetBuildMotor().SendProgram(runProg);
+
+                        while (await _motorPageService.GetMotorService().GetBuildMotor().IsProgramRunningAsync())
+                        {
+                            await Task.Delay(100);
+                        }
+                    }
+                    else // axis == 2
+                    {
+                        _motorPageService.GetMotorService().GetPowderMotor().SendProgram(runProg);
+
+                        while (await _motorPageService.GetMotorService().GetPowderMotor().IsProgramRunningAsync())
+                        {
+                            await Task.Delay(100);
+                        }
                     }
                 }
-                else // axis == 2
+                else // sweep controller
                 {
-                    _motorPageService.GetMotorService().GetPowderMotor().SendProgram(runProg);
+                    _motorPageService.GetMotorService().GetSweepMotor().SendProgram(runProg);
 
-                    while (await _motorPageService.GetMotorService().GetPowderMotor().IsProgramRunningAsync())
+                    while (await _motorPageService.GetMotorService().GetSweepMotor().IsProgramRunningAsync())
                     {
                         await Task.Delay(100);
                     }
@@ -1202,7 +1226,9 @@ public sealed partial class TestPrintPage : Page
     }
     private void StopTEST_Click(object sender, RoutedEventArgs e)
     {
+        PAUSE_REQUESTED = true;
         _motorPageService.GetMotorService().GetBuildMotor().Stop();
         _motorPageService.GetMotorService().GetPowderMotor().Stop();
+        _motorPageService.GetMotorService().GetSweepMotor().Stop();
     }
 }

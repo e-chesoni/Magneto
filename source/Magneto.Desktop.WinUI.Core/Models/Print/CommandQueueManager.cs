@@ -15,6 +15,7 @@ using Magneto.Desktop.WinUI.Core.Models.State.PrintStates;
 using static Magneto.Desktop.WinUI.Core.Models.Motors.StepperMotor;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.States;
 using Magneto.Desktop.WinUI.Core.Contracts;
+using static Magneto.Desktop.WinUI.Core.Models.Constants;
 
 namespace Magneto.Desktop.WinUI.Core.Models.Print;
 
@@ -117,7 +118,7 @@ public class CommandQueueManager : ISubsciber, IStateMachine
     private Queue<string> commandQueue = new Queue<string>();
     private bool isCommandProcessing = false;
 
-    public LinkedList<(string[], int, int)> programLinkedList = new();
+    public LinkedList<(string[], Controller, int)> programLinkedList = new();
 
     // All controller types are 5 letters long
     public enum ControllerType
@@ -175,26 +176,26 @@ public class CommandQueueManager : ISubsciber, IStateMachine
     #endregion
 
     // TODO: Use struct that is available for entire application (put in app.xaml.cs?)
-    public void AddProgramToFront(string[] program, int controller, int axis)
+    public void AddProgramToFront(string[] program, Controller controller, int axis)
     {
         programLinkedList.AddFirst((program, controller, axis));
     }
 
-    public void AddProgramToBack(string[] program, int controller, int axis)
+    public void AddProgramToBack(string[] program, Controller controller, int axis)
     {
         programLinkedList.AddLast((program, controller, axis));
     }
 
-    public (string[], int, int) GetFirstProgram()
+    public (string[], Controller, int) GetFirstProgram()
     {
         if (programLinkedList.Count == 0)
         {
             MagnetoLogger.Log("Cannot remove program from front of linked list; program linked list is empty.", LogFactoryLogLevel.LogLevel.ERROR);
-            string[] empty = new string[0];
+            var empty = Array.Empty<string>();
             return (empty, 0, 0);
         }
         string[] program;
-        int controller;
+        Controller controller;
         int axis;
         (program, controller, axis) = programLinkedList.First.Value;
         programLinkedList.RemoveFirst();
@@ -206,19 +207,20 @@ public class CommandQueueManager : ISubsciber, IStateMachine
         return (program, controller, axis);
     }
 
-    public string[] GetLastProgram()
+    public (string[], Controller, int) GetLastProgram()
     {
         if (programLinkedList.Count == 0)
         {
             MagnetoLogger.Log("Cannot remove program from back of linked list; program linked list is empty.", LogFactoryLogLevel.LogLevel.ERROR);
-            return null;
+            var empty = Array.Empty<string>();
+            return (empty, 0, 0);
         }
         string[] program;
-        int controller;
+        Controller controller;
         int axis;
         (program, controller, axis) = programLinkedList.Last.Value;
         programLinkedList.RemoveLast();
-        return program;
+        return (program, controller, axis);
     }
 
     #region Getters
