@@ -489,7 +489,9 @@ public class StepperMotor : IStepperMotor
         if (BitIsSet(status, MICRONIX_STATUS_BIT.ONE_OR_MORE_ERRORS))
         {
             var errors = await RequestReadAndClearErrorsAsync();
-            MagnetoLogger.Log($"Error(s) on {_motorName}: {errors} \n Errors will be cleared after report", LogFactoryLogLevel.LogLevel.ERROR);
+            // handle errors
+            MicronixErrorParser.HandleErrors(errors);
+            //MagnetoLogger.Log($"Error(s) on {_motorName}: {errors} \n Errors will be cleared after report", LogFactoryLogLevel.LogLevel.ERROR);
             return errors;
         }
         msg = $"No errors on {_motorName}.";
