@@ -6,6 +6,7 @@ using Newtonsoft.Json.Linq;
 using Magneto.Desktop.WinUI.Core.Contracts;
 using System.IO.Ports;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using static Magneto.Desktop.WinUI.Core.Models.Constants.MicronixConstants;
 
 namespace Magneto.Desktop.WinUI.Core.Models.Motors;
 
@@ -385,18 +386,6 @@ public class StepperMotor : IStepperMotor
         return;
     }
 
-    public enum STATUS_BIT
-    {
-        NEGATIVE_SWITCH_ACTIVATED = 0,
-        POSITIVE_SWITCH_ACTIVATED = 1,
-        PROGRAM_RUNNING = 2,
-        STAGE_STOPPED = 3,
-        DECELERATION_PHASE = 4,
-        CONSTANT_ACCELERATION_PHASE = 5,
-        ACCELERATION_PHASE = 6,
-        ONE_OR_MORE_ERRORS = 7
-    }
-
     // Helper method to check if a given status bit is set
     private async Task<string> RequestStatusAsync() => await MagnetoSerialConsole.RequestResponseAsync(_motorPort, $"{_motorAxis}STA?", TimeSpan.FromSeconds(5));
     private async Task<string> RequestPositionAsync() => await MagnetoSerialConsole.RequestResponseAsync(_motorPort, $"{_motorAxis}POS?", TimeSpan.FromSeconds(5));
@@ -409,7 +398,7 @@ public class StepperMotor : IStepperMotor
     {
         MagnetoSerialConsole.SerialWrite(_motorPort, $"0STP");
     }
-    private bool BitIsSet(int status, STATUS_BIT bit)
+    private bool BitIsSet(int status, MICRONIX_STATUS_BIT bit)
     {
         MagnetoLogger.Log($"Checking if bit {(int)bit} is set.", LogFactoryLogLevel.LogLevel.VERBOSE);
         return (status & (1 << (int)bit)) != 0;
@@ -451,7 +440,7 @@ public class StepperMotor : IStepperMotor
     {
         MagnetoLogger.Log("Checking to see if program is running...", LogFactoryLogLevel.LogLevel.VERBOSE);
         var status = await GetStatus();
-        return BitIsSet(status, STATUS_BIT.PROGRAM_RUNNING);
+        return BitIsSet(status, MICRONIX_STATUS_BIT.PROGRAM_RUNNING);
     }
     private string[] WriteAbsoluteMoveProgramHelper(double position)
     {
@@ -497,7 +486,7 @@ public class StepperMotor : IStepperMotor
     {
         string msg;
         var status = await GetStatus();
-        if (BitIsSet(status, STATUS_BIT.ONE_OR_MORE_ERRORS))
+        if (BitIsSet(status, MICRONIX_STATUS_BIT.ONE_OR_MORE_ERRORS))
         {
             var errors = await RequestReadAndClearErrorsAsync();
             MagnetoLogger.Log($"Error(s) on {_motorName}: {errors} \n Errors will be cleared after report", LogFactoryLogLevel.LogLevel.ERROR);

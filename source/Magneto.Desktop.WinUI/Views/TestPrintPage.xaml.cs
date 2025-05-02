@@ -14,7 +14,7 @@ using System.Diagnostics;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
 using MongoDB.Driver;
-using static Magneto.Desktop.WinUI.Core.Models.Constants;
+using static Magneto.Desktop.WinUI.Core.Models.Constants.MagnetoConstants;
 
 namespace Magneto.Desktop.WinUI.Views;
 
@@ -1135,6 +1135,7 @@ public sealed partial class TestPrintPage : Page
         
         await _motorPageService.GetMotorService().GetBuildMotor().ReadErrors();
         await _motorPageService.GetMotorService().GetPowderMotor().ReadErrors();
+        await _motorPageService.GetMotorService().GetSweepMotor().ReadErrors();
         /*
         MagnetoLogger.Log("Issuing program 1", LogFactoryLogLevel.LogLevel.VERBOSE);
         _motorPageService.GetMotorService().GetBuildMotor().AbsoluteMoveByProgram(20, false);

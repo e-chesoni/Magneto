@@ -15,7 +15,7 @@ using Magneto.Desktop.WinUI.Core.Models.State.PrintStates;
 using static Magneto.Desktop.WinUI.Core.Models.Motors.StepperMotor;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.States;
 using Magneto.Desktop.WinUI.Core.Contracts;
-using static Magneto.Desktop.WinUI.Core.Models.Constants;
+using static Magneto.Desktop.WinUI.Core.Models.Constants.MagnetoConstants;
 
 namespace Magneto.Desktop.WinUI.Core.Models.Print;
 
