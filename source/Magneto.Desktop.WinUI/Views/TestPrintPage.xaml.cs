@@ -1128,41 +1128,19 @@ public sealed partial class TestPrintPage : Page
     private async void TEST_Click(object sender, RoutedEventArgs e)
     {
         double pos;
+        var target1 = 10;
+        var target2 = 20;
         if (_motorPageService == null)
         {
             return;
         }
-        
+        /*
         await _motorPageService.GetMotorService().GetBuildMotor().ReadErrors();
         await _motorPageService.GetMotorService().GetPowderMotor().ReadErrors();
         await _motorPageService.GetMotorService().GetSweepMotor().ReadErrors();
-        /*
-        MagnetoLogger.Log("Issuing program 1", LogFactoryLogLevel.LogLevel.VERBOSE);
-        _motorPageService.GetMotorService().GetBuildMotor().AbsoluteMoveByProgram(20, false);
-        MagnetoLogger.Log("waiting for program to stop running", LogFactoryLogLevel.LogLevel.VERBOSE);
-        while (await _motorPageService.GetMotorService().GetBuildMotor().IsProgramRunningAsync())
-        {
-            await Task.Delay(100); // Prevents CPU from spinning
-        }
-        pos = await _motorPageService.GetMotorService().GetBuildMotor().GetPosition(2);
-        BuildMotorCurrentPositionTextBox.Text = pos.ToString();
-
-        MagnetoLogger.Log("Issuing program 2", LogFactoryLogLevel.LogLevel.VERBOSE);
-        _motorPageService.GetMotorService().GetPowderMotor().AbsoluteMoveByProgram(20, false);
-
-        while (await _motorPageService.GetMotorService().GetPowderMotor().IsProgramRunningAsync())
-        {
-            await Task.Delay(100); // Prevents CPU from spinning
-        }
-        pos = await _motorPageService.GetMotorService().GetPowderMotor().GetPosition(2);
-        PowderMotorCurrentPositionTextBox.Text = pos.ToString();
-        await _motorPageService.GetMotorService().GetBuildMotor().ReadErrors();
-        await _motorPageService.GetMotorService().GetPowderMotor().ReadErrors();
-        */
-        var target1 = 10;
-        var target2 = 20;
+        
         Controller buildSupplyController = Controller.BUILD_AND_SUPPLY;
-        Controller sweepCoontroller = Controller.SWEEP;
+        Controller sweepController = Controller.SWEEP;
         var buildAxis = _motorPageService.GetMotorService().GetBuildMotor().GetAxis();
         var powderAxis = _motorPageService.GetMotorService().GetPowderMotor().GetAxis();
         var sweepAxis = _motorPageService.GetMotorService().GetSweepMotor().GetAxis();
@@ -1175,13 +1153,15 @@ public sealed partial class TestPrintPage : Page
         var prog6 = _motorPageService.GetMotorService().GetSweepMotor().WriteAbsMoveProgram(target2, true);
         
         // add last command first
-        _motorPageService.GetCommandQueueManger().AddProgramToFront(prog6, sweepCoontroller, sweepAxis);
+        _motorPageService.GetCommandQueueManger().AddProgramToFront(prog6, sweepController, sweepAxis);
         _motorPageService.GetCommandQueueManger().AddProgramToFront(prog5, buildSupplyController, powderAxis);
         _motorPageService.GetCommandQueueManger().AddProgramToFront(prog4, buildSupplyController, buildAxis);
-        _motorPageService.GetCommandQueueManger().AddProgramToFront(prog3, sweepCoontroller, sweepAxis);
+        _motorPageService.GetCommandQueueManger().AddProgramToFront(prog3, sweepController, sweepAxis);
         _motorPageService.GetCommandQueueManger().AddProgramToFront(prog2, buildSupplyController, powderAxis);
         _motorPageService.GetCommandQueueManger().AddProgramToFront(prog1, buildSupplyController, buildAxis);
+        */
 
+        // TODO: translate into motor page service commands
         while (_motorPageService.GetCommandQueueManger().programLinkedList.Count > 0 && !PAUSE_REQUESTED)
         {
             string[] runProg;
@@ -1221,9 +1201,27 @@ public sealed partial class TestPrintPage : Page
                         await Task.Delay(100);
                     }
                 }
-                
             }
         }
+
+        await _motorPageService.ReadAllErrors();
+        var prog1 = _motorPageService.WriteAbsMoveProgramForBuildMotor(target1, false);
+        var prog2 = _motorPageService.WriteAbsMoveProgramForPowderMotor(target1, false);
+        var prog3 = _motorPageService.WriteAbsMoveProgramForSweepMotor(target1, true); // sweep moves in positive direction
+        var prog4 = _motorPageService.WriteAbsMoveProgramForBuildMotor(target2, false);
+        var prog5 = _motorPageService.WriteAbsMoveProgramForPowderMotor(target2, false);
+        var prog6 = _motorPageService.WriteAbsMoveProgramForSweepMotor(target2, true);
+
+        _motorPageService.AddProgramFront(buildMotorName, prog6);
+        _motorPageService.AddProgramFront(powderMotorName, prog5);
+        _motorPageService.AddProgramFront(sweepMotorName, prog4);
+        _motorPageService.AddProgramFront(buildMotorName, prog3);
+        _motorPageService.AddProgramFront(powderMotorName, prog2);
+        _motorPageService.AddProgramFront(sweepMotorName, prog1);
+
+
+
+
     }
     private void StopTEST_Click(object sender, RoutedEventArgs e)
     {

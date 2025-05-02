@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Magneto.Desktop.WinUI.Core.Models.Motors;
 using Magneto.Desktop.WinUI.Core.Models.Print;
+using static Magneto.Desktop.WinUI.Core.Models.Constants.MagnetoConstants;
 
 namespace Magneto.Desktop.WinUI.Core.Contracts.Services;
 public interface IMotorService
@@ -12,6 +13,14 @@ public interface IMotorService
     void Initialize();
     void HandleStartUp();
     public CommandQueueManager GetCommandQueueManager();
+    public Task ReadBuildMotorErrors();
+    public Task ReadPowderMotorErrors();
+    public Task ReadSweepMotorErrors();
+    public string[] WriteAbsMoveProgramForBuildMotor(int target, bool moveUp);
+    public string[] WriteAbsMoveProgramForPowderMotor(int target, bool moveUp);
+    public string[] WriteAbsMoveProgramForSweepMotor(int target, bool moveUp);
+    public void AddProgramFront(string[] program, Controller controller, int axis);
+    public int GetMotorAxis(string motorName);
     StepperMotor GetBuildMotor();
     StepperMotor GetPowderMotor();
     StepperMotor GetSweepMotor();

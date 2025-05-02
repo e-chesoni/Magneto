@@ -9,6 +9,7 @@ using Microsoft.UI;
 using Magneto.Desktop.WinUI.Models.UIControl;
 using Magneto.Desktop.WinUI.Core.Services;
 using Magneto.Desktop.WinUI.Core.Models.Print;
+using static Magneto.Desktop.WinUI.Core.Models.Constants.MagnetoConstants;
 
 namespace Magneto.Desktop.WinUI;
 public class MotorPageService
@@ -30,6 +31,42 @@ public class MotorPageService
     {
         return _motorService;
     }
+
+    public async Task ReadBuildMotorErrors() => await _motorService.ReadBuildMotorErrors();
+    public async Task ReadPowderMotorErrors() => await _motorService.ReadPowderMotorErrors();
+    public async Task ReadSweepMotorErrors() => await _motorService.ReadSweepMotorErrors();
+
+    public string[] WriteAbsMoveProgramForBuildMotor(int target, bool moveUp) => _motorService.WriteAbsMoveProgramForBuildMotor(target, moveUp);
+    public string[] WriteAbsMoveProgramForPowderMotor(int target, bool moveUp) => _motorService.WriteAbsMoveProgramForPowderMotor(target, moveUp);
+    public string[] WriteAbsMoveProgramForSweepMotor(int target, bool moveUp) => _motorService.WriteAbsMoveProgramForSweepMotor(target, moveUp);
+    private void AddProgramFront(string[] program, Controller controller, int axis) => _motorService.AddProgramFront(program, controller, axis);
+
+    public void AddProgramFront(string motorName, string[] program)
+    {
+        var motorNameLower = motorName.ToLower();
+        switch (motorNameLower)
+        {
+            case "build":
+                AddProgramFront(program, Controller.BUILD_AND_SUPPLY, _motorService.GetMotorAxis(buildMotorName));
+                break;
+            case "powder":
+                AddProgramFront(program, Controller.BUILD_AND_SUPPLY, _motorService.GetMotorAxis(powderMotorName));
+                break;
+            case "sweep":
+                AddProgramFront(program, Controller.SWEEP, _motorService.GetMotorAxis(sweepMotorName));
+                break;
+            default:
+                break;
+        }
+    }
+
+    public async Task ReadAllErrors()
+    {
+        await ReadBuildMotorErrors();
+        await ReadPowderMotorErrors();
+        await ReadSweepMotorErrors();
+    }
+
     public CommandQueueManager GetCommandQueueManger()
     {
         return _motorService.GetCommandQueueManager();

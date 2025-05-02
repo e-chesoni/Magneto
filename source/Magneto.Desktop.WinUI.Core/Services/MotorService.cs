@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Models.Motors;
 using Magneto.Desktop.WinUI.Core.Models.Print;
+using static Magneto.Desktop.WinUI.Core.Models.Constants.MagnetoConstants;
 using static Magneto.Desktop.WinUI.Core.Models.Print.CommandQueueManager;
 
 namespace Magneto.Desktop.WinUI.Core.Services;
@@ -125,13 +126,57 @@ public class MotorService : IMotorService
             default: return ControllerType.BUILD;
         }
     }
+
+    private Controller GetControllerHelper(string motorName)
+    {
+        switch (motorName)
+        {
+            case "sweep":
+                return Controller.SWEEP;
+            default: return Controller.BUILD_AND_SUPPLY;
+        }
+    }
     #endregion
 
-    #region Getters
-    public CommandQueueManager GetCommandQueueManager()
+    public async Task ReadBuildMotorErrors()
     {
-        return _commandQueueManager;
+        await buildMotor.ReadErrors();
     }
+    public async Task ReadPowderMotorErrors()
+    {
+        await buildMotor.ReadErrors();
+    }
+    public async Task ReadSweepMotorErrors()
+    {
+        await buildMotor.ReadErrors();
+    }
+
+    private string[] WriteAbsMoveProgram(StepperMotor motor, int target, bool moveUp) => motor.WriteAbsMoveProgram(target, moveUp);
+    public string[] WriteAbsMoveProgramForBuildMotor(int target, bool moveUp) => WriteAbsMoveProgram(buildMotor, target, moveUp);
+    public string[] WriteAbsMoveProgramForPowderMotor(int target, bool moveUp) => WriteAbsMoveProgram(powderMotor, target, moveUp);
+    public string[] WriteAbsMoveProgramForSweepMotor(int target, bool moveUp) => WriteAbsMoveProgram(sweepMotor, target, moveUp);
+
+    public void AddProgramFront(string[] program, Controller controller, int axis)
+    {
+        _commandQueueManager.AddProgramToFront(program, controller, axis);
+    }
+
+    public int GetMotorAxis(string motorName)
+    {
+        switch (motorName)
+        {
+            case "build":
+                return buildMotor.GetAxis();
+            case "powder":
+                return powderMotor.GetAxis();
+            case "sweep":
+                return sweepMotor.GetAxis();
+            default:
+                return 0;
+        }
+    }
+    #region Getters
+    public CommandQueueManager GetCommandQueueManager() => _commandQueueManager;
     public StepperMotor GetBuildMotor()
     {
         return buildMotor;
