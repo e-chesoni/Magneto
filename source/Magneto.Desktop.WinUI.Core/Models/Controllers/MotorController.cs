@@ -134,7 +134,8 @@ public class MotorController : IMotorController
         // Find a more elegant way to handle running one motor at a time in the future
         foreach (var motor in _motorList)
         {
-            await motor.MoveMotorAbsAsync(thickness);
+            // TODO: handle errors
+            int res = motor.SendAbsoluteMoveRequest(thickness);
             Thread.Sleep(2000); // Allow both motors time to get to desired position
         }
     }
@@ -160,7 +161,8 @@ public class MotorController : IMotorController
         {
             msg = $"Found motor on axis: {axis}. Stepping motor absolute...";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
-            await motor.MoveMotorAbsAsync(step);
+            // TOOD: handle errors
+            var res = motor.SendAbsoluteMoveRequest(step);
         }
         else
         {
@@ -179,7 +181,8 @@ public class MotorController : IMotorController
         {
             msg = $"Found {motor.GetMotorName()} on. Stepping motor absolute...";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
-            await motor.MoveMotorAbsAsync(step);
+            // TODO: handle errors
+            var res = motor.SendAbsoluteMoveRequest(step);
         }
         else
         {
@@ -264,7 +267,8 @@ public class MotorController : IMotorController
         // Home each motor one at a time
         foreach (var motor in _motorList)
         {
-            await motor.HomeMotor();
+            // TODO: handle errors
+            var res = motor.HomeMotor();
             MagnetoLogger.Log($"Motor {motor.GetID()} homed successfully.", LogFactoryLogLevel.LogLevel.SUCCESS);
         }
     }

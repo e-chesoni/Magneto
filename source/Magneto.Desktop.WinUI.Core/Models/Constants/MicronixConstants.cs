@@ -7,6 +7,22 @@ using System.Threading.Tasks;
 namespace Magneto.Desktop.WinUI.Core.Models.Constants;
 public class MicronixConstants
 {
+    public static class MicronixCommand
+    {
+        public const string MOVE_RELATIVE = "MVR";
+        public const string MOVE_ABSOLUTE = "MVA";
+        public const string STOP_MOTION = "STP";
+        public const string STOP_ALL_MOTORS = "0STP";
+        public const string WAIT_FOR_STOP = "WST";
+        public const string ERASE_PROGRAM = "ERA";
+        public const string EXECUTE_PROGRAM = "EXC";
+        public const string BEGIN_PROGRAM_RECORDING = "PGM";
+        public const string END_PROGRAM = "END";
+        public const string STATUS_BYTE = "STA?";
+        public const string READ_CURRENT_POSITION = "POS?";
+        public const string READ_AND_CLEAR_ERRORS = "ERR?";
+    }
+
     public enum MICRONIX_STATUS_BIT
     {
         NEGATIVE_SWITCH_ACTIVATED = 0,

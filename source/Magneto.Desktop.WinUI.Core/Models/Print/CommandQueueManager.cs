@@ -512,7 +512,7 @@ public class CommandQueueManager : ISubsciber, IStateMachine
         }
         else if (motorCommand.StartsWith("MVA"))
         {
-            await motor.MoveMotorAbsAsync(value);
+            motor.SendAbsoluteMoveRequest(value);
         }
         else if (motorCommand.StartsWith("MVR"))
         {

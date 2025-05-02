@@ -387,16 +387,16 @@ public class StepperMotor : IStepperMotor
     }
 
     // Helper method to check if a given status bit is set
-    private async Task<string> RequestStatusAsync() => await MagnetoSerialConsole.RequestResponseAsync(_motorPort, $"{_motorAxis}STA?", TimeSpan.FromSeconds(5));
-    private async Task<string> RequestPositionAsync() => await MagnetoSerialConsole.RequestResponseAsync(_motorPort, $"{_motorAxis}POS?", TimeSpan.FromSeconds(5));
-    private async Task<string> RequestReadAndClearErrorsAsync() => await MagnetoSerialConsole.RequestResponseAsync(_motorPort, $"{_motorAxis}ERR?", TimeSpan.FromSeconds(5));
+    private async Task<string> RequestStatusAsync() => await MagnetoSerialConsole.RequestResponseAsync(_motorPort, $"{_motorAxis}{MicronixCommand.STATUS_BYTE}", TimeSpan.FromSeconds(5));
+    private async Task<string> RequestPositionAsync() => await MagnetoSerialConsole.RequestResponseAsync(_motorPort, $"{_motorAxis}{MicronixCommand.READ_CURRENT_POSITION}", TimeSpan.FromSeconds(5));
+    private async Task<string> RequestReadAndClearErrorsAsync() => await MagnetoSerialConsole.RequestResponseAsync(_motorPort, $"{_motorAxis}{MicronixCommand.READ_AND_CLEAR_ERRORS}", TimeSpan.FromSeconds(5));
     public void Stop()
     {
-        MagnetoSerialConsole.SerialWrite(_motorPort, $"{_motorAxis}STP");
+        MagnetoSerialConsole.SerialWrite(_motorPort, $"{_motorAxis}{MicronixCommand.STOP_MOTION}");
     }
     public void StopAll()
     {
-        MagnetoSerialConsole.SerialWrite(_motorPort, $"0STP");
+        MagnetoSerialConsole.SerialWrite(_motorPort, $"{MicronixCommand.STOP_ALL_MOTORS}");
     }
     private bool BitIsSet(int status, MICRONIX_STATUS_BIT bit)
     {
@@ -442,15 +442,30 @@ public class StepperMotor : IStepperMotor
         var status = await GetStatus();
         return BitIsSet(status, MICRONIX_STATUS_BIT.PROGRAM_RUNNING);
     }
-    private string[] WriteAbsoluteMoveProgramHelper(double position)
+    public string[] WriteAbsMoveProgram(double position, bool moveUp)
+    {
+        var isAbsolute = true;
+        position = moveUp ? position : -position;
+        return WriteMoveProgramHelper(position, isAbsolute);
+    }
+    private string[] WriteMoveProgramHelper(double position, bool isAbsolute)
     {
         var programId = _motorAxis;
+        string moveCmd;
+        if (isAbsolute)
+        {
+            moveCmd = $"{_motorAxis}{MicronixCommand.MOVE_ABSOLUTE}{position}";
+        }
+        else
+        {
+            moveCmd = $"{_motorAxis}{MicronixCommand.MOVE_RELATIVE}{position}";
+        }
         var program = new[]
         {
-            $"{_motorAxis}PGM{programId}",
-            $"{_motorAxis}MVA{position}",
-            $"{_motorAxis}WST",
-            $"{_motorAxis}END"
+            $"{_motorAxis}{MicronixCommand.BEGIN_PROGRAM_RECORDING}{programId}",
+            moveCmd,
+            $"{_motorAxis}{MicronixCommand.WAIT_FOR_STOP}",
+            $"{_motorAxis}{MicronixCommand.END_PROGRAM}"
         };
         MagnetoLogger.Log("Program:", LogFactoryLogLevel.LogLevel.VERBOSE);
         foreach (var line in program)
@@ -459,18 +474,14 @@ public class StepperMotor : IStepperMotor
         }
         return program;
     }
-    public string[] WriteAbsMoveProgram(double position, bool moveUp)
-    {
-        position = moveUp ? position : -position;
-        return WriteAbsoluteMoveProgramHelper(position);
-    }
+
     public void SendProgram(string[] program)
     {
         // get the first line
         var programDefinition = program[0];
         var programId = int.Parse(programDefinition.Substring(programDefinition.IndexOf("PGM") + 3));
         MagnetoLogger.Log($"Clearing program id {programId} on {_motorName} motor", LogFactoryLogLevel.LogLevel.VERBOSE);
-        MagnetoSerialConsole.SerialWrite(_motorPort, $"{_motorAxis}ERA{programId}");
+        MagnetoSerialConsole.SerialWrite(_motorPort, $"{_motorAxis}{MicronixCommand.ERASE_PROGRAM}{programId}");
         MagnetoLogger.Log($"Sending program id {programId} to {_motorName}", LogFactoryLogLevel.LogLevel.VERBOSE);
         foreach (var line in program)
         {
@@ -478,7 +489,7 @@ public class StepperMotor : IStepperMotor
             MagnetoSerialConsole.SerialWrite(_motorPort, motorCmd);
         }
         MagnetoLogger.Log($"Executing program id {programId} on {_motorName}", LogFactoryLogLevel.LogLevel.VERBOSE);
-        MagnetoSerialConsole.SerialWrite(_motorPort, $"{_motorAxis}EXC{programId}");
+        MagnetoSerialConsole.SerialWrite(_motorPort, $"{_motorAxis}{MicronixCommand.EXECUTE_PROGRAM}{programId}");
     }
 
     // TODO: get all errors from status call
@@ -502,9 +513,10 @@ public class StepperMotor : IStepperMotor
     public void AbsoluteMoveByProgram(double position, bool moveUp)
     {
         var programId = _motorAxis;
+        var isAbsolute = true;
         position = moveUp ? position : -position;
         // commands to execute
-        var programLines = WriteAbsoluteMoveProgramHelper(position);
+        var programLines = WriteMoveProgramHelper(position, isAbsolute);
         // call erase to make sure there's no existing program with the same id
         MagnetoSerialConsole.SerialWrite(_motorPort, $"{_motorAxis}ERA{programId}");
         // create program
@@ -514,7 +526,7 @@ public class StepperMotor : IStepperMotor
             MagnetoSerialConsole.SerialWrite(_motorPort, motorCmd);
         }
         // run program
-        MagnetoSerialConsole.SerialWrite(_motorPort, $"{_motorAxis}EXC{programId}");
+        MagnetoSerialConsole.SerialWrite(_motorPort, $"{_motorAxis}{MicronixCommand.EXECUTE_PROGRAM}{programId}");
     }
 
     /// <summary>
@@ -522,50 +534,35 @@ public class StepperMotor : IStepperMotor
     /// </summary>
     /// <param name="value"></param>
     /// <returns></returns> Returns completed task when finished
-    public async Task MoveMotorAbsAsync(double value) // here, value is the position we want to reach
+    public int SendAbsoluteMoveRequest(double target) // here, value is the position we want to reach
     {
         STOP_MOVE_FLAG = false;
-        // Get the motors initial position
-        var initialPos = await GetPosAsync();
 
-        // Get the desired position
-        // This is unnecessary, but it makes it easier to compare to the relative move command (below)
-        // TODO: Remove unnecessary code when project moves to production
-        var desiredPos = value;
-
-        // Log initial and desired position
-        var msg = $"Initial position of {_motorName} motor: {initialPos}. Desired relative position: {desiredPos}";
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
-
-        var moveCmd = "MVA";
-
-        if (ValidateDesiredPosition(desiredPos) == ExecStatus.Success)
+        if (ValidateDesiredPosition(target) == ExecStatus.Success)
         {
-            // Check if serial port assigned to motor is open
-            if (MagnetoSerialConsole.OpenSerialPort(_motorPort))
-            {
-                // clear stop flag before issuing move command
-                //STOP_MOVE_FLAG = false;
-                // Create movement command
-                var motorCmd = $"{_motorAxis}{moveCmd}{value}";
-                // Send move command to motor port
-                MagnetoSerialConsole.SerialWrite(_motorPort, motorCmd);
-                MagnetoLogger.Log($"Moving {_motorName} motor on axis {_motorAxis}. Command Sent: {motorCmd}", LogFactoryLogLevel.LogLevel.VERBOSE);
-
-                //await HandleCheckPosition(desiredPos);
-            }
-            else
-            {
-                // If port is closed, log error and exit method
-                MagnetoLogger.Log("Port Closed.", LogFactoryLogLevel.LogLevel.ERROR);
-                return;
-            }
+            // Create movement command
+            var motorCmd = $"{_motorAxis}{MicronixCommand.MOVE_ABSOLUTE}{target}";
+            // Send move command to motor port (we check if port is open in SerialWrite())
+            MagnetoSerialConsole.SerialWrite(_motorPort, motorCmd);
+            MagnetoLogger.Log($"Sending request to move {_motorName} to {target}. Command Sent: {motorCmd}", 
+                LogFactoryLogLevel.LogLevel.VERBOSE);
+            return 1;
         }
         else
         {
             MagnetoLogger.Log("Invalid position requested", LogFactoryLogLevel.LogLevel.ERROR);
-            return;
+            return 0;
         }
+    }
+    public int SendRelativeMoveRequest(double steps)
+    {
+        var motorCmd = $"{_motorAxis}{MicronixCommand.MOVE_RELATIVE}{steps}";
+        MagnetoLogger.Log($"Sending request to move {_motorName} {steps}mm steps. Command Sent: {motorCmd}",
+            LogFactoryLogLevel.LogLevel.VERBOSE);
+        // Send move command to motor port (we check if port is open in SerialWrite())
+        MagnetoSerialConsole.SerialWrite(_motorPort, motorCmd);
+        // TODO: check for errors; if fatal, return 0
+        return 1;
     }
 
     public async Task MoveMotorRelAsync(double value)
@@ -576,27 +573,14 @@ public class StepperMotor : IStepperMotor
         try
         {
             var moveId = Guid.NewGuid(); // helpful for tracing async logs
-            var moveCmd = "MVR";
-
-            if (MagnetoSerialConsole.OpenSerialPort(_motorPort))
-            {
-                // create movement command
-                var motorCmd = $"{_motorAxis}{moveCmd}{value}";
-                // Send move command to motor port
-                MagnetoSerialConsole.SerialWrite(_motorPort, motorCmd);
-                MagnetoLogger.Log(
-                    $"[{moveId}] Moving {_motorName} motor on axis {_motorAxis} {value}mm relative to current position. " +
-                    $"Command Sent: {motorCmd}",
-                    LogFactoryLogLevel.LogLevel.VERBOSE);
-
-                //await HandleCheckPosition(desiredPos);
-
-            }
-            else
-            {
-                MagnetoLogger.Log("Port Closed.", LogFactoryLogLevel.LogLevel.ERROR);
-                return;
-            }
+            // create movement command
+            var motorCmd = $"{_motorAxis}{MicronixCommand.MOVE_RELATIVE}{value}";
+            // Send move command to motor port (we check if port is open in SerialWrite())
+            MagnetoSerialConsole.SerialWrite(_motorPort, motorCmd);
+            MagnetoLogger.Log(
+                $"[{moveId}] Moving {_motorName} motor on axis {_motorAxis} {value}mm relative to current position. " +
+                $"Command Sent: {motorCmd}",
+                LogFactoryLogLevel.LogLevel.VERBOSE);
         }
         finally
         {
@@ -638,22 +622,19 @@ public class StepperMotor : IStepperMotor
     /// A Task that represents the asynchronous operation. 
     /// The task result is -1 if the home command fails, and 0 if the home command is successful.
     /// </returns>
-    public async Task<int> HomeMotor()
+    public int HomeMotor()
     {
         MagnetoLogger.Log("Homing motor...", LogFactoryLogLevel.LogLevel.VERBOSE);
-        await MoveMotorAbsAsync(GetHomePos());
-        //_calculatedPos = GetHomePos();
-
-        // TODO: You need to implement the logic to determine if the command has failed or succeeded
-        // and return -1 or 0 accordingly. This is just a placeholder.
-        return 0; // Or -1 if failed
+        SendAbsoluteMoveRequest(GetHomePos());
+        // TODO: check for errors; if errors, return 0, else return 1
+        return 1;
     }
 
     public Task<int> WaitForStop()
     {
         // TODO: implement wait for stop
         // 2WST = make axis 2 wait for stop before executing next command
-        return Task.FromResult(0);
+        return Task.FromResult(1);
     }
 
     #endregion
@@ -693,9 +674,9 @@ public class StepperMotor : IStepperMotor
     */
     public async Task WaitUntilAtTargetAsync(double targetPos, double tolerance = 0.01)
     {
-        int maxAttempts = 100;
-        int delayMs = 50;
-        int attempts = 0;
+        var maxAttempts = 100;
+        var delayMs = 50;
+        var attempts = 0;
 
         while (attempts < maxAttempts)
         {
@@ -836,20 +817,5 @@ public class StepperMotor : IStepperMotor
         // TODO: Throw exception if this fails
         return -1.0;
     }
-
-    #endregion
-
-    #region Error Methods
-
-    /// <summary>
-    /// Send error message about motor
-    /// </summary>
-    /// <param name="message"></param>
-    /// <returns></returns> Returns error associated with implementation error coding
-    public int SendError(string message)
-    {
-        throw new NotImplementedException();
-    }
-
     #endregion
 }
