@@ -156,10 +156,90 @@ public class MotorService : IMotorService
     public string[] WriteAbsMoveProgramForPowderMotor(int target, bool moveUp) => WriteAbsMoveProgram(powderMotor, target, moveUp);
     public string[] WriteAbsMoveProgramForSweepMotor(int target, bool moveUp) => WriteAbsMoveProgram(sweepMotor, target, moveUp);
 
+    public void SendProgram(string motorNameLower, string[] program)
+    {
+        switch (motorNameLower)
+        {
+            case "build":
+                buildMotor.SendProgram(program);
+                break;
+            case "powder":
+                buildMotor.SendProgram(program);
+                break;
+            case "sweep":
+                buildMotor.SendProgram(program);
+                break;
+            default:
+                MagnetoLogger.Log($"Unable to send program. Invalid motor name given: {motorNameLower}.", LogFactoryLogLevel.LogLevel.ERROR);
+                break;
+        }
+    }
+
+    public async Task<bool> IsProgramRunningAsync(string motorNameLower)
+    {
+        switch (motorNameLower)
+        {
+            case "build":
+                return await buildMotor.IsProgramRunningAsync();
+            case "powder":
+                return await powderMotor.IsProgramRunningAsync();
+            case "sweep":
+                return await sweepMotor.IsProgramRunningAsync();
+            default:
+                MagnetoLogger.Log($"Unable to check if program is running. Invalid motor name given: {motorNameLower}.", LogFactoryLogLevel.LogLevel.ERROR);
+                return false;
+        }
+    }
+
     public void AddProgramFront(string[] program, Controller controller, int axis)
     {
         _commandQueueManager.AddProgramToFront(program, controller, axis);
     }
+
+    public int GetNumberOfPrograms()
+    {
+        return _commandQueueManager.programLinkedList.Count;
+    }
+
+    public (string[] program, Controller controller, int axis) GetFirstProgram()
+    {
+        return _commandQueueManager.GetFirstProgram();
+    }
+
+    public (string[] program, Controller controller, int axis) GetLastProgram()
+    {
+        return _commandQueueManager.GetLastProgram();
+    }
+    public void StopMotor(string motorNameLower)
+    {
+        switch (motorNameLower)
+        {
+            case "build":
+                buildMotor.Stop();
+                break;
+            case "powder":
+                powderMotor.Stop();
+                break;
+            case "sweep":
+                sweepMotor.Stop();
+                break;
+            default:
+                MagnetoLogger.Log($"Unable to check stop motor. Invalid motor name given: {motorNameLower}.", LogFactoryLogLevel.LogLevel.ERROR);
+                return;
+        }
+    }
+
+    public void StopAllMotors()
+    {
+        buildMotor.Stop();
+        powderMotor.StopMotor();
+        sweepMotor.StopMotor();
+    }
+
+
+
+
+
 
     public int GetMotorAxis(string motorName)
     {

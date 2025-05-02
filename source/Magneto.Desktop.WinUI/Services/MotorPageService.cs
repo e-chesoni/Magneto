@@ -35,10 +35,20 @@ public class MotorPageService
     public async Task ReadBuildMotorErrors() => await _motorService.ReadBuildMotorErrors();
     public async Task ReadPowderMotorErrors() => await _motorService.ReadPowderMotorErrors();
     public async Task ReadSweepMotorErrors() => await _motorService.ReadSweepMotorErrors();
+    public async Task ReadAllErrors()
+    {
+        await ReadBuildMotorErrors();
+        await ReadPowderMotorErrors();
+        await ReadSweepMotorErrors();
+    }
 
     public string[] WriteAbsMoveProgramForBuildMotor(int target, bool moveUp) => _motorService.WriteAbsMoveProgramForBuildMotor(target, moveUp);
     public string[] WriteAbsMoveProgramForPowderMotor(int target, bool moveUp) => _motorService.WriteAbsMoveProgramForPowderMotor(target, moveUp);
     public string[] WriteAbsMoveProgramForSweepMotor(int target, bool moveUp) => _motorService.WriteAbsMoveProgramForSweepMotor(target, moveUp);
+
+    public void SendProgram(string motorNameLower, string[] program) => _motorService.SendProgram(motorNameLower, program);
+    public async Task<bool> IsProgramRunningAsync(string motorNameLower) => await _motorService.IsProgramRunningAsync(motorNameLower);
+
     private void AddProgramFront(string[] program, Controller controller, int axis) => _motorService.AddProgramFront(program, controller, axis);
 
     public void AddProgramFront(string motorName, string[] program)
@@ -60,17 +70,40 @@ public class MotorPageService
         }
     }
 
-    public async Task ReadAllErrors()
+    public (string[] program, Controller controller, int axis)? GetFirstProgram()
     {
-        await ReadBuildMotorErrors();
-        await ReadPowderMotorErrors();
-        await ReadSweepMotorErrors();
+        if (GetNumberOfPrograms() > 0)
+        {
+            return _motorService.GetFirstProgram();
+        }
+        else
+        {
+            MagnetoLogger.Log("Program list is empty.", LogFactoryLogLevel.LogLevel.ERROR);
+            return null;
+        }
     }
 
-    public CommandQueueManager GetCommandQueueManger()
+    public (string[] program, Controller controller, int axis)? GetLastProgram()
     {
-        return _motorService.GetCommandQueueManager();
+        if (GetNumberOfPrograms() > 0)
+        {
+            return _motorService.GetLastProgram();
+        }
+        else
+        {
+            MagnetoLogger.Log("Program list is empty.", LogFactoryLogLevel.LogLevel.ERROR);
+            return null;
+        }
     }
+
+    public int GetNumberOfPrograms() => _motorService.GetNumberOfPrograms();
+
+    public void StopMotor(string motorNameLower) => _motorService.StopMotor(motorNameLower);
+
+    public void StopAllMotors() => _motorService.StopAllMotors();
+
+    public CommandQueueManager GetCommandQueueManger() => _motorService.GetCommandQueueManager();
+
     #region Locks
     public void UnlockCalibrationPanel()
     {

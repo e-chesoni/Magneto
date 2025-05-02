@@ -19,7 +19,14 @@ public interface IMotorService
     public string[] WriteAbsMoveProgramForBuildMotor(int target, bool moveUp);
     public string[] WriteAbsMoveProgramForPowderMotor(int target, bool moveUp);
     public string[] WriteAbsMoveProgramForSweepMotor(int target, bool moveUp);
+    public void SendProgram(string motorNameLower, string[] program);
+    public Task<bool> IsProgramRunningAsync(string motorNameLower);
     public void AddProgramFront(string[] program, Controller controller, int axis);
+    public int GetNumberOfPrograms();
+    public (string[] program, Controller controller, int axis) GetFirstProgram();
+    public (string[] program, Controller controller, int axis) GetLastProgram();
+    public void StopMotor(string motorNameLower);
+    public void StopAllMotors();
     public int GetMotorAxis(string motorName);
     StepperMotor GetBuildMotor();
     StepperMotor GetPowderMotor();
