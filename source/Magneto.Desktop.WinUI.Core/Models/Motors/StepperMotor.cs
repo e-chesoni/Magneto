@@ -442,23 +442,30 @@ public class StepperMotor : IStepperMotor
         var status = await GetStatus();
         return BitIsSet(status, MICRONIX_STATUS_BIT.PROGRAM_RUNNING);
     }
-    public string[] WriteAbsMoveProgram(double position, bool moveUp)
+    public string[] WriteAbsoluteMoveProgram(double position, bool moveUp)
     {
         var isAbsolute = true;
         position = moveUp ? position : -position;
-        return WriteMoveProgramHelper(position, isAbsolute);
+        return WriteMoveProgramHelper(position, isAbsolute, moveUp);
     }
-    private string[] WriteMoveProgramHelper(double position, bool isAbsolute)
+
+    public string[] WriteRelativeMoveProgram(double steps, bool moveUp)
+    {
+        var isAbsolute = false;
+        return WriteMoveProgramHelper(steps, isAbsolute, moveUp);
+    }
+    public string[] WriteMoveProgramHelper(double target, bool isAbsolute, bool moveUp)
     {
         var programId = _motorAxis;
         string moveCmd;
+        target = moveUp ? target : -target;
         if (isAbsolute)
         {
-            moveCmd = $"{_motorAxis}{MicronixCommand.MOVE_ABSOLUTE}{position}";
+            moveCmd = $"{_motorAxis}{MicronixCommand.MOVE_ABSOLUTE}{target}";
         }
         else
         {
-            moveCmd = $"{_motorAxis}{MicronixCommand.MOVE_RELATIVE}{position}";
+            moveCmd = $"{_motorAxis}{MicronixCommand.MOVE_RELATIVE}{target}";
         }
         var program = new[]
         {
@@ -514,9 +521,8 @@ public class StepperMotor : IStepperMotor
     {
         var programId = _motorAxis;
         var isAbsolute = true;
-        position = moveUp ? position : -position;
         // commands to execute
-        var programLines = WriteMoveProgramHelper(position, isAbsolute);
+        var programLines = WriteMoveProgramHelper(position, isAbsolute, moveUp);
         // call erase to make sure there's no existing program with the same id
         MagnetoSerialConsole.SerialWrite(_motorPort, $"{_motorAxis}ERA{programId}");
         // create program

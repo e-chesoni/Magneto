@@ -23,10 +23,12 @@ public class MotorService : IMotorService
     /// This map facilitates the retrieval of motor objects based on their names.
     /// </summary>
     private Dictionary<string, StepperMotor?>? _motorTextMap;
+
     public MotorService(CommandQueueManager cqm)
     {
         _commandQueueManager = cqm;
     }
+
 
     #region Set Up
     public void ConfigurePortEventHandlers()
@@ -138,24 +140,22 @@ public class MotorService : IMotorService
     }
     #endregion
 
-    public async Task ReadBuildMotorErrors()
+    public async Task ReadBuildMotorErrors() => await buildMotor.ReadErrors();
+    public async Task ReadPowderMotorErrors() => await buildMotor.ReadErrors();
+    public async Task ReadSweepMotorErrors() => await buildMotor.ReadErrors();
+    public async Task ReadAndClearAllErrors()
     {
-        await buildMotor.ReadErrors();
-    }
-    public async Task ReadPowderMotorErrors()
-    {
-        await buildMotor.ReadErrors();
-    }
-    public async Task ReadSweepMotorErrors()
-    {
-        await buildMotor.ReadErrors();
+        await ReadBuildMotorErrors();
+        await ReadPowderMotorErrors();
+        await ReadSweepMotorErrors();
     }
 
-    private string[] WriteAbsMoveProgram(StepperMotor motor, int target, bool moveUp) => motor.WriteAbsMoveProgram(target, moveUp);
-    public string[] WriteAbsMoveProgramForBuildMotor(int target, bool moveUp) => WriteAbsMoveProgram(buildMotor, target, moveUp);
-    public string[] WriteAbsMoveProgramForPowderMotor(int target, bool moveUp) => WriteAbsMoveProgram(powderMotor, target, moveUp);
-    public string[] WriteAbsMoveProgramForSweepMotor(int target, bool moveUp) => WriteAbsMoveProgram(sweepMotor, target, moveUp);
+    private string[] WriteAbsMoveProgram(StepperMotor motor, double target, bool moveUp) => motor.WriteAbsoluteMoveProgram(target, moveUp);
+    public string[] WriteAbsoluteMoveProgramForBuildMotor(double target, bool moveUp) => WriteAbsMoveProgram(buildMotor, target, moveUp);
+    public string[] WriteAbsoluteMoveProgramForPowderMotor(double target, bool moveUp) => WriteAbsMoveProgram(powderMotor, target, moveUp);
+    public string[] WriteAbsoluteMoveProgramForSweepMotor(double target, bool moveUp) => WriteAbsMoveProgram(sweepMotor, target, moveUp);
 
+    private string[] WriteRelativeMoveProgram(StepperMotor motor, double steps, bool moveUp) => motor.WriteMoveProgramHelper(steps, false, moveUp);
     public void SendProgram(string motorNameLower, string[] program)
     {
         switch (motorNameLower)
@@ -174,6 +174,9 @@ public class MotorService : IMotorService
                 break;
         }
     }
+    public string[] WriteRelativeMoveProgramForBuildMotor(double steps, bool moveUp) => WriteRelativeMoveProgram(buildMotor, steps, moveUp);
+    public string[] WriteRelativeMoveProgramForPowderMotor(double steps, bool moveUp) => WriteRelativeMoveProgram(powderMotor, steps,moveUp);
+    public string[] WriteRelativeMoveProgramForSweepMotor(double steps, bool moveUp) => WriteRelativeMoveProgram(sweepMotor, steps, moveUp);
 
     public async Task<bool> IsProgramRunningAsync(string motorNameLower)
     {
@@ -196,12 +199,80 @@ public class MotorService : IMotorService
         _commandQueueManager.AddProgramToFront(program, controller, axis);
     }
 
+    public void AddBuildMotorProgramFront(string[] program)
+    {
+        AddProgramFront(program, Controller.BUILD_AND_SUPPLY, buildMotor.GetAxis());
+    }
+    public void AddPowderMotorProgramFront(string[] program)
+    {
+        AddProgramFront(program, Controller.BUILD_AND_SUPPLY, powderMotor.GetAxis());
+    }
+    public void AddSweepMotorProgramFront(string[] program)
+    {
+        AddProgramFront(program, Controller.SWEEP, sweepMotor.GetAxis());
+    }
+
+    public void AddProgramFront(string motorNameLower, string[] program)
+    {
+        switch (motorNameLower)
+        {
+            case "build":
+                AddBuildMotorProgramFront(program);
+                break;
+            case "powder":
+                AddPowderMotorProgramFront(program);
+                break;
+            case "sweep":
+                AddSweepMotorProgramFront(program);
+                break;
+            default:
+                return;
+        }
+    }
+
+    public void AddProgramLast(string[] program, Controller controller, int axis)
+    {
+        _commandQueueManager.AddProgramToBack(program, controller, axis);
+    }
+    public void AddBuildMotorProgramLast(string[] program)
+    {
+        AddProgramLast(program, Controller.BUILD_AND_SUPPLY, buildMotor.GetAxis());
+    }
+    public void AddProgramLast(string motorNameLower, string[] program)
+    {
+        switch (motorNameLower)
+        {
+            case "build":
+                AddBuildMotorProgramLast(program);
+                break;
+            case "powder":
+                AddPowderMotorProgramLast(program);
+                break;
+            case "sweep":
+                AddSweepMotorProgramLast(program);
+                break;
+            default:
+                return;
+        }
+    }
+
+
+
+    public void AddPowderMotorProgramLast(string[] program)
+    {
+        AddProgramLast(program, Controller.BUILD_AND_SUPPLY, powderMotor.GetAxis());
+    }
+    public void AddSweepMotorProgramLast(string[] program)
+    {
+        AddProgramLast(program, Controller.SWEEP, sweepMotor.GetAxis());
+    }
+
     public int GetNumberOfPrograms()
     {
         return _commandQueueManager.programLinkedList.Count;
     }
 
-    public (string[] program, Controller controller, int axis) GetFirstProgram()
+    public (string[] program, Controller controller, int axis)? GetFirstProgram()
     {
         return _commandQueueManager.GetFirstProgram();
     }
@@ -236,10 +307,86 @@ public class MotorService : IMotorService
         sweepMotor.StopMotor();
     }
 
+    public bool ProgramReaderPaused() => _commandQueueManager.Paused();
+    public void PauseProgramReader() => _commandQueueManager.RequestPause();
+    public async Task ExecuteLayerMove(double thickness, double amplifier, int numberOfLayers)
+    {
+        var clearance = 2;
+        var movePositive = true;
+        var buildMotorName = buildMotor.GetMotorName();
+        var powderMotorName = powderMotor.GetMotorName();
+        var sweepMotorName = sweepMotor.GetMotorName();
 
+        // read and clear errors
+        await ReadAndClearAllErrors();
 
+        // move build and supply motors down so sweep motor can pass
+        var lowerBuildClearance = WriteRelativeMoveProgramForBuildMotor(clearance, !movePositive);
+        var lowerPowderClearance = WriteRelativeMoveProgramForPowderMotor(clearance, !movePositive);
+        // home sweep motor
+        var homeSweep = WriteAbsoluteMoveProgramForSweepMotor(sweepMotor.GetHomePos(), movePositive); // sweep moves home first
+        // raise build and supply motors by clearance
+        var raiseBuildClearance = WriteRelativeMoveProgramForBuildMotor(clearance, movePositive);
+        var raisePowderClearance = WriteRelativeMoveProgramForPowderMotor(clearance, movePositive);
+        // TODO: raise supply by (amplifier * thickness)
+        // TODO: lower build by thickness
+        var raiseSupplyLayer = WriteRelativeMoveProgramForPowderMotor((thickness * amplifier), movePositive);
+        var lowerBuildLayer = WriteRelativeMoveProgramForBuildMotor(thickness, !movePositive);
+        // spread powder
+        var spreadPowder = WriteAbsoluteMoveProgramForSweepMotor(sweepMotor.GetMaxPos(), movePositive); // then to max position
 
+        // Add commands to program list
+        // lower clearance
+        AddProgramLast(buildMotor.GetMotorName(), lowerBuildClearance);
+        AddProgramLast(powderMotor.GetMotorName(), lowerPowderClearance);
+        // home sweep
+        AddProgramLast(sweepMotor.GetMotorName(), homeSweep);
+        // raise clearance
+        AddProgramLast(buildMotor.GetMotorName(), raiseBuildClearance);
+        AddProgramLast(powderMotor.GetMotorName(), raisePowderClearance);
+        // move motors for layer
+        AddProgramLast(powderMotor.GetMotorName(), raiseSupplyLayer);
+        AddProgramLast(buildMotor.GetMotorName(), lowerBuildLayer);
+        // spread powder
+        AddProgramLast(sweepMotor.GetMotorName(), spreadPowder);
 
+        // process queue
+        while (GetNumberOfPrograms() > 0 && !ProgramReaderPaused())
+        {
+            var result = GetFirstProgram();
+            if (result.HasValue)
+            {
+                var (runProg, controller, axis) = result.Value;
+                if (controller == Controller.BUILD_AND_SUPPLY)
+                {
+                    if (axis == 1)
+                    {
+                        SendProgram(buildMotorName, runProg);
+                        while (await IsProgramRunningAsync(buildMotorName))
+                        {
+                            await Task.Delay(100);
+                        }
+                    }
+                    else // axis == 2
+                    {
+                        SendProgram(powderMotorName, runProg);
+                        while (await IsProgramRunningAsync(powderMotorName))
+                        {
+                            await Task.Delay(100);
+                        }
+                    }
+                }
+                else // sweep controller
+                {
+                    SendProgram(sweepMotorName, runProg);
+                    while (await IsProgramRunningAsync(sweepMotorName))
+                    {
+                        await Task.Delay(100);
+                    }
+                }
+            }
+        }
+    }
 
     public int GetMotorAxis(string motorName)
     {

@@ -137,6 +137,8 @@ public class CommandQueueManager : ISubsciber, IStateMachine
         // TODO: implement wait for end command
     }
 
+    public bool PAUSE_REQUESTED;
+
     #endregion
 
     #region Constructor
@@ -174,6 +176,10 @@ public class CommandQueueManager : ISubsciber, IStateMachine
     }
 
     #endregion
+
+    public bool Paused() => PAUSE_REQUESTED;
+    
+    public void RequestPause() => PAUSE_REQUESTED = false;
 
     // TODO: Use struct that is available for entire application (put in app.xaml.cs?)
     public void AddProgramToFront(string[] program, Controller controller, int axis)

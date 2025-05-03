@@ -11,6 +11,9 @@ namespace Magneto.Desktop.WinUI.Core.Contracts;
 public interface IStepperMotor
 {
     #region Movement
+    //public string[] WriteAbsoluteMoveProgram(double position, bool moveUp);
+    //public string[] WriteRelativeMoveProgram(double steps);
+    public string[] WriteMoveProgramHelper(double target, bool isAbsolute, bool moveUp);
     int SendAbsoluteMoveRequest(double pos);
     int SendRelativeMoveRequest(double pos);
     Task MoveMotorRelAsync(double steps);

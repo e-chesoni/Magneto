@@ -26,50 +26,19 @@ public class MotorPageService
         _uiControlGroupHelper = printCtlGrpHelper;
     }
 
-    // TOOD: remove exposure (currently using for testing)
-    public IMotorService GetMotorService()
-    {
-        return _motorService;
-    }
-
     public async Task ReadBuildMotorErrors() => await _motorService.ReadBuildMotorErrors();
     public async Task ReadPowderMotorErrors() => await _motorService.ReadPowderMotorErrors();
     public async Task ReadSweepMotorErrors() => await _motorService.ReadSweepMotorErrors();
-    public async Task ReadAllErrors()
-    {
-        await ReadBuildMotorErrors();
-        await ReadPowderMotorErrors();
-        await ReadSweepMotorErrors();
-    }
-
-    public string[] WriteAbsMoveProgramForBuildMotor(int target, bool moveUp) => _motorService.WriteAbsMoveProgramForBuildMotor(target, moveUp);
-    public string[] WriteAbsMoveProgramForPowderMotor(int target, bool moveUp) => _motorService.WriteAbsMoveProgramForPowderMotor(target, moveUp);
-    public string[] WriteAbsMoveProgramForSweepMotor(int target, bool moveUp) => _motorService.WriteAbsMoveProgramForSweepMotor(target, moveUp);
-
+    public async Task ReadAllErrors() => await _motorService.ReadSweepMotorErrors();
+    
+    public string[] WriteAbsMoveProgramForBuildMotor(int target, bool moveUp) => _motorService.WriteAbsoluteMoveProgramForBuildMotor(target, moveUp);
+    public string[] WriteAbsMoveProgramForPowderMotor(int target, bool moveUp) => _motorService.WriteAbsoluteMoveProgramForPowderMotor(target, moveUp);
+    public string[] WriteAbsMoveProgramForSweepMotor(int target, bool moveUp) => _motorService.WriteAbsoluteMoveProgramForSweepMotor(target, moveUp);
+    
     public void SendProgram(string motorNameLower, string[] program) => _motorService.SendProgram(motorNameLower, program);
     public async Task<bool> IsProgramRunningAsync(string motorNameLower) => await _motorService.IsProgramRunningAsync(motorNameLower);
-
-    private void AddProgramFront(string[] program, Controller controller, int axis) => _motorService.AddProgramFront(program, controller, axis);
-
-    public void AddProgramFront(string motorName, string[] program)
-    {
-        var motorNameLower = motorName.ToLower();
-        switch (motorNameLower)
-        {
-            case "build":
-                AddProgramFront(program, Controller.BUILD_AND_SUPPLY, _motorService.GetMotorAxis(buildMotorName));
-                break;
-            case "powder":
-                AddProgramFront(program, Controller.BUILD_AND_SUPPLY, _motorService.GetMotorAxis(powderMotorName));
-                break;
-            case "sweep":
-                AddProgramFront(program, Controller.SWEEP, _motorService.GetMotorAxis(sweepMotorName));
-                break;
-            default:
-                break;
-        }
-    }
-
+    
+    public void AddProgramFront(string motorNameLower, string[] program) => _motorService.AddProgramFront(motorNameLower, program);
     public (string[] program, Controller controller, int axis)? GetFirstProgram()
     {
         if (GetNumberOfPrograms() > 0)
@@ -82,7 +51,6 @@ public class MotorPageService
             return null;
         }
     }
-
     public (string[] program, Controller controller, int axis)? GetLastProgram()
     {
         if (GetNumberOfPrograms() > 0)
@@ -95,14 +63,11 @@ public class MotorPageService
             return null;
         }
     }
-
     public int GetNumberOfPrograms() => _motorService.GetNumberOfPrograms();
 
     public void StopMotor(string motorNameLower) => _motorService.StopMotor(motorNameLower);
-
     public void StopAllMotors() => _motorService.StopAllMotors();
 
-    public CommandQueueManager GetCommandQueueManger() => _motorService.GetCommandQueueManager();
 
     #region Locks
     public void UnlockCalibrationPanel()
