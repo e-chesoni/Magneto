@@ -34,6 +34,9 @@ public interface IMotorService
     public (string[] program, Controller controller, int axis) GetLastProgram();
     public void StopMotor(string motorNameLower);
     public void StopAllMotors();
+    public bool IsProgramPaused();
+    public void PauseProgram();
+    public Task ExecuteLayerMove(double thickness, double amplifier, int numberOfLayers);
     public int GetMotorAxis(string motorName);
     StepperMotor GetBuildMotor();
     StepperMotor GetPowderMotor();

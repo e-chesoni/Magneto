@@ -26,6 +26,7 @@ public class MotorPageService
         _uiControlGroupHelper = printCtlGrpHelper;
     }
 
+    // NEW METHODS -- WHO DIS?
     public async Task ReadBuildMotorErrors() => await _motorService.ReadBuildMotorErrors();
     public async Task ReadPowderMotorErrors() => await _motorService.ReadPowderMotorErrors();
     public async Task ReadSweepMotorErrors() => await _motorService.ReadSweepMotorErrors();
@@ -67,6 +68,11 @@ public class MotorPageService
 
     public void StopMotor(string motorNameLower) => _motorService.StopMotor(motorNameLower);
     public void StopAllMotors() => _motorService.StopAllMotors();
+
+    public bool ProgramReaderPaused() => _motorService.IsProgramPaused();
+    public void PauseProgramReader() => _motorService.PauseProgram();
+
+    public async Task ExecuteLayerMove(double thickness, double amplifier, int numberOfLayers) => await _motorService.ExecuteLayerMove(thickness, amplifier, numberOfLayers);
 
 
     #region Locks

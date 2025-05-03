@@ -24,6 +24,8 @@ public class MotorService : IMotorService
     /// </summary>
     private Dictionary<string, StepperMotor?>? _motorTextMap;
 
+    private readonly double SWEEP_CLEARANCE = 2; // mm
+
     public MotorService(CommandQueueManager cqm)
     {
         _commandQueueManager = cqm;
@@ -196,7 +198,8 @@ public class MotorService : IMotorService
 
     public void AddProgramFront(string[] program, Controller controller, int axis)
     {
-        _commandQueueManager.AddProgramToFront(program, controller, axis);
+        ProgramNode programNode = _commandQueueManager.CreateProgramNode(program, controller, axis);
+        _commandQueueManager.AddProgramToFront(programNode);
     }
 
     public void AddBuildMotorProgramFront(string[] program)
@@ -232,7 +235,8 @@ public class MotorService : IMotorService
 
     public void AddProgramLast(string[] program, Controller controller, int axis)
     {
-        _commandQueueManager.AddProgramToBack(program, controller, axis);
+        ProgramNode programNode = _commandQueueManager.CreateProgramNode(program, controller, axis);
+        _commandQueueManager.AddProgramToBack(programNode);
     }
     public void AddBuildMotorProgramLast(string[] program)
     {
@@ -302,20 +306,39 @@ public class MotorService : IMotorService
 
     public void StopAllMotors()
     {
-        buildMotor.Stop();
+        buildMotor.StopMotor();
         powderMotor.StopMotor();
         sweepMotor.StopMotor();
     }
 
-    public bool ProgramReaderPaused() => _commandQueueManager.Paused();
-    public void PauseProgramReader() => _commandQueueManager.RequestPause();
+    public bool IsProgramPaused() => _commandQueueManager.IsProgramPaused();
+    public void PauseProgram()
+    {
+        _commandQueueManager.PauseProgram(); // updates boolean (should stop ProcessPrograms())
+        // TODO: stop all motors on both controllers
+        StopAllMotors();
+    }
+
+    public async Task ResumeProgramReading()
+    {
+        bool lastProgramFinished = false;
+        // TODO: figure out if the last program finished
+        // get the last program
+        ProgramNode lastProgramNode = _commandQueueManager.GetLastProgramNodeRun();
+        (string[] lastProgram, Controller controller, int axis) = _commandQueueManager.ExtractProgramNodeVariables(lastProgramNode);
+        // get the move command from the last program
+        // if it was relative, calculate the expected position // TODO: store target position on motor when move is requested?
+        // did the motor reach the target?
+
+        // TODO: request resume
+        _commandQueueManager.ResetProgramList(lastProgramFinished);
+        // execute process program
+        await ProcessPrograms();
+    }
     public async Task ExecuteLayerMove(double thickness, double amplifier, int numberOfLayers)
     {
-        var clearance = 2;
+        var clearance = SWEEP_CLEARANCE;
         var movePositive = true;
-        var buildMotorName = buildMotor.GetMotorName();
-        var powderMotorName = powderMotor.GetMotorName();
-        var sweepMotorName = sweepMotor.GetMotorName();
 
         // read and clear errors
         await ReadAndClearAllErrors();
@@ -350,8 +373,17 @@ public class MotorService : IMotorService
         // spread powder
         AddProgramLast(sweepMotor.GetMotorName(), spreadPowder);
 
+        await ProcessPrograms();
+    }
+
+    private async Task ProcessPrograms()
+    {
+        var buildMotorName = buildMotor.GetMotorName();
+        var powderMotorName = powderMotor.GetMotorName();
+        var sweepMotorName = sweepMotor.GetMotorName();
+
         // process queue
-        while (GetNumberOfPrograms() > 0 && !ProgramReaderPaused())
+        while (GetNumberOfPrograms() > 0 && !IsProgramPaused())
         {
             var result = GetFirstProgram();
             if (result.HasValue)
