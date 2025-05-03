@@ -229,7 +229,7 @@ public class CommandQueueManager : ISubsciber, IStateMachine
         programLinkedList.AddLast(node);
     }
 
-    private (string[] program, Controller controller, int axis) ExtractProgramNodeVariables(ProgramNode programNode)
+    public (string[] program, Controller controller, int axis) ExtractProgramNodeVariables(ProgramNode programNode)
     {
         var program = programNode.program;
         Controller controller = programNode.controller;
