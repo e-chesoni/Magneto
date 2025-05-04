@@ -121,7 +121,7 @@ public class CommandQueueManager : ISubsciber, IStateMachine
 
     public LinkedList<ProgramNode> programLinkedList = new();
 
-    private ProgramNode _lastProgramNodeRun;
+    private LastMove _lastMove;
 
     // All controller types are 5 letters long
     public enum ControllerType
@@ -148,6 +148,13 @@ public class CommandQueueManager : ISubsciber, IStateMachine
     }
 
     public bool PAUSE_REQUESTED;
+
+    public struct LastMove
+    {
+        public ProgramNode programNode;
+        public double startingPosition;
+        public double target;
+    }
 
     #endregion
 
@@ -189,7 +196,7 @@ public class CommandQueueManager : ISubsciber, IStateMachine
 
     public ProgramNode GetLastProgramNodeRun()
     {
-        return _lastProgramNodeRun;
+        return _lastMove.programNode;
     }
     public bool IsProgramPaused() => PAUSE_REQUESTED;
 
@@ -203,7 +210,7 @@ public class CommandQueueManager : ISubsciber, IStateMachine
         if (lastProgrmDNF)
         {
             // put the last program at the front of the list
-
+            programLinkedList.AddFirst(_lastMove.programNode);
         }
     }
 
@@ -236,44 +243,45 @@ public class CommandQueueManager : ISubsciber, IStateMachine
         var axis = programNode.axis;
         return (program, controller, axis);
     }
-    public (string[], Controller, int) GetFirstProgram()
+    public ProgramNode GetFirstProgramNode()
     {
-        string[] program;
-        Controller controller;
-        int axis;
         if (programLinkedList.Count == 0)
         {
             MagnetoLogger.Log("Cannot remove program from front of linked list; program linked list is empty.", LogFactoryLogLevel.LogLevel.ERROR);
             var empty = Array.Empty<string>();
-            return (empty, 0, 0);
+            return new ProgramNode();
         }
-        ProgramNode programNode = programLinkedList.First.Value;
-        (program, controller, axis) = ExtractProgramNodeVariables(programNode);
+        var programNode = programLinkedList.First.Value;
+        //(program, controller, axis) = ExtractProgramNodeVariables(programNode);
         programLinkedList.RemoveFirst();
         MagnetoLogger.Log("Removing first program from linked list:", LogFactoryLogLevel.LogLevel.VERBOSE);
-        foreach (var line in program)
+        foreach (var line in programNode.program)
         {
             MagnetoLogger.Log($"{line}\n", LogFactoryLogLevel.LogLevel.VERBOSE);
         }
-        return (program, controller, axis);
+        return programNode;
     }
 
-    public (string[], Controller, int) GetLastProgram()
+    public ProgramNode GetLastProgramNode()
     {
-        string[] program;
-        Controller controller;
-        int axis;
         if (programLinkedList.Count == 0)
         {
             MagnetoLogger.Log("Cannot remove program from back of linked list; program linked list is empty.", LogFactoryLogLevel.LogLevel.ERROR);
-            var empty = Array.Empty<string>();
-            return (empty, 0, 0);
+            return new ProgramNode();
         }
-        ProgramNode programNode = programLinkedList.Last.Value;
-        (program, controller, axis) = ExtractProgramNodeVariables(programNode);
+        var programNode = programLinkedList.Last.Value;
+        //(program, controller, axis) = ExtractProgramNodeVariables(programNode);
         programLinkedList.RemoveLast();
-        return (program, controller, axis);
+        MagnetoLogger.Log("Removing last program from linked list:", LogFactoryLogLevel.LogLevel.VERBOSE);
+        foreach (var line in programNode.program)
+        {
+            MagnetoLogger.Log($"{line}\n", LogFactoryLogLevel.LogLevel.VERBOSE);
+        }
+        return programNode;
     }
+
+    public void SetLastMoveStartingPosition(double start) => _lastMove.startingPosition = start;
+    public void SetLastMoveTarget(double target) => _lastMove.target = target;
 
     #region Getters
     public double GetCurrentPrintHeight()

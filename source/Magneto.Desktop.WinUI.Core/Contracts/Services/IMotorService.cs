@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Magneto.Desktop.WinUI.Core.Models.Motors;
 using Magneto.Desktop.WinUI.Core.Models.Print;
 using static Magneto.Desktop.WinUI.Core.Models.Constants.MagnetoConstants;
+using static Magneto.Desktop.WinUI.Core.Models.Print.CommandQueueManager;
 
 namespace Magneto.Desktop.WinUI.Core.Contracts.Services;
 public interface IMotorService
@@ -30,19 +31,16 @@ public interface IMotorService
     public void AddProgramLast(string[] program, Controller controller, int axis);
     public void AddProgramLast(string motorNameLower, string[] program);
     public int GetNumberOfPrograms();
-    public (string[] program, Controller controller, int axis)? GetFirstProgram();
-    public (string[] program, Controller controller, int axis) GetLastProgram();
+    public ProgramNode? GetFirstProgramNode();
+    public ProgramNode? GetLastProgramNode();
     public void StopMotor(string motorNameLower);
     public void StopAllMotors();
     public bool IsProgramPaused();
     public void PauseProgram();
     public Task ExecuteLayerMove(double thickness, double amplifier, int numberOfLayers);
+    public (string[] program, Controller controller, int axis)? ExtractProgramNodeVariables(ProgramNode programNode);
     public int GetMotorAxis(string motorName);
-    StepperMotor GetBuildMotor();
-    StepperMotor GetPowderMotor();
-    StepperMotor GetSweepMotor();
     double GetMaxSweepPosition();
-    public Task<double> GetMotorPositionAsync(StepperMotor motor);
     public Task<double> GetMotorPositionAsync(string motorNameLowerCase);
     Task<double> GetBuildMotorPositionAsync();
     Task<double> GetPowderMotorPositionAsync();

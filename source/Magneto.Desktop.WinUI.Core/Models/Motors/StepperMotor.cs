@@ -372,19 +372,6 @@ public class StepperMotor : IStepperMotor
             return ExecStatus.Success;
         }
     }
-    private async Task HandleCheckPosition(double desiredPos)
-    {
-        while (!STOP_MOVE_FLAG) // If motor stop requested, exit this loop that continues to check position until it is reached
-        {
-            // Asynchronously wait until the desired position is reached
-            await CheckPosAsync(desiredPos);
-        }
-
-        // reset stop move flag
-        STOP_MOVE_FLAG = false;
-
-        return;
-    }
 
     // Helper method to check if a given status bit is set
     private async Task<string> RequestStatusAsync() => await MagnetoSerialConsole.RequestResponseAsync(_motorPort, $"{_motorAxis}{MicronixCommand.STATUS_BYTE}", TimeSpan.FromSeconds(5));
@@ -416,7 +403,7 @@ public class StepperMotor : IStepperMotor
         var status = await RequestStatusAsync(); // example status: #8
         return int.Parse(status.TrimStart('#'));
     }
-    public async Task<double> GetPosition(int decimals)
+    public async Task<double> GetPositionAsync(int decimals)
     {
         decimals = decimals > 6 ? 6 : decimals;
         MagnetoLogger.Log($"Getting {_motorName} position.", LogFactoryLogLevel.LogLevel.VERBOSE);

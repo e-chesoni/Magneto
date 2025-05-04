@@ -15,6 +15,8 @@ using Windows.Storage.Pickers;
 using WinRT.Interop;
 using MongoDB.Driver;
 using static Magneto.Desktop.WinUI.Core.Models.Constants.MagnetoConstants;
+using Magneto.Desktop.WinUI.Core.Models.Print;
+using static Magneto.Desktop.WinUI.Core.Models.Print.CommandQueueManager;
 
 namespace Magneto.Desktop.WinUI.Views;
 
@@ -1221,10 +1223,10 @@ public sealed partial class TestPrintPage : Page
 
         while (_motorPageService.GetNumberOfPrograms() > 0 && !PAUSE_REQUESTED)
         {
-            var result = _motorPageService.GetFirstProgram();
-            if (result.HasValue)
+            var programNode = _motorPageService.GetFirstProgramNode();
+            if (programNode.HasValue)
             {
-                var (runProg, controller, axis) = result.Value;
+                var (runProg, controller, axis) = _motorPageService.ExtractProgramNodeVariables(programNode.Value).Value;
                 if (controller == Controller.BUILD_AND_SUPPLY)
                 {
                     if (axis == 1)
@@ -1254,6 +1256,14 @@ public sealed partial class TestPrintPage : Page
                 }
             }
         }
+
+        // TODO: Test execute layer move next
+        /*
+        var thickness = 1;
+        var amplifier = 2;
+        var numberOfLayers = 2;
+        await _motorPageService.ExecuteLayerMove(thickness, amplifier, numberOfLayers);
+        */
     }
     private void StopTEST_Click(object sender, RoutedEventArgs e)
     {

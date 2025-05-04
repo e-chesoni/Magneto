@@ -10,6 +10,7 @@ using Magneto.Desktop.WinUI.Models.UIControl;
 using Magneto.Desktop.WinUI.Core.Services;
 using Magneto.Desktop.WinUI.Core.Models.Print;
 using static Magneto.Desktop.WinUI.Core.Models.Constants.MagnetoConstants;
+using static Magneto.Desktop.WinUI.Core.Models.Print.CommandQueueManager;
 
 namespace Magneto.Desktop.WinUI;
 public class MotorPageService
@@ -40,11 +41,11 @@ public class MotorPageService
     public async Task<bool> IsProgramRunningAsync(string motorNameLower) => await _motorService.IsProgramRunningAsync(motorNameLower);
     
     public void AddProgramFront(string motorNameLower, string[] program) => _motorService.AddProgramFront(motorNameLower, program);
-    public (string[] program, Controller controller, int axis)? GetFirstProgram()
+    public ProgramNode? GetFirstProgramNode()
     {
         if (GetNumberOfPrograms() > 0)
         {
-            return _motorService.GetFirstProgram();
+            return _motorService.GetFirstProgramNode();
         }
         else
         {
@@ -52,11 +53,11 @@ public class MotorPageService
             return null;
         }
     }
-    public (string[] program, Controller controller, int axis)? GetLastProgram()
+    public ProgramNode? GetLastProgramNode()
     {
         if (GetNumberOfPrograms() > 0)
         {
-            return _motorService.GetLastProgram();
+            return _motorService.GetLastProgramNode();
         }
         else
         {
@@ -64,6 +65,8 @@ public class MotorPageService
             return null;
         }
     }
+
+    public (string[] program, Controller controller, int axis)? ExtractProgramNodeVariables(ProgramNode programNode) => _motorService.ExtractProgramNodeVariables(programNode);
     public int GetNumberOfPrograms() => _motorService.GetNumberOfPrograms();
 
     public void StopMotor(string motorNameLower) => _motorService.StopMotor(motorNameLower);

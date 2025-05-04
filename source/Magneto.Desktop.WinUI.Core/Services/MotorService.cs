@@ -176,6 +176,26 @@ public class MotorService : IMotorService
                 break;
         }
     }
+
+    public async Task StoreLastMoveAndSendProgram(string motorNameLower, ProgramNode programNode)
+    {
+        switch (motorNameLower)
+        {
+            case "build":
+                buildMotor.SendProgram(programNode.program);
+                break;
+            case "powder":
+                buildMotor.SendProgram(programNode.program);
+                break;
+            case "sweep":
+                buildMotor.SendProgram(programNode.program);
+                break;
+            default:
+                MagnetoLogger.Log($"Unable to send program. Invalid motor name given: {motorNameLower}.", LogFactoryLogLevel.LogLevel.ERROR);
+                break;
+        }
+        await StoreLastRequestedMove(motorNameLower, programNode);
+    }
     public string[] WriteRelativeMoveProgramForBuildMotor(double steps, bool moveUp) => WriteRelativeMoveProgram(buildMotor, steps, moveUp);
     public string[] WriteRelativeMoveProgramForPowderMotor(double steps, bool moveUp) => WriteRelativeMoveProgram(powderMotor, steps,moveUp);
     public string[] WriteRelativeMoveProgramForSweepMotor(double steps, bool moveUp) => WriteRelativeMoveProgram(sweepMotor, steps, moveUp);
@@ -276,14 +296,14 @@ public class MotorService : IMotorService
         return _commandQueueManager.programLinkedList.Count;
     }
 
-    public (string[] program, Controller controller, int axis)? GetFirstProgram()
+    public ProgramNode? GetFirstProgramNode()
     {
-        return _commandQueueManager.GetFirstProgram();
+        return _commandQueueManager.GetFirstProgramNode();
     }
 
-    public (string[] program, Controller controller, int axis) GetLastProgram()
+    public ProgramNode? GetLastProgramNode()
     {
-        return _commandQueueManager.GetLastProgram();
+        return _commandQueueManager.GetLastProgramNode();
     }
     public void StopMotor(string motorNameLower)
     {
@@ -325,9 +345,12 @@ public class MotorService : IMotorService
         // TODO: figure out if the last program finished
         // get the last program
         ProgramNode lastProgramNode = _commandQueueManager.GetLastProgramNodeRun();
-        (string[] lastProgram, Controller controller, int axis) = _commandQueueManager.ExtractProgramNodeVariables(lastProgramNode);
+        (var lastProgram, Controller controller, var axis) = _commandQueueManager.ExtractProgramNodeVariables(lastProgramNode);
+
         // get the move command from the last program
+
         // if it was relative, calculate the expected position // TODO: store target position on motor when move is requested?
+
         // did the motor reach the target?
 
         // TODO: request resume
@@ -376,6 +399,70 @@ public class MotorService : IMotorService
         await ProcessPrograms();
     }
 
+    public (double? value, bool isAbsolute) ParseMoveCommand(string[] program)
+    {
+        for (var i = program.Length - 1; i >= 0; i--)
+        {
+            var line = program[i];
+
+            if (line.Contains("MVA") || line.Contains("MVR"))
+            {
+                var isAbsolute = line.Contains("MVA");
+                var prefix = isAbsolute ? "MVA" : "MVR";
+                var prefixIndex = line.IndexOf(prefix);
+
+                var target = line.Substring(prefixIndex + 3); // after "MVA" or "MVR"
+                if (double.TryParse(target, out var value))
+                {
+                    return (value, isAbsolute);
+                }
+                break;
+            }
+        }
+        MagnetoLogger.Log($"No move command found.", LogFactoryLogLevel.LogLevel.ERROR);
+        return (null, false);
+    }
+
+    private double CalculateTargetPosition(double startingPosition, ProgramNode programNode)
+    {
+        var (value, isAbsolute) = ParseMoveCommand(programNode.program);
+
+        if (value == null)
+        {
+            throw new InvalidOperationException("Move command parsing failed: no value found.");
+        }
+
+        return isAbsolute ? value.Value : startingPosition + value.Value;
+    }
+
+
+    private async Task StoreLastRequestedMove(string motorNameLower, ProgramNode programNode)
+    {
+        double startingPosition;
+
+        switch (motorNameLower)
+        {
+            case "build":
+                startingPosition = await buildMotor.GetPositionAsync(2);
+                break;
+            case "powder":
+                startingPosition = await powderMotor.GetPositionAsync(2);
+                break;
+            case "sweep":
+                startingPosition = await sweepMotor.GetPositionAsync(2);
+                break;
+            default:
+                MagnetoLogger.Log($"Invalid motor name: {motorNameLower}", LogFactoryLogLevel.LogLevel.ERROR);
+                throw new ArgumentException($"Unknown motor: {motorNameLower}");
+        }
+
+        var target = CalculateTargetPosition(startingPosition, programNode);
+        _commandQueueManager.SetLastMoveStartingPosition(startingPosition);
+        _commandQueueManager.SetLastMoveTarget(target);
+    }
+
+    public (string[] program, Controller controller, int axis)? ExtractProgramNodeVariables(ProgramNode programNode) => _commandQueueManager.ExtractProgramNodeVariables(programNode);
+
     private async Task ProcessPrograms()
     {
         var buildMotorName = buildMotor.GetMotorName();
@@ -385,15 +472,16 @@ public class MotorService : IMotorService
         // process queue
         while (GetNumberOfPrograms() > 0 && !IsProgramPaused())
         {
-            var result = GetFirstProgram();
-            if (result.HasValue)
+            var programNode = GetFirstProgramNode();
+            if (programNode.HasValue)
             {
-                var (runProg, controller, axis) = result.Value;
+                var confirmedNode = programNode.Value;
+                var (_, controller, axis) = ExtractProgramNodeVariables(confirmedNode).Value;
                 if (controller == Controller.BUILD_AND_SUPPLY)
                 {
                     if (axis == 1)
                     {
-                        SendProgram(buildMotorName, runProg);
+                        await StoreLastMoveAndSendProgram(buildMotorName, confirmedNode);
                         while (await IsProgramRunningAsync(buildMotorName))
                         {
                             await Task.Delay(100);
@@ -401,7 +489,7 @@ public class MotorService : IMotorService
                     }
                     else // axis == 2
                     {
-                        SendProgram(powderMotorName, runProg);
+                        await StoreLastMoveAndSendProgram(powderMotorName, confirmedNode);
                         while (await IsProgramRunningAsync(powderMotorName))
                         {
                             await Task.Delay(100);
@@ -410,7 +498,7 @@ public class MotorService : IMotorService
                 }
                 else // sweep controller
                 {
-                    SendProgram(sweepMotorName, runProg);
+                    await StoreLastMoveAndSendProgram(sweepMotorName, confirmedNode);
                     while (await IsProgramRunningAsync(sweepMotorName))
                     {
                         await Task.Delay(100);
@@ -436,26 +524,12 @@ public class MotorService : IMotorService
     }
     #region Getters
     public CommandQueueManager GetCommandQueueManager() => _commandQueueManager;
-    public StepperMotor GetBuildMotor()
-    {
-        return buildMotor;
-    }
-    public StepperMotor GetPowderMotor()
-    {
-        return powderMotor;
-    }
-    public StepperMotor GetSweepMotor()
-    {
-        return sweepMotor;
-    }
+
     public double GetMaxSweepPosition()
     {
         return sweepMotor.GetMaxPos();
     }
-    public async Task<double> GetMotorPositionAsync(StepperMotor motor)
-    {
-        return await motor.GetPosAsync();
-    }
+
     public async Task<double> GetMotorPositionAsync(string motorNameLowerCase)
     {
         switch (motorNameLowerCase)
@@ -473,15 +547,15 @@ public class MotorService : IMotorService
     }
     public async Task<double> GetBuildMotorPositionAsync()
     {
-        return await buildMotor.GetPosAsync();
+        return await buildMotor.GetPositionAsync(2);
     }
     public async Task<double> GetPowderMotorPositionAsync()
     {
-        return await powderMotor.GetPosAsync();
+        return await powderMotor.GetPositionAsync(2);
     }
     public async Task<double> GetSweepMotorPositionAsync()
     {
-        return await sweepMotor.GetPosAsync();
+        return await sweepMotor.GetPositionAsync(2);
     }
     public async Task<(int res, double position)> HandleGetPositionAsync(string motorNameLowerCase)
     {
