@@ -186,7 +186,7 @@ public class MotorService : IMotorService
     #endregion
 
     #region Write Program
-    private string[] WriteAbsoluteMoveProgram(StepperMotor motor, double target, bool moveUp) => motor.WriteAbsoluteMoveProgram(target, moveUp);
+    private string[] WriteAbsoluteMoveProgram(StepperMotor motor, double target, bool moveUp) => motor.WriteMoveProgramHelper(target, true, moveUp);
     public string[] WriteAbsoluteMoveProgramForBuildMotor(double target, bool moveUp) => WriteAbsoluteMoveProgram(buildMotor, target, moveUp);
     public string[] WriteAbsoluteMoveProgramForPowderMotor(double target, bool moveUp) => WriteAbsoluteMoveProgram(powderMotor, target, moveUp);
     public string[] WriteAbsoluteMoveProgramForSweepMotor(double target, bool moveUp) => WriteAbsoluteMoveProgram(sweepMotor, target, moveUp);
@@ -653,6 +653,48 @@ public class MotorService : IMotorService
     public async Task<int> MoveBuildMotorAbs(double target) => await MoveMotorAbs(buildMotor, target);
     public async Task<int> MovePowderMotorAbs(double target) => await MoveMotorAbs(powderMotor, target);
     public async Task<int> MoveSweepMotorAbs(double target) => await MoveMotorAbs(sweepMotor, target);
+
+    public async Task MoveBuildMotorAbsoluteProgram(double target, bool moveUp)
+    {
+        MagnetoLogger.Log($"Received absolute move: {target}.", LogFactoryLogLevel.LogLevel.VERBOSE);
+        var program = WriteAbsoluteMoveProgramForBuildMotor(target, moveUp);
+        AddProgramLast(buildMotor.GetMotorName(), program);
+        await ProcessPrograms();
+    }
+    public async Task MovePowderMotorAbsoluteProgram(double target, bool moveUp)
+    {
+        MagnetoLogger.Log($"Received relative distance: {target}.", LogFactoryLogLevel.LogLevel.VERBOSE);
+        var program = WriteAbsoluteMoveProgramForPowderMotor(target, moveUp);
+        AddProgramLast(powderMotor.GetMotorName(), program);
+        await ProcessPrograms();
+    }
+    public async Task MoveSweepMotorAbsoluteProgram(double target, bool moveUp)
+    {
+        MagnetoLogger.Log($"Received relative distance: {target}.", LogFactoryLogLevel.LogLevel.VERBOSE);
+        var program = WriteAbsoluteMoveProgramForSweepMotor(target, moveUp);
+        AddProgramLast(sweepMotor.GetMotorName(), program);
+        await ProcessPrograms();
+    }
+
+    public async Task MoveMotorAbsoluteProgram(string motorNameLower, double target, bool moveUp)
+    {
+        switch (motorNameLower)
+        {
+            case "build":
+                await MoveBuildMotorAbsoluteProgram(target, moveUp);
+                break;
+            case "powder":
+                await MovePowderMotorAbsoluteProgram(target, moveUp);
+                break;
+            case "sweep":
+                await MoveSweepMotorAbsoluteProgram(target, moveUp);
+                break;
+            default:
+                MagnetoLogger.Log($"Could not check motor stop flag. Invalid motor name given: {motorNameLower}.", LogFactoryLogLevel.LogLevel.ERROR);
+                return;
+        }
+        return;
+    }
     #endregion
 
     #region Relative Move

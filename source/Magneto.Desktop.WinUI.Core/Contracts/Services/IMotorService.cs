@@ -84,7 +84,8 @@ public interface IMotorService
     #endregion
 
 
-
+    public Task MoveMotorAbsoluteProgram(string motorNameLower, double distance, bool moveUp);
+    public Task MoveMotorRelativeProgram(string motorNameLower, double distance, bool moveUp);
 
 
     Task<int> MoveMotorAbs(string motorNameLowerCase, double target);
@@ -96,7 +97,7 @@ public interface IMotorService
     Task<int> MovePowderMotorRel(double distance);
     Task<int> MoveSweepMotorRel(double distance);
 
-    public Task MoveMotorRelativeProgram(string motorNameLower, double distance, bool moveUp);
+    
 
     bool MotorsRunning();
     bool CheckMotorStopFlag(string motorNameLowerCase);

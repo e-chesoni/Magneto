@@ -182,6 +182,24 @@ public class MotorPageService
             return (1, targetPos);
         }
     }
+
+    public async Task<(int status, double targetPos)> MoveMotorAbsoluteProgram(string motorName, TextBox textBoxToRead)
+    {
+        var motorNameLower = motorName.ToLower();
+        if (textBoxToRead == null || !double.TryParse(textBoxToRead.Text, out _))
+        {
+            var msg = $"invalid input in {motorName} text box.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            return (0, 0);
+        }
+        else
+        {
+            var targetPos = double.Parse(textBoxToRead.Text);
+            var moveUp = targetPos > 0;
+            await _motorService.MoveMotorAbsoluteProgram(motorNameLower, targetPos, moveUp);
+            return (1, targetPos);
+        }
+    }
     public async Task<(int status, double targetPos)> MoveMotorRel(string motorName, TextBox textBoxToRead, bool moveUp)
     {
         var motorNameLower = motorName.ToLower();
@@ -520,22 +538,14 @@ public class MotorPageService
         double targetPos;
         if (moveIsAbs)
         {
-            (res, targetPos) = await MoveMotorAbs(motorName, textBox);
+            (res, targetPos) = await MoveMotorAbsoluteProgram(motorName, textBox);
         }
         else
         {
             //(res, targetPos) = await MoveMotorRel(motorName, textBox, moveUp);
-            (res, targetPos) = await MoveMotorRelativeProgram(motorName, textBox, moveUp); // always moves up
-            await UpdateMotorPositionTextBox(motorName);
+            (res, targetPos) = await MoveMotorRelativeProgram(motorName, textBox, moveUp); // wait to get to position occurs in program processor in motor service
         }
-        /*
-        if (res == 1)
-        {
-            MagnetoLogger.Log($"Waiting for build motor to move {targetPos}", LogFactoryLogLevel.LogLevel.ERROR);
-            await _motorService.WaitUntilBuildReachesTargetAsync(targetPos);
-            await UpdateMotorPositionTextBox(motorName);
-        }
-        */
+        await UpdateMotorPositionTextBox(motorName);
     }
     public async void MoveMotorAndUpdateUISelector(string motorName, TextBox textBox, bool moveIsAbs, bool moveInPositiveDirection, XamlRoot xamlRoot)
     {

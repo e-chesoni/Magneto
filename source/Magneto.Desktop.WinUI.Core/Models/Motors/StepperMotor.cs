@@ -429,11 +429,11 @@ public class StepperMotor : IStepperMotor
         var status = await GetStatus();
         return BitIsSet(status, MICRONIX_STATUS_BIT.PROGRAM_RUNNING);
     }
-    public string[] WriteAbsoluteMoveProgram(double position, bool moveUp)
+    public string[] WriteAbsoluteMoveProgram(double target, bool moveUp)
     {
         var isAbsolute = true;
-        position = moveUp ? position : -position;
-        return WriteMoveProgramHelper(position, isAbsolute, moveUp);
+        //position = moveUp ? position : -position;
+        return WriteMoveProgramHelper(target, isAbsolute, moveUp);
     }
 
     public string[] WriteRelativeMoveProgram(double steps, bool moveUp)
@@ -443,15 +443,16 @@ public class StepperMotor : IStepperMotor
     }
     public string[] WriteMoveProgramHelper(double target, bool isAbsolute, bool moveUp)
     {
+        MagnetoLogger.Log($"Received target: {target}", LogFactoryLogLevel.LogLevel.VERBOSE);
         var programId = _motorAxis;
         string moveCmd;
-        target = moveUp ? target : -target;
         if (isAbsolute)
         {
             moveCmd = $"{_motorAxis}{MicronixCommand.MOVE_ABSOLUTE}{target}";
         }
         else
         {
+            target = moveUp ? target : -target;
             moveCmd = $"{_motorAxis}{MicronixCommand.MOVE_RELATIVE}{target}";
         }
         var program = new[]
