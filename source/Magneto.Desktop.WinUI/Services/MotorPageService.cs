@@ -75,6 +75,8 @@ public class MotorPageService
     public bool ProgramReaderPaused() => _motorService.IsProgramPaused();
     public void PauseProgramReader() => _motorService.PauseProgram();
 
+    public async Task ResumeProgramReading() => await _motorService.ResumeProgramReading();
+
     public async Task ExecuteLayerMove(double thickness, double amplifier, int numberOfLayers) => await _motorService.ExecuteLayerMove(thickness, amplifier, numberOfLayers);
 
 
@@ -132,7 +134,7 @@ public class MotorPageService
         var msg = "Get position button clicked...";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
         // get position of requested motor
-        (res, pos) = await _motorService.HandleGetPositionAsync(motorNameToLower);
+        (res, pos) = await _motorService.GetMotorPositionAsync(motorNameToLower);
         // check request result
         if (res == 0)
         {
@@ -198,7 +200,7 @@ public class MotorPageService
             // Add sign to distance based on moveUp boolean
             var distance = moveUp ? dist : -dist;
             MagnetoLogger.Log($"Moving motor distance of {distance}", LogFactoryLogLevel.LogLevel.SUCCESS);
-            var currentPos = await _motorService.GetMotorPositionAsync(motorNameLower);
+            var (res, currentPos) = await _motorService.GetMotorPositionAsync(motorNameLower);
             var targetPos = currentPos + distance;
             await _motorService.MoveMotorRel(motorNameLower, distance);
             return (1, targetPos);
@@ -216,7 +218,7 @@ public class MotorPageService
         // Add sign to distance based on moveUp boolean
         distance = moveUp ? distance : -distance;
         MagnetoLogger.Log($"Moving motor distance of {distance}", LogFactoryLogLevel.LogLevel.SUCCESS);
-        var currentPos = await _motorService.GetMotorPositionAsync(motorNameLower);
+        var (res, currentPos) = await _motorService.GetMotorPositionAsync(motorNameLower);
         var targetPos = currentPos + distance;
         await _motorService.MoveMotorRel(motorNameLower, distance);
         return (1, targetPos);
@@ -453,7 +455,7 @@ public class MotorPageService
         var msg = "Updating motor position text box.";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
         // get position of requested motor
-        (res, pos) = await _motorService.HandleGetPositionAsync(motorNameToLower);
+        (res, pos) = await _motorService.GetMotorPositionAsync(motorNameToLower);
         // check request result
         if (res == 0)
         {

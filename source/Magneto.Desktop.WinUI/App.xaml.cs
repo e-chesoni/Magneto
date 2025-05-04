@@ -136,7 +136,7 @@ public partial class App : Application
             {
                 var am = provider.GetRequiredService<CommandQueueManager>();
                 var ms = new MotorService(am);
-                ms.Initialize(); // Now that motors/controllers are fully built
+                ms.HandleStartUp(); // Now that motors/controllers are fully built
                 return ms;
             });
 

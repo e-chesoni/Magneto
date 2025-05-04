@@ -11,45 +11,82 @@ using static Magneto.Desktop.WinUI.Core.Models.Print.CommandQueueManager;
 namespace Magneto.Desktop.WinUI.Core.Contracts.Services;
 public interface IMotorService
 {
-    void Initialize();
+    #region Start Up
+    void ConfigurePortEventHandlers();
+    void IntializeMotors();
+    void HandleMotorInit(string motorNameLowerCase, StepperMotor motor, out StepperMotor motorField);
+    void InitializeMotorMap();
     void HandleStartUp();
-    public CommandQueueManager GetCommandQueueManager();
+    //void Initialize();
+    #endregion
+
+    #region Getters
+    public int GetMotorAxis(string motorName);
+    
+    #region Position Getters
+    double GetMaxSweepPosition();
+    Task<double> GetBuildMotorPositionAsync();
+    Task<double> GetPowderMotorPositionAsync();
+    Task<double> GetSweepMotorPositionAsync();
+    Task<(int res, double position)> GetMotorPositionAsync(string motorNameLowerCase);
+    #endregion
+
+    #region Program Getters
+    public int GetNumberOfPrograms();
+    public ProgramNode? GetFirstProgramNode();
+    public ProgramNode? GetLastProgramNode();
+    #endregion
+    #endregion
+
+    #region Read and Clear Motor Errors
     public Task ReadBuildMotorErrors();
     public Task ReadPowderMotorErrors();
     public Task ReadSweepMotorErrors();
     public Task ReadAndClearAllErrors();
+    #endregion
+
+    #region Write Program
     public string[] WriteAbsoluteMoveProgramForBuildMotor(double target, bool moveUp);
     public string[] WriteAbsoluteMoveProgramForPowderMotor(double target, bool moveUp);
     public string[] WriteAbsoluteMoveProgramForSweepMotor(double target, bool moveUp);
     public string[] WriteRelativeMoveProgramForBuildMotor(double steps, bool moveUp);
     public string[] WriteRelativeMoveProgramForPowderMotor(double steps, bool moveUp);
     public string[] WriteRelativeMoveProgramForSweepMotor(double steps, bool moveUp);
+    #endregion
+
+    #region Send Program
     public void SendProgram(string motorNameLower, string[] program);
+    #endregion
+
+    #region Is Program Running
     public Task<bool> IsProgramRunningAsync(string motorNameLower);
-    public void AddProgramFront(string[] program, Controller controller, int axis);
+    #endregion
+
+    #region Add Program Front
     public void AddProgramFront(string motorNameLower, string[] program);
-    public void AddProgramLast(string[] program, Controller controller, int axis);
     public void AddProgramLast(string motorNameLower, string[] program);
-    public int GetNumberOfPrograms();
-    public ProgramNode? GetFirstProgramNode();
-    public ProgramNode? GetLastProgramNode();
-    public void StopMotor(string motorNameLower);
-    public void StopAllMotors();
+    #endregion
+
+    #region Pause and Resume Program
     public bool IsProgramPaused();
     public void PauseProgram();
-    public Task ExecuteLayerMove(double thickness, double amplifier, int numberOfLayers);
+    public Task ResumeProgramReading();
+    #endregion
+
+    #region Stop Motors
+    public void StopMotor(string motorNameLower);
+    public void StopAllMotors();
+    #endregion
+
+    #region Multi-Motor Move Methods
     public (string[] program, Controller controller, int axis)? ExtractProgramNodeVariables(ProgramNode programNode);
-    public int GetMotorAxis(string motorName);
-    double GetMaxSweepPosition();
-    public Task<double> GetMotorPositionAsync(string motorNameLowerCase);
-    Task<double> GetBuildMotorPositionAsync();
-    Task<double> GetPowderMotorPositionAsync();
-    Task<double> GetSweepMotorPositionAsync();
-    Task<(int res, double position)> HandleGetPositionAsync(string motorNameLowerCase);
-    void ConfigurePortEventHandlers();
-    void IntializeMotors();
-    void HandleMotorInit(string motorNameLowerCase, StepperMotor motor, out StepperMotor motorField);
-    void InitializeMotorMap();
+    public Task ExecuteLayerMove(double thickness, double amplifier, int numberOfLayers);
+    #endregion
+
+
+
+
+
     Task<int> MoveMotorAbs(string motorNameLowerCase, double target);
     Task<int> MoveBuildMotorAbs(double target);
     Task<int> MovePowderMotorAbs(double target);

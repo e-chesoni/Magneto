@@ -17,6 +17,7 @@ using Magneto.Desktop.WinUI.Core.Contracts.Services.States;
 using Magneto.Desktop.WinUI.Core.Contracts;
 using static Magneto.Desktop.WinUI.Core.Models.Constants.MagnetoConstants;
 using static Magneto.Desktop.WinUI.Core.Models.Print.CommandQueueManager;
+using MongoDB.Driver;
 
 namespace Magneto.Desktop.WinUI.Core.Models.Print;
 
@@ -193,25 +194,13 @@ public class CommandQueueManager : ISubsciber, IStateMachine
     }
 
     #endregion
-
-    public ProgramNode GetLastProgramNodeRun()
-    {
-        return _lastMove.programNode;
-    }
+    public LastMove GetLastMove() => _lastMove;
+    public ProgramNode GetLastProgramNodeRun() => _lastMove.programNode;
     public bool IsProgramPaused() => PAUSE_REQUESTED;
 
     public void PauseProgram()
     {
         PAUSE_REQUESTED = false;
-    }
-
-    public void ResetProgramList(bool lastProgrmDNF)
-    {
-        if (lastProgrmDNF)
-        {
-            // put the last program at the front of the list
-            programLinkedList.AddFirst(_lastMove.programNode);
-        }
     }
 
     public ProgramNode CreateProgramNode(string[] program, Controller controller, int axis)

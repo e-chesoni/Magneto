@@ -633,38 +633,7 @@ public class StepperMotor : IStepperMotor
     #endregion
 
     #region Movement Helpers
-    /*
-    public async Task WaitUntilAtTargetAsync(double targetPos, double tolerance = 0.01)
-    {
-        int maxAttempts = 100;
-        int delayMs = 50;
-        int attempts = 0;
 
-        while (attempts < maxAttempts)
-        {
-            double currentPos;
-            //await _moveLock.WaitAsync();
-            try
-            {
-                currentPos = await GetPosAsync(); // already internally locked
-            }
-            finally
-            {
-                //_moveLock.Release();
-            }
-
-            if (Math.Abs(currentPos - targetPos) <= tolerance)
-            {
-                return;
-            }
-
-            await Task.Delay(delayMs); // Small pause between reads
-            attempts++;
-        }
-
-        MagnetoLogger.Log($"Timed out waiting for motor to reach {targetPos}", LogFactoryLogLevel.LogLevel.ERROR);
-    }
-    */
     public async Task WaitUntilAtTargetAsync(double targetPos, double tolerance = 0.01)
     {
         var maxAttempts = 100;
@@ -734,38 +703,6 @@ public class StepperMotor : IStepperMotor
         {
             _moveLock.Release();
         }
-    }
-
-    // TODO: Update methods to use asynchronous position check
-    public async Task<bool> CheckPosAsync(double desiredPos)
-    {
-        MagnetoLogger.Log("Checking motor position.", LogFactoryLogLevel.LogLevel.VERBOSE);
-
-        const int maxAttempts = 10000; // Can modify max wait limit; This waits for 10000*100 ms (task delay below) ~ 16.7 min
-        var attempt = 0;
-
-        while (attempt < maxAttempts)
-        {
-            _currentPos = await GetPosAsync();
-            MagnetoLogger.Log($"Current Position: {_currentPos}, Desired Position: {desiredPos}", LogFactoryLogLevel.LogLevel.VERBOSE);
-
-            if (Math.Abs(_currentPos - desiredPos) <= _tolerance || STOP_MOVE_FLAG)
-            {
-                MagnetoLogger.Log("Desired position reached.", LogFactoryLogLevel.LogLevel.SUCCESS);
-                //MagnetoSerialConsole.ClearTermRead();
-
-                // Reset set stop flag to true if loop entered because position was reached
-                STOP_MOVE_FLAG = true;
-                
-                return true;
-            }
-
-            await Task.Delay(100); // Adjust based on your scenario
-            attempt++;
-        }
-
-        MagnetoLogger.Log("Failed to reach the desired position within the maximum number of attempts.", LogFactoryLogLevel.LogLevel.ERROR);
-        return false;
     }
 
     // TODO: Put this method in a helper
