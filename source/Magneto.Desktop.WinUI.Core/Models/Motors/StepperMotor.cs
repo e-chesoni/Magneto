@@ -504,10 +504,10 @@ public class StepperMotor : IStepperMotor
         return msg;
     }
 
-    public void AbsoluteMoveByProgram(double position, bool moveUp)
+    public void MoveByProgram(double position, bool isAbsolute)
     {
         var programId = _motorAxis;
-        var isAbsolute = true;
+        var moveUp = position > 0;
         // commands to execute
         var programLines = WriteMoveProgramHelper(position, isAbsolute, moveUp);
         // call erase to make sure there's no existing program with the same id

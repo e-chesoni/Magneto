@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Models.Motors;
 using Magneto.Desktop.WinUI.Core.Models.Print;
+using ZstdSharp.Unsafe;
 using static Magneto.Desktop.WinUI.Core.Models.Constants.MagnetoConstants;
 using static Magneto.Desktop.WinUI.Core.Models.Print.CommandQueueManager;
 
@@ -655,6 +656,24 @@ public class MotorService : IMotorService
     #endregion
 
     #region Relative Move
+
+
+
+    private async Task<int> MoveMotorRel(StepperMotor motor, double distance)
+    {
+        // NOTE: when called, you must await the return to get the integer value
+        //       Otherwise returns some weird string
+        MagnetoLogger.Log($"🚦called with distance {distance} on motor {motor.GetMotorName()}", LogFactoryLogLevel.LogLevel.WARN);
+        MagnetoLogger.Log($"🔁distance {distance} to {motor.GetMotorName()} via {motor.GetAxis()}", LogFactoryLogLevel.LogLevel.WARN);
+        //await _commandQueueManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.RelativeMove, distance);
+        await motor.MoveMotorRelAsync(distance); // moves, but doesn't exit loop (still checking for position)
+        // TODO: finish updating move call in stack so loop is exited
+        return 1;
+    }
+
+    public async Task<int> MoveBuildMotorRel(double distance) => await MoveMotorRel(buildMotor, distance);
+    public async Task<int> MovePowderMotorRel(double distance) => await MoveMotorRel(powderMotor, distance);
+    public async Task<int> MoveSweepMotorRel(double distance) => await MoveMotorRel(sweepMotor, distance);
     public async Task<int> MoveMotorRel(string motorNameLowerCase, double distance)
     {
         switch (motorNameLowerCase)
@@ -674,20 +693,46 @@ public class MotorService : IMotorService
         }
         return 1;
     }
-    private async Task<int> MoveMotorRel(StepperMotor motor, double distance)
+
+    public async Task MoveBuildMotorRelativeProgram(double distance, bool moveUp)
     {
-        // NOTE: when called, you must await the return to get the integer value
-        //       Otherwise returns some weird string
-        MagnetoLogger.Log($"🚦called with distance {distance} on motor {motor.GetMotorName()}", LogFactoryLogLevel.LogLevel.WARN);
-        MagnetoLogger.Log($"🔁distance {distance} to {motor.GetMotorName()} via {motor.GetAxis()}", LogFactoryLogLevel.LogLevel.WARN);
-        //await _commandQueueManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.RelativeMove, distance);
-        await motor.MoveMotorRelAsync(distance); // moves, but doesnt exit loop (still checking for position)
-        // TODO: finish updateing move call in stack so loop is exited
-        return 1;
+        MagnetoLogger.Log($"Received relative distance: {distance}.", LogFactoryLogLevel.LogLevel.VERBOSE);
+        var program = WriteRelativeMoveProgramForBuildMotor(distance, moveUp);
+        AddProgramLast(buildMotor.GetMotorName(), program);
+        await ProcessPrograms();
     }
-    public async Task<int> MoveBuildMotorRel(double distance) => await MoveMotorRel(buildMotor, distance);
-    public async Task<int> MovePowderMotorRel(double distance) => await MoveMotorRel(powderMotor, distance);
-    public async Task<int> MoveSweepMotorRel(double distance) => await MoveMotorRel(sweepMotor, distance);
+    public async Task MovePowderMotorRelativeProgram(double distance, bool moveUp)
+    {
+        var program = WriteRelativeMoveProgramForPowderMotor(distance, moveUp);
+        AddProgramLast(powderMotor.GetMotorName(), program);
+        await ProcessPrograms();
+    }
+    public async Task MoveSweepMotorRelativeProgram(double distance, bool moveUp)
+    {
+        var program = WriteRelativeMoveProgramForSweepMotor(distance, moveUp);
+        AddProgramLast(sweepMotor.GetMotorName(), program);
+        await ProcessPrograms();
+    }
+
+    public async Task MoveMotorRelativeProgram(string motorNameLower, double distance, bool moveUp)
+    {
+        switch (motorNameLower)
+        {
+            case "build":
+                await MoveBuildMotorRelativeProgram(distance, moveUp);
+                break;
+            case "powder":
+                await MovePowderMotorRelativeProgram(distance, moveUp);
+                break;
+            case "sweep":
+                await MoveSweepMotorRelativeProgram(distance, moveUp);
+                break;
+            default:
+                MagnetoLogger.Log($"Could not check motor stop flag. Invalid motor name given: {motorNameLower}.", LogFactoryLogLevel.LogLevel.ERROR);
+                return;
+        }
+        return;
+    }
     #endregion
 
     #region Homing

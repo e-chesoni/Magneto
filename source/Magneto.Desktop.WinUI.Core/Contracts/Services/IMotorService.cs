@@ -95,6 +95,9 @@ public interface IMotorService
     Task<int> MoveBuildMotorRel(double distance);
     Task<int> MovePowderMotorRel(double distance);
     Task<int> MoveSweepMotorRel(double distance);
+
+    public Task MoveMotorRelativeProgram(string motorNameLower, double distance, bool moveUp);
+
     bool MotorsRunning();
     bool CheckMotorStopFlag(string motorNameLowerCase);
     void EnableBuildMotor();
