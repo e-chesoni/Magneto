@@ -13,9 +13,9 @@ public interface IStepperMotor
     #region Movement
     //public string[] WriteAbsoluteMoveProgram(double position, bool moveUp);
     //public string[] WriteRelativeMoveProgram(double steps);
-    public string[] WriteMoveProgramHelper(double target, bool isAbsolute, bool moveUp);
-    int SendAbsoluteMoveRequest(double pos);
-    int SendRelativeMoveRequest(double pos);
+    public string[] CreateMoveProgramHelper(double target, bool isAbsolute, bool moveUp);
+    int WriteAbsoluteMoveRequest(double pos);
+    int WriteRelativeMoveRequest(double pos);
     Task MoveMotorRelAsync(double steps);
     void StopMotor();
     Task<int> WaitForStop();

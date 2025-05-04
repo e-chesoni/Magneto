@@ -186,12 +186,12 @@ public class MotorService : IMotorService
     #endregion
 
     #region Write Program
-    private string[] WriteAbsoluteMoveProgram(StepperMotor motor, double target, bool moveUp) => motor.WriteMoveProgramHelper(target, true, moveUp);
+    private string[] WriteAbsoluteMoveProgram(StepperMotor motor, double target, bool moveUp) => motor.CreateMoveProgramHelper(target, true, moveUp);
     public string[] WriteAbsoluteMoveProgramForBuildMotor(double target, bool moveUp) => WriteAbsoluteMoveProgram(buildMotor, target, moveUp);
     public string[] WriteAbsoluteMoveProgramForPowderMotor(double target, bool moveUp) => WriteAbsoluteMoveProgram(powderMotor, target, moveUp);
     public string[] WriteAbsoluteMoveProgramForSweepMotor(double target, bool moveUp) => WriteAbsoluteMoveProgram(sweepMotor, target, moveUp);
 
-    private string[] WriteRelativeMoveProgram(StepperMotor motor, double steps, bool moveUp) => motor.WriteMoveProgramHelper(steps, false, moveUp);
+    private string[] WriteRelativeMoveProgram(StepperMotor motor, double steps, bool moveUp) => motor.CreateMoveProgramHelper(steps, false, moveUp);
     public string[] WriteRelativeMoveProgramForBuildMotor(double steps, bool moveUp) => WriteRelativeMoveProgram(buildMotor, steps, moveUp);
     public string[] WriteRelativeMoveProgramForPowderMotor(double steps, bool moveUp) => WriteRelativeMoveProgram(powderMotor, steps, moveUp);
     public string[] WriteRelativeMoveProgramForSweepMotor(double steps, bool moveUp) => WriteRelativeMoveProgram(sweepMotor, steps, moveUp);
@@ -203,13 +203,13 @@ public class MotorService : IMotorService
         switch (motorNameLower)
         {
             case "build":
-                buildMotor.SendProgram(program);
+                buildMotor.WriteProgram(program);
                 break;
             case "powder":
-                powderMotor.SendProgram(program);
+                powderMotor.WriteProgram(program);
                 break;
             case "sweep":
-                sweepMotor.SendProgram(program);
+                sweepMotor.WriteProgram(program);
                 break;
             default:
                 MagnetoLogger.Log($"Unable to send program. Invalid motor name given: {motorNameLower}.", LogFactoryLogLevel.LogLevel.ERROR);
@@ -221,13 +221,13 @@ public class MotorService : IMotorService
         switch (motorNameLower)
         {
             case "build":
-                buildMotor.SendProgram(programNode.program);
+                buildMotor.WriteProgram(programNode.program);
                 break;
             case "powder":
-                powderMotor.SendProgram(programNode.program);
+                powderMotor.WriteProgram(programNode.program);
                 break;
             case "sweep":
-                sweepMotor.SendProgram(programNode.program);
+                sweepMotor.WriteProgram(programNode.program);
                 break;
             default:
                 MagnetoLogger.Log($"Unable to send program. Invalid motor name given: {motorNameLower}.", LogFactoryLogLevel.LogLevel.ERROR);

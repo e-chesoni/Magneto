@@ -561,7 +561,7 @@ public class CommandQueueManager : ISubsciber, IStateMachine
         }
         else if (motorCommand.StartsWith("MVA"))
         {
-            motor.SendAbsoluteMoveRequest(value);
+            motor.WriteAbsoluteMoveRequest(value);
         }
         else if (motorCommand.StartsWith("MVR"))
         {

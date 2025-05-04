@@ -135,7 +135,7 @@ public class MotorController : IMotorController
         foreach (var motor in _motorList)
         {
             // TODO: handle errors
-            int res = motor.SendAbsoluteMoveRequest(thickness);
+            int res = motor.WriteAbsoluteMoveRequest(thickness);
             Thread.Sleep(2000); // Allow both motors time to get to desired position
         }
     }
@@ -162,7 +162,7 @@ public class MotorController : IMotorController
             msg = $"Found motor on axis: {axis}. Stepping motor absolute...";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
             // TOOD: handle errors
-            var res = motor.SendAbsoluteMoveRequest(step);
+            var res = motor.WriteAbsoluteMoveRequest(step);
         }
         else
         {
@@ -182,7 +182,7 @@ public class MotorController : IMotorController
             msg = $"Found {motor.GetMotorName()} on. Stepping motor absolute...";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
             // TODO: handle errors
-            var res = motor.SendAbsoluteMoveRequest(step);
+            var res = motor.WriteAbsoluteMoveRequest(step);
         }
         else
         {
