@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Magneto.Desktop.WinUI.Core.Models.Motors;
 using Magneto.Desktop.WinUI.Core.Models.Print;
 using static Magneto.Desktop.WinUI.Core.Models.Constants.MagnetoConstants;
-using static Magneto.Desktop.WinUI.Core.Models.Print.CommandQueueManager;
+using static Magneto.Desktop.WinUI.Core.Models.Print.ProgramsManager;
 
 namespace Magneto.Desktop.WinUI.Core.Contracts.Services;
 public interface IMotorService
@@ -17,7 +17,6 @@ public interface IMotorService
     void HandleMotorInit(string motorNameLowerCase, StepperMotor motor, out StepperMotor motorField);
     void InitializeMotorMap();
     void HandleStartUp();
-    //void Initialize();
     #endregion
 
     #region Getters
@@ -46,9 +45,9 @@ public interface IMotorService
     #endregion
 
     #region Write Program
-    public string[] WriteAbsoluteMoveProgramForBuildMotor(double target, bool moveUp);
-    public string[] WriteAbsoluteMoveProgramForPowderMotor(double target, bool moveUp);
-    public string[] WriteAbsoluteMoveProgramForSweepMotor(double target, bool moveUp);
+    public string[] WriteAbsoluteMoveProgramForBuildMotor(double target);
+    public string[] WriteAbsoluteMoveProgramForPowderMotor(double target);
+    public string[] WriteAbsoluteMoveProgramForSweepMotor(double target);
     public string[] WriteRelativeMoveProgramForBuildMotor(double steps, bool moveUp);
     public string[] WriteRelativeMoveProgramForPowderMotor(double steps, bool moveUp);
     public string[] WriteRelativeMoveProgramForSweepMotor(double steps, bool moveUp);
@@ -74,42 +73,16 @@ public interface IMotorService
     #endregion
 
     #region Stop Motors
-    public void StopMotor(string motorNameLower);
-    public void StopAllMotors();
+    public void StopAndClearProgramList(string motorNameLower);
+    public void StopAllMotorsClearProgramList();
     #endregion
 
     #region Multi-Motor Move Methods
     public (string[] program, Controller controller, int axis)? ExtractProgramNodeVariables(ProgramNode programNode);
-    public Task ExecuteLayerMove(double thickness, double amplifier, int numberOfLayers);
+    public Task ExecuteLayerMove(double thickness, double amplifier);
     #endregion
 
-
-    public Task MoveMotorAbsoluteProgram(string motorNameLower, double distance, bool moveUp);
+    public Task MoveMotorAbsoluteProgram(string motorNameLower, double distance);
     public Task MoveMotorRelativeProgram(string motorNameLower, double distance, bool moveUp);
-
-
-    Task<int> MoveMotorAbs(string motorNameLowerCase, double target);
-    Task<int> MoveBuildMotorAbs(double target);
-    Task<int> MovePowderMotorAbs(double target);
-    Task<int> MoveSweepMotorAbs(double target);
-    Task<int> MoveMotorRel(string motorNameLowerCase, double distance);
-    Task<int> MoveBuildMotorRel(double distance);
-    Task<int> MovePowderMotorRel(double distance);
-    Task<int> MoveSweepMotorRel(double distance);
-
-    
-
-    bool MotorsRunning();
-    bool CheckMotorStopFlag(string motorNameLowerCase);
-    void EnableBuildMotor();
-    void EnablePowderMotor();
-    void EnableSweepMotor();
-    void EnableMotors();
-    Task<int> StopMotorAndClearQueue(string motorNameLowerCase);
-    Task<int> HomeMotor(StepperMotor motor);
     Task<int> HomeMotor(string motorNameLowerCase);
-    Task<int> WaitUntilMotorHomedAsync(string motorNameLowerCase);
-    Task<int> WaitUntilBuildReachesTargetAsync(double targetPos);
-    Task<int> WaitUntilPowderReachesTargetAsync(double targetPos);
-    Task<int> WaitUntilSweepReachesTargetAsync(double targetPos);
 }

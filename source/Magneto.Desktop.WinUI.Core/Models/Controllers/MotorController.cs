@@ -288,7 +288,7 @@ public class MotorController : IMotorController
         */
         foreach (var motor in _motorList)
         {
-            motor.StopMotor(); // Just call it
+            motor.Stop(); // Just call it
         }
     }
 

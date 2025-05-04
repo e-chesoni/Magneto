@@ -29,7 +29,7 @@ public static class MicronixErrorParser
             {
                 code = Enum.IsDefined(typeof(MICRONIX_ERROR_CODE), code)
                     ? (MICRONIX_ERROR_CODE)code
-                    : MICRONIX_ERROR_CODE.UNKNOWN,
+                    : MICRONIX_ERROR_CODE.COM_PORT_ERROR,
                 command = command,
                 message = message,
             });

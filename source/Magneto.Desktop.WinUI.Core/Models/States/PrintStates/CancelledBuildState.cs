@@ -15,9 +15,9 @@ namespace Magneto.Desktop.WinUI.Core.Models.State.PrintStates;
 /// </summary>
 public class CancelledBuildState : IPrintState
 {
-    private CommandQueueManager _BuildManagerSM { get; set; }
+    private ProgramsManager _BuildManagerSM { get; set; }
 
-    public CancelledBuildState(CommandQueueManager bm)
+    public CancelledBuildState(ProgramsManager bm)
     {
         var msg = "Entered CancelledBuildState...";
         MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);

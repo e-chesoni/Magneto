@@ -26,12 +26,13 @@ using Magneto.Desktop.WinUI.Core;
 using System.IO.Ports;
 using Magneto.Desktop.WinUI.Helpers;
 using Microsoft.UI;
-using static Magneto.Desktop.WinUI.Core.Models.Print.CommandQueueManager;
+using static Magneto.Desktop.WinUI.Core.Models.Print.ProgramsManager;
 using static Magneto.Desktop.WinUI.Views.TestPrintPage;
 using CommunityToolkit.WinUI.UI.Animations;
 using CommunityToolkit.WinUI.UI.Controls.TextToolbarSymbols;
 using Magneto.Desktop.WinUI.Models.UIControl;
 using Magneto.Desktop.WinUI.Services;
+using System.Threading.Tasks;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -89,38 +90,20 @@ public sealed partial class TestMotorsPage : Page
     }
 
     #region Helpers
-    private async Task<int> HomeIfStopFlagIsFalse(string motorName)
+    private async Task HomeMotorsHelper()
     {
         string? msg;
         if (_motorPageService == null)
         {
             msg = "_motorPageService is null. Cannot home motors.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-            return 0;
+            return;
         }
-        else
-        {
-            msg = "Homing all motors";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-        }
-        if (_motorPageService.CheckMotorStopFlag(motorName))
-        {
-            MagnetoLogger.Log($"{motorName} motor stop flag is up cannot home motor.", LogFactoryLogLevel.LogLevel.ERROR);
-            return 0;
-        }
-        else
-        {
-            await _motorPageService.HomeMotorAndUpdateUI(motorName);
-            return 1;
-        }
+        await _motorPageService.HomeMotorAndUpdateUI(buildMotorName);
+        await _motorPageService.HomeMotorAndUpdateUI(powderMotorName);
+        await _motorPageService.HomeMotorAndUpdateUI(sweepMotorName);
     }
-    private async Task HomeMotorsHelper()
-    {
-        await HomeIfStopFlagIsFalse("build");
-        await HomeIfStopFlagIsFalse("powder");
-        await HomeIfStopFlagIsFalse("sweep");
-    }
-    private void StopMotorsHelper()
+    private async Task StopMotorsHelper()
     {
         if (_motorPageService == null)
         {
@@ -128,7 +111,15 @@ public sealed partial class TestMotorsPage : Page
             return;
         }
         _motorPageService.StopBuildMotorAndUpdateTextBox();
+        while (await _motorPageService.IsProgramRunningAsync(buildMotorName))
+        {
+            await Task.Delay(100);
+        }
         _motorPageService.StopPowderMotorAndUpdateTextBox();
+        while (await _motorPageService.IsProgramRunningAsync(powderMotorName))
+        {
+            await Task.Delay(100);
+        }
         _motorPageService.StopSweepMotorAndUpdateTextBox();
     }
 
@@ -384,7 +375,6 @@ public sealed partial class TestMotorsPage : Page
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to enable motors.");
             return;
         }
-        _motorPageService.EnableMotors();
         UnlockCalibrationPanel();
     }
     #endregion

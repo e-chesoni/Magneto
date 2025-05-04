@@ -37,7 +37,7 @@ public class MicronixConstants
 
     public enum MICRONIX_ERROR_CODE
     {
-        UNKNOWN = 0,
+        COM_PORT_ERROR = 0, // custom error
         RECEIVE_BUFFER_OVERRUN = 10,
         MOTOR_DISABLED = 11,
         NO_ENCODER_DETECTED = 12,

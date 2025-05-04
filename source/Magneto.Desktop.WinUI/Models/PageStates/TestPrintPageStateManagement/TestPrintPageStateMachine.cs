@@ -12,7 +12,7 @@ using Magneto.Desktop.WinUI.Popups;
 using Magneto.Desktop.WinUI.Services;
 using Magneto.Desktop.WinUI.ViewModels;
 using SAMLIGHT_CLIENT_CTRL_EXLib;
-using static Magneto.Desktop.WinUI.Core.Models.Print.CommandQueueManager;
+using static Magneto.Desktop.WinUI.Core.Models.Print.ProgramsManager;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml;
 using Magneto.Desktop.WinUI.Helpers;
@@ -29,7 +29,7 @@ public class TestPrintPageStateMachine
 
     private StepperMotor? _sweepMotor;
 
-    private CommandQueueManager? _bm;
+    private ProgramsManager? _bm;
 
     private bool _powderMotorSelected = false;
 

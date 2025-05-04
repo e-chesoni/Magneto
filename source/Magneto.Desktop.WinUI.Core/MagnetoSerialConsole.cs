@@ -646,7 +646,10 @@ public static class MagnetoSerialConsole
         {
             if (_pendingResponses.ContainsKey(portName))
             {
-                throw new InvalidOperationException($"A response is already pending on port {portName}");
+                MagnetoLogger.Log(
+                    $"❌ Response already pending on port {portName}. Ignoring command '{command}'.",
+                    LogFactoryLogLevel.LogLevel.ERROR);
+                return "#ERROR - 0 Pending response on COM port";
             }
 
             _pendingResponses[portName] = tcs;
@@ -657,18 +660,50 @@ public static class MagnetoSerialConsole
 
         var completedTask = await Task.WhenAny(tcs.Task, Task.Delay(timeout));
 
-        lock (_lock)
-        {
-            _pendingResponses.Remove(portName);
-        }
-
         if (completedTask == tcs.Task)
         {
+            // Success: clean up and return the response
+            lock (_lock)
+            {
+                _pendingResponses.Remove(portName);
+            }
+
             return tcs.Task.Result;
         }
-
-        throw new TimeoutException($"No response from {portName} within {timeout.TotalSeconds} seconds.");
+        else
+        {
+            // Timeout: clean up and return timeout message
+            ClearPendingResponse(portName);
+            MagnetoLogger.Log(
+                $"⏱️ Timeout waiting for response on port {portName} for command '{command}'.",
+                LogFactoryLogLevel.LogLevel.ERROR);
+            return "#ERROR - 0 Timeout on COM port";
+        }
     }
+
+
+    /// <summary>
+    /// Manually clears any pending response on the given port.
+    /// Use this to recover from a stuck serial request.
+    /// </summary>
+    public static void ClearPendingResponse(string portName)
+    {
+        lock (_lock)
+        {
+            if (_pendingResponses.TryGetValue(portName, out var tcs))
+            {
+                tcs.TrySetCanceled();  // or TrySetResult("#CLEARED") if you'd prefer
+                _pendingResponses.Remove(portName);
+
+                MagnetoLogger.Log($"⚠️ Cleared pending response on port {portName}", LogFactoryLogLevel.LogLevel.WARN);
+            }
+            else
+            {
+                MagnetoLogger.Log($"ℹ️ No pending response to clear on port {portName}", LogFactoryLogLevel.LogLevel.VERBOSE);
+            }
+        }
+    }
+
 
     #endregion
 }

@@ -266,7 +266,7 @@ public class TestPrintViewModel : ObservableRecipient
             await motorPageService.ExecuteLayerMove(thickness, amplifier, xamlRoot);
 
             // wait for layer move to complete
-            while (motorPageService.MotorsRunning()) { await Task.Delay(100); }
+            //while (motorPageService.MotorsRunning()) { await Task.Delay(100); }
         }
         else
         {
@@ -275,7 +275,7 @@ public class TestPrintViewModel : ObservableRecipient
             await motorPageService.ExecuteLayerMove(thickness, amplifier, xamlRoot);
             // wait for layer move to complete
             //while (_motorService.MotorsRunning()) { await Task.Delay(100); }
-            while (motorPageService.MotorsRunning()) { await Task.Delay(100); }
+            //while (motorPageService.MotorsRunning()) { await Task.Delay(100); }
 
             // mark
             //await HandleMarkEntityAsync();

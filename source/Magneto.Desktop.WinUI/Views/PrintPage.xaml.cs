@@ -12,7 +12,7 @@ using Magneto.Desktop.WinUI.ViewModels;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using static Magneto.Desktop.WinUI.Core.Models.Motors.StepperMotor;
-using static Magneto.Desktop.WinUI.Core.Models.Print.CommandQueueManager;
+using static Magneto.Desktop.WinUI.Core.Models.Print.ProgramsManager;
 
 namespace Magneto.Desktop.WinUI.Views;
 
@@ -179,36 +179,12 @@ public sealed partial class PrintPage : Page
 
     private void HomeBuildMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        if (_missionControl != null)
-        {
-            var bm = _missionControl.GetActuationManger();
-            var build_axis = bm.buildController.GetBuildMotor().GetAxis();
-            bm.AddCommand(Core.Models.Print.CommandQueueManager.ControllerType.BUILD, build_axis, Core.Models.Print.CommandQueueManager.CommandType.AbsoluteMove, 0);
-        }
-        else
-        {
-            var msg = $"Mission control is null.";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            msg = $"Unable to communicate with Mission Control. Try reloading the page.";
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", msg);
-        }
+        throw new NotImplementedException();
     }
 
     private void HomePowderMotorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        if (_missionControl != null)
-        {
-            var bm = _missionControl.GetActuationManger();
-            var powder_axis = bm.buildController.GetPowderMotor().GetAxis();
-            bm.AddCommand(Core.Models.Print.CommandQueueManager.ControllerType.BUILD, powder_axis, Core.Models.Print.CommandQueueManager.CommandType.AbsoluteMove, 0);
-        }
-        else
-        {
-            var msg = $"Mission control is null.";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            msg = $"Unable to communicate with Mission Control. Try reloading the page.";
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", msg);
-        }
+        throw new NotImplementedException();
     }
 
     private void CancelPrintButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)

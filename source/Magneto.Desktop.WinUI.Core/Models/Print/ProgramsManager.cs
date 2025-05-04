@@ -16,7 +16,7 @@ using static Magneto.Desktop.WinUI.Core.Models.Motors.StepperMotor;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.States;
 using Magneto.Desktop.WinUI.Core.Contracts;
 using static Magneto.Desktop.WinUI.Core.Models.Constants.MagnetoConstants;
-using static Magneto.Desktop.WinUI.Core.Models.Print.CommandQueueManager;
+using static Magneto.Desktop.WinUI.Core.Models.Print.ProgramsManager;
 using MongoDB.Driver;
 
 namespace Magneto.Desktop.WinUI.Core.Models.Print;
@@ -24,7 +24,7 @@ namespace Magneto.Desktop.WinUI.Core.Models.Print;
 /// <summary>
 /// Coordinates printing tasks across components
 /// </summary>
-public class CommandQueueManager : ISubsciber, IStateMachine
+public class ProgramsManager : ISubsciber, IStateMachine
 {
     #region Private Variables
 
@@ -167,7 +167,7 @@ public class CommandQueueManager : ISubsciber, IStateMachine
     /// <param name="buildController"></param> Build Controller
     /// <param name="sweepController"></param> Sweep/Powder Distribution Controller
     /// <param name="laserController"></param> Laser Controller
-    public CommandQueueManager(MotorController bc, MotorController sc, LaserController lc)
+    public ProgramsManager(MotorController bc, MotorController sc, LaserController lc)
     {
         buildController = bc;
         sweepController = sc;
@@ -391,187 +391,6 @@ public class CommandQueueManager : ISubsciber, IStateMachine
     {
         // TODO: UPDATE in production. Currently uses default number of slices from Magneto Config
         artifactModel.sliceStack = ArtifactHandler.SliceArtifact(artifactModel);
-    }
-
-    #endregion
-
-    #region Stop request handler
-    public Task<double> HandleStopRequest(StepperMotor motor)
-    {
-        TaskCompletionSource<double> tcs = null;
-
-        MagnetoLogger.Log($"stopping {motor.GetMotorName()} motor", LogFactoryLogLevel.LogLevel.VERBOSE);
-        // stop motor
-        motor.StopMotor();
-
-        // clear queue
-        commandQueue.Clear();
-        MagnetoLogger.Log("🧹 Cleared command queue.e", LogFactoryLogLevel.LogLevel.WARN);
-
-        // return empty task
-        return tcs?.Task ?? Task.FromResult(0.0);
-    }
-
-    #endregion
-
-    #region Queue Management
-
-    // TODO: Fix this; queue is empty but last motor command may still be running (ex. sweep takes a long time)
-    public bool MotorsRunning()
-    {
-        // if queue is not empty, motors are running
-        if(commandQueue.Count > 0) 
-        {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public Task<double> AddCommand(ControllerType controllerType, int axis, CommandType cmdType, double dist)
-    {
-        MagnetoLogger.Log($"📬 Enqueuing command for {controllerType}, axis {axis}, type {cmdType}, distance {dist}", LogFactoryLogLevel.LogLevel.WARN);
-        TaskCompletionSource<double> tcs = null;
-        MotorKey key = new MotorKey(controllerType, axis);
-
-        if (cmdType == CommandType.PositionQuery)
-        {
-            tcs = new TaskCompletionSource<double>();
-            positionTasks[key] = tcs;
-        }
-
-        lock (commandQueue)
-        {
-            string command = $"{controllerType}{axis}";
-
-            switch (cmdType)
-            {
-                case CommandType.AbsoluteMove:
-                    command += $"MVA{dist}";
-                    break;
-                case CommandType.RelativeMove:
-                    command += $"MVR{dist}";
-                    break;
-                case CommandType.PositionQuery:
-                    command += "POS?";
-                    break;
-            }
-
-            commandQueue.Enqueue(command);
-            if (!isCommandProcessing)
-            {
-                isCommandProcessing = true;
-                Task.Run(() => ProcessCommands());
-            }
-        }
-
-        // Ensures a task is always returns even if the task is null:
-        // Return the Task from the TaskCompletionSource if it's not null; 
-        // otherwise, return a completed Task<double> with a result of 0.0.
-        return tcs?.Task ?? Task.FromResult(0.0);
-    }
-
-    private async Task ProcessCommands()
-    {
-        var msg = "Processing actuation manager command queue...";
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-
-        while (commandQueue.Count > 0)
-        {
-            string command;
-            lock (commandQueue)
-            {
-                command = commandQueue.Dequeue();
-            }
-
-            ControllerType controllerType = (ControllerType)Enum.Parse(typeof(ControllerType), command.Substring(0,5));
-            int axis = int.Parse(command.Substring(5,1));
-            MotorKey key = new MotorKey(controllerType, axis);
-            string motorCommand = command.Substring(6);
-
-            // Based on the controller type, fetch the correct controller
-            var controller = GetController(controllerType);
-
-            // Process the command with the respective controller
-            if (controller != null)
-            {
-                if (controller is IMotorController motorController)
-                {
-                    var motorList = motorController.GetMinions();
-                    
-                    // Get the motor matching the extrapolated axis (above) from the controller
-                    StepperMotor motor = controller.GetMinions().FirstOrDefault(m => m.GetID() % 10 == axis);
-                    if (motor != null)
-                    {
-                        if (motorCommand.Contains("POS"))
-                        {
-                            double position = motor.GetCurrentPos();
-                            if (positionTasks.TryGetValue(key, out var tcs))
-                            {
-                                tcs.SetResult(position);
-                                positionTasks.Remove(key);
-                            }
-                        }
-                        else
-                        {
-                            msg = $"Found motor on axis: {axis}. Executing command: {motorCommand}.";
-                            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
-                            await ExecuteMotorCommand(motor, motorCommand);
-                        }
-                    }
-                    else
-                    {
-                        msg = $"No motor with Axis {axis} found.";
-                        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-                    }
-                }
-            }
-            else
-            {
-                msg = $"Controller not found for type {controllerType}.";
-                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            }
-        }
-        isCommandProcessing = false;
-    }
-
-    private IController GetController(ControllerType type)
-    {
-        return type switch
-        {
-            ControllerType.BUILD => buildController,
-            ControllerType.SWEEP => sweepController,
-            ControllerType.LASER => laserController,
-            _ => throw new ArgumentOutOfRangeException(nameof(type), $"Unsupported controller type: {type}")
-        };
-    }
-
-    private async Task ExecuteMotorCommand(StepperMotor motor, string motorCommand)
-    {
-        //double value = double.Parse(motorCommand.Substring(3));
-        var value = double.Parse(motorCommand[3..]);
-        //var msg = $"Executing command {value}.";
-        //MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
-        MagnetoLogger.Log($"🏁 Executing motor command: {motorCommand}", LogFactoryLogLevel.LogLevel.WARN);
-
-        if (motorCommand.StartsWith("STP"))
-        {
-            MagnetoLogger.Log("Stopping motor", LogFactoryLogLevel.LogLevel.SUCCESS);
-            motor.StopMotor();
-        }
-        else if (motorCommand.StartsWith("MVA"))
-        {
-            motor.WriteAbsoluteMoveRequest(value);
-        }
-        else if (motorCommand.StartsWith("MVR"))
-        {
-            await motor.MoveMotorRelAsync(value);
-        }
-        else
-        {
-            var msg = "Failed to execute motor command. Command not recognized.";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-        }
     }
 
     #endregion

@@ -10,11 +10,11 @@ using Magneto.Desktop.WinUI.Core.Contracts.Services.States;
 namespace Magneto.Desktop.WinUI.Core.Models.State.PrintStates;
 public class PausedBuildState : IPrintState
 {
-    private CommandQueueManager _BuildManagerSM { get; set; }
+    private ProgramsManager _BuildManagerSM { get; set; }
 
     public ArtifactModel ImageModel { get; set; }
 
-    public PausedBuildState(CommandQueueManager bm)
+    public PausedBuildState(ProgramsManager bm)
     {
         var msg = "Entered PausedBuildState...";
         MagnetoLogger.Log(msg, Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);

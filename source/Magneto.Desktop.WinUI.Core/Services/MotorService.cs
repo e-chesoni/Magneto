@@ -9,12 +9,12 @@ using Magneto.Desktop.WinUI.Core.Models.Motors;
 using Magneto.Desktop.WinUI.Core.Models.Print;
 using ZstdSharp.Unsafe;
 using static Magneto.Desktop.WinUI.Core.Models.Constants.MagnetoConstants;
-using static Magneto.Desktop.WinUI.Core.Models.Print.CommandQueueManager;
+using static Magneto.Desktop.WinUI.Core.Models.Print.ProgramsManager;
 
 namespace Magneto.Desktop.WinUI.Core.Services;
 public class MotorService : IMotorService
 {
-    private readonly CommandQueueManager _commandQueueManager;
+    private readonly ProgramsManager _commandQueueManager;
     private StepperMotor? buildMotor;
     private StepperMotor? powderMotor;
     private StepperMotor? sweepMotor;
@@ -27,7 +27,7 @@ public class MotorService : IMotorService
 
     private readonly double SWEEP_CLEARANCE = 2; // mm
 
-    public MotorService(CommandQueueManager cqm)
+    public MotorService(ProgramsManager cqm)
     {
         _commandQueueManager = cqm;
     }
@@ -186,10 +186,10 @@ public class MotorService : IMotorService
     #endregion
 
     #region Write Program
-    private string[] WriteAbsoluteMoveProgram(StepperMotor motor, double target, bool moveUp) => motor.CreateMoveProgramHelper(target, true, moveUp);
-    public string[] WriteAbsoluteMoveProgramForBuildMotor(double target, bool moveUp) => WriteAbsoluteMoveProgram(buildMotor, target, moveUp);
-    public string[] WriteAbsoluteMoveProgramForPowderMotor(double target, bool moveUp) => WriteAbsoluteMoveProgram(powderMotor, target, moveUp);
-    public string[] WriteAbsoluteMoveProgramForSweepMotor(double target, bool moveUp) => WriteAbsoluteMoveProgram(sweepMotor, target, moveUp);
+    private string[] WriteAbsoluteMoveProgram(StepperMotor motor, double target) => motor.CreateMoveProgramHelper(target, true);
+    public string[] WriteAbsoluteMoveProgramForBuildMotor(double target) => WriteAbsoluteMoveProgram(buildMotor, target);
+    public string[] WriteAbsoluteMoveProgramForPowderMotor(double target) => WriteAbsoluteMoveProgram(powderMotor, target);
+    public string[] WriteAbsoluteMoveProgramForSweepMotor(double target) => WriteAbsoluteMoveProgram(sweepMotor, target);
 
     private string[] WriteRelativeMoveProgram(StepperMotor motor, double steps, bool moveUp) => motor.CreateMoveProgramHelper(steps, false, moveUp);
     public string[] WriteRelativeMoveProgramForBuildMotor(double steps, bool moveUp) => WriteRelativeMoveProgram(buildMotor, steps, moveUp);
@@ -335,7 +335,7 @@ public class MotorService : IMotorService
     {
         _commandQueueManager.PauseProgram(); // updates boolean (should stop ProcessPrograms())
         // TODO: stop all motors on both controllers
-        StopAllMotors();
+        StopAllMotorsClearProgramList();
     }
     public (double? value, bool isAbsolute) ParseMoveCommand(string[] program)
     {
@@ -446,7 +446,7 @@ public class MotorService : IMotorService
         // if motor did not reach target, put absolute move command to move motor to target at the front of the program list
         if (currentPostion != target)
         {
-            var absoluteProgram = WriteAbsoluteMoveProgram(motor, target, moveUp);
+            var absoluteProgram = WriteAbsoluteMoveProgram(motor, target);
             AddProgramFront(motor.GetMotorName(), absoluteProgram);
         }
 
@@ -456,7 +456,8 @@ public class MotorService : IMotorService
     #endregion
 
     #region Stop Motors
-    public void StopMotor(string motorNameLower)
+    // Stops should clear the program list
+    public void StopAndClearProgramList(string motorNameLower)
     {
         switch (motorNameLower)
         {
@@ -473,18 +474,22 @@ public class MotorService : IMotorService
                 MagnetoLogger.Log($"Unable to check stop motor. Invalid motor name given: {motorNameLower}.", LogFactoryLogLevel.LogLevel.ERROR);
                 return;
         }
+        // clear the program list
+        _commandQueueManager.programLinkedList.Clear();
     }
-    public void StopAllMotors()
+    public void StopAllMotorsClearProgramList()
     {
-        buildMotor.StopMotor();
-        powderMotor.StopMotor();
-        sweepMotor.StopMotor();
+        buildMotor.Stop();
+        powderMotor.Stop();
+        sweepMotor.Stop();
+        // clear the program list
+        _commandQueueManager.programLinkedList.Clear();
     }
     #endregion
 
     #region Multi-Motor Move Methods
     public (string[] program, Controller controller, int axis)? ExtractProgramNodeVariables(ProgramNode programNode) => _commandQueueManager.ExtractProgramNodeVariables(programNode);
-    public async Task ExecuteLayerMove(double thickness, double amplifier, int numberOfLayers)
+    public async Task ExecuteLayerMove(double thickness, double amplifier)
     {
         var clearance = SWEEP_CLEARANCE;
         var movePositive = true;
@@ -496,7 +501,7 @@ public class MotorService : IMotorService
         var lowerBuildClearance = WriteRelativeMoveProgramForBuildMotor(clearance, !movePositive);
         var lowerPowderClearance = WriteRelativeMoveProgramForPowderMotor(clearance, !movePositive);
         // home sweep motor
-        var homeSweep = WriteAbsoluteMoveProgramForSweepMotor(sweepMotor.GetHomePos(), movePositive); // sweep moves home first
+        var homeSweep = WriteAbsoluteMoveProgramForSweepMotor(sweepMotor.GetHomePos()); // sweep moves home first
         // raise build and supply motors by clearance
         var raiseBuildClearance = WriteRelativeMoveProgramForBuildMotor(clearance, movePositive);
         var raisePowderClearance = WriteRelativeMoveProgramForPowderMotor(clearance, movePositive);
@@ -505,7 +510,7 @@ public class MotorService : IMotorService
         var raiseSupplyLayer = WriteRelativeMoveProgramForPowderMotor((thickness * amplifier), movePositive);
         var lowerBuildLayer = WriteRelativeMoveProgramForBuildMotor(thickness, !movePositive);
         // spread powder
-        var spreadPowder = WriteAbsoluteMoveProgramForSweepMotor(sweepMotor.GetMaxPos(), movePositive); // then to max position
+        var spreadPowder = WriteAbsoluteMoveProgramForSweepMotor(sweepMotor.GetMaxPos()); // then to max position
 
         // Add commands to program list
         // lower clearance
@@ -573,121 +578,42 @@ public class MotorService : IMotorService
     }
     #endregion
 
-    #region Checks
-    public bool MotorsRunning()
-    {
-        // if queue is not empty, motors are running
-        if (_commandQueueManager.MotorsRunning())
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-    public bool CheckMotorStopFlag(string motorNameLowerCase)
-    {
-        switch (motorNameLowerCase)
-        {
-            case "build":
-                return buildMotor.STOP_MOVE_FLAG;
-            case "powder":
-                return powderMotor.STOP_MOVE_FLAG;
-            case "sweep":
-                return sweepMotor.STOP_MOVE_FLAG;
-            default:
-                MagnetoLogger.Log($"Could not check motor stop flag. Invalid motor name given: {motorNameLowerCase}.", LogFactoryLogLevel.LogLevel.ERROR);
-                return true;
-        }
-    }
-    #endregion
-
-    #region Enablers
-    public void EnableBuildMotor()
-    {
-        buildMotor.STOP_MOVE_FLAG = false;
-    }
-    public void EnablePowderMotor()
-    {
-        powderMotor.STOP_MOVE_FLAG = false;
-    }
-    public void EnableSweepMotor()
-    {
-        sweepMotor.STOP_MOVE_FLAG = false;
-    }
-    public void EnableMotors()
-    {
-        EnableBuildMotor();
-        EnablePowderMotor();
-        EnableSweepMotor();
-    }
-    #endregion
-
     #region Movement
     #region Absolute Move
-    public async Task<int> MoveMotorAbs(string motorNameLowerCase, double target)
-    {
-        switch (motorNameLowerCase)
-        {
-            case "build":
-                await MoveBuildMotorAbs(target);
-                break;
-            case "powder":
-                await MovePowderMotorAbs(target);
-                break;
-            case "sweep":
-                await MoveSweepMotorAbs(target);
-                break;
-            default:
-                MagnetoLogger.Log($"Could not check motor stop flag. Invalid motor name given: {motorNameLowerCase}.", LogFactoryLogLevel.LogLevel.ERROR);
-                return 0;
-        }
-        return 1;
-    }
-    private async Task<int> MoveMotorAbs(StepperMotor motor, double target)
-    {
-        await _commandQueueManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.AbsoluteMove, target);
-        return 1;
-    }
-    public async Task<int> MoveBuildMotorAbs(double target) => await MoveMotorAbs(buildMotor, target);
-    public async Task<int> MovePowderMotorAbs(double target) => await MoveMotorAbs(powderMotor, target);
-    public async Task<int> MoveSweepMotorAbs(double target) => await MoveMotorAbs(sweepMotor, target);
-
-    public async Task MoveBuildMotorAbsoluteProgram(double target, bool moveUp)
+    public async Task MoveBuildMotorAbsoluteProgram(double target)
     {
         MagnetoLogger.Log($"Received absolute move: {target}.", LogFactoryLogLevel.LogLevel.VERBOSE);
-        var program = WriteAbsoluteMoveProgramForBuildMotor(target, moveUp);
+        var program = WriteAbsoluteMoveProgramForBuildMotor(target);
         AddProgramLast(buildMotor.GetMotorName(), program);
         await ProcessPrograms();
     }
-    public async Task MovePowderMotorAbsoluteProgram(double target, bool moveUp)
+    public async Task MovePowderMotorAbsoluteProgram(double target)
     {
         MagnetoLogger.Log($"Received relative distance: {target}.", LogFactoryLogLevel.LogLevel.VERBOSE);
-        var program = WriteAbsoluteMoveProgramForPowderMotor(target, moveUp);
+        var program = WriteAbsoluteMoveProgramForPowderMotor(target);
         AddProgramLast(powderMotor.GetMotorName(), program);
         await ProcessPrograms();
     }
-    public async Task MoveSweepMotorAbsoluteProgram(double target, bool moveUp)
+    public async Task MoveSweepMotorAbsoluteProgram(double target)
     {
         MagnetoLogger.Log($"Received relative distance: {target}.", LogFactoryLogLevel.LogLevel.VERBOSE);
-        var program = WriteAbsoluteMoveProgramForSweepMotor(target, moveUp);
+        var program = WriteAbsoluteMoveProgramForSweepMotor(target);
         AddProgramLast(sweepMotor.GetMotorName(), program);
         await ProcessPrograms();
     }
 
-    public async Task MoveMotorAbsoluteProgram(string motorNameLower, double target, bool moveUp)
+    public async Task MoveMotorAbsoluteProgram(string motorNameLower, double target)
     {
         switch (motorNameLower)
         {
             case "build":
-                await MoveBuildMotorAbsoluteProgram(target, moveUp);
+                await MoveBuildMotorAbsoluteProgram(target);
                 break;
             case "powder":
-                await MovePowderMotorAbsoluteProgram(target, moveUp);
+                await MovePowderMotorAbsoluteProgram(target);
                 break;
             case "sweep":
-                await MoveSweepMotorAbsoluteProgram(target, moveUp);
+                await MoveSweepMotorAbsoluteProgram(target);
                 break;
             default:
                 MagnetoLogger.Log($"Could not check motor stop flag. Invalid motor name given: {motorNameLower}.", LogFactoryLogLevel.LogLevel.ERROR);
@@ -699,46 +625,9 @@ public class MotorService : IMotorService
 
     #region Relative Move
 
-
-
-    private async Task<int> MoveMotorRel(StepperMotor motor, double distance)
-    {
-        // NOTE: when called, you must await the return to get the integer value
-        //       Otherwise returns some weird string
-        MagnetoLogger.Log($"🚦called with distance {distance} on motor {motor.GetMotorName()}", LogFactoryLogLevel.LogLevel.WARN);
-        MagnetoLogger.Log($"🔁distance {distance} to {motor.GetMotorName()} via {motor.GetAxis()}", LogFactoryLogLevel.LogLevel.WARN);
-        //await _commandQueueManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.RelativeMove, distance);
-        await motor.MoveMotorRelAsync(distance); // moves, but doesn't exit loop (still checking for position)
-        // TODO: finish updating move call in stack so loop is exited
-        return 1;
-    }
-
-    public async Task<int> MoveBuildMotorRel(double distance) => await MoveMotorRel(buildMotor, distance);
-    public async Task<int> MovePowderMotorRel(double distance) => await MoveMotorRel(powderMotor, distance);
-    public async Task<int> MoveSweepMotorRel(double distance) => await MoveMotorRel(sweepMotor, distance);
-    public async Task<int> MoveMotorRel(string motorNameLowerCase, double distance)
-    {
-        switch (motorNameLowerCase)
-        {
-            case "build":
-                await MoveBuildMotorRel(distance);
-                break;
-            case "powder":
-                await MovePowderMotorRel(distance);
-                break;
-            case "sweep":
-                await MoveSweepMotorRel(distance);
-                break;
-            default:
-                MagnetoLogger.Log($"Could not check motor stop flag. Invalid motor name given: {motorNameLowerCase}.", LogFactoryLogLevel.LogLevel.ERROR);
-                return 0;
-        }
-        return 1;
-    }
-
     public async Task MoveBuildMotorRelativeProgram(double distance, bool moveUp)
     {
-        MagnetoLogger.Log($"Received relative distance: {distance}.", LogFactoryLogLevel.LogLevel.VERBOSE);
+        MagnetoLogger.Log($"🚦Received relative 🔁distance: {distance}.", LogFactoryLogLevel.LogLevel.VERBOSE);
         var program = WriteRelativeMoveProgramForBuildMotor(distance, moveUp);
         AddProgramLast(buildMotor.GetMotorName(), program);
         await ProcessPrograms();
@@ -778,40 +667,37 @@ public class MotorService : IMotorService
     #endregion
 
     #region Homing
-    private async Task<int> HomeMotorHelper(StepperMotor motor)
+    private void AddHomeProgram(StepperMotor motor)
     {
-        await _commandQueueManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.AbsoluteMove, motor.GetHomePos());
-        return 1;
+        //await _commandQueueManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.AbsoluteMove, motor.GetHomePos());
+        //await MoveMotorAbsoluteProgram(motor.GetMotorName(), motor.GetHomePos, moveUp);
+        var program = WriteAbsoluteMoveProgramForBuildMotor(buildMotor.GetHomePos());
+        AddProgramLast(buildMotor.GetMotorName(), program);
+        return;
     }
     public async Task<int> HomeMotor(string motorNameLowerCase)
     {
         switch (motorNameLowerCase)
         {
             case "build":
-                await HomeMotorHelper(buildMotor);
+                AddHomeProgram(buildMotor);
                 break;
             case "powder":
-                await HomeMotorHelper(powderMotor);
+                AddHomeProgram(powderMotor);
                 break;
             case "sweep":
-                await HomeMotorHelper(sweepMotor);
+                AddHomeProgram(sweepMotor);
                 break;
             default:
                 MagnetoLogger.Log($"Cannot wait until motor reaches position. Invalid motor name given: {motorNameLowerCase}.", LogFactoryLogLevel.LogLevel.ERROR);
                 return 0;
         }
+        await ProcessPrograms();
         return 1;
     }
-    public async Task<int> HomeMotor(StepperMotor motor)
-    {
-        await _commandQueueManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.AbsoluteMove, motor.GetHomePos());
-        return 1;
-    }
-    public async Task<int> HomeBuildMotor() => await HomeMotor(buildMotor);
-    public async Task<int> HomePowderMotor() => await HomeMotor(powderMotor);
-    public async Task<int> HomeSweepMotor() => await HomeMotor(sweepMotor);
     #endregion
 
+    /*
     #region Stop and Clear Command Queue
     public async Task<int> StopMotorAndClearQueue(string motorNameLowerCase)
     {
@@ -829,40 +715,10 @@ public class MotorService : IMotorService
             default:
                 MagnetoLogger.Log($"Invalid motor name given. Could not stop {motorNameLowerCase} motor.", LogFactoryLogLevel.LogLevel.ERROR);
                 return 0;
-                
         }
         return 1;
     }
     #endregion
-
-    #region Wait Until Target Reached
-    private async Task<int> WaitUntilAtTargetAsync(StepperMotor motor, double targetPos)
-    {
-        await motor.WaitUntilAtTargetAsync(targetPos);
-        return 1;
-    }
-    public async Task<int> WaitUntilBuildReachesTargetAsync(double targetPos) => await WaitUntilAtTargetAsync(buildMotor, targetPos);
-    public async Task<int> WaitUntilPowderReachesTargetAsync(double targetPos) => await WaitUntilAtTargetAsync(powderMotor, targetPos);
-    public async Task<int> WaitUntilSweepReachesTargetAsync(double targetPos) => await WaitUntilAtTargetAsync(sweepMotor, targetPos);
-    public async Task<int> WaitUntilMotorHomedAsync(string motorName)
-    {
-        switch (motorName)
-        {
-            case "build":
-                await buildMotor.WaitUntilAtTargetAsync(buildMotor.GetHomePos());
-                break;
-            case "powder":
-                await powderMotor.WaitUntilAtTargetAsync(powderMotor.GetHomePos());
-                break;
-            case "sweep":
-                await sweepMotor.WaitUntilAtTargetAsync(sweepMotor.GetHomePos());
-                break;
-            default:
-                MagnetoLogger.Log($"Cannot wait until motor reaches position. Invalid motor name given: {motorName}.", LogFactoryLogLevel.LogLevel.ERROR);
-                return 0;
-        }
-        return 1;
-    }
-    #endregion
+    */
     #endregion
 }

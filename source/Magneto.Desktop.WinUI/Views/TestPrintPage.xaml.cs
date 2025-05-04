@@ -16,7 +16,7 @@ using WinRT.Interop;
 using MongoDB.Driver;
 using static Magneto.Desktop.WinUI.Core.Models.Constants.MagnetoConstants;
 using Magneto.Desktop.WinUI.Core.Models.Print;
-using static Magneto.Desktop.WinUI.Core.Models.Print.CommandQueueManager;
+using static Magneto.Desktop.WinUI.Core.Models.Print.ProgramsManager;
 
 namespace Magneto.Desktop.WinUI.Views;
 
@@ -147,16 +147,8 @@ public sealed partial class TestPrintPage : Page
             msg = "Homing all motors";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
         }
-        if (_motorPageService.CheckMotorStopFlag(motorName))
-        {
-            MagnetoLogger.Log($"{motorName} motor stop flag is up cannot home motor.", LogFactoryLogLevel.LogLevel.ERROR);
-            return 0;
-        }
-        else
-        {
-            await _motorPageService.HomeMotorAndUpdateUI(motorName);
-            return 1;
-        }
+        await _motorPageService.HomeMotorAndUpdateUI(motorName);
+        return 1;
     }
     private async Task HomeMotorsHelper()
     {
@@ -164,16 +156,28 @@ public sealed partial class TestPrintPage : Page
         await HomeIfStopFlagIsFalse("powder");
         await HomeIfStopFlagIsFalse("sweep");
     }
-    private void StopMotorsHelper()
+    private async Task StopMotorsHelper()
     {
         if (_motorPageService == null)
         {
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to stop motors.");
             return;
         }
+        _motorPageService.StopAllMotors();
+        _motorPageService.HandleGetAllPositions();
+        /*
         _motorPageService.StopBuildMotorAndUpdateTextBox();
+        while (await _motorPageService.IsProgramRunningAsync(buildMotorName))
+        {
+            await Task.Delay(100);
+        }
         _motorPageService.StopPowderMotorAndUpdateTextBox();
+        while (await _motorPageService.IsProgramRunningAsync(powderMotorName))
+        {
+            await Task.Delay(100);
+        }
         _motorPageService.StopSweepMotorAndUpdateTextBox();
+        */
     }
     #endregion
 
@@ -403,7 +407,6 @@ public sealed partial class TestPrintPage : Page
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to enable motors.");
             return;
         }
-        _motorPageService.EnableMotors();
         UnlockCalibrationPanel();
     }
     #endregion

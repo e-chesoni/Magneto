@@ -110,8 +110,8 @@ public partial class App : Application
             services.AddSingleton<LaserController>();
 
             // ActuationManager
-            services.AddSingleton<CommandQueueManager>(provider =>
-                new CommandQueueManager(
+            services.AddSingleton<ProgramsManager>(provider =>
+                new ProgramsManager(
                     provider.GetRequiredService<BuildMotorController>(),
                     provider.GetRequiredService<SweepMotorController>(),
                     provider.GetRequiredService<LaserController>()
@@ -120,21 +120,21 @@ public partial class App : Application
 
             // MissionControl
             services.AddSingleton<MissionControl>(provider =>
-                new MissionControl(provider.GetRequiredService<CommandQueueManager>())
+                new MissionControl(provider.GetRequiredService<ProgramsManager>())
             );
 
 
             // Register MissionControl
             services.AddSingleton<MissionControl>(provider =>
             {
-                var am = provider.GetRequiredService<CommandQueueManager>();
+                var am = provider.GetRequiredService<ProgramsManager>();
                 return new MissionControl(am);
             });
 
             // Register MotorService (needs ActuationManager)
             services.AddSingleton<IMotorService, MotorService>(provider =>
             {
-                var am = provider.GetRequiredService<CommandQueueManager>();
+                var am = provider.GetRequiredService<ProgramsManager>();
                 var ms = new MotorService(am);
                 ms.HandleStartUp(); // Now that motors/controllers are fully built
                 return ms;
