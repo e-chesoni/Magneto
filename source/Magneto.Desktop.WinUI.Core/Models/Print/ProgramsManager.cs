@@ -24,7 +24,7 @@ namespace Magneto.Desktop.WinUI.Core.Models.Print;
 /// <summary>
 /// Coordinates printing tasks across components
 /// </summary>
-public class ProgramsManager : ISubsciber, IStateMachine
+public class ProgramsManager : ISubsciber
 {
     #region Private Variables
 
@@ -157,8 +157,8 @@ public class ProgramsManager : ISubsciber, IStateMachine
         sweepController = sc;
         laserController = lc;
 
-        _buildMotorPort = bc.GetPortName();
-        _sweepMotorPort = sc.GetPortName();
+        //_buildMotorPort = bc.GetPortName();
+        //_sweepMotorPort = sc.GetPortName();
 
         motorControllers.Add(buildController);
         motorControllers.Add(sweepController);
@@ -174,7 +174,7 @@ public class ProgramsManager : ISubsciber, IStateMachine
         danceModel = new DanceModel();
 
         // Start in the idle state
-        TransitionTo(new IdleBuildState(this));
+        //TransitionTo(new IdleBuildState(this));
     }
 
     #endregion
@@ -186,12 +186,17 @@ public class ProgramsManager : ISubsciber, IStateMachine
     public void SetLastMoveTarget(double target) => _lastMove.target = target;
     #endregion
 
-    #region Program Pausing
+    #region Program State Handlers
     public bool IsProgramPaused() => PAUSE_REQUESTED;
-    public void PauseProgram()
+    public void PauseExecutionFlag()
     {
         PAUSE_REQUESTED = true;
     }
+    public void ResumeExecutionFlag()
+    {
+        PAUSE_REQUESTED = true;
+    }
+
     #endregion
 
     #region Create Program Node
@@ -290,68 +295,9 @@ public class ProgramsManager : ISubsciber, IStateMachine
     {
         return sweepController.GetSweepMotor();
     }
-
-    public double GetSweepDist()
-    {
-        return _sweepDist;
-    }
-
-    public string GetBuildMotorPort()
-    {
-        return _buildMotorPort; 
-    }
-
-    public string GetSweepMotorPort()
-    {
-        return _sweepMotorPort;
-
-    }
-
-    /// <summary>
-    /// Get the status of a given motor
-    /// </summary>
-    /// <param name="axis"></param> MotorAxis from enum
-    /// <returns></returns>
-    /// <exception cref="NotImplementedException"></exception>
-    public MotorStatus GetMotorStatus(int motorId)
-    {
-        // Create temp list for motors
-        List <StepperMotor> motors = new List<StepperMotor>();
-
-        // Go through all the motor controllers attached to the build manager
-        foreach (var c in motorControllers)
-        {
-            // Add each motor on controller to temporary motor list (created above)
-            foreach (var m in c.GetMinions()) { motors.Add(m); }
-        }
-
-        // Find the stepper motor on the motor list that matches the given motorId
-        StepperMotor motor = motors.FirstOrDefault(motor => motor.GetID() == motorId);
-
-        // TODO: Return 'ERROR' status if no motor is found
-
-        // Return the status of found motor
-        return motor.GetStatusOld();
-
-    }
-
-    /// <summary>
-    /// Get the thickness of print layers on the artifact model
-    /// </summary>
-    /// <returns></returns>
-    public double GetDefaultArtifactThickness()
-    {
-        return MagnetoConfig.GetDefaultPrintThickness();
-    }
-
     #endregion
 
     #region Setters
-
-    public void SetCurrentPrintHeight(double printHeight)
-    {
-        _currentPrintHeight = printHeight;
-    }
 
     public void SetSweepDist(double dist)
     {
@@ -383,60 +329,6 @@ public class ProgramsManager : ISubsciber, IStateMachine
     {
         // TODO: UPDATE in production. Currently uses default number of slices from Magneto Config
         artifactModel.sliceStack = ArtifactHandler.SliceArtifact(artifactModel);
-    }
-
-    #endregion
-
-    #region State Machine Methods
-
-    /// <summary>
-    /// Method to handle state transitions
-    /// </summary>
-    /// <param name="state"></param>
-    public void TransitionTo(IPrintState state)
-    {
-        _state = state;
-    }
-
-    /// <summary>
-    /// Start a print
-    /// </summary>
-    /// <param name="am"></param> artifact model to print
-    public void StartPrint(ArtifactModel am)
-    {
-        _state.Start(am);
-    }
-
-    /// <summary>
-    /// pause a print
-    /// </summary>
-    public void Pause()
-    {
-        _state.Pause();
-    }
-
-    /// <summary>
-    /// Resume a print
-    /// </summary>
-    public void Resume()
-    {
-        _state.Resume();
-    }
-
-    /// <summary>
-    /// Cancel a print; artifact model will we destroyed
-    /// </summary>
-    public void Cancel()
-    {
-        _state.Cancel();
-    }
-
-    /// <summary>
-    /// Home the motors
-    /// </summary>
-    public void HomeMotors()
-    {
-        _state.Homing();
     }
 
     #endregion

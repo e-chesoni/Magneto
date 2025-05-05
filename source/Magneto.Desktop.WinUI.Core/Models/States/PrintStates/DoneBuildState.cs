@@ -35,6 +35,6 @@ public class DoneBuildState : IPrintState
         throw new NotImplementedException();
 
         // Return to idle state
-        _BuildManagerSM.TransitionTo(new IdleBuildState(_BuildManagerSM));
+        //_BuildManagerSM.TransitionTo(new IdleBuildState(_BuildManagerSM));
     }
 }

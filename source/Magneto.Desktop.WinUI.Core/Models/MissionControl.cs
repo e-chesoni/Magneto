@@ -14,12 +14,13 @@ using Magneto.Desktop.WinUI.Core.Contracts;
 namespace Magneto.Desktop.WinUI.Core.Models;
 public class MissionControl : IMediator, IPublisher, ISubsciber
 {
+    // TODO: you need to rethink how this is set up (see test print page and work from there)
     #region Private Variables
     
     /// <summary>
     /// Build manager to handle printing tasks
     /// </summary>
-    private ProgramsManager _actuationManager { get; set; }
+    private ProgramsManager _programsManager { get; set; }
 
     /// <summary>
     /// A list of subscribers that want to receive notifications from Mission Control
@@ -50,7 +51,7 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     {
         MagnetoLogger.Log("", LogFactoryLogLevel.LogLevel.VERBOSE);
 
-        _actuationManager = actuationManager;
+        _programsManager = actuationManager;
 
     }
 
@@ -65,74 +66,17 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     /// <param name="path_to_artifact"> File path to artifact</param>
     public void CreateArtifactModel(string path_to_artifact)
     {
-        _actuationManager.artifactModel = new ArtifactModel(path_to_artifact);
+        _programsManager.artifactModel = new ArtifactModel(path_to_artifact);
     }
 
     #endregion
 
 
     #region Getters
-
-    public ProgramsManager GetActuationManger()
+    public ProgramsManager GetProgramsManager()
     {
-        return _actuationManager;
+        return _programsManager;
     }
-
-    /// <summary>
-    /// Get the total height of the current print
-    /// </summary>
-    /// <returns></returns>
-    public double GetCurrentPrintHeight()
-    {
-        return _actuationManager.GetCurrentPrintHeight();
-    }
-
-    /// <summary>
-    /// Get all motors define in build manager
-    /// </summary>
-    /// <returns>List of motors</returns>
-    public List<StepperMotor> GetMotorList()
-    {
-        return _actuationManager.GetMotorList();
-    }
-
-    /// <summary>
-    /// Get powder motor from build manager
-    /// </summary>
-    /// <returns></returns>
-    public StepperMotor GetPowderMotor()
-    {
-        return _actuationManager.GetPowderMotor();
-    }
-
-    /// <summary>
-    /// Get build motor from build manager
-    /// </summary>
-    /// <returns></returns>
-    public StepperMotor GetBuildMotor()
-    {
-        return _actuationManager.GetBuildMotor();
-    }
-
-    /// <summary>
-    /// Get sweep motor from build manager
-    /// </summary>
-    /// <returns></returns>
-    public StepperMotor GetSweepMotor()
-    {
-        return _actuationManager.GetSweepMotor();
-    }
-
-    /// <summary>
-    /// Get the layer thickness for the print from the build manager
-    /// </summary>
-    /// <returns> double artifact layer thickness </returns>
-    public double GetDefaultArtifactThickness()
-    {
-        return _actuationManager.GetDefaultArtifactThickness();
-    }
-
-
     #endregion
 
 
@@ -144,7 +88,7 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     /// <param name="thickness"> Desired thickness </param>
     public void SetArtifactThickness(double thickness)
     {
-        _actuationManager.SetArtifactThickness(thickness);
+        _programsManager.SetArtifactThickness(thickness);
     }
 
     #endregion
@@ -158,7 +102,7 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     public void SliceArtifact()
     {
         // TODO: ARTIFACT HANDLER CONTROLS SLICE NUMBER (SliceArtifact calls ArtifactHandler method)
-        _actuationManager.SliceArtifact();
+        _programsManager.SliceArtifact();
     }
 
     /// <summary>
@@ -166,7 +110,7 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     /// </summary>
     public void StartPrint()
     {
-        if (_actuationManager.artifactModel.sliceStack.Count == 0) // TODO: FIX bm.artifactModel is null error
+        if (_programsManager.artifactModel.sliceStack.Count == 0) // TODO: FIX bm.artifactModel is null error
         {
             var msg = "There are no slices on this artifact model. Are you sure you sliced it?";
             MagnetoLogger.Log(msg,
@@ -175,7 +119,7 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
         else
         {
             // Call build manager to handle print
-            _actuationManager.StartPrint(_actuationManager.artifactModel);
+            //_actuationManager.StartPrint(_actuationManager.artifactModel);
         }
     }
 
@@ -184,7 +128,7 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     /// </summary>
     public void PausePrint()
     {
-        _actuationManager.Pause();
+        //_actuationManager.Pause();
     }
 
     /// <summary>
@@ -192,7 +136,7 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     /// </summary>
     public void Resume()
     {
-        _actuationManager.Resume();
+        //_actuationManager.Resume();
     }
 
     /// <summary>
@@ -200,7 +144,7 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     /// </summary>
     public void CancelPrint()
     {
-        _actuationManager.Cancel();
+        //_actuationManager.Cancel();
     }
 
     /// <summary>
@@ -208,7 +152,7 @@ public class MissionControl : IMediator, IPublisher, ISubsciber
     /// </summary>
     public void HomeMotors()
     {
-        _actuationManager.HomeMotors();
+        //_actuationManager.HomeMotors();
     }
 
     #endregion

@@ -206,29 +206,6 @@ public class TestPrintPageStateMachine
     #region Test Page Setup
 
     /// <summary>
-    /// Sets up test motors for powder, build, and sweep operations by retrieving configurations 
-    /// and initializing the respective StepperMotor objects. Logs success or error for each motor setup.
-    /// Assumes motor order in configuration corresponds to powder, build, and sweep.
-    /// </summary>
-    private async void SetUpTestMotors()
-    {
-        if (_missionControl == null)
-        {
-            MagnetoLogger.Log("MissionControl is null. Unable to set up motors.", LogFactoryLogLevel.LogLevel.ERROR);
-            //await PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "MissionControl is not Connected.");
-            return;
-        }
-
-        SetUpMotor("powder", _missionControl.GetPowderMotor(), out _powderMotor);
-        SetUpMotor("build", _missionControl.GetBuildMotor(), out _buildMotor);
-        SetUpMotor("sweep", _missionControl.GetSweepMotor(), out _sweepMotor);
-
-        _bm = _missionControl.GetActuationManger();
-
-        //GetMotorPositions(); // TOOD: Fix--all positions are 0 on page load even if they're not...
-    }
-
-    /// <summary>
     /// Gets motor from mission control and assigns each motor to a private variable for easy access in the TestPrintPage class
     /// </summary>
     /// <param name="motorName">Motor name</param>

@@ -25,7 +25,7 @@ public class PrintingBuildState : IPrintState
         _BuildManagerSM = bm;
 
         // Set the build flag to resume
-        _BuildManagerSM.build_flag = ProgramsManager.BuildFlag.RESUME;
+        //_BuildManagerSM.build_flag = ProgramsManager.BuildFlag.RESUME;
 
         // Start drawing
         _ = Draw();
@@ -34,15 +34,15 @@ public class PrintingBuildState : IPrintState
     public void Cancel()
     {
         MagnetoLogger.Log("Cancel flag triggered!", Contracts.Services.LogFactoryLogLevel.LogLevel.WARN);
-        _BuildManagerSM.build_flag = ProgramsManager.BuildFlag.CANCEL;
-        _BuildManagerSM.TransitionTo(new CancelledBuildState(_BuildManagerSM));
+        //_BuildManagerSM.build_flag = ProgramsManager.BuildFlag.CANCEL;
+        //_BuildManagerSM.TransitionTo(new CancelledBuildState(_BuildManagerSM));
     }
 
     public void Pause()
     {
         MagnetoLogger.Log("Pause flag triggered!", Contracts.Services.LogFactoryLogLevel.LogLevel.WARN);
-        _BuildManagerSM.build_flag = ProgramsManager.BuildFlag.PAUSE;
-        _BuildManagerSM.TransitionTo(new PausedBuildState(_BuildManagerSM));
+        //_BuildManagerSM.build_flag = ProgramsManager.BuildFlag.PAUSE;
+        //_BuildManagerSM.TransitionTo(new PausedBuildState(_BuildManagerSM));
     }
 
     public void Start(ArtifactModel im) => throw new NotImplementedException();
@@ -50,7 +50,7 @@ public class PrintingBuildState : IPrintState
     public async Task Draw()
     {
         throw new NotImplementedException();
-        _BuildManagerSM.TransitionTo(new DoneBuildState(_BuildManagerSM));
+        //_BuildManagerSM.TransitionTo(new DoneBuildState(_BuildManagerSM));
     }
 
     public void Resume() => throw new NotImplementedException();
@@ -62,6 +62,6 @@ public class PrintingBuildState : IPrintState
         throw new NotImplementedException();
 
         // Return to idle state
-        _BuildManagerSM.TransitionTo(new IdleBuildState(_BuildManagerSM));
+        //_BuildManagerSM.TransitionTo(new IdleBuildState(_BuildManagerSM));
     }
 }

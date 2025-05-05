@@ -14,7 +14,7 @@ using static Magneto.Desktop.WinUI.Core.Models.Print.ProgramsManager;
 namespace Magneto.Desktop.WinUI.Core.Services;
 public class MotorService : IMotorService
 {
-    private readonly ProgramsManager _commandQueueManager;
+    private readonly ProgramsManager _programsManager;
     private StepperMotor? buildMotor;
     private StepperMotor? powderMotor;
     private StepperMotor? sweepMotor;
@@ -29,7 +29,7 @@ public class MotorService : IMotorService
 
     public MotorService(ProgramsManager cqm)
     {
-        _commandQueueManager = cqm;
+        _programsManager = cqm;
     }
 
 
@@ -82,9 +82,9 @@ public class MotorService : IMotorService
     public void IntializeMotors()
     {
         // Set up each motor individually using the passed-in parameters
-        HandleMotorInit("powder", _commandQueueManager.GetPowderMotor(), out powderMotor);
-        HandleMotorInit("build", _commandQueueManager.GetBuildMotor(), out buildMotor);
-        HandleMotorInit("sweep", _commandQueueManager.GetSweepMotor(), out sweepMotor);
+        HandleMotorInit("powder", _programsManager.GetPowderMotor(), out powderMotor);
+        HandleMotorInit("build", _programsManager.GetBuildMotor(), out buildMotor);
+        HandleMotorInit("sweep", _programsManager.GetSweepMotor(), out sweepMotor);
     }
     public void InitializeMotorMap()
     {
@@ -167,9 +167,9 @@ public class MotorService : IMotorService
     public double GetMaxSweepPosition() => sweepMotor.GetMaxPos();
     #endregion
     #region Program Getters
-    public int GetNumberOfPrograms() => _commandQueueManager.programLinkedList.Count;
-    public ProgramNode? GetFirstProgramNode() => _commandQueueManager.GetFirstProgramNode();
-    public ProgramNode? GetLastProgramNode() => _commandQueueManager.GetLastProgramNode();
+    public int GetNumberOfPrograms() => _programsManager.programLinkedList.Count;
+    public ProgramNode? GetFirstProgramNode() => _programsManager.GetFirstProgramNode();
+    public ProgramNode? GetLastProgramNode() => _programsManager.GetLastProgramNode();
     #endregion
     #endregion
 
@@ -258,8 +258,8 @@ public class MotorService : IMotorService
     #region Add Program Front
     private void AddProgramFrontHelper(string[] program, Controller controller, int axis)
     {
-        ProgramNode programNode = _commandQueueManager.CreateProgramNode(program, controller, axis);
-        _commandQueueManager.AddProgramToFront(programNode);
+        ProgramNode programNode = _programsManager.CreateProgramNode(program, controller, axis);
+        _programsManager.AddProgramToFront(programNode);
     }
     private void AddBuildMotorProgramFront(string[] program)
     {
@@ -295,8 +295,8 @@ public class MotorService : IMotorService
     #region Add Program Last
     private void AddProgramLastHelper(string[] program, Controller controller, int axis)
     {
-        ProgramNode programNode = _commandQueueManager.CreateProgramNode(program, controller, axis);
-        _commandQueueManager.AddProgramToBack(programNode);
+        ProgramNode programNode = _programsManager.CreateProgramNode(program, controller, axis);
+        _programsManager.AddProgramToBack(programNode);
     }
     private void AddBuildMotorProgramLast(string[] program)
     {
@@ -330,10 +330,10 @@ public class MotorService : IMotorService
     #endregion
 
     #region Pause and Resume Program
-    public bool IsProgramPaused() => _commandQueueManager.IsProgramPaused();
+    public bool IsProgramPaused() => _programsManager.IsProgramPaused();
     public void PauseProgram()
     {
-        _commandQueueManager.PauseProgram(); // updates boolean (should stop ProcessPrograms())
+        _programsManager.PauseExecutionFlag(); // updates boolean (should stop ProcessPrograms())
         //StopAllMotorsClearProgramList();
     }
     public (double? value, bool isAbsolute) ParseMoveCommand(string[] program)
@@ -404,17 +404,17 @@ public class MotorService : IMotorService
         }
 
         var target = CalculateTargetPosition(startingPosition, programNode);
-        _commandQueueManager.SetLastMoveStartingPosition(startingPosition);
-        _commandQueueManager.SetLastMoveTarget(target);
+        _programsManager.SetLastMoveStartingPosition(startingPosition);
+        _programsManager.SetLastMoveTarget(target);
     }
     public async Task ResumeProgramReading()
     {
         StepperMotor motor;
         // Figure out if the last program finished:
         // get the last program node and extract its variables
-        LastMove lastMove = _commandQueueManager.GetLastMove();
+        LastMove lastMove = _programsManager.GetLastMove();
         ProgramNode lastProgramNode = lastMove.programNode;
-        (_, Controller controller, var axis) = _commandQueueManager.ExtractProgramNodeVariables(lastProgramNode);
+        (_, Controller controller, var axis) = _programsManager.ExtractProgramNodeVariables(lastProgramNode);
         // use controller and axis to determine which motor command was called on
         if (controller == Controller.BUILD_AND_SUPPLY)
         {
@@ -448,7 +448,8 @@ public class MotorService : IMotorService
             var absoluteProgram = WriteAbsoluteMoveProgram(motor, target);
             AddProgramFront(motor.GetMotorName(), absoluteProgram);
         }
-
+        // set the pause requested flag to false
+        _programsManager.ResumeExecutionFlag();
         // resume executing process program
         await ProcessPrograms();
     }
@@ -475,7 +476,7 @@ public class MotorService : IMotorService
                 return;
         }
         // clear the program list
-        _commandQueueManager.programLinkedList.Clear();
+        _programsManager.programLinkedList.Clear();
     }
     public void StopAllMotorsClearProgramList()
     {
@@ -484,7 +485,7 @@ public class MotorService : IMotorService
         powderMotor.Stop();
         sweepMotor.Stop();
         // clear the program list
-        _commandQueueManager.programLinkedList.Clear();
+        _programsManager.programLinkedList.Clear();
     }
     public void EmergencyStop()
     {
@@ -493,7 +494,7 @@ public class MotorService : IMotorService
     #endregion
 
     #region Multi-Motor Move Methods
-    public (string[] program, Controller controller, int axis)? ExtractProgramNodeVariables(ProgramNode programNode) => _commandQueueManager.ExtractProgramNodeVariables(programNode);
+    public (string[] program, Controller controller, int axis)? ExtractProgramNodeVariables(ProgramNode programNode) => _programsManager.ExtractProgramNodeVariables(programNode);
     public async Task ExecuteLayerMove(double thickness, double amplifier)
     {
         var clearance = SWEEP_CLEARANCE;

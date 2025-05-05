@@ -23,7 +23,7 @@ public class PausedBuildState : IPrintState
 
     public void Cancel()
     {
-        _BuildManagerSM.TransitionTo(new CancelledBuildState(_BuildManagerSM));
+        //_BuildManagerSM.TransitionTo(new CancelledBuildState(_BuildManagerSM));
     }
 
     public void Pause()
@@ -44,7 +44,7 @@ public class PausedBuildState : IPrintState
 
     public void Resume()
     {
-        _BuildManagerSM.TransitionTo(new PrintingBuildState(_BuildManagerSM));
+        //_BuildManagerSM.TransitionTo(new PrintingBuildState(_BuildManagerSM));
     }
 
     public void Done() => throw new NotImplementedException();

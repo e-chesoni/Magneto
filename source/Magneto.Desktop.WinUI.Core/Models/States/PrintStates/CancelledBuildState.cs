@@ -26,14 +26,14 @@ public class CancelledBuildState : IPrintState
         // TODO: Stop build
         // Blocked by implementation of cancel motor move tasks in ActuationManager
 
-        // TODO: Process cancelled build
+        // TODO: Process canceled build
         // This is the British spelling. Get over it spell checker.
         MagnetoLogger.Log("Handling cancelled build...", Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
 
         // Home motors
         _ = _BuildManagerSM.buildController.HomeMotors();
 
-        _BuildManagerSM.TransitionTo(new IdleBuildState(_BuildManagerSM));
+        //_BuildManagerSM.TransitionTo(new IdleBuildState(_BuildManagerSM));
     }
 
     public void Cancel() => throw new NotImplementedException();

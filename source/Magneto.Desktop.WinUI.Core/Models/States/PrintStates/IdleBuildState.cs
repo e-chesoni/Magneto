@@ -53,7 +53,7 @@ public class IdleBuildState : IPrintState
 
         // TODO: Move transition to build state to execute in PowderLoadedState
         // Transition to print state
-        _BuildManagerSM.TransitionTo(new PrintingBuildState(_BuildManagerSM));
+        //_BuildManagerSM.TransitionTo(new PrintingBuildState(_BuildManagerSM));
     }
 
     public Task Draw()
@@ -79,6 +79,6 @@ public class IdleBuildState : IPrintState
         throw new NotImplementedException();
 
         // Return to idle state
-        _BuildManagerSM.TransitionTo(new IdleBuildState(_BuildManagerSM));
+        //_BuildManagerSM.TransitionTo(new IdleBuildState(_BuildManagerSM));
     }
 }

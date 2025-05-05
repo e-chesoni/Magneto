@@ -109,7 +109,7 @@ public sealed partial class PrintPage : Page
             // TODO: Toast Message: Using default thickness of {} get from config
             msg = "Setting every print layer's thickness to default thickness from MagnetoConfig";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
-            _missionControl.SetArtifactThickness(_missionControl.GetDefaultArtifactThickness());
+            //_missionControl.SetArtifactThickness(_missionControl.GetDefaultArtifactThickness());
 
             // Slice image
             _missionControl.SliceArtifact(); // TODO: IMAGE HANDLER references Magneto Config to control slice number: SliceArtifact calls SliceArtifact in build controller which calls ImageHandler
@@ -119,7 +119,7 @@ public sealed partial class PrintPage : Page
             GoToStartingPositionButton.IsEnabled = true;
 
             // TODO: MOVE ME -- Populate after successful calibration
-            PrintHeightTextBlock.Text = _missionControl.GetCurrentPrintHeight().ToString();
+            //PrintHeightTextBlock.Text = _missionControl.GetCurrentPrintHeight().ToString();
         }
         else
         {
@@ -148,16 +148,12 @@ public sealed partial class PrintPage : Page
 
     private void IncrementThickness_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        var newThickness = _missionControl.GetDefaultArtifactThickness();
-        newThickness += 1;
-        _missionControl.SetArtifactThickness(newThickness);
+        
     }
 
     private void DecrementThickness_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        var newThickness = _missionControl.GetDefaultArtifactThickness();
-        newThickness -= 1;
-        _missionControl.SetArtifactThickness(newThickness);
+        
     }
 
     private void GoToStartingPositionButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -192,11 +188,11 @@ public sealed partial class PrintPage : Page
         var msg = "";
         if (_missionControl != null)
         {
-            var bm = _missionControl.GetActuationManger();
+            //var bm = _missionControl.GetProgramsManager();
             msg = $"Stopping print.";
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Print Canceled", msg);
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            bm.build_flag = BuildFlag.CANCEL;
+            //bm.build_flag = BuildFlag.CANCEL;
         }
         else
         {
