@@ -142,11 +142,10 @@ public sealed partial class TestPrintPage : Page
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
             return;
         }
-        // TODO: home one at a time
-        //await _motorPageService.HomeAllMotorsAsync();
-        await _motorPageService.HomeMotorProgramAndUpdateUI(buildMotorName); // uses program; no need to await
-        await _motorPageService.HomeMotorProgramAndUpdateUI(powderMotorName);
-        await _motorPageService.HomeMotorProgramAndUpdateUI(sweepMotorName);
+        await _motorPageService.HomeAllMotorsAsync();
+        // WARNING: if you home one at a time, you stay in this call stack;
+        // when you resume any motion, the first thing it will do is resume the calls here
+        return;
     }
     private void StopMotorsHelper()
     {
@@ -388,6 +387,9 @@ public sealed partial class TestPrintPage : Page
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to enable motors.");
             return;
         }
+        _motorPageService.EnableProgramProcessing();
+        // TODO: need to enable each motor to unlock stop buttons
+        _motorPageService.EnableAllMotors();
         UnlockCalibrationPanel();
     }
     #endregion

@@ -72,11 +72,11 @@ public class MotorPageService
     public void StopMotor(string motorNameLower) => _motorService.StopMotorAndClearProgramList(motorNameLower);
     public void StopAllMotorsClearProgramList() => _motorService.StopAllMotorsClearProgramList();
     public void EmergencyStop() => _motorService.EmergencyStop();
+    public bool IsProgramStopped() => _motorService.IsProgramStopped();
     public bool ProgramReaderPaused() => _motorService.IsProgramPaused();
     public void PauseProgramReader() => _motorService.PauseProgram();
-
+    public void EnableProgramProcessing() => _motorService.EnableProgramProcessing();
     public async Task ResumeProgramReading() => await _motorService.ResumeProgramReading();
-
     public async Task ExecuteLayerMove(double thickness, double amplifier, XamlRoot xamlRoot)
     {
         await _motorService.ExecuteLayerMove(thickness, amplifier);
@@ -344,6 +344,12 @@ public class MotorPageService
     }
     public void EnableSweepMotor()
     {
+        _uiControlGroupHelper.EnableMotorControls(_uiControlGroupHelper.GetCalibrationControlGroup(), sweepMotorName);
+    }
+    public void EnableAllMotors()
+    {
+        _uiControlGroupHelper.EnableMotorControls(_uiControlGroupHelper.GetCalibrationControlGroup(), buildMotorName);
+        _uiControlGroupHelper.EnableMotorControls(_uiControlGroupHelper.GetCalibrationControlGroup(), powderMotorName);
         _uiControlGroupHelper.EnableMotorControls(_uiControlGroupHelper.GetCalibrationControlGroup(), sweepMotorName);
     }
     #endregion

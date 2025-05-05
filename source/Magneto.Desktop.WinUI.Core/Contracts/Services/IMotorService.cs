@@ -70,12 +70,14 @@ public interface IMotorService
     public bool IsProgramPaused();
     public void PauseProgram();
     public Task ResumeProgramReading();
+    public void EnableProgramProcessing();
     #endregion
 
     #region Stop Motors
     public void StopMotorAndClearProgramList(string motorNameLower);
     public void StopAllMotorsClearProgramList();
     public void EmergencyStop();
+    public bool IsProgramStopped();
     #endregion
 
     #region Multi-Motor Move Methods

@@ -95,16 +95,7 @@ public class ProgramsManager : ISubsciber
         CANCEL
     }
 
-    private string _buildMotorPort
-    {
-        get; set;
-    }
-    private string _sweepMotorPort
-    {
-        get; set;
-    }
-
-    public LinkedList<ProgramNode> programLinkedList = new();
+    public LinkedList<ProgramNode> programNodes = new();
 
     private LastMove _lastMove;
 
@@ -116,15 +107,6 @@ public class ProgramsManager : ISubsciber
         LASER // Corresponds to Waverunner
     }
 
-    // NOTE: Stop commands should not be added to queue; should be called directly
-    public enum CommandType
-    {
-        AbsoluteMove, // Corresponds to "MVA" for absolute movements
-        RelativeMove, // Corresponds to "MVR" for relative movements
-        PositionQuery, // Corresponds to "POS?" for querying current position
-        // TODO: implement wait for end command
-    }
-
     public struct ProgramNode
     {
         public string[] program;
@@ -132,7 +114,8 @@ public class ProgramsManager : ISubsciber
         public int axis;
     }
 
-    public bool PAUSE_REQUESTED;
+    public bool PROGRAMS_PAUSED;
+    public bool PROGRAMS_STOPPED;
 
     public struct LastMove
     {
@@ -187,16 +170,23 @@ public class ProgramsManager : ISubsciber
     #endregion
 
     #region Program State Handlers
-    public bool IsProgramPaused() => PAUSE_REQUESTED;
+    public bool IsProgramPaused() => PROGRAMS_PAUSED;
+    public bool IsProgramStopped() => PROGRAMS_STOPPED;
     public void PauseExecutionFlag()
     {
-        PAUSE_REQUESTED = true;
+        PROGRAMS_PAUSED = true;
     }
     public void ResumeExecutionFlag()
     {
-        PAUSE_REQUESTED = true;
+        PROGRAMS_PAUSED = false;
+        PROGRAMS_STOPPED = false;
     }
-
+    public void StopExecutionFlag()
+    {
+        PROGRAMS_PAUSED = true;
+        PROGRAMS_STOPPED = true;
+        programNodes.Clear();
+    }
     #endregion
 
     #region Create Program Node
@@ -214,26 +204,26 @@ public class ProgramsManager : ISubsciber
     #region Program Adders
     public void AddProgramToFront(ProgramNode node)
     {
-        programLinkedList.AddFirst(node);
+        programNodes.AddFirst(node);
     }
     public void AddProgramToBack(ProgramNode node)
     {
-        programLinkedList.AddLast(node);
+        programNodes.AddLast(node);
     }
     #endregion
 
     #region Program Node Getters
     public ProgramNode GetFirstProgramNode()
     {
-        if (programLinkedList.Count == 0)
+        if (programNodes.Count == 0)
         {
             MagnetoLogger.Log("Cannot remove program from front of linked list; program linked list is empty.", LogFactoryLogLevel.LogLevel.ERROR);
             var empty = Array.Empty<string>();
             return new ProgramNode();
         }
-        var programNode = programLinkedList.First.Value;
+        var programNode = programNodes.First.Value;
         //(program, controller, axis) = ExtractProgramNodeVariables(programNode);
-        programLinkedList.RemoveFirst();
+        programNodes.RemoveFirst();
         MagnetoLogger.Log("Removing first program from linked list:", LogFactoryLogLevel.LogLevel.VERBOSE);
         foreach (var line in programNode.program)
         {
@@ -243,14 +233,14 @@ public class ProgramsManager : ISubsciber
     }
     public ProgramNode GetLastProgramNode()
     {
-        if (programLinkedList.Count == 0)
+        if (programNodes.Count == 0)
         {
             MagnetoLogger.Log("Cannot remove program from back of linked list; program linked list is empty.", LogFactoryLogLevel.LogLevel.ERROR);
             return new ProgramNode();
         }
-        var programNode = programLinkedList.Last.Value;
+        var programNode = programNodes.Last.Value;
         //(program, controller, axis) = ExtractProgramNodeVariables(programNode);
-        programLinkedList.RemoveLast();
+        programNodes.RemoveLast();
         MagnetoLogger.Log("Removing last program from linked list:", LogFactoryLogLevel.LogLevel.VERBOSE);
         foreach (var line in programNode.program)
         {

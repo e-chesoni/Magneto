@@ -167,7 +167,7 @@ public class MotorService : IMotorService
     public double GetMaxSweepPosition() => sweepMotor.GetMaxPos();
     #endregion
     #region Program Getters
-    public int GetNumberOfPrograms() => _programsManager.programLinkedList.Count;
+    public int GetNumberOfPrograms() => _programsManager.programNodes.Count;
     public ProgramNode? GetFirstProgramNode() => _programsManager.GetFirstProgramNode();
     public ProgramNode? GetLastProgramNode() => _programsManager.GetLastProgramNode();
     #endregion
@@ -449,17 +449,27 @@ public class MotorService : IMotorService
             AddProgramFront(motor.GetMotorName(), absoluteProgram);
         }
         // set the pause requested flag to false
-        _programsManager.ResumeExecutionFlag();
+        EnableProgramProcessing();
         // resume executing process program
         await ProcessPrograms();
+    }
+    public void EnableProgramProcessing()
+    {
+        // set the pause requested flag to false
+        _programsManager.ResumeExecutionFlag();
     }
     #endregion
 
     #region Stop Motors
     // Stops should clear the program list
+    public void StopProgram() => _programsManager.StopExecutionFlag();
+    public bool IsProgramStopped() => _programsManager.IsProgramStopped();
     public void StopMotorAndClearProgramList(string motorNameLower)
     {
-        PauseProgram();
+        //PauseProgram();
+        // clear the program list
+        //_programsManager.programLinkedList.Clear();
+        StopProgram();
         switch (motorNameLower)
         {
             case "build":
@@ -475,8 +485,6 @@ public class MotorService : IMotorService
                 MagnetoLogger.Log($"Unable to check stop motor. Invalid motor name given: {motorNameLower}.", LogFactoryLogLevel.LogLevel.ERROR);
                 return;
         }
-        // clear the program list
-        _programsManager.programLinkedList.Clear();
     }
     public void StopAllMotorsClearProgramList()
     {
@@ -485,7 +493,8 @@ public class MotorService : IMotorService
         powderMotor.Stop();
         sweepMotor.Stop();
         // clear the program list
-        _programsManager.programLinkedList.Clear();
+        //_programsManager.programLinkedList.Clear();
+        StopProgram();
     }
     public void EmergencyStop()
     {
@@ -541,6 +550,72 @@ public class MotorService : IMotorService
         var powderMotorName = powderMotor.GetMotorName();
         var sweepMotorName = sweepMotor.GetMotorName();
 
+        while (GetNumberOfPrograms() > 0)
+        {
+            // Check pause/stop before starting next program
+            if (IsProgramPaused())
+            {
+                MagnetoLogger.Log("⏸ Program paused. Halting execution.", LogFactoryLogLevel.LogLevel.WARN);
+                return;
+            }
+
+            if (IsProgramStopped())
+            {
+                MagnetoLogger.Log("🛑 Program stop requested. Exiting loop.", LogFactoryLogLevel.LogLevel.WARN);
+                StopProgram(); // Ensure STOP flag and program list are cleared
+                return;
+            }
+
+            var programNode = GetFirstProgramNode();
+            if (!programNode.HasValue)
+            {
+                MagnetoLogger.Log("⚠️ No valid program node found. Exiting.", LogFactoryLogLevel.LogLevel.WARN);
+                return;
+            }
+
+            var confirmedNode = programNode.Value;
+            var (_, controller, axis) = ExtractProgramNodeVariables(confirmedNode).Value;
+
+            var motorName = controller switch
+            {
+                Controller.BUILD_AND_SUPPLY when axis == 1 => buildMotorName,
+                Controller.BUILD_AND_SUPPLY when axis == 2 => powderMotorName,
+                _ => sweepMotorName
+            };
+
+            await StoreLastMoveAndSendProgram(motorName, confirmedNode);
+
+            // Wait while the controller executes the program
+            while (await IsProgramRunningAsync(motorName))
+            {
+                if (IsProgramStopped())
+                {
+                    MagnetoLogger.Log($"🛑 Program stop detected mid-execution on {motorName}.", LogFactoryLogLevel.LogLevel.WARN);
+
+                    // Attempt to stop and flush the controller if possible
+                    //StopMotor(motorName);
+                    //ClearMotorBuffer(motorName); // Optional: implement if Micronix supports buffer clearing
+                    StopProgram();
+                    return;
+                }
+
+                await Task.Delay(100); // Throttle polling
+            }
+        }
+        MagnetoLogger.Log("⚠️ Exiting program processor.", LogFactoryLogLevel.LogLevel.WARN);
+        MagnetoLogger.Log($"Programs {_programsManager.programNodes.Count} on list:", LogFactoryLogLevel.LogLevel.VERBOSE);
+        foreach (var node in _programsManager.programNodes)
+        {
+            MagnetoLogger.Log($"{node.program}\n", LogFactoryLogLevel.LogLevel.VERBOSE);
+        }
+    }
+
+    private async Task ProcessProgramsOLD()
+    {
+        var buildMotorName = buildMotor.GetMotorName();
+        var powderMotorName = powderMotor.GetMotorName();
+        var sweepMotorName = sweepMotor.GetMotorName();
+
         // process queue
         while (GetNumberOfPrograms() > 0)
         {
@@ -550,7 +625,12 @@ public class MotorService : IMotorService
                 MagnetoLogger.Log("⏸ Program paused. Halting execution.", LogFactoryLogLevel.LogLevel.WARN);
                 return;
             }
-
+            if (IsProgramStopped())
+            {
+                //TODO: clear program list
+                StopProgram();
+                return;
+            }
             var programNode = GetFirstProgramNode();
             if (programNode.HasValue)
             {
