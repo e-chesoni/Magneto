@@ -73,8 +73,9 @@ public interface IMotorService
     #endregion
 
     #region Stop Motors
-    public void StopAndClearProgramList(string motorNameLower);
+    public void StopMotorAndClearProgramList(string motorNameLower);
     public void StopAllMotorsClearProgramList();
+    public void EmergencyStop();
     #endregion
 
     #region Multi-Motor Move Methods

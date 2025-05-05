@@ -155,7 +155,10 @@ public sealed partial class TestPrintPage : Page
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to stop motors.");
             return;
         }
-        _motorPageService.StopAllMotors();
+        //_motorPageService.StopAllMotorsClearProgramList();
+        _motorPageService.StopBuildMotorAndUpdateTextBox();
+        _motorPageService.StopPowderMotorAndUpdateTextBox();
+        _motorPageService.StopSweepMotorAndUpdateTextBox();
     }
     #endregion
 
@@ -1251,7 +1254,7 @@ public sealed partial class TestPrintPage : Page
         PAUSE_REQUESTED = true;
         if (_motorPageService != null)
         {
-            _motorPageService.StopAllMotors();
+            _motorPageService.StopAllMotorsClearProgramList();
         }
     }
 }

@@ -110,7 +110,7 @@ public sealed partial class TestMotorsPage : Page
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to stop motors.");
             return;
         }
-        _motorPageService.StopAllMotors();
+        _motorPageService.StopAllMotorsClearProgramList();
     }
 
     // Keep as a reference; still seeing some bugs when stopping motors with new method

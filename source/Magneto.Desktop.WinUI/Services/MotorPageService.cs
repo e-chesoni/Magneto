@@ -69,9 +69,9 @@ public class MotorPageService
     public (string[] program, Controller controller, int axis)? ExtractProgramNodeVariables(ProgramNode programNode) => _motorService.ExtractProgramNodeVariables(programNode);
     public int GetNumberOfPrograms() => _motorService.GetNumberOfPrograms();
 
-    public void StopMotor(string motorNameLower) => _motorService.StopAndClearProgramList(motorNameLower);
-    public void StopAllMotors() => _motorService.StopAllMotorsClearProgramList();
-
+    public void StopMotor(string motorNameLower) => _motorService.StopMotorAndClearProgramList(motorNameLower);
+    public void StopAllMotorsClearProgramList() => _motorService.StopAllMotorsClearProgramList();
+    public void EmergencyStop() => _motorService.EmergencyStop();
     public bool ProgramReaderPaused() => _motorService.IsProgramPaused();
     public void PauseProgramReader() => _motorService.PauseProgram();
 
@@ -171,7 +171,6 @@ public class MotorPageService
 
     #region Movement
     #region Main Movement Commands
-
     public async Task<(int status, double targetPos)> MoveMotorAbsoluteProgram(string motorName, TextBox textBoxToRead)
     {
         var motorNameLower = motorName.ToLower();
@@ -189,7 +188,6 @@ public class MotorPageService
             return (1, targetPos);
         }
     }
-
     public async Task<(int status, double targetPos)> MoveMotorRelativeProgram(string motorName, TextBox textBoxToRead, bool moveUp)
     {
         var motorNameLower = motorName.ToLower();
@@ -312,7 +310,7 @@ public class MotorPageService
     {
         var msg = $"stopping {buildMotorName} motor";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
-        _motorService.StopAndClearProgramList(buildMotorName); // UI is already updated when stop clicked...by magic i guess
+        _motorService.StopMotorAndClearProgramList(buildMotorName); // UI is already updated when stop clicked...by magic i guess
         //await UpdateMotorPositionTextBox(buildMotorName);
         _uiControlGroupHelper.DisableMotorControls(_uiControlGroupHelper.GetCalibrationControlGroup(), buildMotorName);
     }
@@ -320,7 +318,7 @@ public class MotorPageService
     {
         var msg = $"stopping {powderMotorName} motor";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
-        _motorService.StopAndClearProgramList(powderMotorName);
+        _motorService.StopMotorAndClearProgramList(powderMotorName);
         //await UpdateMotorPositionTextBox(powderMotorName);
         _uiControlGroupHelper.DisableMotorControls(_uiControlGroupHelper.GetCalibrationControlGroup(), powderMotorName);
     }
@@ -328,7 +326,7 @@ public class MotorPageService
     {
         var msg = $"stopping {sweepMotorName} motor";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
-        _motorService.StopAndClearProgramList(sweepMotorName);
+        _motorService.StopMotorAndClearProgramList(sweepMotorName);
         //await UpdateMotorPositionTextBox(sweepMotorName);
         _uiControlGroupHelper.DisableMotorControls(_uiControlGroupHelper.GetCalibrationControlGroup(), sweepMotorName);
     }

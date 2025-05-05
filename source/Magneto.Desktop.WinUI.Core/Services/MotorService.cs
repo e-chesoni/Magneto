@@ -334,8 +334,7 @@ public class MotorService : IMotorService
     public void PauseProgram()
     {
         _commandQueueManager.PauseProgram(); // updates boolean (should stop ProcessPrograms())
-        // TODO: stop all motors on both controllers
-        StopAllMotorsClearProgramList();
+        //StopAllMotorsClearProgramList();
     }
     public (double? value, bool isAbsolute) ParseMoveCommand(string[] program)
     {
@@ -457,8 +456,9 @@ public class MotorService : IMotorService
 
     #region Stop Motors
     // Stops should clear the program list
-    public void StopAndClearProgramList(string motorNameLower)
+    public void StopMotorAndClearProgramList(string motorNameLower)
     {
+        PauseProgram();
         switch (motorNameLower)
         {
             case "build":
@@ -479,11 +479,16 @@ public class MotorService : IMotorService
     }
     public void StopAllMotorsClearProgramList()
     {
+        PauseProgram();
         buildMotor.Stop();
         powderMotor.Stop();
         sweepMotor.Stop();
         // clear the program list
         _commandQueueManager.programLinkedList.Clear();
+    }
+    public void EmergencyStop()
+    {
+
     }
     #endregion
 
@@ -536,8 +541,15 @@ public class MotorService : IMotorService
         var sweepMotorName = sweepMotor.GetMotorName();
 
         // process queue
-        while (GetNumberOfPrograms() > 0 && !IsProgramPaused())
+        while (GetNumberOfPrograms() > 0)
         {
+            // 🛑 Recheck pause flag before starting next command
+            if (IsProgramPaused())
+            {
+                MagnetoLogger.Log("⏸ Program paused. Halting execution.", LogFactoryLogLevel.LogLevel.WARN);
+                return;
+            }
+
             var programNode = GetFirstProgramNode();
             if (programNode.HasValue)
             {

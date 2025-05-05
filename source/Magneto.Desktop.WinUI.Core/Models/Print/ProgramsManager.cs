@@ -190,7 +190,7 @@ public class ProgramsManager : ISubsciber, IStateMachine
     public bool IsProgramPaused() => PAUSE_REQUESTED;
     public void PauseProgram()
     {
-        PAUSE_REQUESTED = false;
+        PAUSE_REQUESTED = true;
     }
     #endregion
 
