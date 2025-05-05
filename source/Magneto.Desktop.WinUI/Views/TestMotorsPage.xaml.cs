@@ -99,28 +99,18 @@ public sealed partial class TestMotorsPage : Page
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
             return;
         }
-        await _motorPageService.HomeMotorAndUpdateUI(buildMotorName);
-        await _motorPageService.HomeMotorAndUpdateUI(powderMotorName);
-        await _motorPageService.HomeMotorAndUpdateUI(sweepMotorName);
+        await _motorPageService.HomeMotorProgramAndUpdateUI(buildMotorName);
+        await _motorPageService.HomeMotorProgramAndUpdateUI(powderMotorName);
+        await _motorPageService.HomeMotorProgramAndUpdateUI(sweepMotorName);
     }
-    private async Task StopMotorsHelper()
+    private void StopMotorsHelper()
     {
         if (_motorPageService == null)
         {
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to stop motors.");
             return;
         }
-        _motorPageService.StopBuildMotorAndUpdateTextBox();
-        while (await _motorPageService.IsProgramRunningAsync(buildMotorName))
-        {
-            await Task.Delay(100);
-        }
-        _motorPageService.StopPowderMotorAndUpdateTextBox();
-        while (await _motorPageService.IsProgramRunningAsync(powderMotorName))
-        {
-            await Task.Delay(100);
-        }
-        _motorPageService.StopSweepMotorAndUpdateTextBox();
+        _motorPageService.StopAllMotors();
     }
 
     // Keep as a reference; still seeing some bugs when stopping motors with new method

@@ -84,5 +84,6 @@ public interface IMotorService
 
     public Task MoveMotorAbsoluteProgram(string motorNameLower, double distance);
     public Task MoveMotorRelativeProgram(string motorNameLower, double distance, bool moveUp);
-    Task<int> HomeMotor(string motorNameLowerCase);
+    Task<int> HomeMotorProgram(string motorNameLowerCase);
+    public Task HomeAllMotors();
 }

@@ -104,22 +104,6 @@ public class ProgramsManager : ISubsciber, IStateMachine
         get; set;
     }
 
-    public struct MotorKey
-    {
-        public ControllerType ControllerType;
-        public int Axis;
-
-        public MotorKey(ControllerType controllerType, int axis)
-        {
-            ControllerType = controllerType;
-            Axis = axis;
-        }
-    }
-
-    private Dictionary<MotorKey, TaskCompletionSource<double>> positionTasks = new Dictionary<MotorKey, TaskCompletionSource<double>>();
-    private Queue<string> commandQueue = new Queue<string>();
-    private bool isCommandProcessing = false;
-
     public LinkedList<ProgramNode> programLinkedList = new();
 
     private LastMove _lastMove;
@@ -194,15 +178,23 @@ public class ProgramsManager : ISubsciber, IStateMachine
     }
 
     #endregion
+
+    #region Last Move Methods
     public LastMove GetLastMove() => _lastMove;
     public ProgramNode GetLastProgramNodeRun() => _lastMove.programNode;
-    public bool IsProgramPaused() => PAUSE_REQUESTED;
+    public void SetLastMoveStartingPosition(double start) => _lastMove.startingPosition = start;
+    public void SetLastMoveTarget(double target) => _lastMove.target = target;
+    #endregion
 
+    #region Program Pausing
+    public bool IsProgramPaused() => PAUSE_REQUESTED;
     public void PauseProgram()
     {
         PAUSE_REQUESTED = false;
     }
+    #endregion
 
+    #region Create Program Node
     public ProgramNode CreateProgramNode(string[] program, Controller controller, int axis)
     {
         return new ProgramNode
@@ -212,26 +204,20 @@ public class ProgramsManager : ISubsciber, IStateMachine
             axis = axis
         };
     }
+    #endregion
 
-
-    // TODO: Use struct that is available for entire application (put in app.xaml.cs?)
+    #region Program Adders
     public void AddProgramToFront(ProgramNode node)
     {
         programLinkedList.AddFirst(node);
     }
-
     public void AddProgramToBack(ProgramNode node)
     {
         programLinkedList.AddLast(node);
     }
+    #endregion
 
-    public (string[] program, Controller controller, int axis) ExtractProgramNodeVariables(ProgramNode programNode)
-    {
-        var program = programNode.program;
-        Controller controller = programNode.controller;
-        var axis = programNode.axis;
-        return (program, controller, axis);
-    }
+    #region Program Node Getters
     public ProgramNode GetFirstProgramNode()
     {
         if (programLinkedList.Count == 0)
@@ -250,7 +236,6 @@ public class ProgramsManager : ISubsciber, IStateMachine
         }
         return programNode;
     }
-
     public ProgramNode GetLastProgramNode()
     {
         if (programLinkedList.Count == 0)
@@ -268,9 +253,17 @@ public class ProgramsManager : ISubsciber, IStateMachine
         }
         return programNode;
     }
+    #endregion
 
-    public void SetLastMoveStartingPosition(double start) => _lastMove.startingPosition = start;
-    public void SetLastMoveTarget(double target) => _lastMove.target = target;
+    #region Extract Program Variables
+    public (string[] program, Controller controller, int axis) ExtractProgramNodeVariables(ProgramNode programNode)
+    {
+        var program = programNode.program;
+        Controller controller = programNode.controller;
+        var axis = programNode.axis;
+        return (program, controller, axis);
+    }
+    #endregion
 
     #region Getters
     public double GetCurrentPrintHeight()
@@ -359,7 +352,6 @@ public class ProgramsManager : ISubsciber, IStateMachine
     {
         _currentPrintHeight = printHeight;
     }
-
 
     public void SetSweepDist(double dist)
     {

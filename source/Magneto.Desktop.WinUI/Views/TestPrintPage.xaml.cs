@@ -133,30 +133,22 @@ public sealed partial class TestPrintPage : Page
     #endregion
 
     #region Helpers
-    private async Task<int> HomeIfStopFlagIsFalse(string motorName)
+    private async Task HomeMotorsHelper()
     {
         string? msg;
         if (_motorPageService == null)
         {
             msg = "_motorPageService is null. Cannot home motors.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-            return 0;
+            return;
         }
-        else
-        {
-            msg = "Homing all motors";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-        }
-        await _motorPageService.HomeMotorAndUpdateUI(motorName);
-        return 1;
+        // TODO: home one at a time
+        //await _motorPageService.HomeAllMotorsAsync();
+        await _motorPageService.HomeMotorProgramAndUpdateUI(buildMotorName); // uses program; no need to await
+        await _motorPageService.HomeMotorProgramAndUpdateUI(powderMotorName);
+        await _motorPageService.HomeMotorProgramAndUpdateUI(sweepMotorName);
     }
-    private async Task HomeMotorsHelper()
-    {
-        await HomeIfStopFlagIsFalse("build");
-        await HomeIfStopFlagIsFalse("powder");
-        await HomeIfStopFlagIsFalse("sweep");
-    }
-    private async Task StopMotorsHelper()
+    private void StopMotorsHelper()
     {
         if (_motorPageService == null)
         {
@@ -164,20 +156,6 @@ public sealed partial class TestPrintPage : Page
             return;
         }
         _motorPageService.StopAllMotors();
-        _motorPageService.HandleGetAllPositions();
-        /*
-        _motorPageService.StopBuildMotorAndUpdateTextBox();
-        while (await _motorPageService.IsProgramRunningAsync(buildMotorName))
-        {
-            await Task.Delay(100);
-        }
-        _motorPageService.StopPowderMotorAndUpdateTextBox();
-        while (await _motorPageService.IsProgramRunningAsync(powderMotorName))
-        {
-            await Task.Delay(100);
-        }
-        _motorPageService.StopSweepMotorAndUpdateTextBox();
-        */
     }
     #endregion
 

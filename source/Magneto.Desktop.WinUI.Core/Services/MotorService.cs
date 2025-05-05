@@ -667,26 +667,22 @@ public class MotorService : IMotorService
     #endregion
 
     #region Homing
-    private void AddHomeProgram(StepperMotor motor)
+    public async Task<int> HomeMotorProgram(string motorNameLowerCase)
     {
-        //await _commandQueueManager.AddCommand(GetControllerTypeHelper(motor.GetMotorName()), motor.GetAxis(), CommandType.AbsoluteMove, motor.GetHomePos());
-        //await MoveMotorAbsoluteProgram(motor.GetMotorName(), motor.GetHomePos, moveUp);
-        var program = WriteAbsoluteMoveProgramForBuildMotor(buildMotor.GetHomePos());
-        AddProgramLast(buildMotor.GetMotorName(), program);
-        return;
-    }
-    public async Task<int> HomeMotor(string motorNameLowerCase)
-    {
+        string[] program;
         switch (motorNameLowerCase)
         {
             case "build":
-                AddHomeProgram(buildMotor);
+                program = WriteAbsoluteMoveProgramForBuildMotor(buildMotor.GetHomePos());
+                AddProgramLast(buildMotor.GetMotorName(), program);
                 break;
             case "powder":
-                AddHomeProgram(powderMotor);
+                program = WriteAbsoluteMoveProgramForPowderMotor(powderMotor.GetHomePos());
+                AddProgramLast(powderMotor.GetMotorName(), program);
                 break;
             case "sweep":
-                AddHomeProgram(sweepMotor);
+                program = WriteAbsoluteMoveProgramForSweepMotor(sweepMotor.GetHomePos());
+                AddProgramLast(sweepMotor.GetMotorName(), program);
                 break;
             default:
                 MagnetoLogger.Log($"Cannot wait until motor reaches position. Invalid motor name given: {motorNameLowerCase}.", LogFactoryLogLevel.LogLevel.ERROR);
@@ -694,6 +690,17 @@ public class MotorService : IMotorService
         }
         await ProcessPrograms();
         return 1;
+    }
+
+    public async Task HomeAllMotors()
+    {
+        var homeBuild = WriteAbsoluteMoveProgramForBuildMotor(buildMotor.GetHomePos());
+        var homePowder = WriteAbsoluteMoveProgramForPowderMotor(powderMotor.GetHomePos());
+        var homeSweep = WriteAbsoluteMoveProgramForSweepMotor(sweepMotor.GetHomePos());
+        AddProgramLast(buildMotor.GetMotorName(), homeBuild);
+        AddProgramLast(powderMotor.GetMotorName(), homePowder);
+        AddProgramLast(sweepMotor.GetMotorName(), homeSweep);
+        await ProcessPrograms();
     }
     #endregion
 

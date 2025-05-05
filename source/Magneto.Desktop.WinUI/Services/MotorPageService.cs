@@ -312,8 +312,8 @@ public class MotorPageService
     {
         var msg = $"stopping {buildMotorName} motor";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
-        _motorService.StopAndClearProgramList(buildMotorName);
-        await UpdateMotorPositionTextBox(buildMotorName);
+        _motorService.StopAndClearProgramList(buildMotorName); // UI is already updated when stop clicked...by magic i guess
+        //await UpdateMotorPositionTextBox(buildMotorName);
         _uiControlGroupHelper.DisableMotorControls(_uiControlGroupHelper.GetCalibrationControlGroup(), buildMotorName);
     }
     public async void StopPowderMotorAndUpdateTextBox()
@@ -321,7 +321,7 @@ public class MotorPageService
         var msg = $"stopping {powderMotorName} motor";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
         _motorService.StopAndClearProgramList(powderMotorName);
-        await UpdateMotorPositionTextBox(powderMotorName);
+        //await UpdateMotorPositionTextBox(powderMotorName);
         _uiControlGroupHelper.DisableMotorControls(_uiControlGroupHelper.GetCalibrationControlGroup(), powderMotorName);
     }
     public async void StopSweepMotorAndUpdateTextBox()
@@ -329,7 +329,7 @@ public class MotorPageService
         var msg = $"stopping {sweepMotorName} motor";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
         _motorService.StopAndClearProgramList(sweepMotorName);
-        await UpdateMotorPositionTextBox(sweepMotorName);
+        //await UpdateMotorPositionTextBox(sweepMotorName);
         _uiControlGroupHelper.DisableMotorControls(_uiControlGroupHelper.GetCalibrationControlGroup(), sweepMotorName);
     }
     #endregion
@@ -446,12 +446,17 @@ public class MotorPageService
                 return;
         }
     }
-    public async Task<int> HomeMotorAndUpdateUI(string motorName)
+    public async Task<int> HomeMotorProgramAndUpdateUI(string motorName)
     {
         _uiControlGroupHelper.SelectMotor(motorName);
-        await _motorService.HomeMotor(motorName); // wait takes place in process commands in motor service
+        await _motorService.HomeMotorProgram(motorName); // wait takes place in process commands in motor service
         await UpdateMotorPositionTextBox(motorName); // TODO: This should probably wait until the motor is done moving...
         return 1;
+    }
+
+    public async Task HomeAllMotorsAsync()
+    {
+        await _motorService.HomeAllMotors();
     }
     #endregion
     #endregion
