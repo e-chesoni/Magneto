@@ -1115,8 +1115,8 @@ public sealed partial class TestPrintPage : Page
     // TODO: Remove after testing
     private async void TEST_Click(object sender, RoutedEventArgs e)
     {
-        var target1 = 10;
-        var target2 = 20;
+        var target1 = -10;
+        var target2 = -20;
         bool movePositive = true;
         if (_motorPageService == null)
         {
@@ -1192,13 +1192,14 @@ public sealed partial class TestPrintPage : Page
         }
         */
         // TODO: Test update!
+        /*
         await _motorPageService.ReadAllErrors();
         var prog1 = _motorPageService.WriteAbsMoveProgramForBuildMotor(target1, !movePositive);
         var prog2 = _motorPageService.WriteAbsMoveProgramForPowderMotor(target1, !movePositive);
-        var prog3 = _motorPageService.WriteAbsMoveProgramForSweepMotor(target1, movePositive); // sweep moves in positive direction
+        var prog3 = _motorPageService.WriteAbsMoveProgramForSweepMotor(-target1, movePositive); // sweep moves in positive direction
         var prog4 = _motorPageService.WriteAbsMoveProgramForBuildMotor(target2, !movePositive);
         var prog5 = _motorPageService.WriteAbsMoveProgramForPowderMotor(target2, !movePositive);
-        var prog6 = _motorPageService.WriteAbsMoveProgramForSweepMotor(target2, movePositive); // sweep moves in positive direction
+        var prog6 = _motorPageService.WriteAbsMoveProgramForSweepMotor(-target2, movePositive); // sweep moves in positive direction
 
         _motorPageService.AddProgramFront(buildMotorName, prog6);
         _motorPageService.AddProgramFront(powderMotorName, prog5);
@@ -1242,14 +1243,14 @@ public sealed partial class TestPrintPage : Page
                 }
             }
         }
-
-        // TODO: Test execute layer move next
-        /*
+        */
+        // Working!
+        // TODO: think about how to convert this in to a method that writes the entire multi-layer move program,
+        // then processes it
         var thickness = 1;
         var amplifier = 2;
         var numberOfLayers = 2;
-        await _motorPageService.ExecuteLayerMove(thickness, amplifier, numberOfLayers);
-        */
+        await _motorPageService.ExecuteLayerMove(thickness, amplifier, this.Content.XamlRoot);
     }
     private void StopTEST_Click(object sender, RoutedEventArgs e)
     {
