@@ -84,7 +84,7 @@ public sealed partial class TestPrintPage : Page
         _waverunnerUiControlGroup = new UIControlGroupWaverunner(PrintDirectoryInputTextBox,
                                                             LayerTextBlock, FileNameTextBlock, LayerThicknessTextBlock, LaserPowerTextBlock, ScanSpeedTextBlock, HatchSpacingTextBlock, EnergyDensityTextBlock, SlicesToMarkTextBlock, SupplyAmplifierTextBlock, 
                                                             LayerTextBox, FileNameTextBox, LayerThicknessTextBox, LaserPowerTextBox, ScanSpeedTextBox, HatchSpacingTextBox, EnergyDensityTextBox, SlicesToMarkTextBox, SupplyAmplifierTextBox,
-                                                            StartWithMarkCheckBox, PrintLayersButton, PausePrintButton, RemarkLayerButton);
+                                                            StartWithMarkCheckBox, PlayButton, PauseButton, RemarkLayerButton);
         // initialize motor page service
         _motorPageService = new MotorPageService(new UIControlGroupWrapper(_calibrateMotorUIControlGroup));
         // initialize Waverunner page service
@@ -781,7 +781,7 @@ public sealed partial class TestPrintPage : Page
             }
         }
     }
-    private void PausePrintButton_Click(object sender, RoutedEventArgs e)
+    private void PauseButton_Click(object sender, RoutedEventArgs e)
     {
         if (_waverunnerPageService == null)
         {
@@ -793,6 +793,11 @@ public sealed partial class TestPrintPage : Page
         // stop motors
         StopMotorsHelper();
         // TODO: Update print status to "paused"
+
+    }
+    private void CancelButton_Click(object sender, RoutedEventArgs e)
+    {
+        // TODO: implement
 
     }
     private void RemarkLayerButton_Click(object sender, RoutedEventArgs e)
@@ -920,7 +925,7 @@ public sealed partial class TestPrintPage : Page
     }
     #endregion
 
-    private async void MarkButton_Click(object sender, RoutedEventArgs e)
+    private async void PlayButton_Click(object sender, RoutedEventArgs e)
     {
         int res;
         double thickness;

@@ -10,19 +10,8 @@ namespace Magneto.Desktop.WinUI.Views;
 
 public sealed partial class PrintSettingsPage : Page
 {
-    #region Public Variable
-
-    /// <summary>
-    /// Store "global" mission control on this page
-    /// </summary>
-    public MissionControl? MissionControl { get; set; }
-
-    /// <summary>
-    /// Page view model
-    /// </summary>
+    public MissionControl? _missionControl { get; set; }
     public PrintSettingsViewModel ViewModel { get; }
-
-    #endregion
 
     #region Constructor
 
@@ -32,6 +21,7 @@ public sealed partial class PrintSettingsPage : Page
     public PrintSettingsPage()
     {
         ViewModel = App.GetService<PrintSettingsViewModel>();
+        _missionControl = App.GetService<MissionControl>();
         InitializeComponent();
     }
 
@@ -47,10 +37,6 @@ public sealed partial class PrintSettingsPage : Page
     {
         // Get mission control (passed over when navigating from previous page)
         base.OnNavigatedTo(e);
-        MissionControl = (MissionControl)e.Parameter;
-
-        var msg = string.Format("PrintSettingsPage::OnNavigatedTo -- {0}", MissionControl.FriendlyMessage);
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
     }
 
     #endregion

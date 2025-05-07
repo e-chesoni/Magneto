@@ -13,18 +13,8 @@ namespace Magneto.Desktop.WinUI.Views;
 
 public sealed partial class UtilitiesDetailPage : Page
 {
-    #region Public Methods
-    /// <summary>
-    /// Store "global" mission control on this page
-    /// </summary>
-    public MissionControl? MissionControl { get; set; }
-
-    /// <summary>
-    /// Page view model
-    /// </summary>
+    public MissionControl? _missionControl { get; set; }
     public UtilitiesDetailViewModel ViewModel { get; }
-
-    #endregion
 
     #region Constructor
 
@@ -34,6 +24,7 @@ public sealed partial class UtilitiesDetailPage : Page
     public UtilitiesDetailPage()
     {
         ViewModel = App.GetService<UtilitiesDetailViewModel>();
+        _missionControl = App.GetService<MissionControl>();
         InitializeComponent();
     }
 
@@ -49,13 +40,6 @@ public sealed partial class UtilitiesDetailPage : Page
     {
         base.OnNavigatedTo(e);
         this.RegisterElementForConnectedAnimation("animationKeyContentGrid", itemHero);
-
-        // Get mission control (passed over when navigating from previous page)
-        MissionControl = (MissionControl)e.Parameter;
-
-        var msg = string.Format("UtilitiesDetailPage::OnNavigatedTo -- {0}", MissionControl.FriendlyMessage);
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
-
     }
 
     /// <summary>

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Models.Motors;
 using Magneto.Desktop.WinUI.Core.Models.Print;
+using Magneto.Desktop.WinUI.Core.Models.States.PrintStates;
 using ZstdSharp.Unsafe;
 using static Magneto.Desktop.WinUI.Core.Models.Constants.MagnetoConstants;
 using static Magneto.Desktop.WinUI.Core.Models.Print.ProgramsManager;
@@ -14,6 +15,7 @@ using static Magneto.Desktop.WinUI.Core.Models.Print.ProgramsManager;
 namespace Magneto.Desktop.WinUI.Core.Services;
 public class MotorService : IMotorService
 {
+    private readonly PrintStateMachine _printStateMachine;
     private readonly ProgramsManager _programsManager;
     private StepperMotor? buildMotor;
     private StepperMotor? powderMotor;
@@ -27,9 +29,10 @@ public class MotorService : IMotorService
 
     private readonly double SWEEP_CLEARANCE = 2; // mm
 
-    public MotorService(ProgramsManager cqm)
+    public MotorService(PrintStateMachine psm)
     {
-        _programsManager = cqm;
+        _printStateMachine = psm;
+        _programsManager = psm.GetProgramsManager();
     }
 
 
@@ -468,7 +471,6 @@ public class MotorService : IMotorService
     {
         //PauseProgram();
         // clear the program list
-        //_programsManager.programLinkedList.Clear();
         StopProgram();
         switch (motorNameLower)
         {
@@ -493,7 +495,6 @@ public class MotorService : IMotorService
         powderMotor.Stop();
         sweepMotor.Stop();
         // clear the program list
-        //_programsManager.programLinkedList.Clear();
         StopProgram();
     }
     public void EmergencyStop()

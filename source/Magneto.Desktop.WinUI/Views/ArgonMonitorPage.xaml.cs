@@ -10,18 +10,8 @@ namespace Magneto.Desktop.WinUI.Views;
 
 public sealed partial class ArgonMonitorPage : Page
 {
-    #region Public Variables
-    /// <summary>
-    /// Store "global" mission control on this page
-    /// </summary>
-    public MissionControl? MissionControl { get; set; }
-
-    /// <summary>
-    /// Page view model
-    /// </summary>
+    public MissionControl? _missionControl { get; set; }
     public ArgonMonitorViewModel ViewModel { get; }
-
-    #endregion
 
     #region Constructor
 
@@ -31,6 +21,7 @@ public sealed partial class ArgonMonitorPage : Page
     public ArgonMonitorPage()
     {
         ViewModel = App.GetService<ArgonMonitorViewModel>();
+        _missionControl = App.GetService<MissionControl>();
         InitializeComponent();
     }
 
@@ -46,10 +37,6 @@ public sealed partial class ArgonMonitorPage : Page
     {
         // Get mission control (passed over when navigating from previous page)
         base.OnNavigatedTo(e);
-        MissionControl = (MissionControl)e.Parameter;
-
-        var msg = string.Format("ArgonMonitorPage::OnNavigatedTo -- {0}", MissionControl.FriendlyMessage);
-        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
     }
 
     #endregion

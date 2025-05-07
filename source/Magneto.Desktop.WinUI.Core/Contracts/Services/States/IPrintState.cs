@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Magneto.Desktop.WinUI.Core.Models;
 using Magneto.Desktop.WinUI.Core.Models.Artifact;
+using Magneto.Desktop.WinUI.Core.Models.States.PrintStates;
 
 namespace Magneto.Desktop.WinUI.Core.Contracts.Services.States;
 
@@ -13,35 +14,8 @@ namespace Magneto.Desktop.WinUI.Core.Contracts.Services.States;
 /// </summary>
 public interface IPrintState
 {
-    void Start(ArtifactModel im);
-
-    /// <summary>
-    /// Method to handle a Draw command in current state
-    /// </summary>
-    Task Draw();
-
-    /// <summary>
-    /// Method to handle a Pause command in current state
-    /// </summary>
+    void Play();
     void Pause();
-
-    /// <summary>
-    /// Method to handle a Resume command in current state
-    /// </summary>
-    void Resume();
-
-    /// <summary>
-    /// Method to handle a Done command in current state
-    /// </summary>
-    void Done();
-
-    /// <summary>
-    /// Method to handle a Cancel command in current state
-    /// </summary>
+    void Redo();
     void Cancel();
-
-    /// <summary>
-    /// Method to handle a Homing command in current state
-    /// </summary>
-    Task Homing();
 }

@@ -85,8 +85,6 @@ public sealed partial class PrintPage : Page
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
-        //MissionControl = (MissionControl)e.Parameter; // get parameter
-        //MagnetoLogger.Log(MissionControl.FriendlyMessage, LogFactoryLogLevel.LogLevel.DEBUG);
     }
 
     private void FindPrint_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -104,7 +102,7 @@ public sealed partial class PrintPage : Page
             SelectedPrint.Text = path_to_image;
 
             // Put a new image on the build manager
-            _missionControl.CreateArtifactModel(path_to_image);
+            //_missionControl.CreateArtifactModel(path_to_image);
 
             // TODO: Toast Message: Using default thickness of {} get from config
             msg = "Setting every print layer's thickness to default thickness from MagnetoConfig";
@@ -112,7 +110,7 @@ public sealed partial class PrintPage : Page
             //_missionControl.SetArtifactThickness(_missionControl.GetDefaultArtifactThickness());
 
             // Slice image
-            _missionControl.SliceArtifact(); // TODO: IMAGE HANDLER references Magneto Config to control slice number: SliceArtifact calls SliceArtifact in build controller which calls ImageHandler
+            //_missionControl.SliceArtifact(); // TODO: IMAGE HANDLER references Magneto Config to control slice number: SliceArtifact calls SliceArtifact in build controller which calls ImageHandler
             StartPrintButton.IsEnabled = true;
 
             // Enable go to start button
@@ -138,12 +136,10 @@ public sealed partial class PrintPage : Page
         // Calls build manager in method to handle print
         // Build manager should have an image at this point!
         // TODO: Clear images from build manager after print (in done and cancel states)
-        _missionControl.StartPrint();
     }
 
     private void HomeMotors_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        _missionControl.HomeMotors();
     }
 
     private void IncrementThickness_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)

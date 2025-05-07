@@ -10,153 +10,28 @@ using Magneto.Desktop.WinUI.Core.Models.Artifact;
 using Magneto.Desktop.WinUI.Core.Models.Motors;
 using static Magneto.Desktop.WinUI.Core.Models.Motors.StepperMotor;
 using Magneto.Desktop.WinUI.Core.Contracts;
+using Magneto.Desktop.WinUI.Core.Models.States.PrintStates;
 
 namespace Magneto.Desktop.WinUI.Core.Models;
 public class MissionControl : IMediator, IPublisher, ISubsciber
 {
     // TODO: you need to rethink how this is set up (see test print page and work from there)
     #region Private Variables
-    
-    /// <summary>
-    /// Build manager to handle printing tasks
-    /// </summary>
-    private ProgramsManager _programsManager { get; set; }
-
-    /// <summary>
-    /// A list of subscribers that want to receive notifications from Mission Control
-    /// </summary>
+    private PrintStateMachine _printStateMachine;
     private List<ISubsciber> _subscibers;
-
     #endregion
-
-
-    #region Public Variables
-
-    /// <summary>
-    /// Message for testing
-    /// TODO: Remove later; testing that we can reach mission control from all pages
-    /// </summary>
-    public string FriendlyMessage = "Hello from Mission Control!";
-
-    #endregion
-
 
     #region Constructor
-
     /// <summary>
     /// Mission control constructor
     /// </summary>
     /// <param name="bm"></param> Build manager
-    public MissionControl(ProgramsManager actuationManager)
+    public MissionControl(PrintStateMachine psm)
     {
-        MagnetoLogger.Log("", LogFactoryLogLevel.LogLevel.VERBOSE);
-
-        _programsManager = actuationManager;
-
-    }
-
-    #endregion
-
-
-    #region Initialization Methods
-
-    /// <summary>
-    /// Generate an artifact model from a path to an artifact
-    /// </summary>
-    /// <param name="path_to_artifact"> File path to artifact</param>
-    public void CreateArtifactModel(string path_to_artifact)
-    {
-        _programsManager.artifactModel = new ArtifactModel(path_to_artifact);
-    }
-
-    #endregion
-
-
-    #region Getters
-    public ProgramsManager GetProgramsManager()
-    {
-        return _programsManager;
+        _printStateMachine = psm;
+        MagnetoLogger.Log("Hello from Mission Control!", LogFactoryLogLevel.LogLevel.VERBOSE);
     }
     #endregion
-
-
-    #region Setters
-
-    /// <summary>
-    /// Set the layer thickness for the print on the build manager
-    /// </summary>
-    /// <param name="thickness"> Desired thickness </param>
-    public void SetArtifactThickness(double thickness)
-    {
-        _programsManager.SetArtifactThickness(thickness);
-    }
-
-    #endregion
-
-
-    #region Operations Delegated to BuildManager
-
-    /// <summary>
-    /// Slice an artifact using build manager (resulting in a dance that gest stored on the build manager)
-    /// </summary>
-    public void SliceArtifact()
-    {
-        // TODO: ARTIFACT HANDLER CONTROLS SLICE NUMBER (SliceArtifact calls ArtifactHandler method)
-        _programsManager.SliceArtifact();
-    }
-
-    /// <summary>
-    /// Use the build manager to start a print
-    /// </summary>
-    public void StartPrint()
-    {
-        if (_programsManager.artifactModel.sliceStack.Count == 0) // TODO: FIX bm.artifactModel is null error
-        {
-            var msg = "There are no slices on this artifact model. Are you sure you sliced it?";
-            MagnetoLogger.Log(msg,
-            LogFactoryLogLevel.LogLevel.ERROR);
-        }
-        else
-        {
-            // Call build manager to handle print
-            //_actuationManager.StartPrint(_actuationManager.artifactModel);
-        }
-    }
-
-    /// <summary>
-    /// Pause a print that the build manager is handling
-    /// </summary>
-    public void PausePrint()
-    {
-        //_actuationManager.Pause();
-    }
-
-    /// <summary>
-    /// Resume a print using the build manager
-    /// </summary>
-    public void Resume()
-    {
-        //_actuationManager.Resume();
-    }
-
-    /// <summary>
-    /// Cancel the print the build manager is currently executing
-    /// </summary>
-    public void CancelPrint()
-    {
-        //_actuationManager.Cancel();
-    }
-
-    /// <summary>
-    /// Home motors using the build manager
-    /// </summary>
-    public void HomeMotors()
-    {
-        //_actuationManager.HomeMotors();
-    }
-
-    #endregion
-
 
     #region Mediator Methods
     public int Mediate(object sender, string ev) => throw new NotImplementedException();

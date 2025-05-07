@@ -28,6 +28,7 @@ using Magneto.Desktop.WinUI.Core.Contracts.Services.Controllers;
 using Magneto.Desktop.WinUI.Core.Factories;
 using Magneto.Desktop.WinUI.Core.Models;
 using Magneto.Desktop.WinUI.Core.Models.Motors;
+using Magneto.Desktop.WinUI.Core.Models.States.PrintStates;
 
 namespace Magneto.Desktop.WinUI;
 
@@ -109,33 +110,29 @@ public partial class App : Application
             // Laser
             services.AddSingleton<LaserController>();
 
-            // ActuationManager
-            services.AddSingleton<ProgramsManager>(provider =>
-                new ProgramsManager(
+            // PrintStateMachine (which contains ProgramsManager)
+            services.AddSingleton<PrintStateMachine>(provider =>
+            {
+                var pm = new ProgramsManager(
                     provider.GetRequiredService<BuildMotorController>(),
                     provider.GetRequiredService<SweepMotorController>(),
                     provider.GetRequiredService<LaserController>()
-                )
-            );
+                );
+                return new PrintStateMachine(pm);
+            });
 
-            // MissionControl
-            services.AddSingleton<MissionControl>(provider =>
-                new MissionControl(provider.GetRequiredService<ProgramsManager>())
-            );
-
-
-            // Register MissionControl
+            // MissionControl (which now contains PrintStateMachine)
             services.AddSingleton<MissionControl>(provider =>
             {
-                var am = provider.GetRequiredService<ProgramsManager>();
-                return new MissionControl(am);
+                var psm = provider.GetRequiredService<PrintStateMachine>();
+                return new MissionControl(psm);
             });
 
             // Register MotorService (needs ActuationManager)
             services.AddSingleton<IMotorService, MotorService>(provider =>
             {
-                var am = provider.GetRequiredService<ProgramsManager>();
-                var ms = new MotorService(am);
+                var psm = provider.GetRequiredService<PrintStateMachine>();
+                var ms = new MotorService(psm);
                 ms.HandleStartUp(); // Now that motors/controllers are fully built
                 return ms;
             });
