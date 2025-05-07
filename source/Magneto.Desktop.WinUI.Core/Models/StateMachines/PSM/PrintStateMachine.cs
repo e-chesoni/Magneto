@@ -25,5 +25,6 @@ public class PrintStateMachine
     public void Pause(PrintStateMachine context) => _currentState.Pause();
     public void Redo(PrintStateMachine context) => _currentState.Redo();
     public void Cancel(PrintStateMachine context) => _currentState.Cancel();
+    public void ChangeStateTo(IPrintState state) => _currentState = state;
 
 }

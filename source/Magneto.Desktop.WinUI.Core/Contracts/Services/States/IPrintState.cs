@@ -18,4 +18,5 @@ public interface IPrintState
     void Pause();
     void Redo();
     void Cancel();
+    void ChangeStateTo(IPrintState state);
 }

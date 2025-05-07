@@ -22,5 +22,5 @@ public class IdlePrintState : IPrintState
     public void Pause() => throw new NotImplementedException();
     public void Redo() => throw new NotImplementedException();
     public void Cancel() => throw new NotImplementedException();
-
+    public void ChangeStateTo(IPrintState state) => _stateMachine.ChangeStateTo(state);
 }
