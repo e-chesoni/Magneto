@@ -805,8 +805,6 @@ public sealed partial class TestPrintPage : Page
         // TODO: implement remarking
     }
     #endregion
-
-
     #endregion
 
     #region Manage Text Population & Clearing
@@ -837,7 +835,7 @@ public sealed partial class TestPrintPage : Page
                         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
                         DurationTextBlock.Text = duration?.ToString(@"hh\:mm\:ss") ?? "—";
 
-                        ViewModel.GetNextSliceAndUpdateDisplay();
+                        await ViewModel.GetNextSliceAndUpdateDisplay();
                     }
                     else
                     {
@@ -1122,135 +1120,10 @@ public sealed partial class TestPrintPage : Page
     // TODO: Remove after testing
     private async void TEST_Click(object sender, RoutedEventArgs e)
     {
-        var target1 = -10;
-        var target2 = -20;
-        bool movePositive = true;
         if (_motorPageService == null)
         {
             return;
         }
-        /*
-        await _motorPageService.GetMotorService().GetBuildMotor().ReadErrors();
-        await _motorPageService.GetMotorService().GetPowderMotor().ReadErrors();
-        await _motorPageService.GetMotorService().GetSweepMotor().ReadErrors();
-        
-        Controller buildSupplyController = Controller.BUILD_AND_SUPPLY;
-        Controller sweepController = Controller.SWEEP;
-        var buildAxis = _motorPageService.GetMotorService().GetBuildMotor().GetAxis();
-        var powderAxis = _motorPageService.GetMotorService().GetPowderMotor().GetAxis();
-        var sweepAxis = _motorPageService.GetMotorService().GetSweepMotor().GetAxis();
-
-        var prog1 = _motorPageService.GetMotorService().GetBuildMotor().WriteAbsMoveProgram(target1, false);
-        var prog2 = _motorPageService.GetMotorService().GetPowderMotor().WriteAbsMoveProgram(target1, false);
-        var prog3 = _motorPageService.GetMotorService().GetSweepMotor().WriteAbsMoveProgram(target1, true); // sweep moves in positive direction
-        var prog4 = _motorPageService.GetMotorService().GetBuildMotor().WriteAbsMoveProgram(target2, false);
-        var prog5 = _motorPageService.GetMotorService().GetPowderMotor().WriteAbsMoveProgram(target2, false);
-        var prog6 = _motorPageService.GetMotorService().GetSweepMotor().WriteAbsMoveProgram(target2, true);
-        
-        // add last command first
-        _motorPageService.GetCommandQueueManger().AddProgramToFront(prog6, sweepController, sweepAxis);
-        _motorPageService.GetCommandQueueManger().AddProgramToFront(prog5, buildSupplyController, powderAxis);
-        _motorPageService.GetCommandQueueManger().AddProgramToFront(prog4, buildSupplyController, buildAxis);
-        _motorPageService.GetCommandQueueManger().AddProgramToFront(prog3, sweepController, sweepAxis);
-        _motorPageService.GetCommandQueueManger().AddProgramToFront(prog2, buildSupplyController, powderAxis);
-        _motorPageService.GetCommandQueueManger().AddProgramToFront(prog1, buildSupplyController, buildAxis);
-
-        // TODO: translate into motor page service commands
-        while (_motorPageService.GetCommandQueueManger().programLinkedList.Count > 0 && !PAUSE_REQUESTED)
-        {
-            string[] runProg;
-            Controller controller;
-            int axis;
-            (runProg, controller, axis) = _motorPageService.GetCommandQueueManger().GetFirstProgram();
-
-            if (runProg != null)
-            {
-                if (controller == Controller.BUILD_AND_SUPPLY)
-                {
-                    if (axis == 1)
-                    {
-                        _motorPageService.GetMotorService().GetBuildMotor().SendProgram(runProg);
-
-                        while (await _motorPageService.GetMotorService().GetBuildMotor().IsProgramRunningAsync())
-                        {
-                            await Task.Delay(100);
-                        }
-                    }
-                    else // axis == 2
-                    {
-                        _motorPageService.GetMotorService().GetPowderMotor().SendProgram(runProg);
-
-                        while (await _motorPageService.GetMotorService().GetPowderMotor().IsProgramRunningAsync())
-                        {
-                            await Task.Delay(100);
-                        }
-                    }
-                }
-                else // sweep controller
-                {
-                    _motorPageService.GetMotorService().GetSweepMotor().SendProgram(runProg);
-
-                    while (await _motorPageService.GetMotorService().GetSweepMotor().IsProgramRunningAsync())
-                    {
-                        await Task.Delay(100);
-                    }
-                }
-            }
-        }
-        */
-        // TODO: Test update!
-        /*
-        await _motorPageService.ReadAllErrors();
-        var prog1 = _motorPageService.WriteAbsMoveProgramForBuildMotor(target1, !movePositive);
-        var prog2 = _motorPageService.WriteAbsMoveProgramForPowderMotor(target1, !movePositive);
-        var prog3 = _motorPageService.WriteAbsMoveProgramForSweepMotor(-target1, movePositive); // sweep moves in positive direction
-        var prog4 = _motorPageService.WriteAbsMoveProgramForBuildMotor(target2, !movePositive);
-        var prog5 = _motorPageService.WriteAbsMoveProgramForPowderMotor(target2, !movePositive);
-        var prog6 = _motorPageService.WriteAbsMoveProgramForSweepMotor(-target2, movePositive); // sweep moves in positive direction
-
-        _motorPageService.AddProgramFront(buildMotorName, prog6);
-        _motorPageService.AddProgramFront(powderMotorName, prog5);
-        _motorPageService.AddProgramFront(sweepMotorName, prog4);
-        _motorPageService.AddProgramFront(buildMotorName, prog3);
-        _motorPageService.AddProgramFront(powderMotorName, prog2);
-        _motorPageService.AddProgramFront(sweepMotorName, prog1);
-
-        while (_motorPageService.GetNumberOfPrograms() > 0 && !PAUSE_REQUESTED)
-        {
-            var programNode = _motorPageService.GetFirstProgramNode();
-            if (programNode.HasValue)
-            {
-                var (runProg, controller, axis) = _motorPageService.ExtractProgramNodeVariables(programNode.Value).Value;
-                if (controller == Controller.BUILD_AND_SUPPLY)
-                {
-                    if (axis == 1)
-                    {
-                        _motorPageService.SendProgram(buildMotorName, runProg);
-                        while (await _motorPageService.IsProgramRunningAsync(buildMotorName))
-                        {
-                            await Task.Delay(100);
-                        }
-                    }
-                    else // axis == 2
-                    {
-                        _motorPageService.SendProgram(powderMotorName, runProg);
-                        while (await _motorPageService.IsProgramRunningAsync(powderMotorName))
-                        {
-                            await Task.Delay(100);
-                        }
-                    }
-                }
-                else // sweep controller
-                {
-                    _motorPageService.SendProgram(sweepMotorName, runProg);
-                    while (await _motorPageService.IsProgramRunningAsync(sweepMotorName))
-                    {
-                        await Task.Delay(100);
-                    }
-                }
-            }
-        }
-        */
         // Working!
         // TODO: think about how to convert this in to a method that writes the entire multi-layer move program,
         // then processes it
