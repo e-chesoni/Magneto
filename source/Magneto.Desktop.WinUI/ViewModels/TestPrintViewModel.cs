@@ -223,17 +223,17 @@ public class TestPrintViewModel : ObservableRecipient
             //while (_waverunnerService.GetMarkStatus() != 0) { Task.Delay(100).Wait(); }
 
             // layer move
-            //await _motorService.LayerMove(thickness, amplifier);
-            //await motorPageService.ExecuteLayerMove(thickness, amplifier, xamlRoot); // WORKING!
-            await _psm.ExecuteLayerMove(thickness, amplifier);
+            _psm.SetCurrentPrintSettings(thickness, amplifier);
+            //await _psm.ExecuteLayerMove();
+            await _psm.Play();
             // wait for layer move to complete
             //while (motorPageService.MotorsRunning()) { await Task.Delay(100); }
         }
         else
         {
             // layer move
-            //await _motorService.LayerMove(thickness, amplifier);
-            await motorPageService.ExecuteLayerMove(thickness, amplifier, xamlRoot);
+            _psm.SetCurrentPrintSettings(thickness, amplifier);
+            await _psm.Play();
             // wait for layer move to complete
             //while (_motorService.MotorsRunning()) { await Task.Delay(100); }
             //while (motorPageService.MotorsRunning()) { await Task.Delay(100); }

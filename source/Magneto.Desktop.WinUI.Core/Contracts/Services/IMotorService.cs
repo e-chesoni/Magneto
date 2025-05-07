@@ -85,7 +85,7 @@ public interface IMotorService
 
     #region Multi-Motor Move Methods
     public (string[] program, Controller controller, int axis)? ExtractProgramNodeVariables(ProgramNode programNode);
-    public Task ExecuteLayerMove(double thickness, double amplifier);
+    //public Task ExecuteLayerMove(double thickness, double amplifier);
     #endregion
 
     public Task MoveMotorAbsoluteProgram(string motorNameLower, double distance);

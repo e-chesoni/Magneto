@@ -15,15 +15,21 @@ using Magneto.Desktop.WinUI.Core.Models.States.PrintStates;
 namespace Magneto.Desktop.WinUI.Core.Models.State.PrintStates;
 public class PrintingPrintState : IPrintState
 {
-    private PrintStateMachine _stateMachine;
+    private PrintStateMachine _psm;
     public PrintingPrintState(PrintStateMachine psm)
     {
-        _stateMachine = psm;
+        _psm = psm;
     }
-
-    public void Play() => throw new NotImplementedException();
+    public async Task InitializeAsync()
+    {
+        await Play();
+    }
+    public async Task Play()
+    {
+        await _psm.ExecuteLayerMove();
+    }
     public void Pause() => throw new NotImplementedException();
     public void Redo() => throw new NotImplementedException();
     public void Cancel() => throw new NotImplementedException();
-    public void ChangeStateTo(IPrintState state) => _stateMachine.ChangeStateTo(state);
+    public void ChangeStateTo(IPrintState state) => _psm.ChangeStateTo(state);
 }

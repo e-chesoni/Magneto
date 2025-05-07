@@ -12,15 +12,20 @@ using Magneto.Desktop.WinUI.Core.Models.States.PrintStates;
 namespace Magneto.Desktop.WinUI.Core.Models.State.PrintStates;
 public class IdlePrintState : IPrintState
 {
-    private PrintStateMachine _stateMachine;
+    private PrintStateMachine _psm;
     public IdlePrintState(PrintStateMachine psm)
     {
-        _stateMachine = psm;
+        _psm = psm;
     }
 
-    public void Play() => throw new NotImplementedException();
+    public async Task Play()
+    {
+        var newState = new PrintingPrintState(_psm);
+        _psm.ChangeStateTo(newState);
+        await newState.InitializeAsync(); // run Play() logic immediately
+    }
     public void Pause() => throw new NotImplementedException();
     public void Redo() => throw new NotImplementedException();
     public void Cancel() => throw new NotImplementedException();
-    public void ChangeStateTo(IPrintState state) => _stateMachine.ChangeStateTo(state);
+    public void ChangeStateTo(IPrintState state) => _psm.ChangeStateTo(state);
 }

@@ -1127,10 +1127,14 @@ public sealed partial class TestPrintPage : Page
         // Working!
         // TODO: think about how to convert this in to a method that writes the entire multi-layer move program,
         // then processes it
+        var startWithMark = true;
         var thickness = 1;
+        var power = 300;
+        var scanSpeed = 800;
+        var hatchSpacing = 0.12;
         var amplifier = 2;
-        var numberOfLayers = 2;
-        await _motorPageService.ExecuteLayerMove(thickness, amplifier, this.Content.XamlRoot);
+        var numberOfLayers = 1; // TODO: figure out how to incorporate number of layers
+        await ViewModel.PrintLayer(_motorPageService, startWithMark, thickness, power, scanSpeed, hatchSpacing, amplifier, this.Content.XamlRoot);
     }
     private void StopTEST_Click(object sender, RoutedEventArgs e)
     {

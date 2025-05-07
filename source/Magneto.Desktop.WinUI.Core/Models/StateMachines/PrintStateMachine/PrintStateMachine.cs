@@ -49,6 +49,12 @@ public class PrintStateMachine
         _motorService = motorService;
     }
 
+    public static class CurrentLayerSettings
+    {
+        public static double thickness;
+        public static double amplifier;
+    }
+
     // Keep get print by directory in print service
     public async Task SetCurrentPrintAsync(string directoryPath)
     {
@@ -382,11 +388,13 @@ public class PrintStateMachine
 
     #region Multi-Motor Moves
     public (string[] program, Controller controller, int axis)? ExtractProgramNodeVariables(ProgramNode programNode) => rsm.ExtractProgramNodeVariables(programNode);
-    public async Task ExecuteLayerMove(double thickness, double amplifier)
+    public async Task ExecuteLayerMove()
     {
         var buildMotor = _motorService.GetBuildMotor();
         var powderMotor = _motorService.GetPowderMotor();
         var sweepMotor = _motorService.GetSweepMotor();
+        var thickness = CurrentLayerSettings.thickness;
+        var amplifier = CurrentLayerSettings.amplifier;
         var clearance = SWEEP_CLEARANCE;
         var movePositive = true;
 
@@ -427,9 +435,23 @@ public class PrintStateMachine
     }
     #endregion
 
-    public void Play(PrintStateMachine context) => _currentState.Play();
-    public void Pause(PrintStateMachine context) => _currentState.Pause();
-    public void Redo(PrintStateMachine context) => _currentState.Redo();
-    public void Cancel(PrintStateMachine context) => _currentState.Cancel();
+
+    public double GetCurrentLayerThickness() => CurrentLayerSettings.thickness;
+    public double GetCurrentLayerAmplifier() => CurrentLayerSettings.amplifier;
+
+    public double SetCurrentLayerThickness(double thickness) => CurrentLayerSettings.thickness = thickness;
+    public double SetCurrentLayerAmplifier(double amplifier) => CurrentLayerSettings.amplifier = amplifier;
+    public void SetCurrentPrintSettings(double thickness, double amplifier)
+    {
+        SetCurrentLayerThickness(thickness);
+        SetCurrentLayerAmplifier(amplifier);
+    }
+
+
+
+    public async Task Play() => await _currentState.Play();
+    public void Pause() => _currentState.Pause();
+    public void Redo() => _currentState.Redo();
+    public void Cancel() => _currentState.Cancel();
     public void ChangeStateTo(IPrintState state) => _currentState = state;
 }

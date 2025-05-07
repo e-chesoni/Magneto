@@ -499,6 +499,7 @@ public class MotorService : IMotorService
 
     #region Multi-Motor Move Methods
     public (string[] program, Controller controller, int axis)? ExtractProgramNodeVariables(ProgramNode programNode) => _rsm.ExtractProgramNodeVariables(programNode);
+    /*
     public async Task ExecuteLayerMove(double thickness, double amplifier)
     {
         var clearance = SWEEP_CLEARANCE;
@@ -539,6 +540,7 @@ public class MotorService : IMotorService
 
         await ProcessPrograms();
     }
+    */
     private async Task ProcessPrograms()
     {
         var buildMotorName = buildMotor.GetMotorName();

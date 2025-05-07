@@ -77,12 +77,13 @@ public class MotorPageService
     public void PauseProgramReader() => _motorService.PauseProgram();
     public void EnableProgramProcessing() => _motorService.EnableProgramProcessing();
     public async Task ResumeProgramReading() => await _motorService.ResumeProgramReading();
+    /*
     public async Task ExecuteLayerMove(double thickness, double amplifier, XamlRoot xamlRoot)
     {
         await _motorService.ExecuteLayerMove(thickness, amplifier);
         // TODO: do something with xamlroot if you want
-
-    }
+        
+    }*/
 
 
     #region Locks

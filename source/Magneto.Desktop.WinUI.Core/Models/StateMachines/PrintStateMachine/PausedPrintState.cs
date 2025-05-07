@@ -15,16 +15,19 @@ using Magneto.Desktop.WinUI.Core.Contracts.Services.Database;
 namespace Magneto.Desktop.WinUI.Core.Models.State.PrintStates;
 public class PausedPrintState : IPrintState
 {
-    private PrintStateMachine _stateMachine;
+    private PrintStateMachine _psm;
 
     public PausedPrintState(PrintStateMachine psm)
     {
-        _stateMachine = psm;
+        _psm = psm;
     }
 
-    public void Play() => throw new NotImplementedException();
+    public async Task Play()
+    {
+        ChangeStateTo(new PrintingPrintState(_psm));
+    }
     public void Pause() => throw new NotImplementedException();
     public void Redo() => throw new NotImplementedException();
     public void Cancel() => throw new NotImplementedException();
-    public void ChangeStateTo(IPrintState state) => _stateMachine.ChangeStateTo(state);
+    public void ChangeStateTo(IPrintState state) => _psm.ChangeStateTo(state);
 }
