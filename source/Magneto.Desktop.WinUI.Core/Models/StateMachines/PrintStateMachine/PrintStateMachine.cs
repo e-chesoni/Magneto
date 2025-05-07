@@ -13,7 +13,7 @@ using System.Collections.ObjectModel;
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Services;
 using static Magneto.Desktop.WinUI.Core.Models.Constants.MagnetoConstants;
-using static Magneto.Desktop.WinUI.Core.Models.Print.ProgramsManager;
+using static Magneto.Desktop.WinUI.Core.Models.Print.RoutineStateMachine;
 using Magneto.Desktop.WinUI.Core.Models.Motors;
 
 namespace Magneto.Desktop.WinUI.Core.Models.States.PrintStates;
@@ -24,21 +24,22 @@ public class PrintStateMachine
     private readonly IPrintSeeder _seeder;
     private IPrintState _currentState;
     private IMotorService _motorService;
+    private double SWEEP_CLEARANCE = 2;
 
     //public ObservableCollection<SliceModel> sliceCollection { get; } = new ObservableCollection<SliceModel>(); // This should probably stay on front end
     public PrintModel? currentPrint;
     public SliceModel? currentSlice;
-    public ProgramsManager _programsManager { get; set; }
+    public RoutineStateMachine rsm { get; set; }
     
 
-    public PrintStateMachine(IPrintSeeder seeder, IPrintService printService, ISliceService sliceService, ProgramsManager programsManager, MotorService motorService)
+    public PrintStateMachine(IPrintSeeder seeder, IPrintService printService, ISliceService sliceService, RoutineStateMachine rsm, MotorService motorService)
     {
         _currentState = new IdlePrintState(this);
-        this._programsManager = programsManager;
+        this.rsm = rsm;
         _motorService = motorService;
     }
     public async Task SetCurrentPrintAsync(string directoryPath) => currentPrint = await _printService.GetPrintByDirectory(directoryPath);
-    public ProgramsManager GetProgramsManager() => _programsManager; // temporary method TODO: remove later
+    public RoutineStateMachine GetProgramsManager() => rsm; // temporary method TODO: remove later
     private async Task<SliceModel?> GetNextSliceAsync()
     {
         if (_sliceService == null)
@@ -166,9 +167,9 @@ public class PrintStateMachine
 
     #region Programs Manager Methods
     #region Program Getters
-    public int GetNumberOfPrograms() => _programsManager.programNodes.Count;
-    public ProgramNode? GetFirstProgramNode() => _programsManager.GetFirstProgramNode();
-    public ProgramNode? GetLastProgramNode() => _programsManager.GetLastProgramNode();
+    public int GetNumberOfPrograms() => rsm.programNodes.Count;
+    public ProgramNode? GetFirstProgramNode() => rsm.GetFirstProgramNode();
+    public ProgramNode? GetLastProgramNode() => rsm.GetLastProgramNode();
     #endregion
     #endregion
 
@@ -226,8 +227,8 @@ public class PrintStateMachine
     #region Add Program Front
     private void AddProgramFrontHelper(string[] program, Controller controller, int axis)
     {
-        ProgramNode programNode = _programsManager.CreateProgramNode(program, controller, axis);
-        _programsManager.AddProgramToFront(programNode);
+        ProgramNode programNode = rsm.CreateProgramNode(program, controller, axis);
+        rsm.AddProgramToFront(programNode);
     }
     private void AddBuildMotorProgramFront(string[] program)
     {
@@ -266,8 +267,8 @@ public class PrintStateMachine
     #region Add Program Last
     private void AddProgramLastHelper(string[] program, Controller controller, int axis)
     {
-        ProgramNode programNode = _programsManager.CreateProgramNode(program, controller, axis);
-        _programsManager.AddProgramToBack(programNode);
+        ProgramNode programNode = rsm.CreateProgramNode(program, controller, axis);
+        rsm.AddProgramToBack(programNode);
     }
     private void AddBuildMotorProgramLast(string[] program)
     {
@@ -303,10 +304,10 @@ public class PrintStateMachine
     }
     #endregion
     #region Pause and Resume Program
-    public bool IsProgramPaused() => _programsManager.IsProgramPaused();
+    public bool IsProgramPaused() => rsm.IsProgramPaused();
     public void PauseProgram()
     {
-        _programsManager.PauseExecutionFlag(); // updates boolean (should stop ProcessPrograms())
+        rsm.PauseExecutionFlag(); // updates boolean (should stop ProcessPrograms())
         //StopAllMotorsClearProgramList();
     }
     public (double? value, bool isAbsolute) ParseMoveCommand(string[] program)
@@ -377,17 +378,17 @@ public class PrintStateMachine
         }
 
         var target = CalculateTargetPosition(startingPosition, programNode);
-        _programsManager.SetLastMoveStartingPosition(startingPosition);
-        _programsManager.SetLastMoveTarget(target);
+        rsm.SetLastMoveStartingPosition(startingPosition);
+        rsm.SetLastMoveTarget(target);
     }
     public async Task ResumeProgramReading()
     {
         StepperMotor motor;
         // Figure out if the last program finished:
         // get the last program node and extract its variables
-        LastMove lastMove = _programsManager.GetLastMove();
+        LastMove lastMove = rsm.GetLastMove();
         ProgramNode lastProgramNode = lastMove.programNode;
-        (_, Controller controller, var axis) = _programsManager.ExtractProgramNodeVariables(lastProgramNode);
+        (_, Controller controller, var axis) = rsm.ExtractProgramNodeVariables(lastProgramNode);
         // use controller and axis to determine which motor command was called on
         if (controller == Controller.BUILD_AND_SUPPLY)
         {
@@ -429,12 +430,12 @@ public class PrintStateMachine
     public void EnableProgramProcessing()
     {
         // set the pause requested flag to false
-        _programsManager.ResumeExecutionFlag();
+        rsm.ResumeExecutionFlag();
     }
     #endregion
 
     #region Multi-Motor Moves
-    public (string[] program, Controller controller, int axis)? ExtractProgramNodeVariables(ProgramNode programNode) => _programsManager.ExtractProgramNodeVariables(programNode);
+    public (string[] program, Controller controller, int axis)? ExtractProgramNodeVariables(ProgramNode programNode) => rsm.ExtractProgramNodeVariables(programNode);
     public async Task ExecuteLayerMove(double thickness, double amplifier)
     {
         var buildMotor = _motorService.GetBuildMotor();
@@ -478,71 +479,7 @@ public class PrintStateMachine
 
         await ProcessPrograms();
     }
-    private async Task ProcessPrograms()
-    {
-        var buildMotorName = _motorService.GetBuildMotor().GetMotorName();
-        var powderMotorName = _motorService.GetPowderMotor().GetMotorName();
-        var sweepMotorName = _motorService.GetSweepMotor().GetMotorName();
-
-        while (GetNumberOfPrograms() > 0)
-        {
-            // Check pause/stop before starting next program
-            if (IsProgramPaused())
-            {
-                MagnetoLogger.Log("⏸ Program paused. Halting execution.", LogFactoryLogLevel.LogLevel.WARN);
-                return;
-            }
-
-            if (IsProgramStopped())
-            {
-                MagnetoLogger.Log("🛑 Program stop requested. Exiting loop.", LogFactoryLogLevel.LogLevel.WARN);
-                StopProgram(); // Ensure STOP flag and program list are cleared
-                return;
-            }
-
-            var programNode = GetFirstProgramNode();
-            if (!programNode.HasValue)
-            {
-                MagnetoLogger.Log("⚠️ No valid program node found. Exiting.", LogFactoryLogLevel.LogLevel.WARN);
-                return;
-            }
-
-            var confirmedNode = programNode.Value;
-            var (_, controller, axis) = ExtractProgramNodeVariables(confirmedNode).Value;
-
-            var motorName = controller switch
-            {
-                Controller.BUILD_AND_SUPPLY when axis == 1 => buildMotorName,
-                Controller.BUILD_AND_SUPPLY when axis == 2 => powderMotorName,
-                _ => sweepMotorName
-            };
-
-            await StoreLastMoveAndSendProgram(motorName, confirmedNode);
-
-            // Wait while the controller executes the program
-            while (await IsProgramRunningAsync(motorName))
-            {
-                if (IsProgramStopped())
-                {
-                    MagnetoLogger.Log($"🛑 Program stop detected mid-execution on {motorName}.", LogFactoryLogLevel.LogLevel.WARN);
-
-                    // Attempt to stop and flush the controller if possible
-                    //StopMotor(motorName);
-                    //ClearMotorBuffer(motorName); // Optional: implement if Micronix supports buffer clearing
-                    StopProgram();
-                    return;
-                }
-
-                await Task.Delay(100); // Throttle polling
-            }
-        }
-        MagnetoLogger.Log("⚠️ Exiting program processor.", LogFactoryLogLevel.LogLevel.WARN);
-        MagnetoLogger.Log($"Programs {_programsManager.programNodes.Count} on list:", LogFactoryLogLevel.LogLevel.VERBOSE);
-        foreach (var node in _programsManager.programNodes)
-        {
-            MagnetoLogger.Log($"{node.program}\n", LogFactoryLogLevel.LogLevel.VERBOSE);
-        }
-    }
+    
     #endregion
 
     public void Play(PrintStateMachine context) => _currentState.Play();

@@ -16,7 +16,7 @@ using WinRT.Interop;
 using MongoDB.Driver;
 using static Magneto.Desktop.WinUI.Core.Models.Constants.MagnetoConstants;
 using Magneto.Desktop.WinUI.Core.Models.Print;
-using static Magneto.Desktop.WinUI.Core.Models.Print.ProgramsManager;
+using static Magneto.Desktop.WinUI.Core.Models.Print.RoutineStateMachine;
 
 namespace Magneto.Desktop.WinUI.Views;
 

@@ -12,7 +12,7 @@ using Magneto.Desktop.WinUI.ViewModels;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using static Magneto.Desktop.WinUI.Core.Models.Motors.StepperMotor;
-using static Magneto.Desktop.WinUI.Core.Models.Print.ProgramsManager;
+using static Magneto.Desktop.WinUI.Core.Models.Print.RoutineStateMachine;
 
 namespace Magneto.Desktop.WinUI.Views;
 

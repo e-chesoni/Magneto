@@ -16,137 +16,73 @@ using static Magneto.Desktop.WinUI.Core.Models.Motors.StepperMotor;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.States;
 using Magneto.Desktop.WinUI.Core.Contracts;
 using static Magneto.Desktop.WinUI.Core.Models.Constants.MagnetoConstants;
-using static Magneto.Desktop.WinUI.Core.Models.Print.ProgramsManager;
+using static Magneto.Desktop.WinUI.Core.Models.Print.RoutineStateMachine;
 using MongoDB.Driver;
+using Magneto.Desktop.WinUI.Core.Models.StateMachines.ProgramStateMachine;
+using Magneto.Desktop.WinUI.Core.Services;
 
 namespace Magneto.Desktop.WinUI.Core.Models.Print;
 
 /// <summary>
 /// Coordinates printing tasks across components
 /// </summary>
-public class ProgramsManager : ISubsciber
+public class RoutineStateMachine : ISubsciber
 {
     #region Private Variables
-
     private List<StepperMotor> _motorList = new List<StepperMotor>();
-
     private double _sweepDist { get; set; }
-
-    private double _currentPrintHeight { get; set; }
-
+    private IProgramState _currentState;
     #endregion
 
     #region Public Variables
-
-    /// NOTE: Currently, Magneto has two motor controllers; 
-    /// One for the build motors (on the base of the housing)
-    /// And one for powder distribution (sweep) motor
-    /// 
     public List<MotorController> motorControllers { get; set; } = new List<MotorController>();
-
-    /// <summary>
-    /// Controller for build motors
-    /// </summary>
-    public MotorController buildController { get; set; }
-
-    /// <summary>
-    /// Controller for sweep motor
-    /// </summary>
+    public MotorController buildSupplyController { get; set; }
     public MotorController sweepController { get; set; }
-
-    /// <summary>
-    /// Controller for laser and scan head
-    /// </summary>
     public LaserController laserController { get; set; }
-
-    /// <summary>
-    /// Artifact model is generated for each print
-    /// </summary>
     public ArtifactModel artifactModel { get; set; }
-
-    /// <summary>
-    /// Dance model generates consumable process of artifact model for print
-    /// (Prepares slices by thickness for printing state)
-    /// </summary>
     public DanceModel danceModel { get; set; }
-
-
-    #region State Variables
-
-    /// <summary>
-    /// Holder for current state (set in constructor and updated by state methods)
-    /// </summary>
-    private IPrintState _state = null;
-
-    /// <summary>
-    /// Flag used to interrupt builds
-    /// </summary>
-    public BuildFlag build_flag;
-
-    #endregion
-
-    /// <summary>
-    /// Various build flags
-    /// </summary>
-    public enum BuildFlag : ushort
-    {
-        RESUME,
-        PAUSE,
-        CANCEL
-    }
 
     public LinkedList<ProgramNode> programNodes = new();
 
     private LastMove _lastMove;
 
     // All controller types are 5 letters long
-    public enum ControllerType
-    {
-        BUILD, // Corresponds to build motors
-        SWEEP, // Corresponds to sweep motor
-        LASER // Corresponds to Waverunner
-    }
-
     public struct ProgramNode
     {
         public string[] program;
         public Controller controller;
         public int axis;
     }
-
-    public bool PROGRAMS_PAUSED;
-    public bool PROGRAMS_STOPPED;
-
     public struct LastMove
     {
         public ProgramNode programNode;
         public double startingPosition;
         public double target;
     }
-
+    public bool PROGRAMS_PAUSED;
+    public bool PROGRAMS_STOPPED;
     #endregion
 
     #region Constructor
-
     /// <summary>
     /// Constructor
     /// </summary>
     /// <param name="buildController"></param> Build Controller
     /// <param name="sweepController"></param> Sweep/Powder Distribution Controller
     /// <param name="laserController"></param> Laser Controller
-    public ProgramsManager(MotorController bc, MotorController sc, LaserController lc)
+    public RoutineStateMachine(MotorController bc, MotorController sc, LaserController lc)
     {
-        buildController = bc;
+        buildSupplyController = bc;
         sweepController = sc;
         laserController = lc;
 
         //_buildMotorPort = bc.GetPortName();
         //_sweepMotorPort = sc.GetPortName();
 
-        motorControllers.Add(buildController);
+        motorControllers.Add(buildSupplyController);
         motorControllers.Add(sweepController);
 
-        foreach(var m in buildController.GetMinions()) { _motorList.Add(m); }
+        foreach(var m in buildSupplyController.GetMinions()) { _motorList.Add(m); }
         foreach (var n in sweepController.GetMinions()) { _motorList.Add(n); }
 
         // TODO: Move to config file
@@ -213,13 +149,12 @@ public class ProgramsManager : ISubsciber
     #endregion
 
     #region Program Node Getters
-    public ProgramNode GetFirstProgramNode()
+    public ProgramNode? GetFirstProgramNode()
     {
         if (programNodes.Count == 0)
         {
             MagnetoLogger.Log("Cannot remove program from front of linked list; program linked list is empty.", LogFactoryLogLevel.LogLevel.ERROR);
-            var empty = Array.Empty<string>();
-            return new ProgramNode();
+            return null;
         }
         var programNode = programNodes.First.Value;
         //(program, controller, axis) = ExtractProgramNodeVariables(programNode);
@@ -261,30 +196,21 @@ public class ProgramsManager : ISubsciber
     #endregion
 
     #region Getters
-    public double GetCurrentPrintHeight()
+    public StepperMotor GetBuildMotor()
     {
-        return _currentPrintHeight; 
-    }
-
-    public List<StepperMotor> GetMotorList()
-    {
-        return _motorList;
+        return buildSupplyController.GetBuildMotor();
     }
 
     public StepperMotor GetPowderMotor()
     {
-        return buildController.GetPowderMotor();
+        return buildSupplyController.GetPowderMotor();
     }
-
-    public StepperMotor GetBuildMotor()
-    {
-        return buildController.GetBuildMotor();
-    }
-
     public StepperMotor GetSweepMotor()
     {
         return sweepController.GetSweepMotor();
     }
+
+    public double GetNumberOfPrograms() => programNodes.Count;
     #endregion
 
     #region Setters
@@ -321,6 +247,177 @@ public class ProgramsManager : ISubsciber
         artifactModel.sliceStack = ArtifactHandler.SliceArtifact(artifactModel);
     }
 
+    #endregion
+    public async Task<bool> IsProgramRunningAsync(string motorNameLower)
+    {
+        switch (motorNameLower)
+        {
+            case "build":
+                return await GetBuildMotor().IsProgramRunningAsync();
+            case "powder":
+                return await GetPowderMotor().IsProgramRunningAsync();
+            case "sweep":
+                return await GetSweepMotor().IsProgramRunningAsync();
+            default:
+                MagnetoLogger.Log($"Unable to check if program is running. Invalid motor name given: {motorNameLower}.", LogFactoryLogLevel.LogLevel.ERROR);
+                return false;
+        }
+    }
+    public (double? value, bool isAbsolute) ParseMoveCommand(string[] program)
+    {
+        for (var i = program.Length - 1; i >= 0; i--)
+        {
+            var line = program[i];
+
+            if (line.Contains("MVA") || line.Contains("MVR"))
+            {
+                var isAbsolute = line.Contains("MVA");
+                var prefix = isAbsolute ? "MVA" : "MVR";
+                var prefixIndex = line.IndexOf(prefix);
+
+                var target = line.Substring(prefixIndex + 3); // after "MVA" or "MVR"
+                if (double.TryParse(target, out var value))
+                {
+                    return (value, isAbsolute);
+                }
+                break;
+            }
+        }
+        MagnetoLogger.Log($"No move command found.", LogFactoryLogLevel.LogLevel.ERROR);
+        return (null, false);
+    }
+    private double CalculateTargetPosition(double startingPosition, ProgramNode programNode)
+    {
+        var (value, isAbsolute) = ParseMoveCommand(programNode.program);
+
+        if (value == null)
+        {
+            throw new InvalidOperationException("Move command parsing failed: no value found.");
+        }
+
+        return isAbsolute ? value.Value : startingPosition + value.Value;
+    }
+    private async Task StoreLastRequestedMove(string motorNameLower, ProgramNode programNode)
+    {
+        double startingPosition;
+
+        switch (motorNameLower)
+        {
+            case "build":
+                startingPosition = await GetBuildMotor().GetPositionAsync(2);
+                break;
+            case "powder":
+                startingPosition = await GetPowderMotor().GetPositionAsync(2);
+                break;
+            case "sweep":
+                startingPosition = await GetSweepMotor().GetPositionAsync(2);
+                break;
+            default:
+                MagnetoLogger.Log($"Invalid motor name: {motorNameLower}", LogFactoryLogLevel.LogLevel.ERROR);
+                throw new ArgumentException($"Unknown motor: {motorNameLower}");
+        }
+
+        var target = CalculateTargetPosition(startingPosition, programNode);
+        SetLastMoveStartingPosition(startingPosition);
+        SetLastMoveTarget(target);
+    }
+    private async Task StoreLastMoveAndSendProgram(string motorNameLower, ProgramNode programNode)
+    {
+        switch (motorNameLower)
+        {
+            case "build":
+                GetBuildMotor().WriteProgram(programNode.program);
+                break;
+            case "powder":
+                GetPowderMotor().WriteProgram(programNode.program);
+                break;
+            case "sweep":
+                GetSweepMotor().WriteProgram(programNode.program);
+                break;
+            default:
+                MagnetoLogger.Log($"Unable to send program. Invalid motor name given: {motorNameLower}.", LogFactoryLogLevel.LogLevel.ERROR);
+                break;
+        }
+        await StoreLastRequestedMove(motorNameLower, programNode);
+    }
+
+    private async Task ProcessPrograms()
+    {
+        var buildMotorName = buildSupplyController.GetBuildMotor().GetMotorName();
+        var powderMotorName = buildSupplyController.GetPowderMotor().GetMotorName();
+        var sweepMotorName = sweepController.GetSweepMotor().GetMotorName();
+
+        while (GetNumberOfPrograms() > 0)
+        {
+            // Check pause/stop before starting next program
+            if (IsProgramPaused())
+            {
+                MagnetoLogger.Log("⏸ Program paused. Halting execution.", LogFactoryLogLevel.LogLevel.WARN);
+                return;
+            }
+
+            if (IsProgramStopped())
+            {
+                MagnetoLogger.Log("🛑 Program stop requested. Exiting loop.", LogFactoryLogLevel.LogLevel.WARN);
+                //StopProgram(); // Ensure STOP flag and program list are cleared
+                _currentState.Cancel();
+                return;
+            }
+
+            var programNode = GetFirstProgramNode();
+            if (!programNode.HasValue)
+            {
+                MagnetoLogger.Log("⚠️ No valid program node found. Exiting.", LogFactoryLogLevel.LogLevel.WARN);
+                return;
+            }
+
+            var confirmedNode = programNode.Value;
+            var (_, controller, axis) = ExtractProgramNodeVariables(confirmedNode);
+
+            var motorName = controller switch
+            {
+                Controller.BUILD_AND_SUPPLY when axis == 1 => buildMotorName,
+                Controller.BUILD_AND_SUPPLY when axis == 2 => powderMotorName,
+                _ => sweepMotorName
+            };
+
+            await StoreLastMoveAndSendProgram(motorName, confirmedNode);
+
+            // Wait while the controller executes the program
+            while (await IsProgramRunningAsync(motorName))
+            {
+                if (IsProgramStopped())
+                {
+                    MagnetoLogger.Log($"🛑 Program stop detected mid-execution on {motorName}.", LogFactoryLogLevel.LogLevel.WARN);
+
+                    // Attempt to stop and flush the controller if possible
+                    //StopProgram();
+                    _currentState.Cancel();
+                    return;
+                }
+
+                await Task.Delay(100); // Throttle polling
+            }
+        }
+        MagnetoLogger.Log("⚠️ Exiting program processor.", LogFactoryLogLevel.LogLevel.WARN);
+        MagnetoLogger.Log($"Programs {programNodes.Count} on list:", LogFactoryLogLevel.LogLevel.VERBOSE);
+        foreach (var node in programNodes)
+        {
+            MagnetoLogger.Log($"{node.program}\n", LogFactoryLogLevel.LogLevel.VERBOSE);
+        }
+    }
+
+
+    #region State Methods
+    public void Process()
+    {
+        ChangeStateTo(new ProcessingProgramState(this));
+    }
+    public void Pause() => throw new NotImplementedException();
+    public void Add() => throw new NotImplementedException();
+    public void Remove() => throw new NotImplementedException();
+    public void Cancel() => throw new NotImplementedException();
+    public void ChangeStateTo(IProgramState state) => throw new NotImplementedException();
     #endregion
 
     #region Subscriber Methods

@@ -113,7 +113,7 @@ public partial class App : Application
             // PrintStateMachine (which contains ProgramsManager)
             services.AddSingleton<PrintStateMachine>(provider =>
             {
-                var pm = new ProgramsManager(
+                var pm = new RoutineStateMachine(
                     provider.GetRequiredService<BuildMotorController>(),
                     provider.GetRequiredService<SweepMotorController>(),
                     provider.GetRequiredService<LaserController>()

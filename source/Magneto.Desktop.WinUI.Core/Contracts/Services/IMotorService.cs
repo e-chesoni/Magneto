@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Magneto.Desktop.WinUI.Core.Models.Motors;
 using Magneto.Desktop.WinUI.Core.Models.Print;
 using static Magneto.Desktop.WinUI.Core.Models.Constants.MagnetoConstants;
-using static Magneto.Desktop.WinUI.Core.Models.Print.ProgramsManager;
+using static Magneto.Desktop.WinUI.Core.Models.Print.RoutineStateMachine;
 
 namespace Magneto.Desktop.WinUI.Core.Contracts.Services;
 public interface IMotorService

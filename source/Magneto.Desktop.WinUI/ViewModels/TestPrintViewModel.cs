@@ -192,7 +192,7 @@ public class TestPrintViewModel : ObservableRecipient
     {
         sliceCollection.Clear();
         await LoadSliceDataAsync();
-        currentSlice = await GetNextSliceAsync();
+        currentSlice = await GetNextSliceAsync(); // TODO: use print state machine
     }
     #endregion
 

@@ -10,7 +10,7 @@ using Magneto.Desktop.WinUI.Models.UIControl;
 using Magneto.Desktop.WinUI.Core.Services;
 using Magneto.Desktop.WinUI.Core.Models.Print;
 using static Magneto.Desktop.WinUI.Core.Models.Constants.MagnetoConstants;
-using static Magneto.Desktop.WinUI.Core.Models.Print.ProgramsManager;
+using static Magneto.Desktop.WinUI.Core.Models.Print.RoutineStateMachine;
 
 namespace Magneto.Desktop.WinUI;
 public class MotorPageService

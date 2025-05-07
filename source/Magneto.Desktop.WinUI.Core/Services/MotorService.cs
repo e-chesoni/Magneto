@@ -10,13 +10,13 @@ using Magneto.Desktop.WinUI.Core.Models.Print;
 using Magneto.Desktop.WinUI.Core.Models.States.PrintStates;
 using ZstdSharp.Unsafe;
 using static Magneto.Desktop.WinUI.Core.Models.Constants.MagnetoConstants;
-using static Magneto.Desktop.WinUI.Core.Models.Print.ProgramsManager;
+using static Magneto.Desktop.WinUI.Core.Models.Print.RoutineStateMachine;
 
 namespace Magneto.Desktop.WinUI.Core.Services;
 public class MotorService : IMotorService
 {
-    private readonly PrintStateMachine _printStateMachine;
-    private readonly ProgramsManager _programsManager;
+    private readonly PrintStateMachine _printSM;
+    private readonly RoutineStateMachine _programsSM;
     private StepperMotor? buildMotor;
     private StepperMotor? powderMotor;
     private StepperMotor? sweepMotor;
@@ -31,8 +31,8 @@ public class MotorService : IMotorService
 
     public MotorService(PrintStateMachine psm)
     {
-        _printStateMachine = psm;
-        _programsManager = psm.GetProgramsManager();
+        _printSM = psm;
+        _programsSM = psm.GetProgramsManager();
     }
 
 
@@ -85,9 +85,9 @@ public class MotorService : IMotorService
     public void IntializeMotors()
     {
         // Set up each motor individually using the passed-in parameters
-        HandleMotorInit("powder", _programsManager.GetPowderMotor(), out powderMotor);
-        HandleMotorInit("build", _programsManager.GetBuildMotor(), out buildMotor);
-        HandleMotorInit("sweep", _programsManager.GetSweepMotor(), out sweepMotor);
+        HandleMotorInit("powder", _programsSM.GetPowderMotor(), out powderMotor);
+        HandleMotorInit("build", _programsSM.GetBuildMotor(), out buildMotor);
+        HandleMotorInit("sweep", _programsSM.GetSweepMotor(), out sweepMotor);
     }
     public void InitializeMotorMap()
     {
@@ -114,15 +114,6 @@ public class MotorService : IMotorService
     #endregion
 
     #region Getters
-    private ControllerType GetControllerTypeHelper(string motorName)
-    {
-        switch (motorName)
-        {
-            case "sweep":
-                return ControllerType.SWEEP;
-            default: return ControllerType.BUILD;
-        }
-    }
     private Controller GetControllerHelper(string motorName)
     {
         switch (motorName)
@@ -173,9 +164,9 @@ public class MotorService : IMotorService
     public double GetMaxSweepPosition() => sweepMotor.GetMaxPos();
     #endregion
     #region Program Getters
-    public int GetNumberOfPrograms() => _programsManager.programNodes.Count;
-    public ProgramNode? GetFirstProgramNode() => _programsManager.GetFirstProgramNode();
-    public ProgramNode? GetLastProgramNode() => _programsManager.GetLastProgramNode();
+    public int GetNumberOfPrograms() => _programsSM.programNodes.Count;
+    public ProgramNode? GetFirstProgramNode() => _programsSM.GetFirstProgramNode();
+    public ProgramNode? GetLastProgramNode() => _programsSM.GetLastProgramNode();
     #endregion
     #endregion
 
@@ -264,8 +255,8 @@ public class MotorService : IMotorService
     #region Add Program Front
     private void AddProgramFrontHelper(string[] program, Controller controller, int axis)
     {
-        ProgramNode programNode = _programsManager.CreateProgramNode(program, controller, axis);
-        _programsManager.AddProgramToFront(programNode);
+        ProgramNode programNode = _programsSM.CreateProgramNode(program, controller, axis);
+        _programsSM.AddProgramToFront(programNode);
     }
     private void AddBuildMotorProgramFront(string[] program)
     {
@@ -301,8 +292,8 @@ public class MotorService : IMotorService
     #region Add Program Last
     private void AddProgramLastHelper(string[] program, Controller controller, int axis)
     {
-        ProgramNode programNode = _programsManager.CreateProgramNode(program, controller, axis);
-        _programsManager.AddProgramToBack(programNode);
+        ProgramNode programNode = _programsSM.CreateProgramNode(program, controller, axis);
+        _programsSM.AddProgramToBack(programNode);
     }
     private void AddBuildMotorProgramLast(string[] program)
     {
@@ -336,10 +327,10 @@ public class MotorService : IMotorService
     #endregion
 
     #region Pause and Resume Program
-    public bool IsProgramPaused() => _programsManager.IsProgramPaused();
+    public bool IsProgramPaused() => _programsSM.IsProgramPaused();
     public void PauseProgram()
     {
-        _programsManager.PauseExecutionFlag(); // updates boolean (should stop ProcessPrograms())
+        _programsSM.PauseExecutionFlag(); // updates boolean (should stop ProcessPrograms())
         //StopAllMotorsClearProgramList();
     }
     public (double? value, bool isAbsolute) ParseMoveCommand(string[] program)
@@ -410,17 +401,17 @@ public class MotorService : IMotorService
         }
 
         var target = CalculateTargetPosition(startingPosition, programNode);
-        _programsManager.SetLastMoveStartingPosition(startingPosition);
-        _programsManager.SetLastMoveTarget(target);
+        _programsSM.SetLastMoveStartingPosition(startingPosition);
+        _programsSM.SetLastMoveTarget(target);
     }
     public async Task ResumeProgramReading()
     {
         StepperMotor motor;
         // Figure out if the last program finished:
         // get the last program node and extract its variables
-        LastMove lastMove = _programsManager.GetLastMove();
+        LastMove lastMove = _programsSM.GetLastMove();
         ProgramNode lastProgramNode = lastMove.programNode;
-        (_, Controller controller, var axis) = _programsManager.ExtractProgramNodeVariables(lastProgramNode);
+        (_, Controller controller, var axis) = _programsSM.ExtractProgramNodeVariables(lastProgramNode);
         // use controller and axis to determine which motor command was called on
         if (controller == Controller.BUILD_AND_SUPPLY)
         {
@@ -462,14 +453,14 @@ public class MotorService : IMotorService
     public void EnableProgramProcessing()
     {
         // set the pause requested flag to false
-        _programsManager.ResumeExecutionFlag();
+        _programsSM.ResumeExecutionFlag();
     }
     #endregion
 
     #region Stop Motors
     // Stops should clear the program list
-    public void StopProgram() => _programsManager.StopExecutionFlag();
-    public bool IsProgramStopped() => _programsManager.IsProgramStopped();
+    public void StopProgram() => _programsSM.StopExecutionFlag();
+    public bool IsProgramStopped() => _programsSM.IsProgramStopped();
     public void StopMotorAndClearProgramList(string motorNameLower)
     {
         //PauseProgram();
@@ -507,7 +498,7 @@ public class MotorService : IMotorService
     #endregion
 
     #region Multi-Motor Move Methods
-    public (string[] program, Controller controller, int axis)? ExtractProgramNodeVariables(ProgramNode programNode) => _programsManager.ExtractProgramNodeVariables(programNode);
+    public (string[] program, Controller controller, int axis)? ExtractProgramNodeVariables(ProgramNode programNode) => _programsSM.ExtractProgramNodeVariables(programNode);
     public async Task ExecuteLayerMove(double thickness, double amplifier)
     {
         var clearance = SWEEP_CLEARANCE;
@@ -607,8 +598,8 @@ public class MotorService : IMotorService
             }
         }
         MagnetoLogger.Log("⚠️ Exiting program processor.", LogFactoryLogLevel.LogLevel.WARN);
-        MagnetoLogger.Log($"Programs {_programsManager.programNodes.Count} on list:", LogFactoryLogLevel.LogLevel.VERBOSE);
-        foreach (var node in _programsManager.programNodes)
+        MagnetoLogger.Log($"Programs {_programsSM.programNodes.Count} on list:", LogFactoryLogLevel.LogLevel.VERBOSE);
+        foreach (var node in _programsSM.programNodes)
         {
             MagnetoLogger.Log($"{node.program}\n", LogFactoryLogLevel.LogLevel.VERBOSE);
         }

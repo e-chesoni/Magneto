@@ -26,7 +26,7 @@ using Magneto.Desktop.WinUI.Core;
 using System.IO.Ports;
 using Magneto.Desktop.WinUI.Helpers;
 using Microsoft.UI;
-using static Magneto.Desktop.WinUI.Core.Models.Print.ProgramsManager;
+using static Magneto.Desktop.WinUI.Core.Models.Print.RoutineStateMachine;
 using static Magneto.Desktop.WinUI.Views.TestPrintPage;
 using CommunityToolkit.WinUI.UI.Animations;
 using CommunityToolkit.WinUI.UI.Controls.TextToolbarSymbols;
