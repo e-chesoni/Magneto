@@ -40,15 +40,11 @@ public class TestPrintViewModel : ObservableRecipient
         _motorService = motorService;
         _waverunnerService = waverunnerService;
     }
-    public void TestWaverunnerConnection()
-    {
-        _waverunnerService.TestConnection();
-    }
 
     #region Setters
     public async Task SetCurrentPrintAsync(string directoryPath)
     {
-        currentPrint = await _printService.GetPrintByDirectory(directoryPath);
+        currentPrint = await _printService.GetPrintByDirectory(directoryPath); // TODO: use print build manager
         await GetNextSliceAndUpdateDisplay(); // ✅ await this now
     }
     #endregion
@@ -103,6 +99,7 @@ public class TestPrintViewModel : ObservableRecipient
     #endregion
 
     #region Access CRUD Methods
+    // TODO: move to print state machine
     public async Task AddPrintToDatabaseAsync(string fullPath)
     {
         // check if print already exists in db
@@ -170,7 +167,7 @@ public class TestPrintViewModel : ObservableRecipient
 
             Debug.WriteLine("✅Getting slices.");
             // use print service to get slices
-            var slices = await _printService.GetSlicesByPrintId(currentPrint.id);
+            var slices = await _printService.GetSlicesByPrintId(currentPrint.id); // TODO: use print build manager
             foreach (var s in slices)
             {
                 MagnetoLogger.Log($"Adding slice: {s.filePath}", LogFactoryLogLevel.LogLevel.VERBOSE);
@@ -185,8 +182,8 @@ public class TestPrintViewModel : ObservableRecipient
     public void ClearData()
     {
         sliceCollection.Clear();
-        currentPrint = null;
-        currentSlice = null;
+        currentPrint = null; // TODO: use print state machine
+        currentSlice = null; // TODO: use print state machine
     }
     #endregion
 

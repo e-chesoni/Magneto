@@ -20,6 +20,9 @@ public interface IMotorService
     #endregion
 
     #region Getters
+    public StepperMotor GetBuildMotor();
+    public StepperMotor GetPowderMotor();
+    public StepperMotor GetSweepMotor();
     public int GetMotorAxis(string motorName);
     
     #region Position Getters

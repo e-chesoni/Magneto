@@ -7,11 +7,16 @@ using Magneto.Desktop.WinUI.Core.Models.Print;
 using Magneto.Desktop.WinUI.Core.Models.Artifact;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.States;
 using Magneto.Desktop.WinUI.Core.Models.States.PrintStates;
+using Magneto.Desktop.WinUI.Core.Models.Print.Database;
+using System.Collections.ObjectModel;
+using Magneto.Desktop.WinUI.Core.Contracts.Services.Database.Seeders;
+using Magneto.Desktop.WinUI.Core.Contracts.Services.Database;
 
 namespace Magneto.Desktop.WinUI.Core.Models.State.PrintStates;
 public class PausedPrintState : IPrintState
 {
     private PrintStateMachine _stateMachine;
+
     public PausedPrintState(PrintStateMachine psm)
     {
         _stateMachine = psm;

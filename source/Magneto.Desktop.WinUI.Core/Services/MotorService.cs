@@ -147,6 +147,9 @@ public class MotorService : IMotorService
         }
     }
 
+    public StepperMotor GetBuildMotor() => buildMotor;
+    public StepperMotor GetPowderMotor() => powderMotor;
+    public StepperMotor GetSweepMotor() => sweepMotor;
     #region Position Getters
     public async Task<double> GetBuildMotorPositionAsync() => await buildMotor.GetPositionAsync(2);
     public async Task<double> GetPowderMotorPositionAsync() => await powderMotor.GetPositionAsync(2);
@@ -611,65 +614,6 @@ public class MotorService : IMotorService
         }
     }
 
-    private async Task ProcessProgramsOLD()
-    {
-        var buildMotorName = buildMotor.GetMotorName();
-        var powderMotorName = powderMotor.GetMotorName();
-        var sweepMotorName = sweepMotor.GetMotorName();
-
-        // process queue
-        while (GetNumberOfPrograms() > 0)
-        {
-            // 🛑 Recheck pause flag before starting next command
-            if (IsProgramPaused())
-            {
-                MagnetoLogger.Log("⏸ Program paused. Halting execution.", LogFactoryLogLevel.LogLevel.WARN);
-                return;
-            }
-            if (IsProgramStopped())
-            {
-                //TODO: clear program list
-                StopProgram();
-                return;
-            }
-            var programNode = GetFirstProgramNode();
-            if (programNode.HasValue)
-            {
-                var confirmedNode = programNode.Value;
-                var (_, controller, axis) = ExtractProgramNodeVariables(confirmedNode).Value;
-                if (controller == Controller.BUILD_AND_SUPPLY)
-                {
-                    if (axis == 1)
-                    {
-                        await StoreLastMoveAndSendProgram(buildMotorName, confirmedNode);
-                        //SendProgram(buildMotorName, program);
-                        while (await IsProgramRunningAsync(buildMotorName))
-                        {
-                            await Task.Delay(100);
-                        }
-                    }
-                    else // axis == 2
-                    {
-                        await StoreLastMoveAndSendProgram(powderMotorName, confirmedNode);
-                        //SendProgram(powderMotorName, program);
-                        while (await IsProgramRunningAsync(powderMotorName))
-                        {
-                            await Task.Delay(100);
-                        }
-                    }
-                }
-                else // sweep controller
-                {
-                    await StoreLastMoveAndSendProgram(sweepMotorName, confirmedNode);
-                    //SendProgram(sweepMotorName, program);
-                    while (await IsProgramRunningAsync(sweepMotorName))
-                    {
-                        await Task.Delay(100);
-                    }
-                }
-            }
-        }
-    }
     #endregion
 
     #region Movement
@@ -797,29 +741,5 @@ public class MotorService : IMotorService
         await ProcessPrograms();
     }
     #endregion
-
-    /*
-    #region Stop and Clear Command Queue
-    public async Task<int> StopMotorAndClearQueue(string motorNameLowerCase)
-    {
-        switch (motorNameLowerCase)
-        {
-            case "build":
-                await _commandQueueManager.HandleStopRequest(buildMotor);
-                break;
-            case "powder":
-                await _commandQueueManager.HandleStopRequest(powderMotor);
-                break;
-            case "sweep":
-                await _commandQueueManager.HandleStopRequest(sweepMotor);
-                break;
-            default:
-                MagnetoLogger.Log($"Invalid motor name given. Could not stop {motorNameLowerCase} motor.", LogFactoryLogLevel.LogLevel.ERROR);
-                return 0;
-        }
-        return 1;
-    }
-    #endregion
-    */
     #endregion
 }
