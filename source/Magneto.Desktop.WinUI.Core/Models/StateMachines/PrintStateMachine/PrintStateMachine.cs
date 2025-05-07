@@ -176,7 +176,7 @@ public class PrintStateMachine
     }
     public async Task NextSlice() => currentSlice = await GetNextSliceAsync();
 
-    #region Routien Steate Machine Methods
+    #region Routine State Machine Methods
     #region Program Getters
     public int GetNumberOfPrograms() => rsm.programNodes.Count;
     public ProgramNode? GetFirstProgramNode() => rsm.GetFirstProgramNode();

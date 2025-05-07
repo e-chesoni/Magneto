@@ -224,8 +224,8 @@ public class TestPrintViewModel : ObservableRecipient
 
             // layer move
             //await _motorService.LayerMove(thickness, amplifier);
-            await motorPageService.ExecuteLayerMove(thickness, amplifier, xamlRoot);
-
+            //await motorPageService.ExecuteLayerMove(thickness, amplifier, xamlRoot); // WORKING!
+            await _psm.ExecuteLayerMove(thickness, amplifier);
             // wait for layer move to complete
             //while (motorPageService.MotorsRunning()) { await Task.Delay(100); }
         }
