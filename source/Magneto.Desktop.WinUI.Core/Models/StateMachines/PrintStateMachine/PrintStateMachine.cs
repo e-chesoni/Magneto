@@ -15,6 +15,7 @@ using Magneto.Desktop.WinUI.Core.Services;
 using static Magneto.Desktop.WinUI.Core.Models.Constants.MagnetoConstants;
 using static Magneto.Desktop.WinUI.Core.Models.Print.RoutineStateMachine;
 using Magneto.Desktop.WinUI.Core.Models.Motors;
+using Magneto.Desktop.WinUI.Core.Services.Database;
 
 namespace Magneto.Desktop.WinUI.Core.Models.States.PrintStates;
 public class PrintStateMachine
@@ -30,17 +31,36 @@ public class PrintStateMachine
     public PrintModel? currentPrint;
     public SliceModel? currentSlice;
     public RoutineStateMachine rsm { get; set; }
-    
+
+    public enum PrintStateMachineStatus
+    {
+        Idle,
+        Printing,
+        Paused
+    }
 
     public PrintStateMachine(IPrintSeeder seeder, IPrintService printService, ISliceService sliceService, RoutineStateMachine rsm, MotorService motorService)
     {
         _currentState = new IdlePrintState(this);
+        _seeder = seeder;
+        _printService = printService;
+        _sliceService = sliceService;
         this.rsm = rsm;
         _motorService = motorService;
     }
-    public async Task SetCurrentPrintAsync(string directoryPath) => currentPrint = await _printService.GetPrintByDirectory(directoryPath);
+
+    // Keep get print by directory in print service
+    public async Task SetCurrentPrintAsync(string directoryPath)
+    {
+        currentPrint = await GetPrintByDirectory(directoryPath);
+        currentSlice = await GetNextSliceAsync();
+    }
+    public async Task SetCurrentSliceAsync() => currentSlice = await GetNextSliceAsync();
+    public async Task<PrintModel> GetPrintByDirectory(string directoryPath) => await _printService.GetPrintByDirectory(directoryPath);
+    public PrintModel? GetCurrentPrint() => currentPrint;
+    public SliceModel? GetCurrentSlice() => currentSlice;
     public RoutineStateMachine GetProgramsManager() => rsm; // temporary method TODO: remove later
-    private async Task<SliceModel?> GetNextSliceAsync()
+    public async Task<SliceModel?> GetNextSliceAsync()
     {
         if (_sliceService == null)
         {
@@ -69,14 +89,8 @@ public class PrintStateMachine
             return await _sliceService.GetNextSlice(currentPrint);
         }
     }
-    public async Task<long> GetSlicesMarkedAsync()
-    {
-        return await _printService.MarkedOrUnmarkedCount(currentPrint.id);
-    }
-    public async Task<long> GetTotalSlicesAsync()
-    {
-        return await _printService.TotalSlicesCount(currentPrint.id);
-    }
+    public async Task<long> GetSlicesMarkedAsync() => await _printService.MarkedOrUnmarkedCount(currentPrint.id);
+    public async Task<long> GetTotalSlicesAsync() => await _printService.TotalSlicesCount(currentPrint.id);
     public string GetSliceFilePath()
     {
         if (currentSlice == null)
@@ -87,9 +101,9 @@ public class PrintStateMachine
         return currentSlice.filePath;
     }
     public async Task<IEnumerable<SliceModel>>? GetSlicesByPrintId(string printId) => await _printService.GetSlicesByPrintId(currentPrint.id);
-    
+
     #region CRUD
-    private async Task CompleteCurrentPrintAsync()
+    public async Task CompleteCurrentPrintAsync()
     {
         var print = currentPrint;
         if (print == null)
@@ -110,7 +124,6 @@ public class PrintStateMachine
         }
     }
     public async Task DeleteCurrentPrintAsync() => await _printService.DeletePrint(currentPrint); // deletes slices associated with print
-
     public async Task AddPrintToDatabaseAsync(string fullPath)
     {
         // check if print already exists in db
@@ -123,7 +136,7 @@ public class PrintStateMachine
         else
         {
             // seed prints
-            await _seeder.CreatePrintFromDirectory(fullPath);
+            await _seeder.CreatePrintInMongoDb(fullPath);
         }
 
         // set print on view model
@@ -131,8 +144,7 @@ public class PrintStateMachine
 
         return;
     }
-
-    private async Task UpdateSliceCollectionAsync(double thickness, double power, double scanSpeed, double hatchSpacing)
+    public async Task UpdateSliceCollectionAsync(double thickness, double power, double scanSpeed, double hatchSpacing)
     {
         if (currentSlice == null)
         {
@@ -152,9 +164,9 @@ public class PrintStateMachine
         currentSlice.hatchSpacing = hatchSpacing;
         currentSlice.energyDensity = Math.Round(power / (thickness * scanSpeed * hatchSpacing), 2);
         currentSlice.marked = true;
-        await _sliceService.EditSlice(currentSlice);
+        //await _sliceService.EditSlice(currentSlice);
+        await _printService.EditSlice(currentSlice);
     }
-
     #endregion
 
     public void ClearCurrentPrint()
@@ -162,10 +174,9 @@ public class PrintStateMachine
         currentPrint = null;
         currentSlice = null;
     }
-
     public async Task NextSlice() => currentSlice = await GetNextSliceAsync();
 
-    #region Programs Manager Methods
+    #region Routien Steate Machine Methods
     #region Program Getters
     public int GetNumberOfPrograms() => rsm.programNodes.Count;
     public ProgramNode? GetFirstProgramNode() => rsm.GetFirstProgramNode();
@@ -185,45 +196,6 @@ public class PrintStateMachine
     public string[] WriteRelativeMoveProgramForSweepMotor(double steps, bool moveUp) => WriteRelativeMoveProgram(_motorService.GetSweepMotor(), steps, moveUp);
     #endregion
 
-    #region Send and Store Program
-    public void SendProgram(string motorNameLower, string[] program)
-    {
-        switch (motorNameLower)
-        {
-            case "build":
-                _motorService.GetBuildMotor().WriteProgram(program);
-                break;
-            case "powder":
-                _motorService.GetPowderMotor().WriteProgram(program);
-                break;
-            case "sweep":
-                _motorService.GetSweepMotor().WriteProgram(program);
-                break;
-            default:
-                MagnetoLogger.Log($"Unable to send program. Invalid motor name given: {motorNameLower}.", LogFactoryLogLevel.LogLevel.ERROR);
-                break;
-        }
-    }
-    private async Task StoreLastMoveAndSendProgram(string motorNameLower, ProgramNode programNode)
-    {
-        switch (motorNameLower)
-        {
-            case "build":
-                _motorService.GetBuildMotor().WriteProgram(programNode.program);
-                break;
-            case "powder":
-                _motorService.GetPowderMotor().WriteProgram(programNode.program);
-                break;
-            case "sweep":
-                _motorService.GetSweepMotor().WriteProgram(programNode.program);
-                break;
-            default:
-                MagnetoLogger.Log($"Unable to send program. Invalid motor name given: {motorNameLower}.", LogFactoryLogLevel.LogLevel.ERROR);
-                break;
-        }
-        await StoreLastRequestedMove(motorNameLower, programNode);
-    }
-    #endregion
     #region Add Program Front
     private void AddProgramFrontHelper(string[] program, Controller controller, int axis)
     {
@@ -310,6 +282,7 @@ public class PrintStateMachine
         rsm.PauseExecutionFlag(); // updates boolean (should stop ProcessPrograms())
         //StopAllMotorsClearProgramList();
     }
+    /*
     public (double? value, bool isAbsolute) ParseMoveCommand(string[] program)
     {
         for (var i = program.Length - 1; i >= 0; i--)
@@ -357,30 +330,7 @@ public class PrintStateMachine
 
         return isAbsolute ? value.Value : startingPosition + value.Value;
     }
-    private async Task StoreLastRequestedMove(string motorNameLower, ProgramNode programNode)
-    {
-        double startingPosition;
-
-        switch (motorNameLower)
-        {
-            case "build":
-                startingPosition = await _motorService.GetBuildMotor().GetPositionAsync(2);
-                break;
-            case "powder":
-                startingPosition = await _motorService.GetPowderMotor().GetPositionAsync(2);
-                break;
-            case "sweep":
-                startingPosition = await _motorService.GetSweepMotor().GetPositionAsync(2);
-                break;
-            default:
-                MagnetoLogger.Log($"Invalid motor name: {motorNameLower}", LogFactoryLogLevel.LogLevel.ERROR);
-                throw new ArgumentException($"Unknown motor: {motorNameLower}");
-        }
-
-        var target = CalculateTargetPosition(startingPosition, programNode);
-        rsm.SetLastMoveStartingPosition(startingPosition);
-        rsm.SetLastMoveTarget(target);
-    }
+    */
     public async Task ResumeProgramReading()
     {
         StepperMotor motor;
@@ -413,7 +363,7 @@ public class PrintStateMachine
         // get the current position
         var currentPostion = await motor.GetPositionAsync(2);
         // calculate the targeted position
-        var target = CalculateTargetPosition(lastMove);
+        var target = rsm.CalculateTargetPosition(lastMove);
         // if target is less than current position, moveUp = false
         var moveUp = target < currentPostion ? false : true;
         // if motor did not reach target, put absolute move command to move motor to target at the front of the program list
@@ -425,13 +375,9 @@ public class PrintStateMachine
         // set the pause requested flag to false
         EnableProgramProcessing();
         // resume executing process program
-        await ProcessPrograms();
+        await rsm.ProcessPrograms();
     }
-    public void EnableProgramProcessing()
-    {
-        // set the pause requested flag to false
-        rsm.ResumeExecutionFlag();
-    }
+    public void EnableProgramProcessing() => rsm.ResumeExecutionFlag(); // set the pause requested flag to false
     #endregion
 
     #region Multi-Motor Moves
@@ -477,9 +423,8 @@ public class PrintStateMachine
         // spread powder
         AddProgramLast(sweepMotor.GetMotorName(), spreadPowder);
 
-        await ProcessPrograms();
+        await rsm.ProcessPrograms();
     }
-    
     #endregion
 
     public void Play(PrintStateMachine context) => _currentState.Play();

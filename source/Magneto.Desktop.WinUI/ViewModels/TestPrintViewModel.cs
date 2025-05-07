@@ -12,90 +12,47 @@ using Magneto.Desktop.WinUI.Services;
 using Microsoft.UI.Xaml.Controls;
 using Magneto.Desktop.WinUI.Core.Models.Motors;
 using Magneto.Desktop.WinUI.Core;
+using Magneto.Desktop.WinUI.Core.Models.States.PrintStates;
 
 namespace Magneto.Desktop.WinUI.ViewModels;
 
 public class TestPrintViewModel : ObservableRecipient
 {
     #region Private Variables
-    private readonly IPrintService _printService;
-    private readonly ISliceService _sliceService;
+    //private readonly IPrintService _printService;
+    //private readonly ISliceService _sliceService;
     private readonly IPrintSeeder _seeder;
     private readonly IMotorService _motorService;
     private readonly IWaverunnerService _waverunnerService;
+    private readonly PrintStateMachine _psm;
     // TODO: Add motor service
     #endregion
 
     #region Public Variables
     public ObservableCollection<SliceModel> sliceCollection { get; } = new ObservableCollection<SliceModel>();
-    public PrintModel? currentPrint = new();
-    public SliceModel? currentSlice = new();
+    //public PrintModel? currentPrint = new();
+    //public SliceModel? currentSlice = new();
     #endregion
 
     public TestPrintViewModel(IPrintSeeder seeder, IPrintService printService, ISliceService sliceService, IMotorService motorService, IWaverunnerService waverunnerService)
     {
+        _psm = App.GetService<PrintStateMachine>();
+        /*
         _printService = printService;
         _sliceService = sliceService;
+        */
         _seeder = seeder;
         _motorService = motorService;
         _waverunnerService = waverunnerService;
     }
 
-    #region Setters
-    public async Task SetCurrentPrintAsync(string directoryPath)
-    {
-        currentPrint = await _printService.GetPrintByDirectory(directoryPath); // TODO: use print build manager
-        await GetNextSliceAndUpdateDisplay(); // ✅ await this now
-    }
-    #endregion
-
     #region Getters
-    private async Task<SliceModel?> GetNextSliceAsync()
-    {
-        if (_sliceService == null)
-        {
-            MagnetoLogger.Log("❌Slice service is null.", LogFactoryLogLevel.LogLevel.ERROR);
-            return null;
-        }
-
-        if (currentPrint == null)
-        {
-            MagnetoLogger.Log("❌Current print is null.", LogFactoryLogLevel.LogLevel.ERROR);
-            return null;
-        }
-
-        var printComplete = await _printService.IsPrintComplete(currentPrint.id);
-
-        if (printComplete)
-        {
-            MagnetoLogger.Log("✅Print is complete. Returning last marked slice.", LogFactoryLogLevel.LogLevel.SUCCESS);
-            // update print in db
-            await CompleteCurrentPrintAsync();
-            return await _sliceService.GetLastSlice(currentPrint);
-        }
-        else
-        {
-            MagnetoLogger.Log("➡️Print is not complete. Returning next unmarked slice.", LogFactoryLogLevel.LogLevel.VERBOSE);
-            return await _sliceService.GetNextSlice(currentPrint);
-        }
-    }
-    public async Task<long> GetSlicesMarkedAsync()
-    {
-        return await _printService.MarkedOrUnmarkedCount(currentPrint.id);
-    }
-    public async Task<long> GetTotalSlicesAsync()
-    {
-        return await _printService.TotalSlicesCount(currentPrint.id);
-    }
-    public string GetSliceFilePath()
-    {
-        if (currentSlice == null)
-        {
-            MagnetoLogger.Log("❌Current slice is null.", LogFactoryLogLevel.LogLevel.ERROR);
-            return "";
-        }
-        return currentSlice.filePath;
-    }
+    public PrintModel? GetCurrentPrint() => _psm.GetCurrentPrint();
+    public SliceModel? GetCurrentSlice() => _psm.GetCurrentSlice();
+    private async Task<SliceModel?> GetNextSliceAsync() => await _psm.GetNextSliceAsync();
+    public async Task<long> GetSlicesMarkedAsync() => await _psm.GetSlicesMarkedAsync();
+    public async Task<long> GetTotalSlicesAsync() => await _psm.GetTotalSlicesAsync();
+    public string GetSliceFilePath() => _psm.GetSliceFilePath();
     #endregion
 
     #region Access CRUD Methods
@@ -103,7 +60,7 @@ public class TestPrintViewModel : ObservableRecipient
     public async Task AddPrintToDatabaseAsync(string fullPath)
     {
         // check if print already exists in db
-        var existingPrint = await _printService.GetPrintByDirectory(fullPath);
+        var existingPrint = await _psm.GetPrintByDirectory(fullPath);
 
         if (existingPrint != null)
         {
@@ -112,16 +69,17 @@ public class TestPrintViewModel : ObservableRecipient
         else
         {
             // seed prints
-            await _seeder.CreatePrintFromDirectory(fullPath);
+            await _seeder.CreatePrintInMongoDb(fullPath);
         }
 
-        // set print on view model
-        await SetCurrentPrintAsync(fullPath); // calls update slices
-
+        //await SetCurrentPrintAsync(fullPath); // calls update slices
+        // set current print in psm
+        await _psm.SetCurrentPrintAsync(fullPath);
         return;
     }
     private async Task CompleteCurrentPrintAsync()
     {
+        /*
         var print = currentPrint;
         if (print == null)
         {
@@ -139,10 +97,13 @@ public class TestPrintViewModel : ObservableRecipient
             // update print in db
             await _printService.EditPrint(print);
         }
+        */
+        await _psm.CompleteCurrentPrintAsync();
     }
     public async Task DeleteCurrentPrintAsync()
     {
-        await _printService.DeletePrint(currentPrint); // deletes slices associated with print
+        //await _printService.DeletePrint(currentPrint); // deletes slices associated with print
+        await _psm.DeleteCurrentPrintAsync();
     }
     #endregion
 
@@ -153,13 +114,13 @@ public class TestPrintViewModel : ObservableRecipient
         try
         {
             // check for null values
-            if (currentPrint == null)
+            if (_psm.GetCurrentPrint() == null)
             {
                 MagnetoLogger.Log("❌ No print found in DB.", LogFactoryLogLevel.LogLevel.ERROR);
                 return;
             }
 
-            if (string.IsNullOrEmpty(currentPrint.id))
+            if (string.IsNullOrEmpty(_psm.GetCurrentPrint().id))
             {
                 MagnetoLogger.Log("❌ Print ID is null or empty.", LogFactoryLogLevel.LogLevel.ERROR);
                 return;
@@ -167,7 +128,7 @@ public class TestPrintViewModel : ObservableRecipient
 
             Debug.WriteLine("✅Getting slices.");
             // use print service to get slices
-            var slices = await _printService.GetSlicesByPrintId(currentPrint.id); // TODO: use print build manager
+            var slices = await _psm.GetSlicesByPrintId(_psm.GetCurrentPrint().id); // should be handled by print service (not print state machine)
             foreach (var s in slices)
             {
                 MagnetoLogger.Log($"Adding slice: {s.filePath}", LogFactoryLogLevel.LogLevel.VERBOSE);
@@ -182,22 +143,25 @@ public class TestPrintViewModel : ObservableRecipient
     public void ClearData()
     {
         sliceCollection.Clear();
-        currentPrint = null; // TODO: use print state machine
-        currentSlice = null; // TODO: use print state machine
+        //currentPrint = null; // TODO: use print state machine
+        //currentSlice = null; // TODO: use print state machine
+        _psm.ClearCurrentPrint();
     }
     #endregion
 
     #region Helpers
-    private async Task GetNextSliceAndUpdateDisplay()
+    public async Task GetNextSliceAndUpdateDisplay()
     {
         sliceCollection.Clear();
         await LoadSliceDataAsync();
-        currentSlice = await GetNextSliceAsync(); // TODO: use print state machine
+        await _psm.SetCurrentSliceAsync();
+        // TODO: you need to update the slice directory too
     }
     #endregion
 
     #region Print Methods
     // TODO: in the future should we be able to pass a full slice to this method?
+    /*
     private async Task UpdateSliceCollectionAsync(double thickness, double power, double scanSpeed, double hatchSpacing)
     {
         if (currentSlice == null)
@@ -220,7 +184,7 @@ public class TestPrintViewModel : ObservableRecipient
         currentSlice.marked = true;
         await _sliceService.EditSlice(currentSlice);
     }
-
+    */
     public async Task HandleMarkEntityAsync()
     {
         // Get entity to mark
@@ -280,7 +244,7 @@ public class TestPrintViewModel : ObservableRecipient
             //while (_waverunnerService.GetMarkStatus() != 0) { Task.Delay(100).Wait(); }
 
         }
-        await UpdateSliceCollectionAsync(thickness, power, scanSpeed, hatchSpacing);
+        await _psm.UpdateSliceCollectionAsync(thickness, power, scanSpeed, hatchSpacing);
         await GetNextSliceAndUpdateDisplay(); // this should update currentSlice
         return 1;
     }

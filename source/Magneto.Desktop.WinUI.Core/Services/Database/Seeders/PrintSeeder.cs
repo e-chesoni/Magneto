@@ -21,7 +21,7 @@ public class PrintSeeder : IPrintSeeder
         _printService = printService;
         _sliceService = sliceService;
     }
-    public async Task CreatePrintFromDirectory(string directoryPath)
+    public async Task CreatePrintInMongoDb(string directoryPath)
     {
         var files = _fileService.GetFiles(directoryPath).ToList();
         if (!files.Any()) return;

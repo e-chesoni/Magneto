@@ -16,6 +16,11 @@ public class PrintService : IPrintService
         _sliceService = sliceService;
     }
 
+    public async Task EditSlice(SliceModel slice)
+    {
+        await _sliceService.EditSlice(slice);
+    }
+
     #region Counters
     /// <summary>
     /// Gets the total number of prints in the print collection

@@ -297,6 +297,19 @@ public class RoutineStateMachine : ISubsciber
 
         return isAbsolute ? value.Value : startingPosition + value.Value;
     }
+    public double CalculateTargetPosition(LastMove lastMove)
+    {
+        var programNode = lastMove.programNode;
+        var startingPosition = lastMove.startingPosition;
+        var (value, isAbsolute) = ParseMoveCommand(programNode.program);
+
+        if (value == null)
+        {
+            throw new InvalidOperationException("Move command parsing failed: no value found.");
+        }
+
+        return isAbsolute ? value.Value : startingPosition + value.Value;
+    }
     private async Task StoreLastRequestedMove(string motorNameLower, ProgramNode programNode)
     {
         double startingPosition;
@@ -321,7 +334,7 @@ public class RoutineStateMachine : ISubsciber
         SetLastMoveStartingPosition(startingPosition);
         SetLastMoveTarget(target);
     }
-    private async Task StoreLastMoveAndSendProgram(string motorNameLower, ProgramNode programNode)
+    private async Task SelectMotorForStoredMove(string motorNameLower, ProgramNode programNode)
     {
         switch (motorNameLower)
         {
@@ -341,7 +354,7 @@ public class RoutineStateMachine : ISubsciber
         await StoreLastRequestedMove(motorNameLower, programNode);
     }
 
-    private async Task ProcessPrograms()
+    public async Task ProcessPrograms()
     {
         var buildMotorName = buildSupplyController.GetBuildMotor().GetMotorName();
         var powderMotorName = buildSupplyController.GetPowderMotor().GetMotorName();
@@ -381,7 +394,7 @@ public class RoutineStateMachine : ISubsciber
                 _ => sweepMotorName
             };
 
-            await StoreLastMoveAndSendProgram(motorName, confirmedNode);
+            await SelectMotorForStoredMove(motorName, confirmedNode);
 
             // Wait while the controller executes the program
             while (await IsProgramRunningAsync(motorName))
@@ -406,7 +419,6 @@ public class RoutineStateMachine : ISubsciber
             MagnetoLogger.Log($"{node.program}\n", LogFactoryLogLevel.LogLevel.VERBOSE);
         }
     }
-
 
     #region State Methods
     public void Process()

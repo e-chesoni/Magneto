@@ -110,16 +110,31 @@ public partial class App : Application
             // Laser
             services.AddSingleton<LaserController>();
 
-            // PrintStateMachine (which contains ProgramsManager)
+            // ✅ Register RoutineStateMachine first
+            services.AddSingleton<RoutineStateMachine>(provider =>
+            {
+                var build = provider.GetRequiredService<BuildMotorController>();
+                var sweep = provider.GetRequiredService<SweepMotorController>();
+                var laser = provider.GetRequiredService<LaserController>();
+                return new RoutineStateMachine(build, sweep, laser);
+            });
+
+            // ✅ Register MotorService BEFORE PrintStateMachine
+            services.AddSingleton<MotorService>();
+            services.AddSingleton<IMotorService>(provider => provider.GetRequiredService<MotorService>());
+
+            // ✅ Now register PrintStateMachine — safe to inject MotorService now
             services.AddSingleton<PrintStateMachine>(provider =>
             {
-                var pm = new RoutineStateMachine(
-                    provider.GetRequiredService<BuildMotorController>(),
-                    provider.GetRequiredService<SweepMotorController>(),
-                    provider.GetRequiredService<LaserController>()
-                );
-                return new PrintStateMachine(pm);
+                var seeder = provider.GetRequiredService<IPrintSeeder>();
+                var printService = provider.GetRequiredService<IPrintService>();
+                var sliceService = provider.GetRequiredService<ISliceService>();
+                var rsm = provider.GetRequiredService<RoutineStateMachine>();
+                var motorService = provider.GetRequiredService<MotorService>();
+
+                return new PrintStateMachine(seeder, printService, sliceService, rsm, motorService);
             });
+
 
             // MissionControl (which now contains PrintStateMachine)
             services.AddSingleton<MissionControl>(provider =>
@@ -128,18 +143,13 @@ public partial class App : Application
                 return new MissionControl(psm);
             });
 
-            // Register MotorService (needs ActuationManager)
-            services.AddSingleton<IMotorService, MotorService>(provider =>
-            {
-                var psm = provider.GetRequiredService<PrintStateMachine>();
-                var ms = new MotorService(psm);
-                ms.HandleStartUp(); // Now that motors/controllers are fully built
-                return ms;
-            });
-
             // Peripheral Services
             services.AddSingleton<IWaverunnerService, WaverunerService>();
-            services.AddSingleton<IMotorService, MotorService>();
+            services.AddSingleton<MotorService>(provider =>
+            {
+                var rsm = provider.GetRequiredService<RoutineStateMachine>();
+                return new MotorService(rsm);
+            });
 
             // MongoDb Services
             services.AddSingleton<IMongoClient>(_ => new MongoClient("mongodb://localhost:27017"));

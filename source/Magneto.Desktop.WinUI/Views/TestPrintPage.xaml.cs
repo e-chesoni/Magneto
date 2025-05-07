@@ -812,8 +812,8 @@ public sealed partial class TestPrintPage : Page
     #region Manage Text Population & Clearing
     private async void PopulatePageText()
     {
-        var print = ViewModel.currentPrint;
-        var slice = ViewModel.currentSlice;
+        var print = ViewModel.GetCurrentPrint();
+        var slice = ViewModel.GetCurrentSlice(); // null
         if (print != null)
         {
             if (!string.IsNullOrWhiteSpace(print.directoryPath))
@@ -836,6 +836,8 @@ public sealed partial class TestPrintPage : Page
                         var msg = $"📅 start: {localStart}, end: {localEnd}, duration: {print.duration}";
                         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
                         DurationTextBlock.Text = duration?.ToString(@"hh\:mm\:ss") ?? "—";
+
+                        ViewModel.GetNextSliceAndUpdateDisplay();
                     }
                     else
                     {
@@ -882,9 +884,9 @@ public sealed partial class TestPrintPage : Page
     private async void GetSlices_Click(object sender, RoutedEventArgs e)
     {
         await ViewModel.AddPrintToDatabaseAsync(PrintDirectoryInputTextBox.Text);
-        if (ViewModel.currentSlice != null)
+        if (ViewModel.GetCurrentSlice() != null)
         {
-            if (ViewModel.currentSlice.filePath == null)
+            if (ViewModel.GetCurrentSlice().filePath == null)
             {
                 Debug.WriteLine("❌ImagePath is null.");
                 return;
@@ -1001,7 +1003,7 @@ public sealed partial class TestPrintPage : Page
     private async void DeletePrintButton_Click(object sender, RoutedEventArgs e)
     {
         // TODO: add guards to ask user if they're sure they want to delete this print
-        if (ViewModel.currentPrint == null)
+        if (ViewModel.GetCurrentPrint() == null)
         {
             Debug.WriteLine("❌Current print is null");
             return;

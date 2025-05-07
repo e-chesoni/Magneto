@@ -8,6 +8,7 @@ using Magneto.Desktop.WinUI.Core.Models.Print.Database;
 namespace Magneto.Desktop.WinUI.Core.Contracts.Services.Database;
 public interface IPrintService
 {
+
     #region Counters
     Task<long> TotalPrintsCount();
     public Task<long> TotalSlicesCount(string printId);
@@ -27,6 +28,7 @@ public interface IPrintService
     #endregion
 
     #region CRUD
+    public Task EditSlice(SliceModel slice);
     Task AddPrint(PrintModel print);
     Task EditPrint(PrintModel print);
     Task DeletePrint(PrintModel print);
