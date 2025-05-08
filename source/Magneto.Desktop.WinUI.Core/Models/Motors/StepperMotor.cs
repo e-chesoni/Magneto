@@ -413,7 +413,7 @@ public class StepperMotor : IStepperMotor
         }
         // status is an 8-bit number; each bit indicates whether a specific status is "triggered"
         var status = await RequestStatusAsync(); // example status: #8
-        return int.Parse(status.TrimStart('#'));
+        return int.Parse(status.TrimStart('#')); // TODO: handle too many requests error
     }
     #endregion
 
