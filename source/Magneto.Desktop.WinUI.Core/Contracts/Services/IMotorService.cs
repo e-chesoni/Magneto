@@ -47,14 +47,7 @@ public interface IMotorService
     public Task ReadAndClearAllErrors();
     #endregion
 
-    #region Write Program
-    public string[] WriteAbsoluteMoveProgramForBuildMotor(double target);
-    public string[] WriteAbsoluteMoveProgramForPowderMotor(double target);
-    public string[] WriteAbsoluteMoveProgramForSweepMotor(double target);
-    public string[] WriteRelativeMoveProgramForBuildMotor(double steps, bool moveUp);
-    public string[] WriteRelativeMoveProgramForPowderMotor(double steps, bool moveUp);
-    public string[] WriteRelativeMoveProgramForSweepMotor(double steps, bool moveUp);
-    #endregion
+    public void AddProgramFront(string motorNameLower, string[] program);
 
     #region Send Program
     public void SendProgram(string motorNameLower, string[] program);
@@ -64,28 +57,18 @@ public interface IMotorService
     public Task<bool> IsProgramRunningAsync(string motorNameLower);
     #endregion
 
-    #region Add Program Front
-    public void AddProgramFront(string motorNameLower, string[] program);
-    public void AddProgramLast(string motorNameLower, string[] program);
-    #endregion
-
     #region Pause and Resume Program
     public bool IsProgramPaused();
     public void PauseProgram();
-    public Task ResumeProgramReading();
+    //public Task ResumeProgramReading();
     public void EnableProgramProcessing();
     #endregion
 
     #region Stop Motors
     public void StopMotorAndClearProgramList(string motorNameLower);
     public void StopAllMotorsClearProgramList();
-    public void EmergencyStop();
+    //public void EmergencyStop();
     public bool IsProgramStopped();
-    #endregion
-
-    #region Multi-Motor Move Methods
-    public (string[] program, Controller controller, int axis)? ExtractProgramNodeVariables(ProgramNode programNode);
-    //public Task ExecuteLayerMove(double thickness, double amplifier);
     #endregion
 
     public Task MoveMotorAbsoluteProgram(string motorNameLower, double distance);

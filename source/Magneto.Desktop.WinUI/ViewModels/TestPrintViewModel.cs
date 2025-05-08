@@ -13,6 +13,7 @@ using Microsoft.UI.Xaml.Controls;
 using Magneto.Desktop.WinUI.Core.Models.Motors;
 using Magneto.Desktop.WinUI.Core;
 using Magneto.Desktop.WinUI.Core.Models.States.PrintStates;
+using Magneto.Desktop.WinUI.Core.Models.Print;
 
 namespace Magneto.Desktop.WinUI.ViewModels;
 
@@ -47,6 +48,7 @@ public class TestPrintViewModel : ObservableRecipient
     }
 
     #region Getters
+    public RoutineStateMachine GetRoutineStateMachine() => _psm.rsm;
     public PrintModel? GetCurrentPrint() => _psm.GetCurrentPrint();
     public SliceModel? GetCurrentSlice() => _psm.GetCurrentSlice();
     private async Task<SliceModel?> GetNextSliceAsync() => await _psm.GetNextSliceAsync();

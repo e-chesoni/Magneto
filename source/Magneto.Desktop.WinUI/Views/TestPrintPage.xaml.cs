@@ -86,7 +86,7 @@ public sealed partial class TestPrintPage : Page
                                                             LayerTextBox, FileNameTextBox, LayerThicknessTextBox, LaserPowerTextBox, ScanSpeedTextBox, HatchSpacingTextBox, EnergyDensityTextBox, SlicesToMarkTextBox, SupplyAmplifierTextBox,
                                                             StartWithMarkCheckBox, PlayButton, PauseButton, RemarkLayerButton);
         // initialize motor page service
-        _motorPageService = new MotorPageService(new UIControlGroupWrapper(_calibrateMotorUIControlGroup));
+        _motorPageService = new MotorPageService(new UIControlGroupWrapper(_calibrateMotorUIControlGroup), ViewModel.GetRoutineStateMachine());
         // initialize Waverunner page service
         //_waverunnerPageService = new WaverunnerPageService(PrintDirectoryInputTextBox, PrintLayersButton);
         _waverunnerPageService = new WaverunnerPageService(new UIControlGroupWrapper(_waverunnerUiControlGroup));

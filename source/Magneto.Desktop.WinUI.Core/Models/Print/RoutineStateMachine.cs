@@ -28,22 +28,15 @@ namespace Magneto.Desktop.WinUI.Core.Models.Print;
 /// </summary>
 public class RoutineStateMachine : ISubsciber
 {
-    #region Private Variables
-    private List<StepperMotor> _motorList = new List<StepperMotor>();
-    private double _sweepDist { get; set; }
     private IProgramState _currentState;
-    #endregion
+    private List<StepperMotor> _motorList = new List<StepperMotor>();
 
-    #region Public Variables
     public List<MotorController> motorControllers { get; set; } = new List<MotorController>();
     public MotorController buildSupplyController { get; set; }
     public MotorController sweepController { get; set; }
     public LaserController laserController { get; set; }
-    public ArtifactModel artifactModel { get; set; }
-    public DanceModel danceModel { get; set; }
 
     public LinkedList<ProgramNode> programNodes = new();
-
     private LastMove _lastMove;
 
     // All controller types are 5 letters long
@@ -59,9 +52,16 @@ public class RoutineStateMachine : ISubsciber
         public double startingPosition;
         public double target;
     }
+    public enum RoutineStateMachineStatus
+    {
+        Idle,
+        Processing,
+        Paused
+    }
+
+    // TODO: remove booleans; use states and status
     public bool PROGRAMS_PAUSED;
     public bool PROGRAMS_STOPPED;
-    #endregion
 
     #region Constructor
     /// <summary>
@@ -76,79 +76,25 @@ public class RoutineStateMachine : ISubsciber
         sweepController = sc;
         laserController = lc;
 
-        //_buildMotorPort = bc.GetPortName();
-        //_sweepMotorPort = sc.GetPortName();
-
         motorControllers.Add(buildSupplyController);
         motorControllers.Add(sweepController);
 
         foreach(var m in buildSupplyController.GetMinions()) { _motorList.Add(m); }
         foreach (var n in sweepController.GetMinions()) { _motorList.Add(n); }
 
-        // TODO: Move to config file
-        // Set default sweep distance
-        SetSweepDist(MagnetoConfig.GetSweepDist());
-
-        // Create a dance model
-        danceModel = new DanceModel();
-
         // Start in the idle state
-        //TransitionTo(new IdleBuildState(this));
+        ChangeStateTo(new IdleProgramState(this));
     }
 
     #endregion
 
-    #region Last Move Methods
+    #region Getters
+    public StepperMotor GetBuildMotor() => buildSupplyController.GetBuildMotor();
+    public StepperMotor GetPowderMotor() => buildSupplyController.GetPowderMotor();
+    public StepperMotor GetSweepMotor() => sweepController.GetSweepMotor();
+    public double GetNumberOfPrograms() => programNodes.Count;
     public LastMove GetLastMove() => _lastMove;
     public ProgramNode GetLastProgramNodeRun() => _lastMove.programNode;
-    public void SetLastMoveStartingPosition(double start) => _lastMove.startingPosition = start;
-    public void SetLastMoveTarget(double target) => _lastMove.target = target;
-    #endregion
-
-    #region Program State Handlers
-    public bool IsProgramPaused() => PROGRAMS_PAUSED;
-    public bool IsProgramStopped() => PROGRAMS_STOPPED;
-    public void PauseExecutionFlag()
-    {
-        PROGRAMS_PAUSED = true;
-    }
-    public void ResumeExecutionFlag()
-    {
-        PROGRAMS_PAUSED = false;
-        PROGRAMS_STOPPED = false;
-    }
-    public void StopExecutionFlag()
-    {
-        PROGRAMS_PAUSED = true;
-        PROGRAMS_STOPPED = true;
-        programNodes.Clear();
-    }
-    #endregion
-
-    #region Create Program Node
-    public ProgramNode CreateProgramNode(string[] program, Controller controller, int axis)
-    {
-        return new ProgramNode
-        {
-            program = program,
-            controller = controller,
-            axis = axis
-        };
-    }
-    #endregion
-
-    #region Program Adders
-    public void AddProgramToFront(ProgramNode node)
-    {
-        programNodes.AddFirst(node);
-    }
-    public void AddProgramToBack(ProgramNode node)
-    {
-        programNodes.AddLast(node);
-    }
-    #endregion
-
-    #region Program Node Getters
     public ProgramNode? GetFirstProgramNode()
     {
         if (programNodes.Count == 0)
@@ -185,84 +131,107 @@ public class RoutineStateMachine : ISubsciber
     }
     #endregion
 
-    #region Extract Program Variables
-    public (string[] program, Controller controller, int axis) ExtractProgramNodeVariables(ProgramNode programNode)
+    #region Basic Programming
+    public ProgramNode CreateProgramNode(string[] program, Controller controller, int axis)
     {
-        var program = programNode.program;
-        Controller controller = programNode.controller;
-        var axis = programNode.axis;
-        return (program, controller, axis);
+        return new ProgramNode
+        {
+            program = program,
+            controller = controller,
+            axis = axis
+        };
     }
-    #endregion
-
-    #region Getters
-    public StepperMotor GetBuildMotor()
+    public void AddProgramToFront(ProgramNode node) => programNodes.AddFirst(node);
+    public void AddProgramToBack(ProgramNode node) => programNodes.AddLast(node);
+    #region Add to Front Wrappers
+    private void AddProgramFrontHelper(string[] program, Controller controller, int axis)
     {
-        return buildSupplyController.GetBuildMotor();
+        ProgramNode programNode = CreateProgramNode(program, controller, axis);
+        AddProgramToFront(programNode);
     }
-
-    public StepperMotor GetPowderMotor()
+    private void AddBuildMotorProgramFront(string[] program)
     {
-        return buildSupplyController.GetPowderMotor();
+        AddProgramFrontHelper(program, Controller.BUILD_AND_SUPPLY, GetBuildMotor().GetAxis());
     }
-    public StepperMotor GetSweepMotor()
+    private void AddPowderMotorProgramFront(string[] program)
     {
-        return sweepController.GetSweepMotor();
+        AddProgramFrontHelper(program, Controller.BUILD_AND_SUPPLY, GetPowderMotor().GetAxis());
     }
-
-    public double GetNumberOfPrograms() => programNodes.Count;
-    #endregion
-
-    #region Setters
-
-    public void SetSweepDist(double dist)
+    private void AddSweepMotorProgramFront(string[] program)
     {
-        _sweepDist = dist;
+        AddProgramFrontHelper(program, Controller.SWEEP, GetSweepMotor().GetAxis());
     }
-
-    /// <summary>
-    /// Set the path to the artifact on the artifact model
-    /// </summary>
-    /// <param name="path"></param>
-    public void SetArtifactPath(string path)
-    {
-        artifactModel.pathToArtifact = path;
-    }
-
-    /// <summary>
-    /// Set the thickness of print layers on the artifact model
-    /// </summary>
-    /// <param name="thickness"></param>
-    public void SetArtifactThickness(double thickness)
-    {
-        artifactModel.defaultThickness = thickness;
-    }
-
-    /// <summary>
-    /// Slice the artifact on the artifact model and store the stack of slices on the artifact model
-    /// </summary>
-    public void SliceArtifact()
-    {
-        // TODO: UPDATE in production. Currently uses default number of slices from Magneto Config
-        artifactModel.sliceStack = ArtifactHandler.SliceArtifact(artifactModel);
-    }
-
-    #endregion
-    public async Task<bool> IsProgramRunningAsync(string motorNameLower)
+    public void AddProgramFront(string motorNameLower, string[] program)
     {
         switch (motorNameLower)
         {
             case "build":
-                return await GetBuildMotor().IsProgramRunningAsync();
+                AddBuildMotorProgramFront(program);
+                break;
             case "powder":
-                return await GetPowderMotor().IsProgramRunningAsync();
+                AddPowderMotorProgramFront(program);
+                break;
             case "sweep":
-                return await GetSweepMotor().IsProgramRunningAsync();
+                AddSweepMotorProgramFront(program);
+                break;
             default:
-                MagnetoLogger.Log($"Unable to check if program is running. Invalid motor name given: {motorNameLower}.", LogFactoryLogLevel.LogLevel.ERROR);
-                return false;
+                return;
         }
     }
+    #endregion
+
+    #region Add Last Wrappers
+    private void AddProgramLastHelper(string[] program, Controller controller, int axis)
+    {
+        ProgramNode programNode = CreateProgramNode(program, controller, axis);
+        AddProgramToBack(programNode);
+    }
+    private void AddBuildMotorProgramLast(string[] program)
+    {
+        AddProgramLastHelper(program, Controller.BUILD_AND_SUPPLY, GetBuildMotor().GetAxis());
+    }
+    private void AddPowderMotorProgramLast(string[] program)
+    {
+        AddProgramLastHelper(program, Controller.BUILD_AND_SUPPLY, GetPowderMotor().GetAxis());
+    }
+    private void AddSweepMotorProgramLast(string[] program)
+    {
+        AddProgramLastHelper(program, Controller.SWEEP, GetSweepMotor().GetAxis());
+    }
+    public void AddProgramLast(string motorNameLower, string[] program)
+    {
+        switch (motorNameLower)
+        {
+            case "build":
+                AddBuildMotorProgramLast(program);
+                break;
+            case "powder":
+                AddPowderMotorProgramLast(program);
+                break;
+            case "sweep":
+                AddSweepMotorProgramLast(program);
+                break;
+            default:
+                return;
+        }
+    }
+    #endregion
+    
+    #region Program Writers
+    public string[] WriteAbsoluteMoveProgram(StepperMotor motor, double target) => motor.CreateMoveProgramHelper(target, true);
+    public string[] WriteAbsoluteMoveProgramForBuildMotor(double target) => WriteAbsoluteMoveProgram(GetBuildMotor(), target);
+    public string[] WriteAbsoluteMoveProgramForPowderMotor(double target) => WriteAbsoluteMoveProgram(GetPowderMotor(), target);
+    public string[] WriteAbsoluteMoveProgramForSweepMotor(double target) => WriteAbsoluteMoveProgram(GetSweepMotor(), target);
+
+    public string[] WriteRelativeMoveProgram(StepperMotor motor, double steps, bool moveUp) => motor.CreateMoveProgramHelper(steps, false, moveUp);
+    public string[] WriteRelativeMoveProgramForBuildMotor(double steps, bool moveUp) => WriteRelativeMoveProgram(GetBuildMotor(), steps, moveUp);
+    public string[] WriteRelativeMoveProgramForPowderMotor(double steps, bool moveUp) => WriteRelativeMoveProgram(GetPowderMotor(), steps, moveUp);
+    public string[] WriteRelativeMoveProgramForSweepMotor(double steps, bool moveUp) => WriteRelativeMoveProgram(GetSweepMotor(), steps, moveUp);
+    #endregion
+    #endregion
+
+    #region Program Processing Methods
+    #region Program Processing Helpers
     public (double? value, bool isAbsolute) ParseMoveCommand(string[] program)
     {
         for (var i = program.Length - 1; i >= 0; i--)
@@ -310,6 +279,17 @@ public class RoutineStateMachine : ISubsciber
 
         return isAbsolute ? value.Value : startingPosition + value.Value;
     }
+    public (string[] program, Controller controller, int axis) ExtractProgramNodeVariables(ProgramNode programNode)
+    {
+        var program = programNode.program;
+        Controller controller = programNode.controller;
+        var axis = programNode.axis;
+        return (program, controller, axis);
+    }
+    #endregion
+    #region Last Move Methods
+    public void SetLastMoveStartingPosition(double start) => _lastMove.startingPosition = start;
+    public void SetLastMoveTarget(double target) => _lastMove.target = target;
     private async Task StoreLastRequestedMove(string motorNameLower, ProgramNode programNode)
     {
         double startingPosition;
@@ -353,7 +333,7 @@ public class RoutineStateMachine : ISubsciber
         }
         await StoreLastRequestedMove(motorNameLower, programNode);
     }
-
+    #endregion
     public async Task ProcessPrograms()
     {
         var buildMotorName = buildSupplyController.GetBuildMotor().GetMotorName();
@@ -419,6 +399,44 @@ public class RoutineStateMachine : ISubsciber
             MagnetoLogger.Log($"{node.program}\n", LogFactoryLogLevel.LogLevel.VERBOSE);
         }
     }
+    #endregion
+
+    // TODO: Update these to use state methods
+    #region Program State Handlers
+    public async Task<bool> IsProgramRunningAsync(string motorNameLower)
+    {
+        switch (motorNameLower)
+        {
+            case "build":
+                return await GetBuildMotor().IsProgramRunningAsync();
+            case "powder":
+                return await GetPowderMotor().IsProgramRunningAsync();
+            case "sweep":
+                return await GetSweepMotor().IsProgramRunningAsync();
+            default:
+                MagnetoLogger.Log($"Unable to check if program is running. Invalid motor name given: {motorNameLower}.", LogFactoryLogLevel.LogLevel.ERROR);
+                return false;
+        }
+    }
+    public bool IsProgramPaused() => PROGRAMS_PAUSED;
+    public bool IsProgramStopped() => PROGRAMS_STOPPED;
+    public void PauseExecutionFlag()
+    {
+        PROGRAMS_PAUSED = true;
+    }
+    public void ResumeExecutionFlag()
+    {
+        PROGRAMS_PAUSED = false;
+        PROGRAMS_STOPPED = false;
+    }
+    public void StopExecutionFlag()
+    {
+        PROGRAMS_PAUSED = true;
+        PROGRAMS_STOPPED = true;
+        programNodes.Clear();
+    }
+
+    #endregion
 
     #region State Methods
     public void Process()
@@ -429,7 +447,7 @@ public class RoutineStateMachine : ISubsciber
     public void Add() => throw new NotImplementedException();
     public void Remove() => throw new NotImplementedException();
     public void Cancel() => throw new NotImplementedException();
-    public void ChangeStateTo(IProgramState state) => throw new NotImplementedException();
+    public void ChangeStateTo(IProgramState state) => _currentState = state;
     #endregion
 
     #region Subscriber Methods

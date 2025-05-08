@@ -182,17 +182,7 @@ public class MotorService : IMotorService
     }
     #endregion
 
-    #region Write Program
-    private string[] WriteAbsoluteMoveProgram(StepperMotor motor, double target) => motor.CreateMoveProgramHelper(target, true);
-    public string[] WriteAbsoluteMoveProgramForBuildMotor(double target) => WriteAbsoluteMoveProgram(buildMotor, target);
-    public string[] WriteAbsoluteMoveProgramForPowderMotor(double target) => WriteAbsoluteMoveProgram(powderMotor, target);
-    public string[] WriteAbsoluteMoveProgramForSweepMotor(double target) => WriteAbsoluteMoveProgram(sweepMotor, target);
-
-    private string[] WriteRelativeMoveProgram(StepperMotor motor, double steps, bool moveUp) => motor.CreateMoveProgramHelper(steps, false, moveUp);
-    public string[] WriteRelativeMoveProgramForBuildMotor(double steps, bool moveUp) => WriteRelativeMoveProgram(buildMotor, steps, moveUp);
-    public string[] WriteRelativeMoveProgramForPowderMotor(double steps, bool moveUp) => WriteRelativeMoveProgram(powderMotor, steps, moveUp);
-    public string[] WriteRelativeMoveProgramForSweepMotor(double steps, bool moveUp) => WriteRelativeMoveProgram(sweepMotor, steps, moveUp);
-    #endregion
+    public void AddProgramFront(string motorNameLower, string[] program) => _rsm.AddProgramFront(motorNameLower, program);
 
     #region Send and Store Program
     public void SendProgram(string motorNameLower, string[] program)
@@ -212,25 +202,6 @@ public class MotorService : IMotorService
                 MagnetoLogger.Log($"Unable to send program. Invalid motor name given: {motorNameLower}.", LogFactoryLogLevel.LogLevel.ERROR);
                 break;
         }
-    }
-    private async Task StoreLastMoveAndSendProgram(string motorNameLower, ProgramNode programNode)
-    {
-        switch (motorNameLower)
-        {
-            case "build":
-                buildMotor.WriteProgram(programNode.program);
-                break;
-            case "powder":
-                powderMotor.WriteProgram(programNode.program);
-                break;
-            case "sweep":
-                sweepMotor.WriteProgram(programNode.program);
-                break;
-            default:
-                MagnetoLogger.Log($"Unable to send program. Invalid motor name given: {motorNameLower}.", LogFactoryLogLevel.LogLevel.ERROR);
-                break;
-        }
-        await StoreLastRequestedMove(motorNameLower, programNode);
     }
     #endregion
 
@@ -252,209 +223,12 @@ public class MotorService : IMotorService
     }
     #endregion
 
-    #region Add Program Front
-    private void AddProgramFrontHelper(string[] program, Controller controller, int axis)
-    {
-        ProgramNode programNode = _rsm.CreateProgramNode(program, controller, axis);
-        _rsm.AddProgramToFront(programNode);
-    }
-    private void AddBuildMotorProgramFront(string[] program)
-    {
-        AddProgramFrontHelper(program, Controller.BUILD_AND_SUPPLY, buildMotor.GetAxis());
-    }
-    private void AddPowderMotorProgramFront(string[] program)
-    {
-        AddProgramFrontHelper(program, Controller.BUILD_AND_SUPPLY, powderMotor.GetAxis());
-    }
-    private void AddSweepMotorProgramFront(string[] program)
-    {
-        AddProgramFrontHelper(program, Controller.SWEEP, sweepMotor.GetAxis());
-    }
-    public void AddProgramFront(string motorNameLower, string[] program)
-    {
-        switch (motorNameLower)
-        {
-            case "build":
-                AddBuildMotorProgramFront(program);
-                break;
-            case "powder":
-                AddPowderMotorProgramFront(program);
-                break;
-            case "sweep":
-                AddSweepMotorProgramFront(program);
-                break;
-            default:
-                return;
-        }
-    }
-    #endregion
-
-    #region Add Program Last
-    private void AddProgramLastHelper(string[] program, Controller controller, int axis)
-    {
-        ProgramNode programNode = _rsm.CreateProgramNode(program, controller, axis);
-        _rsm.AddProgramToBack(programNode);
-    }
-    private void AddBuildMotorProgramLast(string[] program)
-    {
-        AddProgramLastHelper(program, Controller.BUILD_AND_SUPPLY, buildMotor.GetAxis());
-    }
-    private void AddPowderMotorProgramLast(string[] program)
-    {
-        AddProgramLastHelper(program, Controller.BUILD_AND_SUPPLY, powderMotor.GetAxis());
-    }
-    private void AddSweepMotorProgramLast(string[] program)
-    {
-        AddProgramLastHelper(program, Controller.SWEEP, sweepMotor.GetAxis());
-    }
-    public void AddProgramLast(string motorNameLower, string[] program)
-    {
-        switch (motorNameLower)
-        {
-            case "build":
-                AddBuildMotorProgramLast(program);
-                break;
-            case "powder":
-                AddPowderMotorProgramLast(program);
-                break;
-            case "sweep":
-                AddSweepMotorProgramLast(program);
-                break;
-            default:
-                return;
-        }
-    }
-    #endregion
-
+    // TODO: Update pause and resume methods to use _rsm states!
     #region Pause and Resume Program
-    public bool IsProgramPaused() => _rsm.IsProgramPaused();
-    public void PauseProgram()
-    {
-        _rsm.PauseExecutionFlag(); // updates boolean (should stop ProcessPrograms())
-        //StopAllMotorsClearProgramList();
-    }
-    public (double? value, bool isAbsolute) ParseMoveCommand(string[] program)
-    {
-        for (var i = program.Length - 1; i >= 0; i--)
-        {
-            var line = program[i];
-
-            if (line.Contains("MVA") || line.Contains("MVR"))
-            {
-                var isAbsolute = line.Contains("MVA");
-                var prefix = isAbsolute ? "MVA" : "MVR";
-                var prefixIndex = line.IndexOf(prefix);
-
-                var target = line.Substring(prefixIndex + 3); // after "MVA" or "MVR"
-                if (double.TryParse(target, out var value))
-                {
-                    return (value, isAbsolute);
-                }
-                break;
-            }
-        }
-        MagnetoLogger.Log($"No move command found.", LogFactoryLogLevel.LogLevel.ERROR);
-        return (null, false);
-    }
-    private double CalculateTargetPosition(double startingPosition, ProgramNode programNode)
-    {
-        var (value, isAbsolute) = ParseMoveCommand(programNode.program);
-
-        if (value == null)
-        {
-            throw new InvalidOperationException("Move command parsing failed: no value found.");
-        }
-
-        return isAbsolute ? value.Value : startingPosition + value.Value;
-    }
-    private double CalculateTargetPosition(LastMove lastMove)
-    {
-        var programNode = lastMove.programNode;
-        var startingPosition = lastMove.startingPosition;
-        var (value, isAbsolute) = ParseMoveCommand(programNode.program);
-
-        if (value == null)
-        {
-            throw new InvalidOperationException("Move command parsing failed: no value found.");
-        }
-
-        return isAbsolute ? value.Value : startingPosition + value.Value;
-    }
-    private async Task StoreLastRequestedMove(string motorNameLower, ProgramNode programNode)
-    {
-        double startingPosition;
-
-        switch (motorNameLower)
-        {
-            case "build":
-                startingPosition = await buildMotor.GetPositionAsync(2);
-                break;
-            case "powder":
-                startingPosition = await powderMotor.GetPositionAsync(2);
-                break;
-            case "sweep":
-                startingPosition = await sweepMotor.GetPositionAsync(2);
-                break;
-            default:
-                MagnetoLogger.Log($"Invalid motor name: {motorNameLower}", LogFactoryLogLevel.LogLevel.ERROR);
-                throw new ArgumentException($"Unknown motor: {motorNameLower}");
-        }
-
-        var target = CalculateTargetPosition(startingPosition, programNode);
-        _rsm.SetLastMoveStartingPosition(startingPosition);
-        _rsm.SetLastMoveTarget(target);
-    }
-    public async Task ResumeProgramReading()
-    {
-        StepperMotor motor;
-        // Figure out if the last program finished:
-        // get the last program node and extract its variables
-        LastMove lastMove = _rsm.GetLastMove();
-        ProgramNode lastProgramNode = lastMove.programNode;
-        (_, Controller controller, var axis) = _rsm.ExtractProgramNodeVariables(lastProgramNode);
-        // use controller and axis to determine which motor command was called on
-        if (controller == Controller.BUILD_AND_SUPPLY)
-        {
-            if (axis == buildMotor.GetAxis())
-            {
-                motor = buildMotor;
-            }
-            else
-            {
-                motor = powderMotor;
-            }
-        }
-        else if (controller == Controller.SWEEP)
-        {
-            motor = sweepMotor;
-        }
-        else
-        {
-            MagnetoLogger.Log("Cannot resume reading program. No motor found.", LogFactoryLogLevel.LogLevel.ERROR);
-            return;
-        }
-        // get the current position
-        var currentPostion = await motor.GetPositionAsync(2);
-        // calculate the targeted position
-        var target = CalculateTargetPosition(lastMove);
-        // if target is less than current position, moveUp = false
-        var moveUp = target < currentPostion ? false : true;
-        // if motor did not reach target, put absolute move command to move motor to target at the front of the program list
-        if (currentPostion != target)
-        {
-            var absoluteProgram = WriteAbsoluteMoveProgram(motor, target);
-            AddProgramFront(motor.GetMotorName(), absoluteProgram);
-        }
-        // set the pause requested flag to false
-        EnableProgramProcessing();
-        // resume executing process program
-        await ProcessPrograms();
-    }
-    public void EnableProgramProcessing()
-    {
-        // set the pause requested flag to false
-        _rsm.ResumeExecutionFlag();
-    }
+    public bool IsProgramPaused() => _rsm.IsProgramPaused(); // check rsm status
+    public void PauseProgram() => _rsm.PauseExecutionFlag(); // _rsm.Pause()
+    public Task ResumeProgramReading() => throw new NotImplementedException();
+    public void EnableProgramProcessing() => _rsm.ResumeExecutionFlag(); // set the pause requested flag to false
     #endregion
 
     #region Stop Motors
@@ -463,7 +237,6 @@ public class MotorService : IMotorService
     public bool IsProgramStopped() => _rsm.IsProgramStopped();
     public void StopMotorAndClearProgramList(string motorNameLower)
     {
-        //PauseProgram();
         // clear the program list
         StopProgram();
         switch (motorNameLower)
@@ -491,122 +264,7 @@ public class MotorService : IMotorService
         // clear the program list
         StopProgram();
     }
-    public void EmergencyStop()
-    {
-
-    }
-    #endregion
-
-    #region Multi-Motor Move Methods
-    public (string[] program, Controller controller, int axis)? ExtractProgramNodeVariables(ProgramNode programNode) => _rsm.ExtractProgramNodeVariables(programNode);
-    /*
-    public async Task ExecuteLayerMove(double thickness, double amplifier)
-    {
-        var clearance = SWEEP_CLEARANCE;
-        var movePositive = true;
-
-        // read and clear errors
-        await ReadAndClearAllErrors();
-
-        // move build and supply motors down so sweep motor can pass
-        var lowerBuildClearance = WriteRelativeMoveProgramForBuildMotor(clearance, !movePositive);
-        var lowerPowderClearance = WriteRelativeMoveProgramForPowderMotor(clearance, !movePositive);
-        // home sweep motor
-        var homeSweep = WriteAbsoluteMoveProgramForSweepMotor(sweepMotor.GetHomePos()); // sweep moves home first
-        // raise build and supply motors by clearance
-        var raiseBuildClearance = WriteRelativeMoveProgramForBuildMotor(clearance, movePositive);
-        var raisePowderClearance = WriteRelativeMoveProgramForPowderMotor(clearance, movePositive);
-        // TODO: raise supply by (amplifier * thickness)
-        // TODO: lower build by thickness
-        var raiseSupplyLayer = WriteRelativeMoveProgramForPowderMotor((thickness * amplifier), movePositive);
-        var lowerBuildLayer = WriteRelativeMoveProgramForBuildMotor(thickness, !movePositive);
-        // spread powder
-        var spreadPowder = WriteAbsoluteMoveProgramForSweepMotor(sweepMotor.GetMaxPos()); // then to max position
-
-        // Add commands to program list
-        // lower clearance
-        AddProgramLast(buildMotor.GetMotorName(), lowerBuildClearance);
-        AddProgramLast(powderMotor.GetMotorName(), lowerPowderClearance);
-        // home sweep
-        AddProgramLast(sweepMotor.GetMotorName(), homeSweep);
-        // raise clearance
-        AddProgramLast(buildMotor.GetMotorName(), raiseBuildClearance);
-        AddProgramLast(powderMotor.GetMotorName(), raisePowderClearance);
-        // move motors for layer
-        AddProgramLast(powderMotor.GetMotorName(), raiseSupplyLayer);
-        AddProgramLast(buildMotor.GetMotorName(), lowerBuildLayer);
-        // spread powder
-        AddProgramLast(sweepMotor.GetMotorName(), spreadPowder);
-
-        await ProcessPrograms();
-    }
-    */
-    private async Task ProcessPrograms()
-    {
-        var buildMotorName = buildMotor.GetMotorName();
-        var powderMotorName = powderMotor.GetMotorName();
-        var sweepMotorName = sweepMotor.GetMotorName();
-
-        while (GetNumberOfPrograms() > 0)
-        {
-            // Check pause/stop before starting next program
-            if (IsProgramPaused())
-            {
-                MagnetoLogger.Log("⏸ Program paused. Halting execution.", LogFactoryLogLevel.LogLevel.WARN);
-                return;
-            }
-
-            if (IsProgramStopped())
-            {
-                MagnetoLogger.Log("🛑 Program stop requested. Exiting loop.", LogFactoryLogLevel.LogLevel.WARN);
-                StopProgram(); // Ensure STOP flag and program list are cleared
-                return;
-            }
-
-            var programNode = GetFirstProgramNode();
-            if (!programNode.HasValue)
-            {
-                MagnetoLogger.Log("⚠️ No valid program node found. Exiting.", LogFactoryLogLevel.LogLevel.WARN);
-                return;
-            }
-
-            var confirmedNode = programNode.Value;
-            var (_, controller, axis) = ExtractProgramNodeVariables(confirmedNode).Value;
-
-            var motorName = controller switch
-            {
-                Controller.BUILD_AND_SUPPLY when axis == 1 => buildMotorName,
-                Controller.BUILD_AND_SUPPLY when axis == 2 => powderMotorName,
-                _ => sweepMotorName
-            };
-
-            await StoreLastMoveAndSendProgram(motorName, confirmedNode);
-
-            // Wait while the controller executes the program
-            while (await IsProgramRunningAsync(motorName))
-            {
-                if (IsProgramStopped())
-                {
-                    MagnetoLogger.Log($"🛑 Program stop detected mid-execution on {motorName}.", LogFactoryLogLevel.LogLevel.WARN);
-
-                    // Attempt to stop and flush the controller if possible
-                    //StopMotor(motorName);
-                    //ClearMotorBuffer(motorName); // Optional: implement if Micronix supports buffer clearing
-                    StopProgram();
-                    return;
-                }
-
-                await Task.Delay(100); // Throttle polling
-            }
-        }
-        MagnetoLogger.Log("⚠️ Exiting program processor.", LogFactoryLogLevel.LogLevel.WARN);
-        MagnetoLogger.Log($"Programs {_rsm.programNodes.Count} on list:", LogFactoryLogLevel.LogLevel.VERBOSE);
-        foreach (var node in _rsm.programNodes)
-        {
-            MagnetoLogger.Log($"{node.program}\n", LogFactoryLogLevel.LogLevel.VERBOSE);
-        }
-    }
-
+    public void EmergencyStop() => throw new NotImplementedException();
     #endregion
 
     #region Movement
@@ -614,23 +272,23 @@ public class MotorService : IMotorService
     public async Task MoveBuildMotorAbsoluteProgram(double target)
     {
         MagnetoLogger.Log($"Received absolute move: {target}.", LogFactoryLogLevel.LogLevel.VERBOSE);
-        var program = WriteAbsoluteMoveProgramForBuildMotor(target);
-        AddProgramLast(buildMotor.GetMotorName(), program);
-        await ProcessPrograms();
+        var program = _rsm.WriteAbsoluteMoveProgramForBuildMotor(target);
+        _rsm.AddProgramLast(buildMotor.GetMotorName(), program);
+        await _rsm.ProcessPrograms();
     }
     public async Task MovePowderMotorAbsoluteProgram(double target)
     {
         MagnetoLogger.Log($"Received relative distance: {target}.", LogFactoryLogLevel.LogLevel.VERBOSE);
-        var program = WriteAbsoluteMoveProgramForPowderMotor(target);
-        AddProgramLast(powderMotor.GetMotorName(), program);
-        await ProcessPrograms();
+        var program = _rsm.WriteAbsoluteMoveProgramForPowderMotor(target);
+        _rsm.AddProgramLast(powderMotor.GetMotorName(), program);
+        await _rsm.ProcessPrograms();
     }
     public async Task MoveSweepMotorAbsoluteProgram(double target)
     {
         MagnetoLogger.Log($"Received relative distance: {target}.", LogFactoryLogLevel.LogLevel.VERBOSE);
-        var program = WriteAbsoluteMoveProgramForSweepMotor(target);
-        AddProgramLast(sweepMotor.GetMotorName(), program);
-        await ProcessPrograms();
+        var program = _rsm.WriteAbsoluteMoveProgramForSweepMotor(target);
+        _rsm.AddProgramLast(sweepMotor.GetMotorName(), program);
+        await _rsm.ProcessPrograms();
     }
 
     public async Task MoveMotorAbsoluteProgram(string motorNameLower, double target)
@@ -659,21 +317,21 @@ public class MotorService : IMotorService
     public async Task MoveBuildMotorRelativeProgram(double distance, bool moveUp)
     {
         MagnetoLogger.Log($"🚦Received relative 🔁distance: {distance}.", LogFactoryLogLevel.LogLevel.VERBOSE);
-        var program = WriteRelativeMoveProgramForBuildMotor(distance, moveUp);
-        AddProgramLast(buildMotor.GetMotorName(), program);
-        await ProcessPrograms();
+        var program = _rsm.WriteRelativeMoveProgramForBuildMotor(distance, moveUp);
+        _rsm.AddProgramLast(buildMotor.GetMotorName(), program);
+        await _rsm.ProcessPrograms();
     }
     public async Task MovePowderMotorRelativeProgram(double distance, bool moveUp)
     {
-        var program = WriteRelativeMoveProgramForPowderMotor(distance, moveUp);
-        AddProgramLast(powderMotor.GetMotorName(), program);
-        await ProcessPrograms();
+        var program = _rsm.WriteRelativeMoveProgramForPowderMotor(distance, moveUp);
+        _rsm.AddProgramLast(powderMotor.GetMotorName(), program);
+        await _rsm.ProcessPrograms();
     }
     public async Task MoveSweepMotorRelativeProgram(double distance, bool moveUp)
     {
-        var program = WriteRelativeMoveProgramForSweepMotor(distance, moveUp);
-        AddProgramLast(sweepMotor.GetMotorName(), program);
-        await ProcessPrograms();
+        var program = _rsm.WriteRelativeMoveProgramForSweepMotor(distance, moveUp);
+        _rsm.AddProgramLast(sweepMotor.GetMotorName(), program);
+        await _rsm.ProcessPrograms();
     }
 
     public async Task MoveMotorRelativeProgram(string motorNameLower, double distance, bool moveUp)
@@ -704,34 +362,34 @@ public class MotorService : IMotorService
         switch (motorNameLowerCase)
         {
             case "build":
-                program = WriteAbsoluteMoveProgramForBuildMotor(buildMotor.GetHomePos());
-                AddProgramLast(buildMotor.GetMotorName(), program);
+                program = _rsm.WriteAbsoluteMoveProgramForBuildMotor(buildMotor.GetHomePos());
+                _rsm.AddProgramLast(buildMotor.GetMotorName(), program);
                 break;
             case "powder":
-                program = WriteAbsoluteMoveProgramForPowderMotor(powderMotor.GetHomePos());
-                AddProgramLast(powderMotor.GetMotorName(), program);
+                program = _rsm.WriteAbsoluteMoveProgramForPowderMotor(powderMotor.GetHomePos());
+                _rsm.AddProgramLast(powderMotor.GetMotorName(), program);
                 break;
             case "sweep":
-                program = WriteAbsoluteMoveProgramForSweepMotor(sweepMotor.GetHomePos());
-                AddProgramLast(sweepMotor.GetMotorName(), program);
+                program = _rsm.WriteAbsoluteMoveProgramForSweepMotor(sweepMotor.GetHomePos());
+                _rsm.AddProgramLast(sweepMotor.GetMotorName(), program);
                 break;
             default:
                 MagnetoLogger.Log($"Cannot wait until motor reaches position. Invalid motor name given: {motorNameLowerCase}.", LogFactoryLogLevel.LogLevel.ERROR);
                 return 0;
         }
-        await ProcessPrograms();
+        await _rsm.ProcessPrograms();
         return 1;
     }
 
     public async Task HomeAllMotors()
     {
-        var homeBuild = WriteAbsoluteMoveProgramForBuildMotor(buildMotor.GetHomePos());
-        var homePowder = WriteAbsoluteMoveProgramForPowderMotor(powderMotor.GetHomePos());
-        var homeSweep = WriteAbsoluteMoveProgramForSweepMotor(sweepMotor.GetHomePos());
-        AddProgramLast(buildMotor.GetMotorName(), homeBuild);
-        AddProgramLast(powderMotor.GetMotorName(), homePowder);
-        AddProgramLast(sweepMotor.GetMotorName(), homeSweep);
-        await ProcessPrograms();
+        var homeBuild = _rsm.WriteAbsoluteMoveProgramForBuildMotor(buildMotor.GetHomePos());
+        var homePowder = _rsm.WriteAbsoluteMoveProgramForPowderMotor(powderMotor.GetHomePos());
+        var homeSweep = _rsm.WriteAbsoluteMoveProgramForSweepMotor(sweepMotor.GetHomePos());
+        _rsm.AddProgramLast(buildMotor.GetMotorName(), homeBuild);
+        _rsm.AddProgramLast(powderMotor.GetMotorName(), homePowder);
+        _rsm.AddProgramLast(sweepMotor.GetMotorName(), homeSweep);
+        await _rsm.ProcessPrograms();
     }
     #endregion
     #endregion

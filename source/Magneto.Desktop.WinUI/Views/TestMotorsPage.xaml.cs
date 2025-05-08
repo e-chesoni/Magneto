@@ -83,7 +83,7 @@ public sealed partial class TestMotorsPage : Page
                                                                 StopBuildMotorButton, StopPowderMotorButton, StopSweepMotorButton,
                                                                 HomeAllMotorsButton, EnableMotorsButton, StopMotorsButton);
         // initialize motor page service
-        _motorPageService = new MotorPageService(new UIControlGroupWrapper(_calibrateMotorUIControlGroup));
+        _motorPageService = new MotorPageService(new UIControlGroupWrapper(_calibrateMotorUIControlGroup), ViewModel.GetRoutineStateMachine());
 
         // populate motor positions on page load
         _motorPageService.HandleGetAllPositions();

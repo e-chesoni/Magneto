@@ -16,75 +16,22 @@ namespace Magneto.Desktop.WinUI;
 public class MotorPageService
 {
     private readonly IMotorService _motorService;
+    public RoutineStateMachine _rsm;
     private UIControlGroupWrapper _uiControlGroupHelper { get; set; }
     public static readonly string buildMotorName =  "build";
     public static readonly string powderMotorName = "powder";
     public static readonly string sweepMotorName = "sweep";
-    public MotorPageService(UIControlGroupWrapper printCtlGrpHelper)
+    public MotorPageService(UIControlGroupWrapper printCtlGrpHelper, RoutineStateMachine rsm)
     {
         _motorService = App.GetService<IMotorService>();
         _motorService.HandleStartUp();
         _uiControlGroupHelper = printCtlGrpHelper;
+        _rsm = rsm;
     }
 
     // NEW METHODS -- WHO DIS?
-    public async Task ReadBuildMotorErrors() => await _motorService.ReadBuildMotorErrors();
-    public async Task ReadPowderMotorErrors() => await _motorService.ReadPowderMotorErrors();
-    public async Task ReadSweepMotorErrors() => await _motorService.ReadSweepMotorErrors();
-    public async Task ReadAllErrors() => await _motorService.ReadSweepMotorErrors();
-    
-    public string[] WriteAbsMoveProgramForBuildMotor(int target, bool moveUp) => _motorService.WriteAbsoluteMoveProgramForBuildMotor(target);
-    public string[] WriteAbsMoveProgramForPowderMotor(int target, bool moveUp) => _motorService.WriteAbsoluteMoveProgramForPowderMotor(target);
-    public string[] WriteAbsMoveProgramForSweepMotor(int target, bool moveUp) => _motorService.WriteAbsoluteMoveProgramForSweepMotor(target);
-    
-    public void SendProgram(string motorNameLower, string[] program) => _motorService.SendProgram(motorNameLower, program);
-    public async Task<bool> IsProgramRunningAsync(string motorNameLower) => await _motorService.IsProgramRunningAsync(motorNameLower);
-    
-    public void AddProgramFront(string motorNameLower, string[] program) => _motorService.AddProgramFront(motorNameLower, program);
-    public ProgramNode? GetFirstProgramNode()
-    {
-        if (GetNumberOfPrograms() > 0)
-        {
-            return _motorService.GetFirstProgramNode();
-        }
-        else
-        {
-            MagnetoLogger.Log("Program list is empty.", LogFactoryLogLevel.LogLevel.ERROR);
-            return null;
-        }
-    }
-    public ProgramNode? GetLastProgramNode()
-    {
-        if (GetNumberOfPrograms() > 0)
-        {
-            return _motorService.GetLastProgramNode();
-        }
-        else
-        {
-            MagnetoLogger.Log("Program list is empty.", LogFactoryLogLevel.LogLevel.ERROR);
-            return null;
-        }
-    }
-
-    public (string[] program, Controller controller, int axis)? ExtractProgramNodeVariables(ProgramNode programNode) => _motorService.ExtractProgramNodeVariables(programNode);
-    public int GetNumberOfPrograms() => _motorService.GetNumberOfPrograms();
-
-    public void StopMotor(string motorNameLower) => _motorService.StopMotorAndClearProgramList(motorNameLower);
     public void StopAllMotorsClearProgramList() => _motorService.StopAllMotorsClearProgramList();
-    public void EmergencyStop() => _motorService.EmergencyStop();
-    public bool IsProgramStopped() => _motorService.IsProgramStopped();
-    public bool ProgramReaderPaused() => _motorService.IsProgramPaused();
-    public void PauseProgramReader() => _motorService.PauseProgram();
     public void EnableProgramProcessing() => _motorService.EnableProgramProcessing();
-    public async Task ResumeProgramReading() => await _motorService.ResumeProgramReading();
-    /*
-    public async Task ExecuteLayerMove(double thickness, double amplifier, XamlRoot xamlRoot)
-    {
-        await _motorService.ExecuteLayerMove(thickness, amplifier);
-        // TODO: do something with xamlroot if you want
-        
-    }*/
-
 
     #region Locks
     public void UnlockCalibrationPanel()

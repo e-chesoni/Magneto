@@ -20,25 +20,40 @@ using Magneto.Desktop.WinUI.Core.Services.Database;
 namespace Magneto.Desktop.WinUI.Core.Models.States.PrintStates;
 public class PrintStateMachine
 {
+    #region Services
     private readonly IPrintService _printService;
     private readonly ISliceService _sliceService;
     private readonly IPrintSeeder _seeder;
-    private IPrintState _currentState;
     private IMotorService _motorService;
-    private double SWEEP_CLEARANCE = 2;
+    #endregion
 
-    //public ObservableCollection<SliceModel> sliceCollection { get; } = new ObservableCollection<SliceModel>(); // This should probably stay on front end
+    #region State Machine Variables
+    private IPrintState _currentState;
+    public RoutineStateMachine rsm { get; set; }
+    #endregion
+
+    #region Current Print and Slice Models
     public PrintModel? currentPrint;
     public SliceModel? currentSlice;
-    public RoutineStateMachine rsm { get; set; }
+    #endregion
 
+    #region Settings and Status
+    public static class CurrentLayerSettings
+    {
+        public static double thickness;
+        public static double amplifier;
+    }
     public enum PrintStateMachineStatus
     {
         Idle,
         Printing,
         Paused
     }
+    #endregion
 
+    private double SWEEP_CLEARANCE = 2;
+
+    #region Constructor
     public PrintStateMachine(IPrintSeeder seeder, IPrintService printService, ISliceService sliceService, RoutineStateMachine rsm, MotorService motorService)
     {
         _currentState = new IdlePrintState(this);
@@ -48,24 +63,22 @@ public class PrintStateMachine
         this.rsm = rsm;
         _motorService = motorService;
     }
+    #endregion
 
-    public static class CurrentLayerSettings
-    {
-        public static double thickness;
-        public static double amplifier;
-    }
-
-    // Keep get print by directory in print service
+    #region Print and Slice Model Methods
+    #region Print and Slice Setters
     public async Task SetCurrentPrintAsync(string directoryPath)
     {
         currentPrint = await GetPrintByDirectory(directoryPath);
         currentSlice = await GetNextSliceAsync();
     }
     public async Task SetCurrentSliceAsync() => currentSlice = await GetNextSliceAsync();
+    #endregion
+
+    #region Print and Slice Getters
     public async Task<PrintModel> GetPrintByDirectory(string directoryPath) => await _printService.GetPrintByDirectory(directoryPath);
     public PrintModel? GetCurrentPrint() => currentPrint;
     public SliceModel? GetCurrentSlice() => currentSlice;
-    public RoutineStateMachine GetProgramsManager() => rsm; // temporary method TODO: remove later
     public async Task<SliceModel?> GetNextSliceAsync()
     {
         if (_sliceService == null)
@@ -107,29 +120,9 @@ public class PrintStateMachine
         return currentSlice.filePath;
     }
     public async Task<IEnumerable<SliceModel>>? GetSlicesByPrintId(string printId) => await _printService.GetSlicesByPrintId(currentPrint.id);
+    #endregion
 
-    #region CRUD
-    public async Task CompleteCurrentPrintAsync()
-    {
-        var print = currentPrint;
-        if (print == null)
-        {
-            MagnetoLogger.Log("❌Cannot update print; print is null.", LogFactoryLogLevel.LogLevel.ERROR);
-            return;
-        }
-        else
-        {
-            // update end time to now
-            print.endTime = DateTime.UtcNow;
-            // update print status to complete
-            print.complete = true;
-            // set current print to updated print
-            currentPrint = print;
-            // update print in db
-            await _printService.EditPrint(print);
-        }
-    }
-    public async Task DeleteCurrentPrintAsync() => await _printService.DeletePrint(currentPrint); // deletes slices associated with print
+    #region Print and Slice CRUD
     public async Task AddPrintToDatabaseAsync(string fullPath)
     {
         // check if print already exists in db
@@ -149,6 +142,27 @@ public class PrintStateMachine
         await SetCurrentPrintAsync(fullPath); // calls update slices // TODO: line up with print service
 
         return;
+    }
+    public async Task DeleteCurrentPrintAsync() => await _printService.DeletePrint(currentPrint); // deletes slices associated with print
+    public async Task CompleteCurrentPrintAsync()
+    {
+        var print = currentPrint;
+        if (print == null)
+        {
+            MagnetoLogger.Log("❌Cannot update print; print is null.", LogFactoryLogLevel.LogLevel.ERROR);
+            return;
+        }
+        else
+        {
+            // update end time to now
+            print.endTime = DateTime.UtcNow;
+            // update print status to complete
+            print.complete = true;
+            // set current print to updated print
+            currentPrint = print;
+            // update print in db
+            await _printService.EditPrint(print);
+        }
     }
     public async Task UpdateSliceCollectionAsync(double thickness, double power, double scanSpeed, double hatchSpacing)
     {
@@ -174,13 +188,16 @@ public class PrintStateMachine
         await _printService.EditSlice(currentSlice);
     }
     #endregion
-
+    
+    #region Print and Slice Helpers
     public void ClearCurrentPrint()
     {
         currentPrint = null;
         currentSlice = null;
     }
     public async Task NextSlice() => currentSlice = await GetNextSliceAsync();
+    #endregion
+    #endregion
 
     #region Routine State Machine Methods
     #region Program Getters
@@ -188,155 +205,14 @@ public class PrintStateMachine
     public ProgramNode? GetFirstProgramNode() => rsm.GetFirstProgramNode();
     public ProgramNode? GetLastProgramNode() => rsm.GetLastProgramNode();
     #endregion
-    #endregion
 
-    #region Write Program
-    private string[] WriteAbsoluteMoveProgram(StepperMotor motor, double target) => motor.CreateMoveProgramHelper(target, true);
-    public string[] WriteAbsoluteMoveProgramForBuildMotor(double target) => WriteAbsoluteMoveProgram(_motorService.GetBuildMotor(), target);
-    public string[] WriteAbsoluteMoveProgramForPowderMotor(double target) => WriteAbsoluteMoveProgram(_motorService.GetPowderMotor(), target);
-    public string[] WriteAbsoluteMoveProgramForSweepMotor(double target) => WriteAbsoluteMoveProgram(_motorService.GetSweepMotor(), target);
-
-    private string[] WriteRelativeMoveProgram(StepperMotor motor, double steps, bool moveUp) => motor.CreateMoveProgramHelper(steps, false, moveUp);
-    public string[] WriteRelativeMoveProgramForBuildMotor(double steps, bool moveUp) => WriteRelativeMoveProgram(_motorService.GetBuildMotor(), steps, moveUp);
-    public string[] WriteRelativeMoveProgramForPowderMotor(double steps, bool moveUp) => WriteRelativeMoveProgram(_motorService.GetPowderMotor(), steps, moveUp);
-    public string[] WriteRelativeMoveProgramForSweepMotor(double steps, bool moveUp) => WriteRelativeMoveProgram(_motorService.GetSweepMotor(), steps, moveUp);
-    #endregion
-
-    #region Add Program Front
-    private void AddProgramFrontHelper(string[] program, Controller controller, int axis)
-    {
-        ProgramNode programNode = rsm.CreateProgramNode(program, controller, axis);
-        rsm.AddProgramToFront(programNode);
-    }
-    private void AddBuildMotorProgramFront(string[] program)
-    {
-        var buildMotor = _motorService.GetBuildMotor();
-        AddProgramFrontHelper(program, Controller.BUILD_AND_SUPPLY, buildMotor.GetAxis());
-    }
-    private void AddPowderMotorProgramFront(string[] program)
-    {
-        var powderMotor = _motorService.GetPowderMotor();
-        AddProgramFrontHelper(program, Controller.BUILD_AND_SUPPLY, powderMotor.GetAxis());
-    }
-    private void AddSweepMotorProgramFront(string[] program)
-    {
-        var sweepMotor = _motorService.GetSweepMotor();
-        AddProgramFrontHelper(program, Controller.SWEEP, sweepMotor.GetAxis());
-    }
-    public void AddProgramFront(string motorNameLower, string[] program)
-    {
-        switch (motorNameLower)
-        {
-            case "build":
-                AddBuildMotorProgramFront(program);
-                break;
-            case "powder":
-                AddPowderMotorProgramFront(program);
-                break;
-            case "sweep":
-                AddSweepMotorProgramFront(program);
-                break;
-            default:
-                return;
-        }
-    }
-    #endregion
-
-    #region Add Program Last
-    private void AddProgramLastHelper(string[] program, Controller controller, int axis)
-    {
-        ProgramNode programNode = rsm.CreateProgramNode(program, controller, axis);
-        rsm.AddProgramToBack(programNode);
-    }
-    private void AddBuildMotorProgramLast(string[] program)
-    {
-        var buildMotor = _motorService.GetBuildMotor();
-        AddProgramLastHelper(program, Controller.BUILD_AND_SUPPLY, buildMotor.GetAxis());
-    }
-    private void AddPowderMotorProgramLast(string[] program)
-    {
-        var powderMotor = _motorService.GetPowderMotor();
-        AddProgramLastHelper(program, Controller.BUILD_AND_SUPPLY, powderMotor.GetAxis());
-    }
-    private void AddSweepMotorProgramLast(string[] program)
-    {
-        var sweepMotor = _motorService.GetSweepMotor();
-        AddProgramLastHelper(program, Controller.SWEEP, sweepMotor.GetAxis());
-    }
-    public void AddProgramLast(string motorNameLower, string[] program)
-    {
-        switch (motorNameLower)
-        {
-            case "build":
-                AddBuildMotorProgramLast(program);
-                break;
-            case "powder":
-                AddPowderMotorProgramLast(program);
-                break;
-            case "sweep":
-                AddSweepMotorProgramLast(program);
-                break;
-            default:
-                return;
-        }
-    }
-    #endregion
-    #region Pause and Resume Program
+    #region Program Pause and Resume
     public bool IsProgramPaused() => rsm.IsProgramPaused();
     public void PauseProgram()
     {
         rsm.PauseExecutionFlag(); // updates boolean (should stop ProcessPrograms())
         //StopAllMotorsClearProgramList();
     }
-    /*
-    public (double? value, bool isAbsolute) ParseMoveCommand(string[] program)
-    {
-        for (var i = program.Length - 1; i >= 0; i--)
-        {
-            var line = program[i];
-
-            if (line.Contains("MVA") || line.Contains("MVR"))
-            {
-                var isAbsolute = line.Contains("MVA");
-                var prefix = isAbsolute ? "MVA" : "MVR";
-                var prefixIndex = line.IndexOf(prefix);
-
-                var target = line.Substring(prefixIndex + 3); // after "MVA" or "MVR"
-                if (double.TryParse(target, out var value))
-                {
-                    return (value, isAbsolute);
-                }
-                break;
-            }
-        }
-        MagnetoLogger.Log($"No move command found.", LogFactoryLogLevel.LogLevel.ERROR);
-        return (null, false);
-    }
-    private double CalculateTargetPosition(double startingPosition, ProgramNode programNode)
-    {
-        var (value, isAbsolute) = ParseMoveCommand(programNode.program);
-
-        if (value == null)
-        {
-            throw new InvalidOperationException("Move command parsing failed: no value found.");
-        }
-
-        return isAbsolute ? value.Value : startingPosition + value.Value;
-    }
-    private double CalculateTargetPosition(LastMove lastMove)
-    {
-        var programNode = lastMove.programNode;
-        var startingPosition = lastMove.startingPosition;
-        var (value, isAbsolute) = ParseMoveCommand(programNode.program);
-
-        if (value == null)
-        {
-            throw new InvalidOperationException("Move command parsing failed: no value found.");
-        }
-
-        return isAbsolute ? value.Value : startingPosition + value.Value;
-    }
-    */
     public async Task ResumeProgramReading()
     {
         StepperMotor motor;
@@ -375,8 +251,8 @@ public class PrintStateMachine
         // if motor did not reach target, put absolute move command to move motor to target at the front of the program list
         if (currentPostion != target)
         {
-            var absoluteProgram = WriteAbsoluteMoveProgram(motor, target);
-            AddProgramFront(motor.GetMotorName(), absoluteProgram);
+            var absoluteProgram = rsm.WriteAbsoluteMoveProgram(motor, target);
+            rsm.AddProgramFront(motor.GetMotorName(), absoluteProgram);
         }
         // set the pause requested flag to false
         EnableProgramProcessing();
@@ -385,8 +261,9 @@ public class PrintStateMachine
     }
     public void EnableProgramProcessing() => rsm.ResumeExecutionFlag(); // set the pause requested flag to false
     #endregion
+    #endregion
 
-    #region Multi-Motor Moves
+    #region Multi-Motor Move Methods
     public (string[] program, Controller controller, int axis)? ExtractProgramNodeVariables(ProgramNode programNode) => rsm.ExtractProgramNodeVariables(programNode);
     public async Task ExecuteLayerMove()
     {
@@ -402,56 +279,55 @@ public class PrintStateMachine
         await _motorService.ReadAndClearAllErrors();
 
         // move build and supply motors down so sweep motor can pass
-        var lowerBuildClearance = WriteRelativeMoveProgramForBuildMotor(clearance, !movePositive);
-        var lowerPowderClearance = WriteRelativeMoveProgramForPowderMotor(clearance, !movePositive);
+        var lowerBuildClearance = rsm.WriteRelativeMoveProgramForBuildMotor(clearance, !movePositive);
+        var lowerPowderClearance = rsm.WriteRelativeMoveProgramForPowderMotor(clearance, !movePositive);
         // home sweep motor
-        var homeSweep = WriteAbsoluteMoveProgramForSweepMotor(sweepMotor.GetHomePos()); // sweep moves home first
+        var homeSweep = rsm.WriteAbsoluteMoveProgramForSweepMotor(sweepMotor.GetHomePos()); // sweep moves home first
         // raise build and supply motors by clearance
-        var raiseBuildClearance = WriteRelativeMoveProgramForBuildMotor(clearance, movePositive);
-        var raisePowderClearance = WriteRelativeMoveProgramForPowderMotor(clearance, movePositive);
+        var raiseBuildClearance = rsm.WriteRelativeMoveProgramForBuildMotor(clearance, movePositive);
+        var raisePowderClearance = rsm.WriteRelativeMoveProgramForPowderMotor(clearance, movePositive);
         // TODO: raise supply by (amplifier * thickness)
         // TODO: lower build by thickness
-        var raiseSupplyLayer = WriteRelativeMoveProgramForPowderMotor((thickness * amplifier), movePositive);
-        var lowerBuildLayer = WriteRelativeMoveProgramForBuildMotor(thickness, !movePositive);
+        var raiseSupplyLayer = rsm.WriteRelativeMoveProgramForPowderMotor((thickness * amplifier), movePositive);
+        var lowerBuildLayer = rsm.WriteRelativeMoveProgramForBuildMotor(thickness, !movePositive);
         // spread powder
-        var spreadPowder = WriteAbsoluteMoveProgramForSweepMotor(sweepMotor.GetMaxPos()); // then to max position
+        var spreadPowder = rsm.WriteAbsoluteMoveProgramForSweepMotor(sweepMotor.GetMaxPos()); // then to max position
 
         // Add commands to program list
         // lower clearance
-        AddProgramLast(buildMotor.GetMotorName(), lowerBuildClearance);
-        AddProgramLast(powderMotor.GetMotorName(), lowerPowderClearance);
+        rsm.AddProgramLast(buildMotor.GetMotorName(), lowerBuildClearance);
+        rsm.AddProgramLast(powderMotor.GetMotorName(), lowerPowderClearance);
         // home sweep
-        AddProgramLast(sweepMotor.GetMotorName(), homeSweep);
+        rsm.AddProgramLast(sweepMotor.GetMotorName(), homeSweep);
         // raise clearance
-        AddProgramLast(buildMotor.GetMotorName(), raiseBuildClearance);
-        AddProgramLast(powderMotor.GetMotorName(), raisePowderClearance);
+        rsm.AddProgramLast(buildMotor.GetMotorName(), raiseBuildClearance);
+        rsm.AddProgramLast(powderMotor.GetMotorName(), raisePowderClearance);
         // move motors for layer
-        AddProgramLast(powderMotor.GetMotorName(), raiseSupplyLayer);
-        AddProgramLast(buildMotor.GetMotorName(), lowerBuildLayer);
+        rsm.AddProgramLast(powderMotor.GetMotorName(), raiseSupplyLayer);
+        rsm.AddProgramLast(buildMotor.GetMotorName(), lowerBuildLayer);
         // spread powder
-        AddProgramLast(sweepMotor.GetMotorName(), spreadPowder);
+        rsm.AddProgramLast(sweepMotor.GetMotorName(), spreadPowder);
 
         await rsm.ProcessPrograms();
     }
     #endregion
 
-
-    public double GetCurrentLayerThickness() => CurrentLayerSettings.thickness;
-    public double GetCurrentLayerAmplifier() => CurrentLayerSettings.amplifier;
-
-    public double SetCurrentLayerThickness(double thickness) => CurrentLayerSettings.thickness = thickness;
-    public double SetCurrentLayerAmplifier(double amplifier) => CurrentLayerSettings.amplifier = amplifier;
-    public void SetCurrentPrintSettings(double thickness, double amplifier)
-    {
-        SetCurrentLayerThickness(thickness);
-        SetCurrentLayerAmplifier(amplifier);
-    }
-
-
-
+    #region State Machine Methods
     public async Task Play() => await _currentState.Play();
     public void Pause() => _currentState.Pause();
     public void Redo() => _currentState.Redo();
     public void Cancel() => _currentState.Cancel();
     public void ChangeStateTo(IPrintState state) => _currentState = state;
+    #endregion
+
+    #region REMOVE
+    public double SetCurrentLayerThickness(double thickness) => CurrentLayerSettings.thickness = thickness; // TODO: remove
+    public double SetCurrentLayerAmplifier(double amplifier) => CurrentLayerSettings.amplifier = amplifier; // TODO: remove
+    public void SetCurrentPrintSettings(double thickness, double amplifier) // TODO: remove
+    {
+        SetCurrentLayerThickness(thickness);
+        SetCurrentLayerAmplifier(amplifier);
+    }
+    #endregion
+
 }
