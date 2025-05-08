@@ -24,7 +24,7 @@ public class PrintStateMachine
     private readonly IPrintService _printService;
     private readonly ISliceService _sliceService;
     private readonly IPrintSeeder _seeder;
-    private IMotorService _motorService;
+    public IMotorService motorService;
     #endregion
 
     #region State Machine Variables
@@ -61,7 +61,7 @@ public class PrintStateMachine
         _printService = printService;
         _sliceService = sliceService;
         this.rsm = rsm;
-        _motorService = motorService;
+        this.motorService = motorService;
     }
     #endregion
 
@@ -201,18 +201,14 @@ public class PrintStateMachine
 
     #region Routine State Machine Methods
     #region Program Getters
+    /*
     public int GetNumberOfPrograms() => rsm.programNodes.Count;
     public ProgramNode? GetFirstProgramNode() => rsm.GetFirstProgramNode();
     public ProgramNode? GetLastProgramNode() => rsm.GetLastProgramNode();
+    */
     #endregion
 
     #region Program Pause and Resume
-    public bool IsProgramPaused() => rsm.IsProgramPaused();
-    public void PauseProgram()
-    {
-        rsm.PauseExecutionFlag(); // updates boolean (should stop ProcessPrograms())
-        //StopAllMotorsClearProgramList();
-    }
     public async Task ResumeProgramReading()
     {
         StepperMotor motor;
@@ -224,18 +220,18 @@ public class PrintStateMachine
         // use controller and axis to determine which motor command was called on
         if (controller == Controller.BUILD_AND_SUPPLY)
         {
-            if (axis == _motorService.GetBuildMotor().GetAxis())
+            if (axis == motorService.GetBuildMotor().GetAxis())
             {
-                motor = _motorService.GetBuildMotor();
+                motor = motorService.GetBuildMotor();
             }
             else
             {
-                motor = _motorService.GetPowderMotor();
+                motor = motorService.GetPowderMotor();
             }
         }
         else if (controller == Controller.SWEEP)
         {
-            motor = _motorService.GetSweepMotor();
+            motor = motorService.GetSweepMotor();
         }
         else
         {
@@ -255,61 +251,16 @@ public class PrintStateMachine
             rsm.AddProgramFront(motor.GetMotorName(), absoluteProgram);
         }
         // set the pause requested flag to false
-        EnableProgramProcessing();
+        //EnableProgramProcessing();
         // resume executing process program
-        await rsm.ProcessPrograms();
+        await rsm.Process();
     }
     public void EnableProgramProcessing() => rsm.ResumeExecutionFlag(); // set the pause requested flag to false
     #endregion
     #endregion
 
     #region Multi-Motor Move Methods
-    public (string[] program, Controller controller, int axis)? ExtractProgramNodeVariables(ProgramNode programNode) => rsm.ExtractProgramNodeVariables(programNode);
-    public async Task ExecuteLayerMove()
-    {
-        var buildMotor = _motorService.GetBuildMotor();
-        var powderMotor = _motorService.GetPowderMotor();
-        var sweepMotor = _motorService.GetSweepMotor();
-        var thickness = CurrentLayerSettings.thickness;
-        var amplifier = CurrentLayerSettings.amplifier;
-        var clearance = SWEEP_CLEARANCE;
-        var movePositive = true;
-
-        // read and clear errors
-        await _motorService.ReadAndClearAllErrors();
-
-        // move build and supply motors down so sweep motor can pass
-        var lowerBuildClearance = rsm.WriteRelativeMoveProgramForBuildMotor(clearance, !movePositive);
-        var lowerPowderClearance = rsm.WriteRelativeMoveProgramForPowderMotor(clearance, !movePositive);
-        // home sweep motor
-        var homeSweep = rsm.WriteAbsoluteMoveProgramForSweepMotor(sweepMotor.GetHomePos()); // sweep moves home first
-        // raise build and supply motors by clearance
-        var raiseBuildClearance = rsm.WriteRelativeMoveProgramForBuildMotor(clearance, movePositive);
-        var raisePowderClearance = rsm.WriteRelativeMoveProgramForPowderMotor(clearance, movePositive);
-        // TODO: raise supply by (amplifier * thickness)
-        // TODO: lower build by thickness
-        var raiseSupplyLayer = rsm.WriteRelativeMoveProgramForPowderMotor((thickness * amplifier), movePositive);
-        var lowerBuildLayer = rsm.WriteRelativeMoveProgramForBuildMotor(thickness, !movePositive);
-        // spread powder
-        var spreadPowder = rsm.WriteAbsoluteMoveProgramForSweepMotor(sweepMotor.GetMaxPos()); // then to max position
-
-        // Add commands to program list
-        // lower clearance
-        rsm.AddProgramLast(buildMotor.GetMotorName(), lowerBuildClearance);
-        rsm.AddProgramLast(powderMotor.GetMotorName(), lowerPowderClearance);
-        // home sweep
-        rsm.AddProgramLast(sweepMotor.GetMotorName(), homeSweep);
-        // raise clearance
-        rsm.AddProgramLast(buildMotor.GetMotorName(), raiseBuildClearance);
-        rsm.AddProgramLast(powderMotor.GetMotorName(), raisePowderClearance);
-        // move motors for layer
-        rsm.AddProgramLast(powderMotor.GetMotorName(), raiseSupplyLayer);
-        rsm.AddProgramLast(buildMotor.GetMotorName(), lowerBuildLayer);
-        // spread powder
-        rsm.AddProgramLast(sweepMotor.GetMotorName(), spreadPowder);
-
-        await rsm.ProcessPrograms();
-    }
+    //public (string[] program, Controller controller, int axis)? ExtractProgramNodeVariables(ProgramNode programNode) => rsm.ExtractProgramNodeVariables(programNode);
     #endregion
 
     #region State Machine Methods

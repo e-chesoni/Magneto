@@ -29,15 +29,15 @@ namespace Magneto.Desktop.WinUI.Core.Models.Print;
 public class RoutineStateMachine : ISubsciber
 {
     private IProgramState _currentState;
+    public RoutineStateMachineStatus status; 
     private List<StepperMotor> _motorList = new List<StepperMotor>();
-
     public List<MotorController> motorControllers { get; set; } = new List<MotorController>();
     public MotorController buildSupplyController { get; set; }
     public MotorController sweepController { get; set; }
     public LaserController laserController { get; set; }
 
     public LinkedList<ProgramNode> programNodes = new();
-    private LastMove _lastMove;
+    public LastMove lastMove;
 
     // All controller types are 5 letters long
     public struct ProgramNode
@@ -62,6 +62,7 @@ public class RoutineStateMachine : ISubsciber
     // TODO: remove booleans; use states and status
     public bool PROGRAMS_PAUSED;
     public bool PROGRAMS_STOPPED;
+    public bool CANCELLATION_REQUESTED;
 
     #region Constructor
     /// <summary>
@@ -82,7 +83,10 @@ public class RoutineStateMachine : ISubsciber
         foreach(var m in buildSupplyController.GetMinions()) { _motorList.Add(m); }
         foreach (var n in sweepController.GetMinions()) { _motorList.Add(n); }
 
+        CANCELLATION_REQUESTED = false;
+        
         // Start in the idle state
+        status = RoutineStateMachineStatus.Idle;
         ChangeStateTo(new IdleProgramState(this));
     }
 
@@ -93,8 +97,8 @@ public class RoutineStateMachine : ISubsciber
     public StepperMotor GetPowderMotor() => buildSupplyController.GetPowderMotor();
     public StepperMotor GetSweepMotor() => sweepController.GetSweepMotor();
     public double GetNumberOfPrograms() => programNodes.Count;
-    public LastMove GetLastMove() => _lastMove;
-    public ProgramNode GetLastProgramNodeRun() => _lastMove.programNode;
+    public LastMove GetLastMove() => lastMove;
+    public ProgramNode GetLastProgramNodeRun() => lastMove.programNode;
     public ProgramNode? GetFirstProgramNode()
     {
         if (programNodes.Count == 0)
@@ -230,8 +234,7 @@ public class RoutineStateMachine : ISubsciber
     #endregion
     #endregion
 
-    #region Program Processing Methods
-    #region Program Processing Helpers
+    #region Processing Helpers
     public (double? value, bool isAbsolute) ParseMoveCommand(string[] program)
     {
         for (var i = program.Length - 1; i >= 0; i--)
@@ -255,7 +258,7 @@ public class RoutineStateMachine : ISubsciber
         MagnetoLogger.Log($"No move command found.", LogFactoryLogLevel.LogLevel.ERROR);
         return (null, false);
     }
-    private double CalculateTargetPosition(double startingPosition, ProgramNode programNode)
+    public double CalculateTargetPosition(double startingPosition, ProgramNode programNode)
     {
         var (value, isAbsolute) = ParseMoveCommand(programNode.program);
 
@@ -287,121 +290,7 @@ public class RoutineStateMachine : ISubsciber
         return (program, controller, axis);
     }
     #endregion
-    #region Last Move Methods
-    public void SetLastMoveStartingPosition(double start) => _lastMove.startingPosition = start;
-    public void SetLastMoveTarget(double target) => _lastMove.target = target;
-    private async Task StoreLastRequestedMove(string motorNameLower, ProgramNode programNode)
-    {
-        double startingPosition;
 
-        switch (motorNameLower)
-        {
-            case "build":
-                startingPosition = await GetBuildMotor().GetPositionAsync(2);
-                break;
-            case "powder":
-                startingPosition = await GetPowderMotor().GetPositionAsync(2);
-                break;
-            case "sweep":
-                startingPosition = await GetSweepMotor().GetPositionAsync(2);
-                break;
-            default:
-                MagnetoLogger.Log($"Invalid motor name: {motorNameLower}", LogFactoryLogLevel.LogLevel.ERROR);
-                throw new ArgumentException($"Unknown motor: {motorNameLower}");
-        }
-
-        var target = CalculateTargetPosition(startingPosition, programNode);
-        SetLastMoveStartingPosition(startingPosition);
-        SetLastMoveTarget(target);
-    }
-    private async Task SelectMotorForStoredMove(string motorNameLower, ProgramNode programNode)
-    {
-        switch (motorNameLower)
-        {
-            case "build":
-                GetBuildMotor().WriteProgram(programNode.program);
-                break;
-            case "powder":
-                GetPowderMotor().WriteProgram(programNode.program);
-                break;
-            case "sweep":
-                GetSweepMotor().WriteProgram(programNode.program);
-                break;
-            default:
-                MagnetoLogger.Log($"Unable to send program. Invalid motor name given: {motorNameLower}.", LogFactoryLogLevel.LogLevel.ERROR);
-                break;
-        }
-        await StoreLastRequestedMove(motorNameLower, programNode);
-    }
-    #endregion
-    public async Task ProcessPrograms()
-    {
-        var buildMotorName = buildSupplyController.GetBuildMotor().GetMotorName();
-        var powderMotorName = buildSupplyController.GetPowderMotor().GetMotorName();
-        var sweepMotorName = sweepController.GetSweepMotor().GetMotorName();
-
-        while (GetNumberOfPrograms() > 0)
-        {
-            // Check pause/stop before starting next program
-            if (IsProgramPaused())
-            {
-                MagnetoLogger.Log("⏸ Program paused. Halting execution.", LogFactoryLogLevel.LogLevel.WARN);
-                return;
-            }
-
-            if (IsProgramStopped())
-            {
-                MagnetoLogger.Log("🛑 Program stop requested. Exiting loop.", LogFactoryLogLevel.LogLevel.WARN);
-                //StopProgram(); // Ensure STOP flag and program list are cleared
-                _currentState.Cancel();
-                return;
-            }
-
-            var programNode = GetFirstProgramNode();
-            if (!programNode.HasValue)
-            {
-                MagnetoLogger.Log("⚠️ No valid program node found. Exiting.", LogFactoryLogLevel.LogLevel.WARN);
-                return;
-            }
-
-            var confirmedNode = programNode.Value;
-            var (_, controller, axis) = ExtractProgramNodeVariables(confirmedNode);
-
-            var motorName = controller switch
-            {
-                Controller.BUILD_AND_SUPPLY when axis == 1 => buildMotorName,
-                Controller.BUILD_AND_SUPPLY when axis == 2 => powderMotorName,
-                _ => sweepMotorName
-            };
-
-            await SelectMotorForStoredMove(motorName, confirmedNode);
-
-            // Wait while the controller executes the program
-            while (await IsProgramRunningAsync(motorName))
-            {
-                if (IsProgramStopped())
-                {
-                    MagnetoLogger.Log($"🛑 Program stop detected mid-execution on {motorName}.", LogFactoryLogLevel.LogLevel.WARN);
-
-                    // Attempt to stop and flush the controller if possible
-                    //StopProgram();
-                    _currentState.Cancel();
-                    return;
-                }
-
-                await Task.Delay(100); // Throttle polling
-            }
-        }
-        MagnetoLogger.Log("⚠️ Exiting program processor.", LogFactoryLogLevel.LogLevel.WARN);
-        MagnetoLogger.Log($"Programs {programNodes.Count} on list:", LogFactoryLogLevel.LogLevel.VERBOSE);
-        foreach (var node in programNodes)
-        {
-            MagnetoLogger.Log($"{node.program}\n", LogFactoryLogLevel.LogLevel.VERBOSE);
-        }
-    }
-    #endregion
-
-    // TODO: Update these to use state methods
     #region Program State Handlers
     public async Task<bool> IsProgramRunningAsync(string motorNameLower)
     {
@@ -418,6 +307,7 @@ public class RoutineStateMachine : ISubsciber
                 return false;
         }
     }
+    // TODO: Update these to use state methods
     public bool IsProgramPaused() => PROGRAMS_PAUSED;
     public bool IsProgramStopped() => PROGRAMS_STOPPED;
     public void PauseExecutionFlag()
@@ -439,14 +329,103 @@ public class RoutineStateMachine : ISubsciber
     #endregion
 
     #region State Methods
-    public void Process()
+    public async Task Process()
     {
-        ChangeStateTo(new ProcessingProgramState(this));
+        // TODO: call on state
+        await _currentState.Process();
+        /*
+        var buildMotorName = buildSupplyController.GetBuildMotor().GetMotorName();
+        var powderMotorName = buildSupplyController.GetPowderMotor().GetMotorName();
+        var sweepMotorName = sweepController.GetSweepMotor().GetMotorName();
+
+        while (GetNumberOfPrograms() > 0)
+        {
+            // check for pause before starting next program
+            if (_status == RoutineStateMachineStatus.Paused)
+            {
+                MagnetoLogger.Log("⏸ Program paused. Halting execution.", LogFactoryLogLevel.LogLevel.WARN);
+                Pause();
+                return;
+            }
+            // check for cancellation request before starting next program
+            if (CANCELLATION_REQUESTED)
+            {
+                MagnetoLogger.Log("🛑 Cancellation requested. Exiting loop.", LogFactoryLogLevel.LogLevel.WARN);
+                //StopProgram(); // Ensure STOP flag and program list are cleared
+                Cancel();
+                return;
+            }
+            // get the next program on the list
+            var programNode = GetFirstProgramNode();
+            // if the program is null, return
+            if (!programNode.HasValue)
+            {
+                MagnetoLogger.Log("⚠️ No valid program node found. Exiting.", LogFactoryLogLevel.LogLevel.WARN);
+                return;
+            }
+            // else, extract the controller and axis associated with the program
+            var confirmedNode = programNode.Value;
+            var (_, controller, axis) = ExtractProgramNodeVariables(confirmedNode);
+            // get the motor name from the controller
+            var motorName = controller switch
+            {
+                Controller.BUILD_AND_SUPPLY when axis == 1 => buildMotorName,
+                Controller.BUILD_AND_SUPPLY when axis == 2 => powderMotorName,
+                _ => sweepMotorName
+            };
+            // store request before running
+            await StoreMotorAndLastRequest(motorName, confirmedNode);
+            // Wait while the controller executes the program
+            while (await IsProgramRunningAsync(motorName))
+            {
+                if (_status == RoutineStateMachineStatus.Paused)
+                {
+                    Pause();  // handled by current state
+                }
+                //if (IsProgramStopped())
+                if (CANCELLATION_REQUESTED)
+                {
+                    MagnetoLogger.Log($"🛑 Cancellation detected mid-execution on {motorName}.", LogFactoryLogLevel.LogLevel.WARN);
+
+                    // Attempt to stop and flush the controller if possible
+                    //StopProgram();
+                    Cancel(); // handled by current state (all clear list)
+                    return;
+                }
+                await Task.Delay(100); // Throttle polling
+            }
+        }
+        MagnetoLogger.Log("⚠️ Exiting program processor.", LogFactoryLogLevel.LogLevel.WARN);
+        MagnetoLogger.Log($"Programs {programNodes.Count} on list:", LogFactoryLogLevel.LogLevel.VERBOSE);
+        foreach (var node in programNodes)
+        {
+            MagnetoLogger.Log($"{node.program}\n", LogFactoryLogLevel.LogLevel.VERBOSE);
+        }
+        */
     }
-    public void Pause() => throw new NotImplementedException();
-    public void Add() => throw new NotImplementedException();
-    public void Remove() => throw new NotImplementedException();
-    public void Cancel() => throw new NotImplementedException();
+
+    public void Pause()
+    {
+        _currentState.Pause();
+    }
+
+    public void Resume()
+    {
+    
+    }
+    public void Add()
+    {
+        _currentState.Add();
+    }
+    public void Remove()
+    {
+        _currentState.Remove();
+    }
+    public void Cancel()
+    {
+        _currentState.Cancel();
+        ChangeStateTo(new IdleProgramState(this));
+    }
     public void ChangeStateTo(IProgramState state) => _currentState = state;
     #endregion
 

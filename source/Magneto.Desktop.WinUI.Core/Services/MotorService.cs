@@ -227,7 +227,7 @@ public class MotorService : IMotorService
     #region Pause and Resume Program
     public bool IsProgramPaused() => _rsm.IsProgramPaused(); // check rsm status
     public void PauseProgram() => _rsm.PauseExecutionFlag(); // _rsm.Pause()
-    public Task ResumeProgramReading() => throw new NotImplementedException();
+    //public Task ResumeProgramReading() => throw new NotImplementedException();
     public void EnableProgramProcessing() => _rsm.ResumeExecutionFlag(); // set the pause requested flag to false
     #endregion
 
@@ -274,21 +274,21 @@ public class MotorService : IMotorService
         MagnetoLogger.Log($"Received absolute move: {target}.", LogFactoryLogLevel.LogLevel.VERBOSE);
         var program = _rsm.WriteAbsoluteMoveProgramForBuildMotor(target);
         _rsm.AddProgramLast(buildMotor.GetMotorName(), program);
-        await _rsm.ProcessPrograms();
+        await _rsm.Process();
     }
     public async Task MovePowderMotorAbsoluteProgram(double target)
     {
         MagnetoLogger.Log($"Received relative distance: {target}.", LogFactoryLogLevel.LogLevel.VERBOSE);
         var program = _rsm.WriteAbsoluteMoveProgramForPowderMotor(target);
         _rsm.AddProgramLast(powderMotor.GetMotorName(), program);
-        await _rsm.ProcessPrograms();
+        await _rsm.Process();
     }
     public async Task MoveSweepMotorAbsoluteProgram(double target)
     {
         MagnetoLogger.Log($"Received relative distance: {target}.", LogFactoryLogLevel.LogLevel.VERBOSE);
         var program = _rsm.WriteAbsoluteMoveProgramForSweepMotor(target);
         _rsm.AddProgramLast(sweepMotor.GetMotorName(), program);
-        await _rsm.ProcessPrograms();
+        await _rsm.Process();
     }
 
     public async Task MoveMotorAbsoluteProgram(string motorNameLower, double target)
@@ -319,19 +319,19 @@ public class MotorService : IMotorService
         MagnetoLogger.Log($"🚦Received relative 🔁distance: {distance}.", LogFactoryLogLevel.LogLevel.VERBOSE);
         var program = _rsm.WriteRelativeMoveProgramForBuildMotor(distance, moveUp);
         _rsm.AddProgramLast(buildMotor.GetMotorName(), program);
-        await _rsm.ProcessPrograms();
+        await _rsm.Process();
     }
     public async Task MovePowderMotorRelativeProgram(double distance, bool moveUp)
     {
         var program = _rsm.WriteRelativeMoveProgramForPowderMotor(distance, moveUp);
         _rsm.AddProgramLast(powderMotor.GetMotorName(), program);
-        await _rsm.ProcessPrograms();
+        await _rsm.Process();
     }
     public async Task MoveSweepMotorRelativeProgram(double distance, bool moveUp)
     {
         var program = _rsm.WriteRelativeMoveProgramForSweepMotor(distance, moveUp);
         _rsm.AddProgramLast(sweepMotor.GetMotorName(), program);
-        await _rsm.ProcessPrograms();
+        await _rsm.Process();
     }
 
     public async Task MoveMotorRelativeProgram(string motorNameLower, double distance, bool moveUp)
@@ -377,7 +377,7 @@ public class MotorService : IMotorService
                 MagnetoLogger.Log($"Cannot wait until motor reaches position. Invalid motor name given: {motorNameLowerCase}.", LogFactoryLogLevel.LogLevel.ERROR);
                 return 0;
         }
-        await _rsm.ProcessPrograms();
+        await _rsm.Process();
         return 1;
     }
 
@@ -389,7 +389,7 @@ public class MotorService : IMotorService
         _rsm.AddProgramLast(buildMotor.GetMotorName(), homeBuild);
         _rsm.AddProgramLast(powderMotor.GetMotorName(), homePowder);
         _rsm.AddProgramLast(sweepMotor.GetMotorName(), homeSweep);
-        await _rsm.ProcessPrograms();
+        await _rsm.Process();
     }
     #endregion
     #endregion

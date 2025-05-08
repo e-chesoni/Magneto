@@ -81,25 +81,6 @@ public class TestPrintViewModel : ObservableRecipient
     }
     private async Task CompleteCurrentPrintAsync()
     {
-        /*
-        var print = currentPrint;
-        if (print == null)
-        {
-            MagnetoLogger.Log("❌Cannot update print; print is null.", LogFactoryLogLevel.LogLevel.ERROR);
-            return;
-        }
-        else
-        {
-            // update end time to now
-            print.endTime = DateTime.UtcNow;
-            // update print status to complete
-            print.complete = true;
-            // set current print to updated print
-            currentPrint = print;
-            // update print in db
-            await _printService.EditPrint(print);
-        }
-        */
         await _psm.CompleteCurrentPrintAsync();
     }
     public async Task DeleteCurrentPrintAsync()
@@ -162,31 +143,6 @@ public class TestPrintViewModel : ObservableRecipient
     #endregion
 
     #region Print Methods
-    // TODO: in the future should we be able to pass a full slice to this method?
-    /*
-    private async Task UpdateSliceCollectionAsync(double thickness, double power, double scanSpeed, double hatchSpacing)
-    {
-        if (currentSlice == null)
-        {
-            MagnetoLogger.Log("❌Current slice is null.", LogFactoryLogLevel.LogLevel.ERROR);
-            return;
-        }
-
-        if (currentSlice.marked)
-        {
-            MagnetoLogger.Log("❌Slice already marked. Canceling operation", LogFactoryLogLevel.LogLevel.ERROR);
-            return;
-        }
-        MagnetoLogger.Log($"✅ Marking slice {currentSlice.fileName}.", LogFactoryLogLevel.LogLevel.SUCCESS);
-        currentSlice.layerThickness = thickness;
-        currentSlice.power = power;
-        currentSlice.scanSpeed = scanSpeed;
-        currentSlice.hatchSpacing = hatchSpacing;
-        currentSlice.energyDensity = Math.Round(power / (thickness * scanSpeed * hatchSpacing),2);
-        currentSlice.marked = true;
-        await _sliceService.EditSlice(currentSlice);
-    }
-    */
     public async Task HandleMarkEntityAsync()
     {
         // Get entity to mark

@@ -7,8 +7,9 @@ using System.Threading.Tasks;
 namespace Magneto.Desktop.WinUI.Core.Contracts.Services.States;
 public interface IProgramState
 {
-    void Process();
+    Task Process();
     void Pause();
+    Task Resume();
     void Add();
     void Remove();
     void Cancel();

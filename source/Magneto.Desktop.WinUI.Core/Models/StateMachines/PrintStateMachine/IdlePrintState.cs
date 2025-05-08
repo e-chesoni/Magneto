@@ -22,7 +22,7 @@ public class IdlePrintState : IPrintState
     {
         var newState = new PrintingPrintState(_psm);
         _psm.ChangeStateTo(newState);
-        await newState.InitializeAsync(); // run Play() logic immediately
+        await newState.InitializePlayAsync(); // run Play() logic immediately
     }
     public void Pause() => throw new NotImplementedException();
     public void Redo() => throw new NotImplementedException();
