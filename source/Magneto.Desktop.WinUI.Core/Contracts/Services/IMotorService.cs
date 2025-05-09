@@ -23,20 +23,12 @@ public interface IMotorService
     public StepperMotor GetBuildMotor();
     public StepperMotor GetPowderMotor();
     public StepperMotor GetSweepMotor();
-    public int GetMotorAxis(string motorName);
     
     #region Position Getters
-    double GetMaxSweepPosition();
     Task<double> GetBuildMotorPositionAsync();
     Task<double> GetPowderMotorPositionAsync();
     Task<double> GetSweepMotorPositionAsync();
     Task<(int res, double position)> GetMotorPositionAsync(string motorNameLowerCase);
-    #endregion
-
-    #region Program Getters
-    public int GetNumberOfPrograms();
-    public ProgramNode? GetFirstProgramNode();
-    public ProgramNode? GetLastProgramNode();
     #endregion
     #endregion
 
@@ -58,17 +50,17 @@ public interface IMotorService
     #endregion
 
     #region Pause and Resume Program
-    public bool IsProgramPaused();
+    //public bool IsProgramPaused();
     public void PauseProgram();
     //public Task ResumeProgramReading();
-    public void EnableProgramProcessing();
+    public void ResumeProgram();
     #endregion
 
     #region Stop Motors
     public void StopMotorAndClearProgramList(string motorNameLower);
     public void StopAllMotorsClearProgramList();
     //public void EmergencyStop();
-    public bool IsProgramStopped();
+    //public bool IsProgramStopped();
     #endregion
 
     public Task MoveMotorAbsoluteProgram(string motorNameLower, double distance);

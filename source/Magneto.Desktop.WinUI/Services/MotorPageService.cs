@@ -31,7 +31,7 @@ public class MotorPageService
 
     // NEW METHODS -- WHO DIS?
     public void StopAllMotorsClearProgramList() => _motorService.StopAllMotorsClearProgramList();
-    public void EnableProgramProcessing() => _motorService.EnableProgramProcessing();
+    public void EnableProgramProcessing() => _motorService.ResumeProgram();
 
     #region Locks
     public void UnlockCalibrationPanel()

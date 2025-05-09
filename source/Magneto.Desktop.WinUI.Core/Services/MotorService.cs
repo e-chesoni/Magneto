@@ -15,7 +15,6 @@ using static Magneto.Desktop.WinUI.Core.Models.Print.RoutineStateMachine;
 namespace Magneto.Desktop.WinUI.Core.Services;
 public class MotorService : IMotorService
 {
-    //private readonly PrintStateMachine _printSM;
     private readonly RoutineStateMachine _rsm;
     private StepperMotor? buildMotor;
     private StepperMotor? powderMotor;
@@ -27,11 +26,8 @@ public class MotorService : IMotorService
     /// </summary>
     private Dictionary<string, StepperMotor?>? _motorTextMap;
 
-    private readonly double SWEEP_CLEARANCE = 2; // mm
-
     public MotorService(RoutineStateMachine rsm)
     {
-        //_printSM = psm;
         _rsm = rsm;
     }
 
@@ -107,37 +103,9 @@ public class MotorService : IMotorService
         // Make sure this happens AFTER motor setup
         InitializeMotorMap();
     }
-    public void Initialize()
-    {
-        HandleStartUp(); // This now runs AFTER everything is ready
-    }
     #endregion
 
     #region Getters
-    private Controller GetControllerHelper(string motorName)
-    {
-        switch (motorName)
-        {
-            case "sweep":
-                return Controller.SWEEP;
-            default: return Controller.BUILD_AND_SUPPLY;
-        }
-    }
-    public int GetMotorAxis(string motorName)
-    {
-        switch (motorName)
-        {
-            case "build":
-                return buildMotor.GetAxis();
-            case "powder":
-                return powderMotor.GetAxis();
-            case "sweep":
-                return sweepMotor.GetAxis();
-            default:
-                return 0;
-        }
-    }
-
     public StepperMotor GetBuildMotor() => buildMotor;
     public StepperMotor GetPowderMotor() => powderMotor;
     public StepperMotor GetSweepMotor() => sweepMotor;
@@ -161,12 +129,6 @@ public class MotorService : IMotorService
                 return (0, 0.0);
         }
     }
-    public double GetMaxSweepPosition() => sweepMotor.GetMaxPos();
-    #endregion
-    #region Program Getters
-    public int GetNumberOfPrograms() => _rsm.programNodes.Count;
-    public ProgramNode? GetFirstProgramNode() => _rsm.GetFirstProgramNode();
-    public ProgramNode? GetLastProgramNode() => _rsm.GetLastProgramNode();
     #endregion
     #endregion
 
@@ -225,20 +187,20 @@ public class MotorService : IMotorService
 
     // TODO: Update pause and resume methods to use _rsm states!
     #region Pause and Resume Program
-    public bool IsProgramPaused() => _rsm.IsProgramPaused(); // check rsm status
-    public void PauseProgram() => _rsm.PauseExecutionFlag(); // _rsm.Pause()
+    //public bool IsProgramPaused() => _rsm.IsProgramPaused(); // check rsm status
+    public void PauseProgram() => _rsm.Pause(); // _rsm.Pause()
     //public Task ResumeProgramReading() => throw new NotImplementedException();
-    public void EnableProgramProcessing() => _rsm.ResumeExecutionFlag(); // set the pause requested flag to false
+    public void ResumeProgram() => _rsm.Resume(); // set the pause requested flag to false
     #endregion
 
     #region Stop Motors
     // Stops should clear the program list
-    public void StopProgram() => _rsm.StopExecutionFlag();
-    public bool IsProgramStopped() => _rsm.IsProgramStopped();
+    public void CancelProgram() => _rsm.CANCELLATION_REQUESTED = true;
+    //public bool IsProgramStopped() => _rsm.IsProgramStopped();
     public void StopMotorAndClearProgramList(string motorNameLower)
     {
         // clear the program list
-        StopProgram();
+        CancelProgram();
         switch (motorNameLower)
         {
             case "build":
@@ -257,12 +219,12 @@ public class MotorService : IMotorService
     }
     public void StopAllMotorsClearProgramList()
     {
-        PauseProgram();
+        //PauseProgram(); // TODO: test; may need this
         buildMotor.Stop();
         powderMotor.Stop();
         sweepMotor.Stop();
         // clear the program list
-        StopProgram();
+        CancelProgram();
     }
     public void EmergencyStop() => throw new NotImplementedException();
     #endregion

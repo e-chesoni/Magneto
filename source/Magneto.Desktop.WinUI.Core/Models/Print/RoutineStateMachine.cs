@@ -307,120 +307,15 @@ public class RoutineStateMachine : ISubsciber
                 return false;
         }
     }
-    // TODO: Update these to use state methods
-    public bool IsProgramPaused() => PROGRAMS_PAUSED;
-    public bool IsProgramStopped() => PROGRAMS_STOPPED;
-    public void PauseExecutionFlag()
-    {
-        PROGRAMS_PAUSED = true;
-    }
-    public void ResumeExecutionFlag()
-    {
-        PROGRAMS_PAUSED = false;
-        PROGRAMS_STOPPED = false;
-    }
-    public void StopExecutionFlag()
-    {
-        PROGRAMS_PAUSED = true;
-        PROGRAMS_STOPPED = true;
-        programNodes.Clear();
-    }
-
     #endregion
 
     #region State Methods
-    public async Task Process()
-    {
-        // TODO: call on state
-        await _currentState.Process();
-        /*
-        var buildMotorName = buildSupplyController.GetBuildMotor().GetMotorName();
-        var powderMotorName = buildSupplyController.GetPowderMotor().GetMotorName();
-        var sweepMotorName = sweepController.GetSweepMotor().GetMotorName();
+    public async Task Process() => await _currentState.Process();
 
-        while (GetNumberOfPrograms() > 0)
-        {
-            // check for pause before starting next program
-            if (_status == RoutineStateMachineStatus.Paused)
-            {
-                MagnetoLogger.Log("⏸ Program paused. Halting execution.", LogFactoryLogLevel.LogLevel.WARN);
-                Pause();
-                return;
-            }
-            // check for cancellation request before starting next program
-            if (CANCELLATION_REQUESTED)
-            {
-                MagnetoLogger.Log("🛑 Cancellation requested. Exiting loop.", LogFactoryLogLevel.LogLevel.WARN);
-                //StopProgram(); // Ensure STOP flag and program list are cleared
-                Cancel();
-                return;
-            }
-            // get the next program on the list
-            var programNode = GetFirstProgramNode();
-            // if the program is null, return
-            if (!programNode.HasValue)
-            {
-                MagnetoLogger.Log("⚠️ No valid program node found. Exiting.", LogFactoryLogLevel.LogLevel.WARN);
-                return;
-            }
-            // else, extract the controller and axis associated with the program
-            var confirmedNode = programNode.Value;
-            var (_, controller, axis) = ExtractProgramNodeVariables(confirmedNode);
-            // get the motor name from the controller
-            var motorName = controller switch
-            {
-                Controller.BUILD_AND_SUPPLY when axis == 1 => buildMotorName,
-                Controller.BUILD_AND_SUPPLY when axis == 2 => powderMotorName,
-                _ => sweepMotorName
-            };
-            // store request before running
-            await StoreMotorAndLastRequest(motorName, confirmedNode);
-            // Wait while the controller executes the program
-            while (await IsProgramRunningAsync(motorName))
-            {
-                if (_status == RoutineStateMachineStatus.Paused)
-                {
-                    Pause();  // handled by current state
-                }
-                //if (IsProgramStopped())
-                if (CANCELLATION_REQUESTED)
-                {
-                    MagnetoLogger.Log($"🛑 Cancellation detected mid-execution on {motorName}.", LogFactoryLogLevel.LogLevel.WARN);
-
-                    // Attempt to stop and flush the controller if possible
-                    //StopProgram();
-                    Cancel(); // handled by current state (all clear list)
-                    return;
-                }
-                await Task.Delay(100); // Throttle polling
-            }
-        }
-        MagnetoLogger.Log("⚠️ Exiting program processor.", LogFactoryLogLevel.LogLevel.WARN);
-        MagnetoLogger.Log($"Programs {programNodes.Count} on list:", LogFactoryLogLevel.LogLevel.VERBOSE);
-        foreach (var node in programNodes)
-        {
-            MagnetoLogger.Log($"{node.program}\n", LogFactoryLogLevel.LogLevel.VERBOSE);
-        }
-        */
-    }
-
-    public void Pause()
-    {
-        _currentState.Pause();
-    }
-
-    public void Resume()
-    {
-    
-    }
-    public void Add()
-    {
-        _currentState.Add();
-    }
-    public void Remove()
-    {
-        _currentState.Remove();
-    }
+    public void Pause() => _currentState.Pause();
+    public void Resume() => _currentState.Resume();
+    public void Add() => _currentState.Add();
+    public void Remove() => _currentState.Remove();
     public void Cancel()
     {
         _currentState.Cancel();

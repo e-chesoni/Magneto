@@ -255,7 +255,6 @@ public class PrintStateMachine
         // resume executing process program
         await rsm.Process();
     }
-    public void EnableProgramProcessing() => rsm.ResumeExecutionFlag(); // set the pause requested flag to false
     #endregion
     #endregion
 

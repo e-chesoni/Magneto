@@ -791,14 +791,14 @@ public sealed partial class TestPrintPage : Page
         // stop mark
         _waverunnerPageService.StopMark(this.Content.XamlRoot);
         // stop motors
-        StopMotorsHelper();
+        
         // TODO: Update print status to "paused"
 
     }
     private void CancelButton_Click(object sender, RoutedEventArgs e)
     {
         // TODO: implement
-
+        StopMotorsHelper();
     }
     private void RemarkLayerButton_Click(object sender, RoutedEventArgs e)
     {
@@ -1116,7 +1116,6 @@ public sealed partial class TestPrintPage : Page
 
     #endregion
 
-    private bool PAUSE_REQUESTED;
     // TODO: Remove after testing
     private async void TEST_Click(object sender, RoutedEventArgs e)
     {
@@ -1138,7 +1137,6 @@ public sealed partial class TestPrintPage : Page
     }
     private void StopTEST_Click(object sender, RoutedEventArgs e)
     {
-        PAUSE_REQUESTED = true;
         if (_motorPageService != null)
         {
             _motorPageService.StopAllMotorsClearProgramList();
