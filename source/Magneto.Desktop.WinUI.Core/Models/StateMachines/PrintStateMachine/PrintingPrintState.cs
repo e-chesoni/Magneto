@@ -32,6 +32,10 @@ public class PrintingPrintState : IPrintState
     {
         await Play();
     }
+    public async Task Play()
+    {
+        await ExecuteLayerMove();
+    }
     public async Task ExecuteLayerMove()
     {
         var buildMotor = _motorService.GetBuildMotor();
@@ -41,6 +45,10 @@ public class PrintingPrintState : IPrintState
         var amplifier = CurrentLayerSettings.amplifier;
         var clearance = SWEEP_CLEARANCE;
         var movePositive = true;
+
+        // Enable rsm again
+        _rsm.CANCELLATION_REQUESTED = false;
+        _rsm.status = RoutineStateMachine.RoutineStateMachineStatus.Processing;
 
         // read and clear errors
         await _motorService.ReadAndClearAllErrors();
@@ -77,12 +85,7 @@ public class PrintingPrintState : IPrintState
 
         await _rsm.Process();
     }
-
-    public async Task Play()
-    {
-        await ExecuteLayerMove();
-    }
-    public void Pause() => throw new NotImplementedException();
+    public void Pause() => ChangeStateTo(new PausedPrintState(_psm));
     public void Redo() => throw new NotImplementedException();
     public void Cancel() => throw new NotImplementedException();
     public void ChangeStateTo(IPrintState state) => _psm.ChangeStateTo(state);

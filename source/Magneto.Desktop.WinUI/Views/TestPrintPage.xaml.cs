@@ -705,6 +705,7 @@ public sealed partial class TestPrintPage : Page
         else
         {
             // pause motors
+            ViewModel.PausePrint();
             _motorPageService.PauseProgram();
         }
     }
@@ -906,7 +907,7 @@ public sealed partial class TestPrintPage : Page
         MagnetoLogger.Log($"Printing {slicesToMark} layers, each {thickness}mm thick, at {power}W, scan speed equal to {scanSpeed}mm/s, and {hatchSpacing}mm hatch spacing. Powder amplifier for each layer is: {amplifier}.", LogFactoryLogLevel.LogLevel.ERROR);
         for (var i = 0; i < slicesToMark; i++)
         {
-            await ViewModel.PrintLayer(_motorPageService, startWithMark, thickness, power, scanSpeed, hatchSpacing, amplifier, this.Content.XamlRoot);
+            await ViewModel.PrintLayer(startWithMark, thickness, power, scanSpeed, hatchSpacing, amplifier, this.Content.XamlRoot); // calls _psm.play()
             PopulatePageText();
         }
         _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Done!", "Requested layer(s) printed.");
@@ -1046,7 +1047,7 @@ public sealed partial class TestPrintPage : Page
         var hatchSpacing = 0.12;
         var amplifier = 2;
         var numberOfLayers = 1; // TODO: figure out how to incorporate number of layers
-        await ViewModel.PrintLayer(_motorPageService, startWithMark, thickness, power, scanSpeed, hatchSpacing, amplifier, this.Content.XamlRoot);
+        await ViewModel.PrintLayer(startWithMark, thickness, power, scanSpeed, hatchSpacing, amplifier, this.Content.XamlRoot);
     }
     private void StopTEST_Click(object sender, RoutedEventArgs e)
     {

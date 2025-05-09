@@ -20,13 +20,16 @@ public class PausedPrintState : IPrintState
     public PausedPrintState(PrintStateMachine psm)
     {
         _psm = psm;
+        _psm.rsm.status = RoutineStateMachine.RoutineStateMachineStatus.Paused;
     }
 
     public async Task Play()
     {
-        ChangeStateTo(new PrintingPrintState(_psm));
+        var newState = new PrintingPrintState(_psm);
+        _psm.ChangeStateTo(newState);
+        await newState.InitializePlayAsync(); // run Play() logic immediately
     }
-    public void Pause() => throw new NotImplementedException();
+    public void Pause() => _psm.rsm.status = RoutineStateMachine.RoutineStateMachineStatus.Paused;
     public void Redo() => throw new NotImplementedException();
     public void Cancel() => throw new NotImplementedException();
     public void ChangeStateTo(IPrintState state) => _psm.ChangeStateTo(state);

@@ -143,6 +143,10 @@ public class TestPrintViewModel : ObservableRecipient
     #endregion
 
     #region Print Methods
+    public void PausePrint()
+    {
+        _psm.Pause();
+    }
     public async Task HandleMarkEntityAsync()
     {
         // Get entity to mark
@@ -158,7 +162,7 @@ public class TestPrintViewModel : ObservableRecipient
         //await _waverunnerService.MarkEntityAsync(entity);
     }
 
-    public async Task<int>PrintLayer(MotorPageService motorPageService, bool startWithMark, double thickness, double power, double scanSpeed, double hatchSpacing, double amplifier, XamlRoot xamlRoot)
+    public async Task<int>PrintLayer(bool startWithMark, double thickness, double power, double scanSpeed, double hatchSpacing, double amplifier, XamlRoot xamlRoot)
     {
         string msg;
         // TODO: Uncomment laser methods after testing motor movement

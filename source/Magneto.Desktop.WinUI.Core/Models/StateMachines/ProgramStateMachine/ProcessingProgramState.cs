@@ -69,6 +69,7 @@ public class ProcessingProgramState : IProgramState
                 {
                     MagnetoLogger.Log("⏸ rsm state is paused. Halting execution.", LogFactoryLogLevel.LogLevel.WARN);
                     Pause();  // handled by current state
+                    return;
                 }
                 //if (IsProgramStopped())
                 if (_rsm.CANCELLATION_REQUESTED)
