@@ -188,6 +188,7 @@ public class MotorService : IMotorService
     // TODO: Update pause and resume methods to use _rsm states!
     #region Pause and Resume Program
     //public bool IsProgramPaused() => _rsm.IsProgramPaused(); // check rsm status
+    public void EnableProgram() => _rsm.CANCELLATION_REQUESTED = false;
     public void PauseProgram() => _rsm.Pause(); // _rsm.Pause()
     //public Task ResumeProgramReading() => throw new NotImplementedException();
     public void ResumeProgram() => _rsm.Resume(); // set the pause requested flag to false

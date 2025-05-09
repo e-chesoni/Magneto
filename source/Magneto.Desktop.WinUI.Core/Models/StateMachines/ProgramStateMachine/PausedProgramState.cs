@@ -19,6 +19,8 @@ public class PausedProgramState : IProgramState
     {
         MagnetoLogger.Log("Transitioned to RSM Paused State.", LogFactoryLogLevel.LogLevel.WARN);
         _rsm = rsm;
+        MagnetoLogger.Log("Changing rsm state to paused.", LogFactoryLogLevel.LogLevel.WARN);
+        _rsm.status = RoutineStateMachineStatus.Paused;
     }
     public async Task Process()
     {
@@ -26,7 +28,7 @@ public class PausedProgramState : IProgramState
         ChangeStateTo(newState);
         await newState.Process();
     }
-    public void Pause() => throw new NotImplementedException();
+    public void Pause() => _rsm.status = RoutineStateMachineStatus.Paused;
     public async Task Resume()
     {
         StepperMotor motor;

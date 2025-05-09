@@ -31,7 +31,8 @@ public class MotorPageService
 
     // NEW METHODS -- WHO DIS?
     public void StopAllMotorsClearProgramList() => _motorService.StopAllMotorsClearProgramList();
-    public void EnableProgramProcessing() => _motorService.ResumeProgram();
+    public void ResumeProgram() => _motorService.ResumeProgram();
+    public void PauseProgram() => _motorService.PauseProgram();
 
     #region Locks
     public void UnlockCalibrationPanel()
@@ -160,76 +161,6 @@ public class MotorPageService
             return (res, targetPos);
         }
     }
-    // TODO: remove old layer move after new one is vetted
-    /*
-    public async Task<int> LayerMoveOLD(double layerThickness)
-    {
-        var powderAmplifier = 2.5; // Quan requested we change this from 4-2.5 to conserve powder
-        var lowerBuildForSweepDist = 2;
-
-        if (_actuationManager != null)
-        {
-            // move build motor down for sweep
-            await _actuationManager.AddCommand(GetControllerTypeHelper(buildMotor.GetMotorName()), buildMotor.GetAxis(), CommandType.RelativeMove, -lowerBuildForSweepDist);
-
-            // home sweep motor
-            await _actuationManager.AddCommand(GetControllerTypeHelper(sweepMotor.GetMotorName()), sweepMotor.GetAxis(), CommandType.AbsoluteMove, sweepMotor.GetHomePos());
-
-            // move build motor back up to last mark height
-            await _actuationManager.AddCommand(GetControllerTypeHelper(buildMotor.GetMotorName()), buildMotor.GetAxis(), CommandType.RelativeMove, lowerBuildForSweepDist);
-
-            // move powder motor up by powder amp layer height (Prof. Tertuliano recommends powder motor moves 2-3x distance of build motor)
-            await _actuationManager.AddCommand(GetControllerTypeHelper(powderMotor.GetMotorName()), powderMotor.GetAxis(), CommandType.RelativeMove, (powderAmplifier * layerThickness));
-
-            // move build motor down by layer height
-            await _actuationManager.AddCommand(GetControllerTypeHelper(buildMotor.GetMotorName()), buildMotor.GetAxis(), CommandType.RelativeMove, -layerThickness);
-
-            // apply material to build plate
-            await _actuationManager.AddCommand(GetControllerTypeHelper(sweepMotor.GetMotorName()), sweepMotor.GetAxis(), CommandType.AbsoluteMove, maxSweepPosition);
-
-            // TEMPORARY SOLUTION: repeat last command to pad queue so we can use motors running check properly
-            await _actuationManager.AddCommand(GetControllerTypeHelper(sweepMotor.GetMotorName()), sweepMotor.GetAxis(), CommandType.AbsoluteMove, maxSweepPosition); // TODO: change to wait for end command
-        } else {
-            var msg = $"Actuation manager is null.";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            return 0;
-        }
-        return 1;
-    }
-    public async Task<int> ExecuteLayerMove(double layerThickness, double amplifier, XamlRoot xamlRoot)
-    {
-        MagnetoLogger.Log($"Executing layer move...", LogFactoryLogLevel.LogLevel.VERBOSE);
-        var maxSweepPosition = _motorService.GetMaxSweepPosition();
-        var clearance = 2;
-        var thicknessTimesAmplifier = layerThickness * amplifier;
-
-        // TODO: Finish updating execute layer move to use MoveMotorAndUpdateUI()
-        // public async void MoveMotorAndUpdateUISelector(string motorName, double value, bool moveIsAbs, bool moveInPositiveDirection, XamlRoot xamlRoot)
-        // all moves are relative
-        var moveIsAbs = false;
-        // 1. move build motor down for sweep
-        //await _motorService.MoveMotorRel(buildMotor, -clearance);
-        await MoveMotorAndUpdateUISelector(buildMotorName, clearance, moveIsAbs, false, xamlRoot); // false -> move down
-        // 2. home sweep motor
-        //await _motorService.HomeMotor(sweepMotor);
-        await HomeMotorAndUpdateUI(sweepMotorName);
-        // 3. move build motor back up to last mark height
-        //await _motorService.MoveMotorRel(buildMotor, clearance);
-        await MoveMotorAndUpdateUISelector(buildMotorName, clearance, moveIsAbs, true, xamlRoot); // true -> move up
-        // 4. move powder motor up by amplifier distance (Oat recommends 2-3x distance of build motor)
-        //await _motorService.MoveMotorRel(powderMotor, layerThickness);
-        //await MoveMotorAndUpdateUISelector(powderMotorName, thicknessTimesAmplifier, moveIsAbs, true, xamlRoot);
-        // 5. move build motor down by layer height
-        //await _motorService.MoveMotorRel(buildMotor, -layerThickness);
-        await MoveMotorAndUpdateUISelector(buildMotorName, layerThickness, moveIsAbs, false, xamlRoot);
-        // 6. apply material to build plate
-        await MoveMotorAndUpdateUISelector(sweepMotorName, maxSweepPosition, true, true, xamlRoot); // absolute move in the positive direction
-        // TEMPORARY SOLUTION: repeat last command to pad queue so we can use motors running check properly
-        //await MoveMotorAndUpdateUISelector(sweepMotorName, maxSweepPosition, true, true, xamlRoot);
-        return 1; // TODO: implement failure return
-    }
-    */
-
     #endregion
 
     #region Movement Handlers
@@ -253,7 +184,7 @@ public class MotorPageService
     }
     #endregion
 
-    #region Stoppers
+    #region Stop Methods
     public async void StopBuildMotorAndUpdateTextBox()
     {
         var msg = $"stopping {buildMotorName} motor";
@@ -282,20 +213,26 @@ public class MotorPageService
     #endregion
 
     #region Enablers
+    public void EnableProgramRunning() => _motorService.EnableProgram();
+
     public void EnableBuildMotor()
     {
+        EnableProgramRunning();
         _uiControlGroupHelper.EnableMotorControls(_uiControlGroupHelper.GetCalibrationControlGroup(), buildMotorName);
     }
     public void EnablePowderMotor()
     {
+        EnableProgramRunning();
         _uiControlGroupHelper.EnableMotorControls(_uiControlGroupHelper.GetCalibrationControlGroup(), powderMotorName);
     }
     public void EnableSweepMotor()
     {
+        EnableProgramRunning();
         _uiControlGroupHelper.EnableMotorControls(_uiControlGroupHelper.GetCalibrationControlGroup(), sweepMotorName);
     }
     public void EnableAllMotors()
     {
+        EnableProgramRunning();
         _uiControlGroupHelper.EnableMotorControls(_uiControlGroupHelper.GetCalibrationControlGroup(), buildMotorName);
         _uiControlGroupHelper.EnableMotorControls(_uiControlGroupHelper.GetCalibrationControlGroup(), powderMotorName);
         _uiControlGroupHelper.EnableMotorControls(_uiControlGroupHelper.GetCalibrationControlGroup(), sweepMotorName);

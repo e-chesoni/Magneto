@@ -387,108 +387,13 @@ public sealed partial class TestPrintPage : Page
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to enable motors.");
             return;
         }
-        _motorPageService.EnableProgramProcessing();
+        //_motorPageService.ResumeProgram();
         // TODO: need to enable each motor to unlock stop buttons
         _motorPageService.EnableAllMotors();
         UnlockCalibrationPanel();
     }
     #endregion
     #endregion
-
-    /*
-    private void WaitForMark()
-    {
-        _ = _waverunnerPageService.MarkEntityAsync();
-
-        // wait until mark ends before proceeding
-        while (_waverunnerPageService.GetMarkStatus() != 0)
-        {
-            // wait
-            Task.Delay(100).Wait();
-        }
-    }
-    private async void MultiLayerMoveButton_Click(object sender, RoutedEventArgs e)
-    {
-        var fullPath = "";
-        var layerThickness = 0.03; // TODO: Replace with read from layerThickness text box
-        var amplifier = 2; // TODO: Replace with read from amplifier text box
-        if (string.IsNullOrWhiteSpace(SlicesToMarkTextBox.Text) || !int.TryParse(SlicesToMarkTextBox.Text, out var layers))
-        {
-            var msg = "MultiLayerMoveInputTextBox text is not a valid integer.";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-
-            // TODO: add pop up message for invalid input
-
-            return; // Exit the method if the validation fails
-        } else {
-            // First layer of powder is laid down in calibrate, then
-            var msg = "starting multilayer print...";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-
-            for (var i = 0; i < layers; i++)
-            {
-                if (KILL_OPERATION)
-                {
-                    break;
-                }
-                
-                if (StartWithMarkCheckbox.IsChecked == true)
-                {
-                    // MARK
-                    msg = $"marking layer {i} in multi-layer print";
-                    MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-                    _ = _waverunnerPageService.MarkEntityAsync();
-                    while (_waverunnerPageService.GetMarkStatus() != 0) // wait until mark ends before proceeding
-                    {
-                        // wait
-                        Task.Delay(100).Wait();
-                    }
-                    
-                    // INCREMENT LAYERS PRINTED
-                    //msg = "incrementing layers printed...";
-                    //MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-                    //incrementLayersPrinted(); // TODO: Figure out how to increment in a timely manner; happening right away because this is an asynchronous method!
-
-                    msg = "moving to next layer";
-                    MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-
-                    // LAYER MOVE
-                    // order of layer move operations: home sweep, move powder up 2x, move build down, supply sweep
-                    await _motorPageService.LayerMove(layerThickness, amplifier); // _ = means don't wait; technically you can use that here because queuing makes sure operations happen in order, but send occurs instantly, but using await just to be sure
-                    while (_motorPageService.MotorsRunning()) { await Task.Delay(100); } // TODO: Test! now awaiting task delay to make this non-blocking
-                }
-                else 
-                { // layer move first (homes sweep first)
-                    msg = "moving to next layer";
-                    MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-
-                    // LAYER MOVE
-                    await _motorPageService.LayerMove(layerThickness, amplifier);
-                    while (_motorPageService.MotorsRunning()) { await Task.Delay(100); }
-
-                    // MARK
-                    msg = $"marking layer {i} in multi-layer print";
-                    MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-                    _ = _waverunnerPageService.MarkEntityAsync();
-                    while (_waverunnerPageService.GetMarkStatus() != 0)
-                    {
-                        Task.Delay(100).Wait();
-                    }
-                    
-                    // INCREMENT LAYERS PRINTED
-                    //msg = "incrementing layers printed...";
-                    //MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
-                    //incrementLayersPrinted();
-                }
-            }
-            msg = "multi-layer move complete.";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
-
-            // reset stop request
-            KILL_OPERATION = false;
-        }
-    }
-    */
 
     #region Locking
     private void UnlockCalibrationPanel()
@@ -785,15 +690,23 @@ public sealed partial class TestPrintPage : Page
     {
         if (_waverunnerPageService == null)
         {
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Lost connection to Waverunner. Cannot pause print.");
-            return;
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Lost connection to Waverunner. Cannot pause laser.");
         }
-        // stop mark
-        _waverunnerPageService.StopMark(this.Content.XamlRoot);
-        // stop motors
-        
-        // TODO: Update print status to "paused"
-
+        else
+        {
+            // stop mark
+            _waverunnerPageService.StopMark(this.Content.XamlRoot);
+        }
+            
+        if (_motorPageService == null)
+        {
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Lost connection to motors. Cannot pause motors.");
+        }
+        else
+        {
+            // pause motors
+            _motorPageService.PauseProgram();
+        }
     }
     private void CancelButton_Click(object sender, RoutedEventArgs e)
     {

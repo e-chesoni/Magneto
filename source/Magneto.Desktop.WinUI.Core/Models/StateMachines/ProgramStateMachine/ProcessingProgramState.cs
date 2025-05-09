@@ -30,7 +30,7 @@ public class ProcessingProgramState : IProgramState
             // check for pause before starting next program
             if (_rsm.status == RoutineStateMachineStatus.Paused)
             {
-                MagnetoLogger.Log("⏸ Program paused. Halting execution.", LogFactoryLogLevel.LogLevel.WARN);
+                MagnetoLogger.Log("⏸ rsm state is paused. Halting execution.", LogFactoryLogLevel.LogLevel.WARN);
                 Pause();
                 return;
             }
@@ -61,12 +61,13 @@ public class ProcessingProgramState : IProgramState
                 _ => sweepMotorName
             };
             // store request before running
-            await StoreMotorAndLastRequest(motorName, confirmedNode);
+            await StoreLastRequestAndRunProgram(motorName, confirmedNode);
             // Wait while the controller executes the program
             while (await _rsm.IsProgramRunningAsync(motorName))
             {
                 if (_rsm.status == RoutineStateMachineStatus.Paused)
                 {
+                    MagnetoLogger.Log("⏸ rsm state is paused. Halting execution.", LogFactoryLogLevel.LogLevel.WARN);
                     Pause();  // handled by current state
                 }
                 //if (IsProgramStopped())
@@ -121,7 +122,7 @@ public class ProcessingProgramState : IProgramState
         SetLastMoveStartingPosition(startingPosition);
         SetLastMoveTarget(target);
     }
-    private async Task StoreMotorAndLastRequest(string motorNameLower, ProgramNode programNode)
+    private async Task StoreLastRequestAndRunProgram(string motorNameLower, ProgramNode programNode)
     {
         switch (motorNameLower)
         {

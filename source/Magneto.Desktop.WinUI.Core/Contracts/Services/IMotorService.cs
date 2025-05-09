@@ -51,6 +51,7 @@ public interface IMotorService
 
     #region Pause and Resume Program
     //public bool IsProgramPaused();
+    public void EnableProgram();
     public void PauseProgram();
     //public Task ResumeProgramReading();
     public void ResumeProgram();
