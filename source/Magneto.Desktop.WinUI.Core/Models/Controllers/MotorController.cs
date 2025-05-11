@@ -309,7 +309,7 @@ public class MotorController : IMotorController
 
         if (motor != null)
         { 
-            return motor.GetStatusOld();
+            return motor.GetStatusOld(); // TODO: update to return new status
         }
         else
         {

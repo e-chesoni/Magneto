@@ -93,55 +93,6 @@ public class StepperMotor : IStepperMotor
         Good = 0
     }
 
-    /// <summary>
-    /// Enumerates various error codes for motor operations
-    /// </summary>
-    public enum MotorError : short
-    {
-        ReceiveBufferOverrun = 10,
-        MotorDisabled = 11,
-        NoEncoderDetected = 12,
-        IndexNotFound = 13,
-        HomeRequiresEncoder = 14,
-        MoveLimitRequiresEncoder = 15,
-        CommandIsReadOnly = 20,
-        OneReadOperationPerLine = 21,
-        TooManyCommandsOnLine = 22,
-        LineCharacterLimitExceeded = 23,
-        MissingAxisNumber = 24,
-        MalformedCommand = 25,
-        InvalidCommand = 26,
-        GlobalReadOperationRequest = 27,
-        InvalidParameterType = 28,
-        InvalidCharacterParameter = 29,
-        CommandCannotBeUsedInGlobalContext = 30,
-        ParameterOutOfBounds = 31,
-        IncorrectJogVelocityRequest = 32,
-        NotInJogMode = 33,
-        TraceAlreadyInProgress = 34,
-        TraceDidNotComplete = 35,
-        CommandCannotBeExecutedDuringMotion = 36,
-        MoveOutsideSoftLimits = 37,
-        ReadNotAvailableForThisCommand = 38,
-        ProgramNumberOutOfRange = 39,
-        ProgramSizeLimitExceeded = 40,
-        ProgramFailedToRecord = 41,
-        EndCommandMustBeOnItsOwnLine = 42,
-        FailedToReadProgram = 43,
-        CommandOnlyValidWithinProgram = 44,
-        ProgramAlreadyExists = 45,
-        ProgramDoesntExist = 46,
-        ReadOperationsNotAllowedInsideProgram = 47,
-        CommandOperationsNotAllowedWhileProgramInProgress = 48,
-        LimitActivated = 50,
-        EndOfTravelLimit = 51,
-        HomeInProgress = 52,
-        IOFunctionAlreadyInUse = 53,
-        LimitsAreNotConfiguredProperly = 55,
-        CommandNotAvailableInThisVersion = 80,
-        AnalogEncoderNotAvailableInThisVersion = 81
-    }
-
     public enum ExecStatus
     {
         Success = 0,
@@ -283,7 +234,7 @@ public class StepperMotor : IStepperMotor
     /// </summary>
     /// <param name="newStatus"></param>
     /// <returns></returns> Returns the status of the motor
-    public MotorStatus GetStatusOld()
+    public MotorStatus GetStatusOld() // TOOD: remove
     {
         return _status;
     }
@@ -413,6 +364,15 @@ public class StepperMotor : IStepperMotor
         }
         // status is an 8-bit number; each bit indicates whether a specific status is "triggered"
         var status = await RequestStatusAsync(); // example status: #8
+        // TODO: check error status
+        // Example errors:
+        // #Error 48 - ERA - Command Not Allowed While Program Is In Progress 
+        // #Error 48 - PGM - Command Not Allowed While Program Is In Progress 
+        // #Error 48 - MVA - Command Not Allowed While Program Is In Progress 
+        // #Error 48 - WST - Command Not Allowed While Program Is In Progress 
+        // #Error 48 - END - Command Not Allowed While Program Is In Progress 
+        // #Error 48 - EXC - Command Not Allowed While Program Is In Progress 
+        // #Error 50 - MVA - Already In Limit  
         return int.Parse(status.TrimStart('#')); // TODO: handle too many requests error
     }
     #endregion

@@ -649,7 +649,9 @@ public static class MagnetoSerialConsole
                 MagnetoLogger.Log(
                     $"❌ Response already pending on port {portName}. Ignoring command '{command}'.",
                     LogFactoryLogLevel.LogLevel.ERROR);
-                return "#ERROR - 0 Pending response on COM port";
+                return "#ERROR 0 - Pending response on COM port";
+                // Example error:
+                // #Error 48 - ERA - Command Not Allowed While Program Is In Progress
             }
 
             _pendingResponses[portName] = tcs;
