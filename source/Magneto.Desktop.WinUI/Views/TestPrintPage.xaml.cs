@@ -380,7 +380,7 @@ public sealed partial class TestPrintPage : Page
         }
         _motorPageService.EnableSweepMotor();
     }
-    private void EnableMotorsButton_Click(object sender, RoutedEventArgs e)
+    private async void EnableMotorsButton_Click(object sender, RoutedEventArgs e)
     {
         if (_motorPageService == null)
         {
@@ -388,7 +388,23 @@ public sealed partial class TestPrintPage : Page
             return;
         }
         //_motorPageService.ResumeProgram();
-        // TODO: need to enable each motor to unlock stop buttons
+
+        // Show interactive warning
+        var confirmed = await PopupInfo.ShowConfirmationDialog(
+            this.Content.XamlRoot,
+            "Warning",
+            "Found a layer print in the queue. If you enable the calibration panel, the current layer print will be erased. Continue?"
+        );
+
+        if (!confirmed)
+        {
+            MagnetoLogger.Log("❌ User canceled enabling motors.", LogFactoryLogLevel.LogLevel.WARN);
+            // TODO:handle cancellation (clear rsm program list)
+
+            return;
+        }
+
+        // Proceed if confirmed
         _motorPageService.EnableAllMotors();
         UnlockCalibrationPanel();
     }
@@ -707,6 +723,8 @@ public sealed partial class TestPrintPage : Page
             // pause motors
             ViewModel.PausePrint();
             _motorPageService.PauseProgram();
+            // TODO: lock calibration panel (force user to re-enable to motors to use those commands; that way we get positions too)
+            LockCalibrationPanel();
         }
     }
     private void CancelButton_Click(object sender, RoutedEventArgs e)

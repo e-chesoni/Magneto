@@ -44,6 +44,23 @@ namespace Magneto.Desktop.WinUI.Popups
             await _dialog.ShowAsync();
         }
 
+        public static async Task<bool> ShowConfirmationDialog(XamlRoot xamlRoot, string title, string message)
+        {
+            var dialog = new ContentDialog
+            {
+                Title = title,
+                Content = message,
+                PrimaryButtonText = "Continue",
+                CloseButtonText = "Cancel",
+                DefaultButton = ContentDialogButton.Close,
+                XamlRoot = xamlRoot
+            };
+
+            var result = await dialog.ShowAsync();
+            return result == ContentDialogResult.Primary;
+        }
+
+
         // Method to hide the dialog
         public static void HideContentDialog()
         {
