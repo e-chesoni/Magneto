@@ -15,6 +15,7 @@ public class IdleProgramState : IProgramState
     {
         MagnetoLogger.Log("Transitioned to RSM Idle State.", LogFactoryLogLevel.LogLevel.WARN);
         _rsm = rsm;
+        _rsm.status = RoutineStateMachine.RoutineStateMachineStatus.Idle;
     }
     public async Task<bool> Process()
     {

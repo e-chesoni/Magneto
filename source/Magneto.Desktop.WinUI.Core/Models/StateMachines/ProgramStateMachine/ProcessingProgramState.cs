@@ -18,6 +18,7 @@ public class ProcessingProgramState : IProgramState
     {
         MagnetoLogger.Log("Transitioned to RSM Processing State.", LogFactoryLogLevel.LogLevel.WARN);
         _rsm = rsm;
+        _rsm.status = RoutineStateMachine.RoutineStateMachineStatus.Processing;
     }
     public async Task<bool> Process()
     {
