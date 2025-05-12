@@ -21,6 +21,8 @@ public static class MagnetoSerialConsole
     private static readonly List<SerialPort> _serialPorts = new();
     private static readonly Dictionary<string, TaskCompletionSource<string>> _pendingResponses = new();
     private static readonly object _lock = new();
+    private static readonly Dictionary<string, SemaphoreSlim> _portLocks = new();
+
     #endregion
 
     #region Default Port Setting Variables
@@ -638,7 +640,7 @@ public static class MagnetoSerialConsole
             MagnetoLogger.Log($"❌ Error reading from {readPort.PortName}: {ex.Message}", LogFactoryLogLevel.LogLevel.ERROR);
         }
     }
-    public static async Task<string> RequestResponseAsync(string portName, string command, TimeSpan timeout)
+    public static async Task<string> RequestResponseAsyncOld(string portName, string command, TimeSpan timeout)
     {
         var tcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -683,6 +685,48 @@ public static class MagnetoSerialConsole
         }
     }
 
+    public static async Task<string> RequestResponseAsync(string portName, string command, TimeSpan timeout)
+    {
+        if (!_portLocks.ContainsKey(portName))
+        {
+            _portLocks[portName] = new SemaphoreSlim(1, 1);
+        }
+
+        await _portLocks[portName].WaitAsync(); // ⏳ wait for lock
+        try
+        {
+            var tcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            if (_pendingResponses.ContainsKey(portName))
+            {
+                MagnetoLogger.Log(
+                    $"❌ Response already pending on port {portName}. Ignoring command '{command}'.",
+                    LogFactoryLogLevel.LogLevel.ERROR);
+                return "#ERROR 0 - Pending response on COM port";
+            }
+
+            _pendingResponses[portName] = tcs;
+
+            SerialWrite(portName, command);
+            MagnetoLogger.Log($"🔄 Sent '{command}' on {portName}. Awaiting response...", LogFactoryLogLevel.LogLevel.DEBUG);
+
+            var completedTask = await Task.WhenAny(tcs.Task, Task.Delay(timeout));
+
+            _pendingResponses.Remove(portName);
+
+            if (completedTask == tcs.Task)
+            {
+                return tcs.Task.Result;
+            }
+
+            ClearPendingResponse(portName);
+            return "#ERROR - 0 Timeout on COM port";
+        }
+        finally
+        {
+            _portLocks[portName].Release(); // ✅ always release
+        }
+    }
 
     /// <summary>
     /// Manually clears any pending response on the given port.

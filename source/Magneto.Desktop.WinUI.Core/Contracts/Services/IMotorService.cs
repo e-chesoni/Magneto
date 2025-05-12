@@ -49,12 +49,13 @@ public interface IMotorService
     public Task<bool> IsProgramRunningAsync(string motorNameLower);
     #endregion
 
-    #region Pause and Resume Program
+    #region Pause, Resume, Clear Program
     //public bool IsProgramPaused();
     public void EnableProgram();
     public void PauseProgram();
     //public Task ResumeProgramReading();
     public void ResumeProgram();
+    public void ClearProgramList();
     #endregion
 
     #region Stop Motors

@@ -196,6 +196,11 @@ public class MotorService : IMotorService
     public void PauseProgram() => _rsm.Pause(); // _rsm.Pause()
     //public Task ResumeProgramReading() => throw new NotImplementedException();
     public void ResumeProgram() => _rsm.Resume(); // set the pause requested flag to false
+
+    public void ClearProgramList()
+    {
+        _rsm.ClearProgramList();
+    }
     #endregion
 
     #region Stop Motors

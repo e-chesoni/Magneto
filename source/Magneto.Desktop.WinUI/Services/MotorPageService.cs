@@ -34,6 +34,8 @@ public class MotorPageService
     public void ResumeProgram() => _motorService.ResumeProgram();
     public void PauseProgram() => _motorService.PauseProgram();
 
+    public void ClearProgramList() => _motorService.ClearProgramList();
+
     #region Locks
     public void UnlockCalibrationPanel()
     {
@@ -107,7 +109,7 @@ public class MotorPageService
             _uiControlGroupHelper.SelectMotor(motorNameToLower);
         }
     }
-    public async void HandleGetAllPositions()
+    public async Task HandleGetAllPositionsAsync()
     {
         var msg = "Get position button clicked...";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
@@ -185,28 +187,25 @@ public class MotorPageService
     #endregion
 
     #region Stop Methods
-    public async void StopBuildMotorAndUpdateTextBox()
+    public void StopBuildMotorAndDisableControls()
     {
         var msg = $"stopping {buildMotorName} motor";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
         _motorService.StopMotorAndClearProgramList(buildMotorName); // UI is already updated when stop clicked...by magic i guess
-        //await UpdateMotorPositionTextBox(buildMotorName);
         _uiControlGroupHelper.DisableMotorControls(_uiControlGroupHelper.GetCalibrationControlGroup(), buildMotorName);
     }
-    public async void StopPowderMotorAndUpdateTextBox()
+    public void StopPowderMotorAndDisableControls()
     {
         var msg = $"stopping {powderMotorName} motor";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
         _motorService.StopMotorAndClearProgramList(powderMotorName);
-        //await UpdateMotorPositionTextBox(powderMotorName);
         _uiControlGroupHelper.DisableMotorControls(_uiControlGroupHelper.GetCalibrationControlGroup(), powderMotorName);
     }
-    public async void StopSweepMotorAndUpdateTextBox()
+    public void StopSweepMotorAndDisbleControls()
     {
         var msg = $"stopping {sweepMotorName} motor";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
         _motorService.StopMotorAndClearProgramList(sweepMotorName);
-        //await UpdateMotorPositionTextBox(sweepMotorName);
         _uiControlGroupHelper.DisableMotorControls(_uiControlGroupHelper.GetCalibrationControlGroup(), sweepMotorName);
     }
     #endregion

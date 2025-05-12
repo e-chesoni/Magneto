@@ -17,6 +17,7 @@ using MongoDB.Driver;
 using static Magneto.Desktop.WinUI.Core.Models.Constants.MagnetoConstants;
 using Magneto.Desktop.WinUI.Core.Models.Print;
 using static Magneto.Desktop.WinUI.Core.Models.Print.RoutineStateMachine;
+using System.Threading.Tasks;
 
 namespace Magneto.Desktop.WinUI.Views;
 
@@ -69,7 +70,7 @@ public sealed partial class TestPrintPage : Page
     #endregion
 
     #region Page Initialization Methods
-    private void InitPageServices() // combine page services initialization because motor services uses one of the UI groups
+    private async void InitPageServices() // combine page services initialization because motor services uses one of the UI groups
     {
         // UI page groups
         _calibrateMotorUIControlGroup = new UIControlGroupMotors(SelectBuildMotorButton, SelectPowderMotorButton, SelectSweepMotorButton,
@@ -91,7 +92,7 @@ public sealed partial class TestPrintPage : Page
         //_waverunnerPageService = new WaverunnerPageService(PrintDirectoryInputTextBox, PrintLayersButton);
         _waverunnerPageService = new WaverunnerPageService(new UIControlGroupWrapper(_waverunnerUiControlGroup));
         // populate motor positions on page load
-        _motorPageService.HandleGetAllPositions();
+        await _motorPageService.HandleGetAllPositionsAsync();
         // populate changeable pen settings
         if (_waverunnerPageService.WaverunnerRunning() != 0)
         {
@@ -147,7 +148,7 @@ public sealed partial class TestPrintPage : Page
         // when you resume any motion, the first thing it will do is resume the calls here
         return;
     }
-    private void StopMotorsHelper()
+    private async void StopMotorsHelper()
     {
         if (_motorPageService == null)
         {
@@ -155,9 +156,10 @@ public sealed partial class TestPrintPage : Page
             return;
         }
         //_motorPageService.StopAllMotorsClearProgramList();
-        _motorPageService.StopBuildMotorAndUpdateTextBox();
-        _motorPageService.StopPowderMotorAndUpdateTextBox();
-        _motorPageService.StopSweepMotorAndUpdateTextBox();
+        _motorPageService.StopBuildMotorAndDisableControls();
+        _motorPageService.StopPowderMotorAndDisableControls();
+        _motorPageService.StopSweepMotorAndDisbleControls();
+        await _motorPageService.HandleGetAllPositionsAsync();
     }
     #endregion
 
@@ -324,7 +326,7 @@ public sealed partial class TestPrintPage : Page
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to stop build motor.");
             return;
         }
-        _motorPageService.StopBuildMotorAndUpdateTextBox();
+        _motorPageService.StopBuildMotorAndDisableControls();
     }
     private void StopPowderMotorButton_Click(object sender, RoutedEventArgs e)
     {
@@ -333,7 +335,7 @@ public sealed partial class TestPrintPage : Page
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to stop powder motor.");
             return;
         }
-        _motorPageService.StopPowderMotorAndUpdateTextBox();
+        _motorPageService.StopPowderMotorAndDisableControls();
     }
     private void StopSweepMotorButton_Click(object sender, RoutedEventArgs e)
     {
@@ -342,7 +344,7 @@ public sealed partial class TestPrintPage : Page
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to stop sweep motor.");
             return;
         }
-        _motorPageService.StopSweepMotorAndUpdateTextBox();
+        _motorPageService.StopSweepMotorAndDisbleControls();
     }
     private void StopMotorsButton_Click(object sender, RoutedEventArgs e)
     {
@@ -399,12 +401,12 @@ public sealed partial class TestPrintPage : Page
         if (!confirmed)
         {
             MagnetoLogger.Log("❌ User canceled enabling motors.", LogFactoryLogLevel.LogLevel.WARN);
-            // TODO:handle cancellation (clear rsm program list)
-
             return;
         }
-
         // Proceed if confirmed
+        // TODO:handle cancellation (clear rsm program list) and get current positions
+        _motorPageService.ClearProgramList(); // TODO: Fix: still completing layer move
+        await _motorPageService.HandleGetAllPositionsAsync();
         _motorPageService.EnableAllMotors();
         UnlockCalibrationPanel();
     }
@@ -925,8 +927,7 @@ public sealed partial class TestPrintPage : Page
         for (var i = 0; i < slicesToMark; i++)
         {
             await ViewModel.PrintLayer(startWithMark, thickness, power, scanSpeed, hatchSpacing, amplifier, this.Content.XamlRoot); // calls _psm.play()
-            // TODO: Check if layer finished before updating page
-
+            await _motorPageService.HandleGetAllPositionsAsync();
             UpdatePrintAndSliceDisplayText();
         }
         _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Done!", "Requested layer(s) printed.");

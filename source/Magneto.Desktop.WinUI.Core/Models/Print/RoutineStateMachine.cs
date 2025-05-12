@@ -89,7 +89,6 @@ public class RoutineStateMachine : ISubsciber
         status = RoutineStateMachineStatus.Idle;
         ChangeStateTo(new IdleProgramState(this));
     }
-
     #endregion
 
     #region Getters
@@ -147,6 +146,7 @@ public class RoutineStateMachine : ISubsciber
     }
     public void AddProgramToFront(ProgramNode node) => programNodes.AddFirst(node);
     public void AddProgramToBack(ProgramNode node) => programNodes.AddLast(node);
+    public void ClearProgramList() => programNodes.Clear();
     #region Add to Front Wrappers
     private void AddProgramFrontHelper(string[] program, Controller controller, int axis)
     {

@@ -86,7 +86,7 @@ public sealed partial class TestMotorsPage : Page
         _motorPageService = new MotorPageService(new UIControlGroupWrapper(_calibrateMotorUIControlGroup), ViewModel.GetRoutineStateMachine());
 
         // populate motor positions on page load
-        _motorPageService.HandleGetAllPositions();
+        _motorPageService.HandleGetAllPositionsAsync();
     }
 
     #region Helpers
@@ -302,7 +302,7 @@ public sealed partial class TestMotorsPage : Page
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to stop build motor.");
             return;
         }
-        _motorPageService.StopBuildMotorAndUpdateTextBox();
+        _motorPageService.StopBuildMotorAndDisableControls();
     }
     private void StopPowderMotorButton_Click(object sender, RoutedEventArgs e)
     {
@@ -311,7 +311,7 @@ public sealed partial class TestMotorsPage : Page
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to stop powder motor.");
             return;
         }
-        _motorPageService.StopPowderMotorAndUpdateTextBox();
+        _motorPageService.StopPowderMotorAndDisableControls();
     }
     private void StopSweepMotorButton_Click(object sender, RoutedEventArgs e)
     {
@@ -320,7 +320,7 @@ public sealed partial class TestMotorsPage : Page
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to stop sweep motor.");
             return;
         }
-        _motorPageService.StopSweepMotorAndUpdateTextBox();
+        _motorPageService.StopSweepMotorAndDisbleControls();
     }
     private void StopMotorsButton_Click(object sender, RoutedEventArgs e)
     {

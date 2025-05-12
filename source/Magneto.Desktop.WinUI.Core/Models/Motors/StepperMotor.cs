@@ -373,7 +373,26 @@ public class StepperMotor : IStepperMotor
         // #Error 48 - END - Command Not Allowed While Program Is In Progress 
         // #Error 48 - EXC - Command Not Allowed While Program Is In Progress 
         // #Error 50 - MVA - Already In Limit  
-        return int.Parse(status.TrimStart('#')); // TODO: handle too many requests error
+        if (status.StartsWith("#ERROR"))
+        {
+            MagnetoLogger.Log($"❌ Motor returned error: {status}", LogFactoryLogLevel.LogLevel.ERROR);
+            return -1;
+        }
+
+        if (!status.StartsWith("#"))
+        {
+            MagnetoLogger.Log($"❌ Malformed response: {status}", LogFactoryLogLevel.LogLevel.ERROR);
+            return -1;
+        }
+
+        var trimmed = status.TrimStart('#');
+        if (int.TryParse(trimmed, out var parsedStatus))
+        {
+            return parsedStatus;
+        }
+
+        MagnetoLogger.Log($"❌ Failed to parse status: '{status}'", LogFactoryLogLevel.LogLevel.ERROR);
+        return -1;
     }
     #endregion
 
