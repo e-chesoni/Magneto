@@ -215,6 +215,8 @@ public class TestPrintViewModel : ObservableRecipient
         }
         return 1;
     }
+
+    public async void ResumePrint() => await _psm.Resume();
     #endregion
 
     #region Navigation

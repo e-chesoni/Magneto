@@ -111,10 +111,21 @@ public class ProcessingProgramState : IProgramState
                 MagnetoLogger.Log($"Invalid motor name: {motorNameLower}", LogFactoryLogLevel.LogLevel.ERROR);
                 throw new ArgumentException($"Unknown motor: {motorNameLower}");
         }
+        /*
+         public struct LastMove
+        {
+            public ProgramNode programNode;
+            public double startingPosition;
+            public double target;
+        }
+         */
 
         var target = _rsm.CalculateTargetPosition(startingPosition, programNode);
         SetLastMoveStartingPosition(startingPosition);
         SetLastMoveTarget(target);
+        _rsm.lastMove.programNode = programNode;
+        _rsm.lastMove.startingPosition = startingPosition;
+        _rsm.lastMove.target = target;
     }
     private async Task StoreLastRequestAndRunProgram(string motorNameLower, ProgramNode programNode)
     {
@@ -142,7 +153,7 @@ public class ProcessingProgramState : IProgramState
     {
         ChangeStateTo(new PausedProgramState(_rsm));
     }
-    public async Task Resume() => throw new NotImplementedException();
+    public async Task<bool> Resume() => throw new NotImplementedException();
      public void Add() => throw new NotImplementedException();
     public void Remove() => throw new NotImplementedException();
     public void Cancel()

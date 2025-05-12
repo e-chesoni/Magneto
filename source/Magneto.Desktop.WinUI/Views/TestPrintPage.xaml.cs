@@ -18,6 +18,8 @@ using static Magneto.Desktop.WinUI.Core.Models.Constants.MagnetoConstants;
 using Magneto.Desktop.WinUI.Core.Models.Print;
 using static Magneto.Desktop.WinUI.Core.Models.Print.RoutineStateMachine;
 using System.Threading.Tasks;
+using Magneto.Desktop.WinUI.Core.Models.States.PrintStates;
+using static Magneto.Desktop.WinUI.Core.Models.States.PrintStates.PrintStateMachine;
 
 namespace Magneto.Desktop.WinUI.Views;
 
@@ -724,7 +726,7 @@ public sealed partial class TestPrintPage : Page
         {
             // pause motors
             ViewModel.PausePrint();
-            _motorPageService.PauseProgram();
+            //_motorPageService.PauseProgram(); // changes rsm state to pause; this is handled by psm when it changes state to pause
             // TODO: lock calibration panel (force user to re-enable to motors to use those commands; that way we get positions too)
             LockCalibrationPanel();
         }
@@ -860,77 +862,98 @@ public sealed partial class TestPrintPage : Page
 
     private async void PlayButton_Click(object sender, RoutedEventArgs e)
     {
-        int res;
-        double thickness;
-        double power;
-        double scanSpeed;
-        double hatchSpacing;
-        double amplifier;
-        Int64 slicesToMark;
-        var startWithMark = StartWithMarkCheckBox.IsEnabled;
-        if (startWithMark)
-        {
-            var msg = $"Start with mark requested.";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
-        }
-        // Check for valid data in required text boxes
-        (res, thickness) = ConvertTextBoxTextToDouble(LayerThicknessTextBox);
-        if (res == 0)
-        {
-            var msg = $"Layer thickness text box input is invalid.";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            return;
-        }
-        (res, power) = ConvertTextBoxTextToDouble(LaserPowerTextBox);
-        if (res == 0)
-        {
-            var msg = $"Power text box input is invalid.";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            return;
-        }
-        (res, scanSpeed) = ConvertTextBoxTextToDouble(ScanSpeedTextBox);
-        if (res == 0)
-        {
-            var msg = $"Scan speed text box input is invalid.";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            return;
-        }
-        (res, hatchSpacing) = ConvertTextBoxTextToDouble(HatchSpacingTextBox);
-        if (res == 0)
-        {
-            var msg = $"Hatching text box input is invalid.";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            return;
-        }
-        (res, amplifier) = ConvertTextBoxTextToDouble(SupplyAmplifierTextBox);
-        if (res == 0)
-        {
-            var msg = $"Supply amplifier text box input is invalid.";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            return;
-        }
-        (res, slicesToMark) = ConvertTextBoxTextInt(SlicesToMarkTextBox);
-        if (res == 0)
-        {
-            var msg = $"Slices to mark text box input is invalid.";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            return;
-        }
         if (_motorPageService == null)
         {
             var msg = $"Cannot print layer. Motor page service is null.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             return;
         }
-        // Print requested layers
-        MagnetoLogger.Log($"Printing {slicesToMark} layers, each {thickness}mm thick, at {power}W, scan speed equal to {scanSpeed}mm/s, and {hatchSpacing}mm hatch spacing. Powder amplifier for each layer is: {amplifier}.", LogFactoryLogLevel.LogLevel.ERROR);
-        for (var i = 0; i < slicesToMark; i++)
+        if (!_motorPageService.IsPrintPaused()) // if psm status is not paused
         {
-            await ViewModel.PrintLayer(startWithMark, thickness, power, scanSpeed, hatchSpacing, amplifier, this.Content.XamlRoot); // calls _psm.play()
-            await _motorPageService.HandleGetAllPositionsAsync();
-            UpdatePrintAndSliceDisplayText();
+            int res;
+            double thickness;
+            double power;
+            double scanSpeed;
+            double hatchSpacing;
+            double amplifier;
+            Int64 slicesToMark;
+            var startWithMark = StartWithMarkCheckBox.IsEnabled;
+            if (startWithMark)
+            {
+                var msg = $"Start with mark requested.";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
+            }
+            // Check for valid data in required text boxes
+            (res, thickness) = ConvertTextBoxTextToDouble(LayerThicknessTextBox);
+            if (res == 0)
+            {
+                var msg = $"Layer thickness text box input is invalid.";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+                return;
+            }
+            (res, power) = ConvertTextBoxTextToDouble(LaserPowerTextBox);
+            if (res == 0)
+            {
+                var msg = $"Power text box input is invalid.";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+                return;
+            }
+            (res, scanSpeed) = ConvertTextBoxTextToDouble(ScanSpeedTextBox);
+            if (res == 0)
+            {
+                var msg = $"Scan speed text box input is invalid.";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+                return;
+            }
+            (res, hatchSpacing) = ConvertTextBoxTextToDouble(HatchSpacingTextBox);
+            if (res == 0)
+            {
+                var msg = $"Hatching text box input is invalid.";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+                return;
+            }
+            (res, amplifier) = ConvertTextBoxTextToDouble(SupplyAmplifierTextBox);
+            if (res == 0)
+            {
+                var msg = $"Supply amplifier text box input is invalid.";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+                return;
+            }
+            (res, slicesToMark) = ConvertTextBoxTextInt(SlicesToMarkTextBox);
+            if (res == 0)
+            {
+                var msg = $"Slices to mark text box input is invalid.";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+                return;
+            }
+            
+            // Print requested layers
+            MagnetoLogger.Log($"Printing {slicesToMark} layers, each {thickness}mm thick, at {power}W, scan speed equal to {scanSpeed}mm/s, and {hatchSpacing}mm hatch spacing. Powder amplifier for each layer is: {amplifier}.", LogFactoryLogLevel.LogLevel.ERROR);
+            for (var i = 0; i < slicesToMark; i++)
+            {
+                // TODO: lock the print text boxes
+
+                await ViewModel.PrintLayer(startWithMark, thickness, power, scanSpeed, hatchSpacing, amplifier, this.Content.XamlRoot); // calls _psm.play()
+                await _motorPageService.HandleGetAllPositionsAsync();
+                UpdatePrintAndSliceDisplayText();
+
+                // TODO: unlock the print text boxes if layer completed
+
+            }
         }
-        _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Done!", "Requested layer(s) printed.");
+        else if (_motorPageService.IsPrintPaused())
+        {
+            var msg = $"Print is paused. Calling resume on the view model.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            // TODO; call resume
+            ViewModel.ResumePrint();
+        }
+        else
+        {
+            var msg = $"Print state machine is in idle or printing state. Cannot start a new layer move nor resume the old one.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+        }
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Done!", "Requested layer(s) printed.");
     }
     private async void DeletePrintButton_Click(object sender, RoutedEventArgs e)
     {

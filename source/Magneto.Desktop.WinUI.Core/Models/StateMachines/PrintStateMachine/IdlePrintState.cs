@@ -16,6 +16,7 @@ public class IdlePrintState : IPrintState
     public IdlePrintState(PrintStateMachine psm)
     {
         _psm = psm;
+        _psm.status = PrintStateMachine.PrintStateMachineStatus.Idle;
     }
     public async Task<bool> InitializePlayAsync()
     {
@@ -28,6 +29,7 @@ public class IdlePrintState : IPrintState
         return await InitializePlayAsync();
     }
     public void Pause() => throw new NotImplementedException();
+    public Task<bool> Resume() => throw new NotImplementedException();
     public void Redo() => throw new NotImplementedException();
     public void Cancel() => throw new NotImplementedException();
     public void ChangeStateTo(IPrintState state) => _psm.ChangeStateTo(state);

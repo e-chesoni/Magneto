@@ -17,6 +17,7 @@ public interface IPrintState
     Task<bool> InitializePlayAsync();
     Task<bool> Play();
     void Pause();
+    Task<bool> Resume();
     void Redo();
     void Cancel();
     void ChangeStateTo(IPrintState state);

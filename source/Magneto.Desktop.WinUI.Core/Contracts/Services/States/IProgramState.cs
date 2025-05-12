@@ -9,7 +9,7 @@ public interface IProgramState
 {
     Task<bool> Process();
     void Pause();
-    Task Resume();
+    Task<bool> Resume();
     void Add();
     void Remove();
     void Cancel();

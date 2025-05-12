@@ -38,20 +38,22 @@ public class PrintStateMachine
     #endregion
 
     #region Settings and Status
-    public static class CurrentLayerSettings
-    {
-        public static double thickness;
-        public static double amplifier;
-    }
+    public PrintStateMachineStatus status { get; set; }
     public enum PrintStateMachineStatus
     {
         Idle,
         Printing,
         Paused
     }
+    public static class CurrentLayerSettings
+    {
+        public static double thickness;
+        public static double amplifier;
+        public static double sweep_clearance = 2;
+    }
     #endregion
 
-    private double SWEEP_CLEARANCE = 2;
+    //private double SWEEP_CLEARANCE = 2;
 
     #region Constructor
     public PrintStateMachine(IPrintSeeder seeder, IPrintService printService, ISliceService sliceService, RoutineStateMachine rsm, MotorService motorService)
@@ -200,6 +202,7 @@ public class PrintStateMachine
 
     #region State Machine Methods
     public async Task<bool> Play() => await _currentState.Play();
+    public async Task<bool> Resume() => await _currentState.Resume();
     public void Pause() => _currentState.Pause();
     public void Redo() => _currentState.Redo();
     public void Cancel() => _currentState.Cancel();

@@ -32,10 +32,11 @@ public class MotorPageService
     // NEW METHODS -- WHO DIS?
     public void StopAllMotorsClearProgramList() => _motorService.StopAllMotorsClearProgramList();
     public void ResumeProgram() => _motorService.ResumeProgram();
+
     public void PauseProgram() => _motorService.PauseProgram();
-
     public void ClearProgramList() => _motorService.ClearProgramList();
-
+    public bool IsPrintPaused() => _rsm.status == RoutineStateMachineStatus.Paused;
+        
     #region Locks
     public void UnlockCalibrationPanel()
     {

@@ -24,7 +24,7 @@ public class IdleProgramState : IProgramState
         return await newState.Process();
     }
     public void Pause() => throw new NotImplementedException();
-    public async Task Resume() => throw new NotImplementedException();
+    public async Task<bool> Resume() => throw new NotImplementedException();
     public void Add() => throw new NotImplementedException();
     public void Remove() => throw new NotImplementedException();
     public void Cancel() => _rsm.programNodes.Clear();

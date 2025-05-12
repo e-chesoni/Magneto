@@ -29,8 +29,9 @@ public class PausedProgramState : IProgramState
         return await newState.Process();
     }
     public void Pause() => _rsm.status = RoutineStateMachineStatus.Paused;
-    public async Task Resume()
+    public async Task<bool> Resume()
     {
+        bool programComplete;
         StepperMotor motor;
         // Figure out if the last program finished:
         // get the last program node and extract its variables
@@ -56,7 +57,8 @@ public class PausedProgramState : IProgramState
         else
         {
             MagnetoLogger.Log("Cannot resume reading program. No motor found.", LogFactoryLogLevel.LogLevel.ERROR);
-            return;
+            programComplete = false;
+            return programComplete;
         }
         // get the current position
         var currentPostion = await motor.GetPositionAsync(2);
@@ -67,13 +69,14 @@ public class PausedProgramState : IProgramState
         // if motor did not reach target, put absolute move command to move motor to target at the front of the program list
         if (currentPostion != target)
         {
+            MagnetoLogger.Log($"Resuming program: {motor.GetMotorName} did not reach its target: {target}. Current position: {currentPostion}.", LogFactoryLogLevel.LogLevel.WARN);
             var absoluteProgram = _rsm.WriteAbsoluteMoveProgram(motor, target);
             _rsm.AddProgramFront(motor.GetMotorName(), absoluteProgram);
         }
         // set the pause requested flag to false
         //EnableProgramProcessing();
         // resume executing process program
-        await _rsm.Process();
+        return await Process(); // will transition to processing state and process program
     }
     public void Add() => throw new NotImplementedException();
     public void Remove() => throw new NotImplementedException();

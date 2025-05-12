@@ -21,12 +21,16 @@ public class PrintingPrintState : IPrintState
     private PrintStateMachine _psm;
     private RoutineStateMachine _rsm;
     private IMotorService _motorService;
-    private double SWEEP_CLEARANCE = 2;
+    //private double SWEEP_CLEARANCE = 2;
     public PrintingPrintState(PrintStateMachine psm)
     {
         _psm = psm;
+        _psm.status = PrintStateMachineStatus.Printing;
         _rsm = _psm.rsm;
         _motorService = _psm.motorService;
+        // Enable rsm again
+        _rsm.CANCELLATION_REQUESTED = false;
+        _rsm.status = RoutineStateMachine.RoutineStateMachineStatus.Processing;
     }
     public async Task<bool> InitializePlayAsync()
     {
@@ -34,21 +38,19 @@ public class PrintingPrintState : IPrintState
     }
     public async Task<bool> Play()
     {
-        return await ExecuteLayerMove();
+        await AddLayerMoveToProgramList();
+        return await _rsm.Process();
     }
-    public async Task<bool> ExecuteLayerMove()
+    // layer moves are for prints (don't really belong on rsm)
+    public async Task AddLayerMoveToProgramList()
     {
         var buildMotor = _motorService.GetBuildMotor();
         var powderMotor = _motorService.GetPowderMotor();
         var sweepMotor = _motorService.GetSweepMotor();
         var thickness = CurrentLayerSettings.thickness;
         var amplifier = CurrentLayerSettings.amplifier;
-        var clearance = SWEEP_CLEARANCE;
+        var clearance = CurrentLayerSettings.sweep_clearance;
         var movePositive = true;
-
-        // Enable rsm again
-        _rsm.CANCELLATION_REQUESTED = false;
-        _rsm.status = RoutineStateMachine.RoutineStateMachineStatus.Processing;
 
         // read and clear errors
         await _motorService.ReadAndClearAllErrors();
@@ -82,10 +84,9 @@ public class PrintingPrintState : IPrintState
         _rsm.AddProgramLast(buildMotor.GetMotorName(), lowerBuildLayer);
         // spread powder
         _rsm.AddProgramLast(sweepMotor.GetMotorName(), spreadPowder);
-
-        return await _rsm.Process();
     }
     public void Pause() => ChangeStateTo(new PausedPrintState(_psm));
+    public async Task<bool> Resume() => await _rsm.Resume();
     public void Redo() => throw new NotImplementedException();
     public void Cancel() => throw new NotImplementedException();
     public void ChangeStateTo(IPrintState state) => _psm.ChangeStateTo(state);

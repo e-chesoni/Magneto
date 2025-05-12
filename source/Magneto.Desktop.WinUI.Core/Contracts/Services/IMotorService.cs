@@ -54,7 +54,7 @@ public interface IMotorService
     public void EnableProgram();
     public void PauseProgram();
     //public Task ResumeProgramReading();
-    public void ResumeProgram();
+    public Task ResumeProgram();
     public void ClearProgramList();
     #endregion
 

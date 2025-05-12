@@ -237,7 +237,7 @@ public class RoutineStateMachine : ISubsciber
     #region Processing Helpers
     public (double? value, bool isAbsolute) ParseMoveCommand(string[] program)
     {
-        for (var i = program.Length - 1; i >= 0; i--)
+        for (var i = program.Length - 1; i >= 0; i--) // TODO: fix object set to a null reference error (probably program is null)
         {
             var line = program[i];
 
@@ -312,7 +312,7 @@ public class RoutineStateMachine : ISubsciber
     #region State Methods
     public async Task<bool> Process() => await _currentState.Process();
     public void Pause() => _currentState.Pause();
-    public void Resume() => _currentState.Resume();
+    public async Task<bool> Resume() => await _currentState.Resume();
     public void Add() => _currentState.Add();
     public void Remove() => _currentState.Remove();
     public void Cancel()
