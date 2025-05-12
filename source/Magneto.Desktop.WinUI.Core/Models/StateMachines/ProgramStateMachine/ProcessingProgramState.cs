@@ -19,7 +19,7 @@ public class ProcessingProgramState : IProgramState
         MagnetoLogger.Log("Transitioned to RSM Processing State.", LogFactoryLogLevel.LogLevel.WARN);
         _rsm = rsm;
     }
-    public async Task Process()
+    public async Task<bool> Process()
     {
         var buildMotorName = _rsm.GetBuildMotor().GetMotorName();
         var powderMotorName = _rsm.GetPowderMotor().GetMotorName();
@@ -32,7 +32,7 @@ public class ProcessingProgramState : IProgramState
             {
                 MagnetoLogger.Log("⏸ rsm state is paused. Halting execution.", LogFactoryLogLevel.LogLevel.WARN);
                 Pause();
-                return;
+                return false;
             }
             // check for cancellation request before starting next program
             if (_rsm.CANCELLATION_REQUESTED)
@@ -40,7 +40,7 @@ public class ProcessingProgramState : IProgramState
                 MagnetoLogger.Log("🛑 Cancellation requested. Exiting loop.", LogFactoryLogLevel.LogLevel.WARN);
                 //StopProgram(); // Ensure STOP flag and program list are cleared
                 Cancel();
-                return;
+                return false;
             }
             // get the next program on the list
             var programNode = _rsm.GetFirstProgramNode();
@@ -48,7 +48,7 @@ public class ProcessingProgramState : IProgramState
             if (!programNode.HasValue)
             {
                 MagnetoLogger.Log("⚠️ No valid program node found. Exiting.", LogFactoryLogLevel.LogLevel.WARN);
-                return;
+                return false;
             }
             // else, extract the controller and axis associated with the program
             var confirmedNode = programNode.Value;
@@ -69,28 +69,20 @@ public class ProcessingProgramState : IProgramState
                 {
                     MagnetoLogger.Log("⏸ rsm state is paused. Halting execution.", LogFactoryLogLevel.LogLevel.WARN);
                     Pause();  // handled by current state
-                    return;
+                    return false;
                 }
-                //if (IsProgramStopped())
                 if (_rsm.CANCELLATION_REQUESTED)
                 {
                     MagnetoLogger.Log($"🛑 Cancellation detected mid-execution on {motorName}.", LogFactoryLogLevel.LogLevel.WARN);
-
-                    // Attempt to stop and flush the controller if possible
-                    //StopProgram();
                     Cancel(); // handled by current state (all clear list)
-                    return;
+                    return false;
                 }
                 await Task.Delay(100); // Throttle polling
             }
         }
-        MagnetoLogger.Log("⚠️ Exiting program processor.", LogFactoryLogLevel.LogLevel.WARN);
-        MagnetoLogger.Log($"Programs {_rsm.programNodes.Count} on list:", LogFactoryLogLevel.LogLevel.VERBOSE);
-        foreach (var node in _rsm.programNodes)
-        {
-            MagnetoLogger.Log($"{node.program}\n", LogFactoryLogLevel.LogLevel.VERBOSE);
-        }
+        MagnetoLogger.Log("✅ Program list fully processed.", LogFactoryLogLevel.LogLevel.SUCCESS);
         ChangeStateTo(new IdleProgramState(_rsm));
+        return true;
     }
     #region Program Processing Methods
     #region Program Processing Helpers

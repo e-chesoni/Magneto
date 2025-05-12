@@ -91,7 +91,7 @@ public class TestPrintViewModel : ObservableRecipient
     #endregion
 
     #region Page Data Management
-    public async Task LoadSliceDataAsync()
+    public async Task DisplaySliceCollectionAsync()
     {
         sliceCollection.Clear();
         try
@@ -126,8 +126,6 @@ public class TestPrintViewModel : ObservableRecipient
     public void ClearData()
     {
         sliceCollection.Clear();
-        //currentPrint = null; // TODO: use print state machine
-        //currentSlice = null; // TODO: use print state machine
         _psm.ClearCurrentPrint();
     }
     #endregion
@@ -136,9 +134,8 @@ public class TestPrintViewModel : ObservableRecipient
     public async Task GetNextSliceAndUpdateDisplay()
     {
         sliceCollection.Clear();
-        await LoadSliceDataAsync();
-        await _psm.SetCurrentSliceAsync();
-        // TODO: you need to update the slice directory too
+        await DisplaySliceCollectionAsync();
+        //await _psm.SetCurrentSliceAsync();
     }
     #endregion
 
@@ -165,6 +162,7 @@ public class TestPrintViewModel : ObservableRecipient
     public async Task<int>PrintLayer(bool startWithMark, double thickness, double power, double scanSpeed, double hatchSpacing, double amplifier, XamlRoot xamlRoot)
     {
         string msg;
+        var layerComplete = false;
         // TODO: Uncomment laser methods after testing motor movement
         /*
         if (_waverunnerService.IsRunning() == 0)
@@ -186,8 +184,7 @@ public class TestPrintViewModel : ObservableRecipient
 
             // layer move
             _psm.SetCurrentPrintSettings(thickness, amplifier);
-            //await _psm.ExecuteLayerMove();
-            await _psm.Play();
+            layerComplete = await _psm.Play();
             // wait for layer move to complete
             //while (motorPageService.MotorsRunning()) { await Task.Delay(100); }
         }
@@ -195,7 +192,7 @@ public class TestPrintViewModel : ObservableRecipient
         {
             // layer move
             _psm.SetCurrentPrintSettings(thickness, amplifier);
-            await _psm.Play();
+            layerComplete = await _psm.Play();
             // wait for layer move to complete
             //while (_motorService.MotorsRunning()) { await Task.Delay(100); }
             //while (motorPageService.MotorsRunning()) { await Task.Delay(100); }
@@ -206,8 +203,16 @@ public class TestPrintViewModel : ObservableRecipient
             //while (_waverunnerService.GetMarkStatus() != 0) { Task.Delay(100).Wait(); }
 
         }
-        await _psm.UpdateSliceCollectionAsync(thickness, power, scanSpeed, hatchSpacing);
-        await GetNextSliceAndUpdateDisplay(); // this should update currentSlice
+        // TODO: if psm status is paused, layer did not complete; don't update yet
+        if (layerComplete)
+        {
+            await _psm.UpdateCurrentSliceAsync(thickness, power, scanSpeed, hatchSpacing); // handles backend data
+            await _psm.SetCurrentSliceToNextAsync(); // handles backend data
+        }
+        else
+        {
+            MagnetoLogger.Log("⚠️ Layer move was paused or canceled. Skipping print and slice update.", LogFactoryLogLevel.LogLevel.WARN);
+        }
         return 1;
     }
     #endregion

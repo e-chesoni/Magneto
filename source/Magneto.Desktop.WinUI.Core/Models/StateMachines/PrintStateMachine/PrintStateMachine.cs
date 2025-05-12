@@ -72,7 +72,7 @@ public class PrintStateMachine
         currentPrint = await GetPrintByDirectory(directoryPath);
         currentSlice = await GetNextSliceAsync();
     }
-    public async Task SetCurrentSliceAsync() => currentSlice = await GetNextSliceAsync();
+    public async Task SetCurrentSliceToNextAsync() => currentSlice = await GetNextSliceAsync();
     #endregion
 
     #region Print and Slice Getters
@@ -108,7 +108,7 @@ public class PrintStateMachine
             return await _sliceService.GetNextSlice(currentPrint);
         }
     }
-    public async Task<long> GetSlicesMarkedAsync() => await _printService.MarkedOrUnmarkedCount(currentPrint.id);
+    public async Task<long> GetSlicesMarkedAsync() => await _printService.MarkedSliceCount(currentPrint.id);
     public async Task<long> GetTotalSlicesAsync() => await _printService.TotalSlicesCount(currentPrint.id);
     public string GetSliceFilePath()
     {
@@ -164,7 +164,7 @@ public class PrintStateMachine
             await _printService.EditPrint(print);
         }
     }
-    public async Task UpdateSliceCollectionAsync(double thickness, double power, double scanSpeed, double hatchSpacing)
+    public async Task UpdateCurrentSliceAsync(double thickness, double power, double scanSpeed, double hatchSpacing)
     {
         if (currentSlice == null)
         {
@@ -184,7 +184,6 @@ public class PrintStateMachine
         currentSlice.hatchSpacing = hatchSpacing;
         currentSlice.energyDensity = Math.Round(power / (thickness * scanSpeed * hatchSpacing), 2);
         currentSlice.marked = true;
-        //await _sliceService.EditSlice(currentSlice);
         await _printService.EditSlice(currentSlice);
     }
     #endregion
@@ -200,7 +199,7 @@ public class PrintStateMachine
     #endregion
 
     #region State Machine Methods
-    public async Task Play() => await _currentState.Play();
+    public async Task<bool> Play() => await _currentState.Play();
     public void Pause() => _currentState.Pause();
     public void Redo() => _currentState.Redo();
     public void Cancel() => _currentState.Cancel();

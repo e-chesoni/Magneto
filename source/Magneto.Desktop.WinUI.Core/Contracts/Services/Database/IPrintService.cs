@@ -12,7 +12,7 @@ public interface IPrintService
     #region Counters
     Task<long> TotalPrintsCount();
     public Task<long> TotalSlicesCount(string printId);
-    public Task<long> MarkedOrUnmarkedCount(string printId);
+    public Task<long> MarkedSliceCount(string printId);
     #endregion
 
     #region Getters

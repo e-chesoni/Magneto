@@ -310,8 +310,7 @@ public class RoutineStateMachine : ISubsciber
     #endregion
 
     #region State Methods
-    public async Task Process() => await _currentState.Process();
-
+    public async Task<bool> Process() => await _currentState.Process();
     public void Pause() => _currentState.Pause();
     public void Resume() => _currentState.Resume();
     public void Add() => _currentState.Add();

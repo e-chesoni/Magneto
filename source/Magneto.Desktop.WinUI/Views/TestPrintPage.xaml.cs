@@ -722,7 +722,7 @@ public sealed partial class TestPrintPage : Page
     #endregion
 
     #region Manage Text Population & Clearing
-    private async void PopulatePageText()
+    private async void UpdatePrintAndSliceDisplayText()
     {
         var print = ViewModel.GetCurrentPrint();
         var slice = ViewModel.GetCurrentSlice(); // null
@@ -748,7 +748,6 @@ public sealed partial class TestPrintPage : Page
                         var msg = $"📅 start: {localStart}, end: {localEnd}, duration: {print.duration}";
                         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
                         DurationTextBlock.Text = duration?.ToString(@"hh\:mm\:ss") ?? "—";
-
                         await ViewModel.GetNextSliceAndUpdateDisplay();
                     }
                     else
@@ -803,7 +802,7 @@ public sealed partial class TestPrintPage : Page
                 Debug.WriteLine("❌ImagePath is null.");
                 return;
             }
-            PopulatePageText();
+            UpdatePrintAndSliceDisplayText();
         }
     }
 
@@ -908,7 +907,9 @@ public sealed partial class TestPrintPage : Page
         for (var i = 0; i < slicesToMark; i++)
         {
             await ViewModel.PrintLayer(startWithMark, thickness, power, scanSpeed, hatchSpacing, amplifier, this.Content.XamlRoot); // calls _psm.play()
-            PopulatePageText();
+            // TODO: Check if layer finished before updating page
+
+            UpdatePrintAndSliceDisplayText();
         }
         _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Done!", "Requested layer(s) printed.");
     }
@@ -959,7 +960,7 @@ public sealed partial class TestPrintPage : Page
             PrintDirectoryInputTextBox.Text = folder.Path;
             await ViewModel.AddPrintToDatabaseAsync(folder.Path);
         }
-        PopulatePageText();
+        UpdatePrintAndSliceDisplayText();
     }
     #endregion
 

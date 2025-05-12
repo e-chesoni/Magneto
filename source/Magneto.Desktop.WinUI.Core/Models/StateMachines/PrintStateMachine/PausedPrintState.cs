@@ -22,12 +22,16 @@ public class PausedPrintState : IPrintState
         _psm = psm;
         _psm.rsm.status = RoutineStateMachine.RoutineStateMachineStatus.Paused;
     }
-
-    public async Task Play()
+    public async Task<bool> InitializePlayAsync()
     {
         var newState = new PrintingPrintState(_psm);
         _psm.ChangeStateTo(newState);
-        await newState.InitializePlayAsync(); // run Play() logic immediately
+        return await newState.InitializePlayAsync(); // run Play() logic immediately
+    }
+
+    public async Task<bool> Play()
+    {
+        return await InitializePlayAsync();
     }
     public void Pause() => _psm.rsm.status = RoutineStateMachine.RoutineStateMachineStatus.Paused;
     public void Redo() => throw new NotImplementedException();

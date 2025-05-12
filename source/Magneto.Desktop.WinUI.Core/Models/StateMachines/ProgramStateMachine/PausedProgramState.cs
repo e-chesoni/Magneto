@@ -22,11 +22,11 @@ public class PausedProgramState : IProgramState
         MagnetoLogger.Log("Changing rsm state to paused.", LogFactoryLogLevel.LogLevel.WARN);
         _rsm.status = RoutineStateMachineStatus.Paused;
     }
-    public async Task Process()
+    public async Task<bool> Process()
     {
         IProgramState newState = new ProcessingProgramState(_rsm);
         ChangeStateTo(newState);
-        await newState.Process();
+        return await newState.Process();
     }
     public void Pause() => _rsm.status = RoutineStateMachineStatus.Paused;
     public async Task Resume()

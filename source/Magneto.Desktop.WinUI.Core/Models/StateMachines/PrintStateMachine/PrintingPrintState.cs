@@ -28,15 +28,15 @@ public class PrintingPrintState : IPrintState
         _rsm = _psm.rsm;
         _motorService = _psm.motorService;
     }
-    public async Task InitializePlayAsync()
+    public async Task<bool> InitializePlayAsync()
     {
-        await Play();
+        return await Play();
     }
-    public async Task Play()
+    public async Task<bool> Play()
     {
-        await ExecuteLayerMove();
+        return await ExecuteLayerMove();
     }
-    public async Task ExecuteLayerMove()
+    public async Task<bool> ExecuteLayerMove()
     {
         var buildMotor = _motorService.GetBuildMotor();
         var powderMotor = _motorService.GetPowderMotor();
@@ -83,7 +83,7 @@ public class PrintingPrintState : IPrintState
         // spread powder
         _rsm.AddProgramLast(sweepMotor.GetMotorName(), spreadPowder);
 
-        await _rsm.Process();
+        return await _rsm.Process();
     }
     public void Pause() => ChangeStateTo(new PausedPrintState(_psm));
     public void Redo() => throw new NotImplementedException();

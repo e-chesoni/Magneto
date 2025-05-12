@@ -34,9 +34,9 @@ public class PrintService : IPrintService
     {
         return await _sliceService.TotalSlicesCount(printId);
     }
-    public async Task<long> MarkedOrUnmarkedCount(string printId)
+    public async Task<long> MarkedSliceCount(string printId)
     {
-        return await _sliceService.MarkedOrUnmarkedCount(printId, true);
+        return await _sliceService.MarkedOrUnmarkedCount(printId, true); // if true, get marked slices (false -> get unmarked slices)
     }
     #endregion
 

@@ -14,7 +14,8 @@ namespace Magneto.Desktop.WinUI.Core.Contracts.Services.States;
 /// </summary>
 public interface IPrintState
 {
-    Task Play();
+    Task<bool> InitializePlayAsync();
+    Task<bool> Play();
     void Pause();
     void Redo();
     void Cancel();

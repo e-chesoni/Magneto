@@ -17,12 +17,15 @@ public class IdlePrintState : IPrintState
     {
         _psm = psm;
     }
-
-    public async Task Play()
+    public async Task<bool> InitializePlayAsync()
     {
         var newState = new PrintingPrintState(_psm);
         _psm.ChangeStateTo(newState);
-        await newState.InitializePlayAsync(); // run Play() logic immediately
+        return await newState.InitializePlayAsync(); // run Play() logic immediately
+    }
+    public async Task<bool> Play()
+    {
+        return await InitializePlayAsync();
     }
     public void Pause() => throw new NotImplementedException();
     public void Redo() => throw new NotImplementedException();
