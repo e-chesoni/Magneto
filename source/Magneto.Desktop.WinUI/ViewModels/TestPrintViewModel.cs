@@ -47,6 +47,8 @@ public class TestPrintViewModel : ObservableRecipient
         _waverunnerService = waverunnerService;
     }
 
+    public bool IsPrintPaused() => _psm.status == PrintStateMachine.PrintStateMachineStatus.Paused;
+
     #region Getters
     public RoutineStateMachine GetRoutineStateMachine() => _psm.rsm;
     public PrintModel? GetCurrentPrint() => _psm.GetCurrentPrint();
@@ -216,7 +218,21 @@ public class TestPrintViewModel : ObservableRecipient
         return 1;
     }
 
-    public async void ResumePrint() => await _psm.Resume();
+    public async void ResumePrint(bool startWithMark, double thickness, double power, double scanSpeed, double hatchSpacing, double amplifier, XamlRoot xamlRoot)
+    {
+        // TODO: in the future, combine with method above (we need to add marking back in the loop)
+        var layerComplete = await _psm.Resume();
+
+        if (layerComplete)
+        {
+            await _psm.UpdateCurrentSliceAsync(thickness, power, scanSpeed, hatchSpacing); // handles backend data
+            await _psm.SetCurrentSliceToNextAsync(); // handles backend data
+        }
+        else
+        {
+            MagnetoLogger.Log("⚠️ Layer move was paused or canceled. Skipping print and slice update.", LogFactoryLogLevel.LogLevel.WARN);
+        }
+    }
     #endregion
 
     #region Navigation
