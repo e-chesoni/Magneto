@@ -935,8 +935,7 @@ public sealed partial class TestPrintPage : Page
                 // TODO: lock the print text boxes
 
                 await ViewModel.PrintLayer(startWithMark, thickness, power, scanSpeed, hatchSpacing, amplifier, this.Content.XamlRoot); // calls _psm.play()
-                await _motorPageService.HandleGetAllPositionsAsync();
-                UpdatePrintAndSliceDisplayText();
+                
 
                 // TODO: unlock the print text boxes if layer completed
 
@@ -947,14 +946,17 @@ public sealed partial class TestPrintPage : Page
             var msg = $"Print is paused. Calling resume on the view model.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             // TODO; call resume
-            ViewModel.ResumePrint(startWithMark, thickness, power, scanSpeed, hatchSpacing, amplifier, this.Content.XamlRoot);
+            await ViewModel.ResumePrint(startWithMark, thickness, power, scanSpeed, hatchSpacing, amplifier, this.Content.XamlRoot);
         }
         else
         {
             var msg = $"Print state machine is in idle or printing state. Cannot start a new layer move nor resume the old one.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
         }
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Done!", "Requested layer(s) printed.");
+        // update display whether we printed the layer from scratch, or resumed
+        await _motorPageService.HandleGetAllPositionsAsync();
+        UpdatePrintAndSliceDisplayText();
+        _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Done!", "Requested layer(s) printed.");
     }
     private async void DeletePrintButton_Click(object sender, RoutedEventArgs e)
     {

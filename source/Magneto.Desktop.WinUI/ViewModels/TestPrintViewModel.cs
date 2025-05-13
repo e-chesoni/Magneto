@@ -218,11 +218,11 @@ public class TestPrintViewModel : ObservableRecipient
         return 1;
     }
 
-    public async void ResumePrint(bool startWithMark, double thickness, double power, double scanSpeed, double hatchSpacing, double amplifier, XamlRoot xamlRoot)
+    public async Task ResumePrint(bool startWithMark, double thickness, double power, double scanSpeed, double hatchSpacing, double amplifier, XamlRoot xamlRoot)
     {
         // TODO: in the future, combine with method above (we need to add marking back in the loop)
         var layerComplete = await _psm.Resume();
-
+        MagnetoLogger.Log($"layerComplete status after resume: {layerComplete}.", LogFactoryLogLevel.LogLevel.WARN);
         if (layerComplete)
         {
             await _psm.UpdateCurrentSliceAsync(thickness, power, scanSpeed, hatchSpacing); // handles backend data
