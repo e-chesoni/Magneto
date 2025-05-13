@@ -168,7 +168,7 @@ public class MotorService : IMotorService
     #endregion
 
     #region Is Program Running
-    public async Task<bool> IsProgramRunningAsync(string motorNameLower)
+    public async Task<bool> IsProgramRunningOnMotorAsync(string motorNameLower)
     {
         switch (motorNameLower)
         {
@@ -182,6 +182,14 @@ public class MotorService : IMotorService
                 MagnetoLogger.Log($"Unable to check if program is running. Invalid motor name given: {motorNameLower}.", LogFactoryLogLevel.LogLevel.ERROR);
                 return false;
         }
+    }
+    public async Task<bool> IsProgramRunningAsync()
+    {
+        if ((await buildMotor.IsProgramRunningAsync()) || (await powderMotor.IsProgramRunningAsync()) || (await sweepMotor.IsProgramRunningAsync()))
+        {
+            return true;
+        }
+        return false;
     }
     #endregion
 

@@ -158,7 +158,7 @@ public class TestPrintViewModel : ObservableRecipient
         MagnetoLogger.Log($"✅Marking slice at {entity}.", LogFactoryLogLevel.LogLevel.SUCCESS);
         // TODO: TEST
         // mark slice
-        //await _waverunnerService.MarkEntityAsync(entity);
+        //await _waverunnerService.MarkEntityAsync(entity); // technically, this waits for mark to complete. second wait in PrintLayer() may be unecessary
     }
 
     private async Task<bool> ResumeOrStartPrintLayerAsync()
@@ -201,13 +201,13 @@ public class TestPrintViewModel : ObservableRecipient
             // mark
             //await HandleMarkEntityAsync();
             // wait for mark to complete
-            //while (_waverunnerService.GetMarkStatus() != 0) { Task.Delay(100).Wait(); }
+            //while (_waverunnerService.GetMarkStatus() != 0) { Task.Delay(100).Wait(); } // TODO: test if wait in _waverunnerService.MarkEntityAsync(entity) will suffice (remove this if so)
 
             // layer move
             _psm.SetCurrentPrintSettings(thickness, amplifier);
             layerComplete = await ResumeOrStartPrintLayerAsync();
             // wait for layer move to complete
-            //while (motorPageService.MotorsRunning()) { await Task.Delay(100); }
+            //while (motorPageService.IsProgramRunningAsync()) { await Task.Delay(100); } // TODO: test if wait in _rsm.Process() will suffice (remove this if so)
         }
         else
         {
@@ -215,13 +215,12 @@ public class TestPrintViewModel : ObservableRecipient
             _psm.SetCurrentPrintSettings(thickness, amplifier);
             layerComplete = await ResumeOrStartPrintLayerAsync();
             // wait for layer move to complete
-            //while (_motorService.MotorsRunning()) { await Task.Delay(100); }
-            //while (motorPageService.MotorsRunning()) { await Task.Delay(100); }
+            //while (motorPageService.IsProgramRunningAsync()) { await Task.Delay(100); } // TODO: test if wait in _waverunnerService.MarkEntityAsync(entity) will suffice (remove this if so)
 
             // mark
             //await HandleMarkEntityAsync();
             // wait for mark to complete
-            //while (_waverunnerService.GetMarkStatus() != 0) { Task.Delay(100).Wait(); }
+            //while (_waverunnerService.GetMarkStatus() != 0) { Task.Delay(100).Wait(); } // TODO: test if wait in _rsm.Process() will suffice (remove this if so)
 
         }
         // TODO: if psm status is paused, layer did not complete; don't update yet

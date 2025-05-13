@@ -160,7 +160,7 @@ public class WaverunerService : IWaverunnerService
     {
         // File exists, proceed with marking
         var msg = $"Starting mark for file: {filePath}";
-        MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.VERBOSE);
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
         if (cci.ScIsRunning() == 0)
         {
             return 0;
@@ -168,7 +168,7 @@ public class WaverunerService : IWaverunnerService
         // load demo job file
         cci.ScLoadJob(filePath, 1, 1, 0);
         msg = $"Loaded file at path: {filePath} for marking...";
-        MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.WARN);
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
         try
         {
             cci.ScMarkEntityByName("", 0); // 0 returns control to the user immediately; if you use 1, this becomes a blocking function
