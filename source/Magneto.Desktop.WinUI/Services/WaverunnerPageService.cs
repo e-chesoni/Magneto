@@ -61,12 +61,12 @@ public class WaverunnerPageService
         _waverunnerUiControlGroup = uiControlGroupWrapper.waverunnerControlGroup
                                      ?? throw new ArgumentNullException(nameof(uiControlGroupWrapper.waverunnerControlGroup), "Print Control Group must not be null.");
 
-        this.StartMarkButton = _waverunnerUiControlGroup.printLayersButton;
+        this.StartMarkButton = _waverunnerUiControlGroup.playButton;
     }
 
 
     #region Connectivity Test Methods
-    public int WaverunnerRunning() => _waverunnerService.IsRunning();
+    public bool WaverunnerRunning() => _waverunnerService.IsRunning();
     /// <summary>
     /// Test magneto connection to waverunner
     /// </summary>
@@ -122,7 +122,7 @@ public class WaverunnerPageService
 
     private ExecStatus StartRedPointer(XamlRoot xamlRoot, string filePath)
     {
-        if (_waverunnerService.IsRunning() == 0)
+        if (_waverunnerService.IsRunning())
         {
             StartMarkButton.IsEnabled = false;
             return ExecStatus.Failure;
@@ -142,7 +142,7 @@ public class WaverunnerPageService
     public int ToggleRedPointer(XamlRoot xamlRoot, string filePath)
     {
         string? msg;
-        if (_waverunnerService.IsRunning() == 0)
+        if (_waverunnerService.IsRunning())
         {
             msg = $"Cannot toggle red pointer. Waverunner is not running.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
@@ -187,7 +187,7 @@ public class WaverunnerPageService
     public async Task<ExecStatus> MarkEntityAsync(XamlRoot xamlRoot, string filePath)
     {
         string? msg;
-        if (_waverunnerService.IsRunning() == 0)
+        if (_waverunnerService.IsRunning())
         {
             msg = $"Cannot mark file. Waverunner is not running.";
             _ = PopupInfo.ShowContentDialog(xamlRoot, "Error", msg); //TODO: TEST. Think this will work; "Error" may need to be "Warning"
@@ -211,7 +211,7 @@ public class WaverunnerPageService
     public ExecStatus StopMark(XamlRoot xamlRoot)
     {
         string? msg;
-        if (_waverunnerService.IsRunning() == 0)
+        if (_waverunnerService.IsRunning())
         {
             msg = "Could not stop mark. Waverunner is not running.";
             _ = PopupInfo.ShowContentDialog(xamlRoot, "Error", msg);

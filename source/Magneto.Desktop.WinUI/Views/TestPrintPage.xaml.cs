@@ -98,8 +98,8 @@ public sealed partial class TestPrintPage : Page
         await _motorPageService.HandleGetAllPositionsAsync();
         
         // populate default pen settings
-        // TODO: test if we can get pen settings when waverunner is running
-        if (_waverunnerPageService.WaverunnerRunning() != 0)
+        // TODO: test if we can get pen settings when waverunner is running => we can! huge.
+        if (_waverunnerPageService.WaverunnerRunning())
         {
             // get pen settings
             var power = _waverunnerPageService.GetLaserPower();
@@ -123,7 +123,7 @@ public sealed partial class TestPrintPage : Page
         _layerThicknessUpper = 2.0;
         _laserPowerLower = 50;
         _laserPowerUpper = 500;
-        _scanSpeedLower = 100;
+        _scanSpeedLower = 50;
         _scanSpeedUpper = 3000;
         _supplyAmplifierLower = 0;
         _supplyAmplifierUpper = 4;
@@ -507,10 +507,26 @@ public sealed partial class TestPrintPage : Page
     }
     private int CheckForValidInputs()
     {
+        var layerThicknessInvalid = TextBoxInputIsValid(LayerThicknessTextBox, _layerThicknessLower, _layerThicknessUpper) <= 0;
+        if (layerThicknessInvalid)
+        {
+            var msg = $"Layer thickness is invalid.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+        }
+        var laserPowerInvalid = TextBoxInputIsValid(LaserPowerTextBox, _laserPowerLower, _laserPowerUpper) <= 0;
+        if (laserPowerInvalid)
+        {
+            var msg = $"Laser power invalid.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+        }
+        var scanSpeedInvalid = TextBoxInputIsValid(ScanSpeedTextBox, _scanSpeedLower, _scanSpeedUpper) <= 0;
+        if (scanSpeedInvalid)
+        {
+            var msg = $"Scan speed invalid.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+        }
         // if one text box is invalid, return 0
-        if ((TextBoxInputIsValid(LayerThicknessTextBox, _layerThicknessLower, _layerThicknessUpper) <= 0) || 
-            (TextBoxInputIsValid(LaserPowerTextBox, _laserPowerLower, _laserPowerUpper) <= 0) || 
-            (TextBoxInputIsValid(ScanSpeedTextBox, _scanSpeedLower, _scanSpeedUpper) <= 0))
+        if (layerThicknessInvalid || laserPowerInvalid || scanSpeedInvalid)
         {
             return 0;
         }
@@ -520,7 +536,7 @@ public sealed partial class TestPrintPage : Page
     {
         if (double.TryParse(textBox.Text, out var value))
         {
-            if (value <= lowerBound || value > upperBound)
+            if (value < lowerBound || value > upperBound)
             {
                 return 0;
             }
@@ -649,6 +665,8 @@ public sealed partial class TestPrintPage : Page
         var slicesToMarkValid = TextBoxInputIsValid(SlicesToMarkTextBox, slicesToMarkLower, slicesToMarkUpper);
         if (_waverunnerPageService is null)
         {
+            msg = $"⚠️ Waverunner page service is null. aborting evaluation of slices to mark text box";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             return;
         }
         if (slicesToMarkValid == 0)
@@ -672,6 +690,8 @@ public sealed partial class TestPrintPage : Page
             SlicesToMarkTextBox.Foreground = new SolidColorBrush(Colors.WhiteSmoke);
             if (ReadyToPrint() == 1)
             {
+                msg = "Slices to mark valid. Ready to print.";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
                 _waverunnerPageService.UnlockMarking();
             }
         }
@@ -844,6 +864,7 @@ public sealed partial class TestPrintPage : Page
             var files = Directory.EnumerateFiles(folder.Path, "*.sjf");
             if (!files.Any())
             {
+                // TODO: use magneto logger
                 Debug.WriteLine("❌ No .sjf files found in the selected folder.");
                 ContentDialog dialog = new ContentDialog
                 {
@@ -885,7 +906,7 @@ public sealed partial class TestPrintPage : Page
         double hatchSpacing;
         double amplifier;
         Int64 slicesToMark;
-        var startWithMark = StartWithMarkCheckBox.IsEnabled;
+        var startWithMark = StartWithMarkCheckBox.IsChecked == true;
         if (_motorPageService == null)
         {
             var msg = $"Cannot print layer. Motor page service is null.";

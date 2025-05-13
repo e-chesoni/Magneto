@@ -34,10 +34,8 @@ public class WaverunnerService : IWaverunnerService
     #endregion
 
     #region Connection Checkers
-    public int IsRunning()
-    {
-        return cci.ScIsRunning(); // 0 if not running, 1 if running
-    }
+    public bool IsRunning() => cci.ScIsRunning() == 1; // 0 if not running, 1 if running
+
     public int TestConnection()
     {
         try

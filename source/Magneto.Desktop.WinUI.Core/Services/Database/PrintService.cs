@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.Database;
 using Magneto.Desktop.WinUI.Core.Models.Print.Database;
 using MongoDB.Driver;
@@ -12,7 +13,7 @@ public class PrintService : IPrintService
 
     public PrintService(IMongoDbService mongoDbService, ISliceService sliceService)
     {
-        _prints = mongoDbService.GetCollection<PrintModel>();
+        _prints = mongoDbService.GetCollection<PrintModel>(); // gets all prints in db at start up
         _sliceService = sliceService;
     }
 
@@ -50,15 +51,21 @@ public class PrintService : IPrintService
     }
     public async Task<PrintModel?> GetPrintByDirectory(string directoryPath)
     {
+        MagnetoLogger.Log($"Directory path: {directoryPath}", LogFactoryLogLevel.LogLevel.VERBOSE);
         var normalizedPath = Path.GetFullPath(directoryPath.Trim()).TrimEnd(Path.DirectorySeparatorChar);
-
         var filter = Builders<PrintModel>.Filter.Eq(p => p.directoryPath, normalizedPath);
         var print = await _prints.Find(filter).FirstOrDefaultAsync();
-
-        Debug.WriteLine(print != null
+        var msg = print != null
             ? $"✅ Found print. Path: {print.directoryPath}"
-            : $"❌ No print found for path: {normalizedPath}");
-
+            : $"❌ No print found for path: {normalizedPath}";
+        if (print == null)
+        {
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+        }
+        else
+        {
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
+        }
         return print;
     }
     public async Task<PrintModel> GetPrintById(string id)

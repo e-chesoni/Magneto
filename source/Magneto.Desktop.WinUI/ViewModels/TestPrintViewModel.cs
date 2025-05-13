@@ -166,7 +166,7 @@ public class TestPrintViewModel : ObservableRecipient
         MagnetoLogger.Log($"✅Marking slice at {entity}.", LogFactoryLogLevel.LogLevel.SUCCESS);
         // TODO: TEST
         // mark slice
-        //await _waverunnerService.MarkEntityAsync(entity); // technically, this waits for mark to complete. second wait in PrintLayer() may be unecessary
+        await _waverunnerService.MarkEntityAsync(entity); // technically, this waits for mark to complete. second wait in PrintLayer() may be unecessary
     }
 
     private async Task<bool> ResumeOrStartPrintLayerAsync()
@@ -224,36 +224,30 @@ public class TestPrintViewModel : ObservableRecipient
                 return 0;
 
             // mark
-            //await HandleMarkEntityAsync();
-            // wait for mark to complete
-            //while (_waverunnerService.GetMarkStatus() != 0) { Task.Delay(100).Wait(); } // TODO: test if wait in _waverunnerService.MarkEntityAsync(entity) will suffice (remove this if so)
-
+            if (_waverunnerService.IsRunning()) // Guard for at home testing
+            {
+                await HandleMarkEntityAsync(); // waits for mark to complete in waverunner service
+            }
             // layer move
             _psm.SetCurrentPrintSettings(thickness, power, scanSpeed, hatchSpacing, amplifier);
-            layerComplete = await ResumeOrStartPrintLayerAsync();
-            // wait for layer move to complete
-            //while (motorPageService.IsProgramRunningAsync()) { await Task.Delay(100); } // TODO: test if wait in _rsm.Process() will suffice (remove this if so)
+            layerComplete = await ResumeOrStartPrintLayerAsync(); // waits for move to complete in rsm.Process()
             UpdateSliceIfComplete(layerComplete); // TODO: Fix -- seems UI does not update after printing each layer (only after finishing all requested layers)
         }
         else
         {
-            for (var i = 0; i < numberOfLayers; i++)
+            if (ShouldAbortLayerMove())
+                return 0;
+
+            // layer move
+            _psm.SetCurrentPrintSettings(thickness, power, scanSpeed, hatchSpacing, amplifier);
+            layerComplete = await ResumeOrStartPrintLayerAsync();
+
+            // mark
+            if (_waverunnerService.IsRunning())
             {
-                if (_psm.ShouldAbortLayerMove())
-                    return 0;
-
-                // layer move
-                _psm.SetCurrentPrintSettings(thickness, power, scanSpeed, hatchSpacing, amplifier);
-                layerComplete = await ResumeOrStartPrintLayerAsync();
-                // wait for layer move to complete
-                //while (motorPageService.IsProgramRunningAsync()) { await Task.Delay(100); } // TODO: test if wait in _waverunnerService.MarkEntityAsync(entity) will suffice (remove this if so)
-
-                // mark
-                //await HandleMarkEntityAsync();
-                // wait for mark to complete
-                //while (_waverunnerService.GetMarkStatus() != 0) { Task.Delay(100).Wait(); } // TODO: test if wait in _rsm.Process() will suffice (remove this if so)
-                UpdateSliceIfComplete(layerComplete);
+                await HandleMarkEntityAsync();
             }
+            UpdateSliceIfComplete(layerComplete);
         }
         return 1;
     }

@@ -27,7 +27,7 @@ public class UIControlGroupWaverunner : IUIControlGroupWaverunner
 
     public CheckBox startWithMarkCheckBox;
 
-    public Button printLayersButton;
+    public Button playButton;
     public Button pausePrintButton;
     public Button remarkLayerButton;
 
@@ -39,7 +39,7 @@ public class UIControlGroupWaverunner : IUIControlGroupWaverunner
                                TextBlock energyDensityTextBlk, TextBlock slicesToMarkTextBlk, TextBlock supplyAmplifierTextBlk,
                                TextBox layerTextBx, TextBox fileNameTextBx, TextBox layerThicknessTextBx, TextBox laserPowerTextBx, 
                                TextBox scanSpeedTextBx, TextBox hatchSpacingTextBx, TextBox energyDensityTextBx, TextBox slicesToMarkTextBx, 
-                               TextBox supplyAmplifierTextBx, CheckBox startWithMarkCheckBx, Button PrintLayersBtn, Button PausePrintBtn, Button RemarkLayerBtn)
+                               TextBox supplyAmplifierTextBx, CheckBox startWithMarkCheckBx, Button PlayBtn, Button PausePrintBtn, Button RemarkLayerBtn)
     {
         printDirectoryInputTextBox = printDirectoryInputTextBx;
         layerTextBlock = layerTextBlk;
@@ -63,7 +63,7 @@ public class UIControlGroupWaverunner : IUIControlGroupWaverunner
 
         startWithMarkCheckBox = startWithMarkCheckBx;
 
-        printLayersButton = PrintLayersBtn;
+        playButton = PlayBtn;
         pausePrintButton = PausePrintBtn;
         remarkLayerButton = RemarkLayerBtn;
 
@@ -92,7 +92,7 @@ public class UIControlGroupWaverunner : IUIControlGroupWaverunner
         // NOTE: Never add pause/stop buttons to enumerables (they disable buttons)
         buttonsEnumerable = new List<object>
         {
-            printLayersButton, remarkLayerButton,
+            playButton, remarkLayerButton
         };
     }
     public IEnumerable<object> GetSettingsEnuerable() => settingsEnumerable;

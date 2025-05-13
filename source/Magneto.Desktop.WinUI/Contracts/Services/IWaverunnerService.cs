@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Magneto.Desktop.WinUI.Contracts.Services;
 public interface IWaverunnerService
 {
-    int IsRunning();
+    bool IsRunning();
     int TestConnection();
     int GetPenNumber(string entityName);
     double GetMarkSpeed();
