@@ -924,36 +924,8 @@ public sealed partial class TestPrintPage : Page
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             return;
         }
-        // check what state print is in to handle play request
         // play button is print-related (not just motor related) so should use print state machine in view model
-        if (!ViewModel.IsPrintPaused()) // if psm status is not paused
-        {
-            // Print requested layers
-            MagnetoLogger.Log($"Printing {slicesToMark} layers, each {thickness}mm thick, at {power}W, scan speed equal to {scanSpeed}mm/s, and {hatchSpacing}mm hatch spacing. Powder amplifier for each layer is: {amplifier}.", LogFactoryLogLevel.LogLevel.ERROR);
-            for (var i = 0; i < slicesToMark; i++)
-            {
-                // TODO: lock the print text boxes
-
-                await ViewModel.PrintLayer(startWithMark, thickness, power, scanSpeed, hatchSpacing, amplifier, this.Content.XamlRoot); // calls _psm.play()
-                
-
-                // TODO: unlock the print text boxes if layer completed
-
-            }
-        }
-        else if (ViewModel.IsPrintPaused())
-        {
-            var msg = $"Print is paused. Calling resume on the view model.";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            // TODO; call resume
-            await ViewModel.ResumePrint(startWithMark, thickness, power, scanSpeed, hatchSpacing, amplifier, this.Content.XamlRoot);
-        }
-        else
-        {
-            var msg = $"Print state machine is in idle or printing state. Cannot start a new layer move nor resume the old one.";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-        }
-        // update display whether we printed the layer from scratch, or resumed
+        await ViewModel.PrintLayer(startWithMark, thickness, power, scanSpeed, hatchSpacing, amplifier, this.Content.XamlRoot); // checks for pause state; calls resume() if paused; play() in any other state
         await _motorPageService.HandleGetAllPositionsAsync();
         UpdatePrintAndSliceDisplayText();
         _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Done!", "Requested layer(s) printed.");

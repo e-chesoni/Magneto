@@ -161,6 +161,25 @@ public class TestPrintViewModel : ObservableRecipient
         //await _waverunnerService.MarkEntityAsync(entity);
     }
 
+    private async Task<bool> ResumeOrStartPrintLayerAsync()
+    {
+        string msg;
+        bool layerComplete;
+        if (IsPrintPaused())
+        {
+            msg = $"Print is paused. Calling resume()";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
+            layerComplete = await _psm.Resume();
+        }
+        else
+        {
+            msg = $"Print not paused. Calling play()";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
+            layerComplete = await _psm.Play();
+        }
+        return layerComplete;
+    }
+
     public async Task<int>PrintLayer(bool startWithMark, double thickness, double power, double scanSpeed, double hatchSpacing, double amplifier, XamlRoot xamlRoot)
     {
         string msg;
@@ -186,7 +205,7 @@ public class TestPrintViewModel : ObservableRecipient
 
             // layer move
             _psm.SetCurrentPrintSettings(thickness, amplifier);
-            layerComplete = await _psm.Play();
+            layerComplete = await ResumeOrStartPrintLayerAsync();
             // wait for layer move to complete
             //while (motorPageService.MotorsRunning()) { await Task.Delay(100); }
         }
@@ -194,7 +213,7 @@ public class TestPrintViewModel : ObservableRecipient
         {
             // layer move
             _psm.SetCurrentPrintSettings(thickness, amplifier);
-            layerComplete = await _psm.Play();
+            layerComplete = await ResumeOrStartPrintLayerAsync();
             // wait for layer move to complete
             //while (_motorService.MotorsRunning()) { await Task.Delay(100); }
             //while (motorPageService.MotorsRunning()) { await Task.Delay(100); }
@@ -216,22 +235,6 @@ public class TestPrintViewModel : ObservableRecipient
             MagnetoLogger.Log("⚠️ Layer move was paused or canceled. Skipping print and slice update.", LogFactoryLogLevel.LogLevel.WARN);
         }
         return 1;
-    }
-
-    public async Task ResumePrint(bool startWithMark, double thickness, double power, double scanSpeed, double hatchSpacing, double amplifier, XamlRoot xamlRoot)
-    {
-        // TODO: in the future, combine with method above (we need to add marking back in the loop)
-        var layerComplete = await _psm.Resume();
-        MagnetoLogger.Log($"layerComplete status after resume: {layerComplete}.", LogFactoryLogLevel.LogLevel.WARN);
-        if (layerComplete)
-        {
-            await _psm.UpdateCurrentSliceAsync(thickness, power, scanSpeed, hatchSpacing); // handles backend data
-            await _psm.SetCurrentSliceToNextAsync(); // handles backend data
-        }
-        else
-        {
-            MagnetoLogger.Log("⚠️ Layer move was paused or canceled. Skipping print and slice update.", LogFactoryLogLevel.LogLevel.WARN);
-        }
     }
     #endregion
 
