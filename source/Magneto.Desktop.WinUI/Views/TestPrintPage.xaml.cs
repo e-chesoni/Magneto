@@ -951,10 +951,14 @@ public sealed partial class TestPrintPage : Page
         {
             ViewModel.EnablePrintStateMachinePrinting(); // change psm state to idle
         }
-
-        await ViewModel.PrintLayer(startWithMark, thickness, power, scanSpeed, hatchSpacing, amplifier, (int)slicesToMark, this.Content.XamlRoot); // checks for pause state; calls resume() if paused; play() in any other state
-        await _motorPageService.HandleGetAllPositionsAsync();
-        UpdatePrintAndSliceDisplayText();
+        for (var i = 0; i < slicesToMark; i++)
+        {
+            if (ViewModel.ShouldAbortLayerMove())
+                return;
+            await ViewModel.PrintLayer(startWithMark, thickness, power, scanSpeed, hatchSpacing, amplifier, (int)slicesToMark, this.Content.XamlRoot); // checks for pause state; calls resume() if paused; play() in any other state
+            await _motorPageService.HandleGetAllPositionsAsync();
+            UpdatePrintAndSliceDisplayText();
+        }
         _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Done!", "Requested layer(s) printed.");
     }
     private void PauseButton_Click(object sender, RoutedEventArgs e)

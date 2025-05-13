@@ -201,7 +201,7 @@ public class TestPrintViewModel : ObservableRecipient
             MagnetoLogger.Log("⚠️ Layer move was paused or canceled. Skipping print and slice update.", LogFactoryLogLevel.LogLevel.WARN);
         }
     }
-
+    public bool ShouldAbortLayerMove() => _psm.ShouldAbortLayerMove();
     public async Task<int>PrintLayer(bool startWithMark, double thickness, double power, double scanSpeed, double hatchSpacing, double amplifier, int numberOfLayers, XamlRoot xamlRoot)
     {
         string msg;
@@ -220,23 +220,20 @@ public class TestPrintViewModel : ObservableRecipient
         //_waverunnerService.SetMarkSpeed(scanSpeed);
         if (startWithMark)
         {
-            for (var i = 0; i < numberOfLayers; i++)
-            {
-                if (_psm.ShouldAbortLayerMove())
-                    return 0;
+            if (ShouldAbortLayerMove())
+                return 0;
 
-                // mark
-                //await HandleMarkEntityAsync();
-                // wait for mark to complete
-                //while (_waverunnerService.GetMarkStatus() != 0) { Task.Delay(100).Wait(); } // TODO: test if wait in _waverunnerService.MarkEntityAsync(entity) will suffice (remove this if so)
+            // mark
+            //await HandleMarkEntityAsync();
+            // wait for mark to complete
+            //while (_waverunnerService.GetMarkStatus() != 0) { Task.Delay(100).Wait(); } // TODO: test if wait in _waverunnerService.MarkEntityAsync(entity) will suffice (remove this if so)
 
-                // layer move
-                _psm.SetCurrentPrintSettings(thickness, power, scanSpeed, hatchSpacing, amplifier);
-                layerComplete = await ResumeOrStartPrintLayerAsync();
-                // wait for layer move to complete
-                //while (motorPageService.IsProgramRunningAsync()) { await Task.Delay(100); } // TODO: test if wait in _rsm.Process() will suffice (remove this if so)
-                UpdateSliceIfComplete(layerComplete); // TODO: Fix -- seems UI does not update after printing each layer (only after finishing all requested layers)
-            }
+            // layer move
+            _psm.SetCurrentPrintSettings(thickness, power, scanSpeed, hatchSpacing, amplifier);
+            layerComplete = await ResumeOrStartPrintLayerAsync();
+            // wait for layer move to complete
+            //while (motorPageService.IsProgramRunningAsync()) { await Task.Delay(100); } // TODO: test if wait in _rsm.Process() will suffice (remove this if so)
+            UpdateSliceIfComplete(layerComplete); // TODO: Fix -- seems UI does not update after printing each layer (only after finishing all requested layers)
         }
         else
         {
