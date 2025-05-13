@@ -32,17 +32,17 @@ public class PrintingPrintState : IPrintState
         _rsm.CANCELLATION_REQUESTED = false;
         _rsm.status = RoutineStateMachine.RoutineStateMachineStatus.Processing;
     }
-    public async Task<bool> InitializePlayAsync()
+    public async Task<bool> InitializePlayAsync(int numberOfLayers = 1)
     {
         return await Play();
     }
-    public async Task<bool> Play()
+    public async Task<bool> Play(int numberOfLayers = 1)
     {
-        await AddLayerMoveToProgramList();
+        await GenerateMultiMoveProgram();
         return await _rsm.Process();
     }
     // layer moves are for prints (don't really belong on rsm)
-    public async Task AddLayerMoveToProgramList()
+    public async Task GenerateMultiMoveProgram(int numberOfLayers = 1)
     {
         var buildMotor = _motorService.GetBuildMotor();
         var powderMotor = _motorService.GetPowderMotor();
@@ -70,24 +70,36 @@ public class PrintingPrintState : IPrintState
         // spread powder
         var spreadPowder = _rsm.WriteAbsoluteMoveProgramForSweepMotor(sweepMotor.GetMaxPos()); // then to max position
 
-        // Add commands to program list
-        // lower clearance
-        _rsm.AddProgramLast(buildMotor.GetMotorName(), lowerBuildClearance);
-        _rsm.AddProgramLast(powderMotor.GetMotorName(), lowerPowderClearance);
-        // home sweep
-        _rsm.AddProgramLast(sweepMotor.GetMotorName(), homeSweep);
-        // raise clearance
-        _rsm.AddProgramLast(buildMotor.GetMotorName(), raiseBuildClearance);
-        _rsm.AddProgramLast(powderMotor.GetMotorName(), raisePowderClearance);
-        // move motors for layer
-        _rsm.AddProgramLast(powderMotor.GetMotorName(), raiseSupplyLayer);
-        _rsm.AddProgramLast(buildMotor.GetMotorName(), lowerBuildLayer);
-        // spread powder
-        _rsm.AddProgramLast(sweepMotor.GetMotorName(), spreadPowder);
+        for (var i = 0; i < numberOfLayers; i++)
+        {
+            // Add commands to program list
+            // lower clearance
+            _rsm.AddProgramLast(buildMotor.GetMotorName(), lowerBuildClearance);
+            _rsm.AddProgramLast(powderMotor.GetMotorName(), lowerPowderClearance);
+            // home sweep
+            _rsm.AddProgramLast(sweepMotor.GetMotorName(), homeSweep);
+            // raise clearance
+            _rsm.AddProgramLast(buildMotor.GetMotorName(), raiseBuildClearance);
+            _rsm.AddProgramLast(powderMotor.GetMotorName(), raisePowderClearance);
+            // move motors for layer
+            _rsm.AddProgramLast(powderMotor.GetMotorName(), raiseSupplyLayer);
+            _rsm.AddProgramLast(buildMotor.GetMotorName(), lowerBuildLayer);
+            // spread powder
+            _rsm.AddProgramLast(sweepMotor.GetMotorName(), spreadPowder);
+        }
     }
     public void Pause() => ChangeStateTo(new PausedPrintState(_psm));
     public async Task<bool> Resume() => await _rsm.Resume();
     public void Redo() => throw new NotImplementedException();
-    public void Cancel() => throw new NotImplementedException();
+    /// <summary>
+    ///  Calls cancel on routine state machine and changes print state machine current state to idle.
+    /// </summary>
+    public void Cancel()
+    {
+        // TODO: put cancellation request on RSM, clear program list, and transition RSM to idle state
+        _rsm.Cancel();
+        // TODO: change state to idle
+        ChangeStateTo(new IdlePrintState(_psm));
+    }
     public void ChangeStateTo(IPrintState state) => _psm.ChangeStateTo(state);
 }

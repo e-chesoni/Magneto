@@ -18,13 +18,13 @@ public class IdlePrintState : IPrintState
         _psm = psm;
         _psm.status = PrintStateMachine.PrintStateMachineStatus.Idle;
     }
-    public async Task<bool> InitializePlayAsync()
+    public async Task<bool> InitializePlayAsync(int numberOfLayers = 1)
     {
         var newState = new PrintingPrintState(_psm);
         _psm.ChangeStateTo(newState);
         return await newState.InitializePlayAsync(); // run Play() logic immediately
     }
-    public async Task<bool> Play()
+    public async Task<bool> Play(int numberOfLayers = 1)
     {
         return await InitializePlayAsync();
     }

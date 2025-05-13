@@ -144,7 +144,7 @@ public partial class App : Application
             });
 
             // Peripheral Services
-            services.AddSingleton<IWaverunnerService, WaverunerService>();
+            services.AddSingleton<IWaverunnerService, WaverunnerService>();
             services.AddSingleton<MotorService>(provider =>
             {
                 var rsm = provider.GetRequiredService<RoutineStateMachine>();

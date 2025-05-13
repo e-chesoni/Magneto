@@ -309,17 +309,21 @@ public class RoutineStateMachine : ISubsciber
     }
     #endregion
 
+    public void EnableProcessing()
+    {
+        ChangeStateTo(new IdleProgramState(this));
+    }
+
     #region State Methods
     public async Task<bool> Process() => await _currentState.Process();
     public void Pause() => _currentState.Pause();
     public async Task<bool> Resume() => await _currentState.Resume();
     public void Add() => _currentState.Add();
     public void Remove() => _currentState.Remove();
-    public void Cancel()
-    {
-        _currentState.Cancel();
-        ChangeStateTo(new IdleProgramState(this));
-    }
+    /// <summary>
+    /// Calls cancel on current state and changes routine state machine current state to idle.
+    /// </summary>
+    public void Cancel() => _currentState.Cancel();
     public void ChangeStateTo(IProgramState state) => _currentState = state;
     #endregion
 

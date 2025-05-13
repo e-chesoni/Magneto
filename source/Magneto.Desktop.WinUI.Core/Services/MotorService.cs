@@ -199,7 +199,6 @@ public class MotorService : IMotorService
     public void EnableProgram()
     {
         _rsm.CANCELLATION_REQUESTED = false;
-        // TODO: change print state to idle
     }
     public void PauseProgram() => _rsm.Pause(); // _rsm.Pause()
     //public Task ResumeProgramReading() => throw new NotImplementedException();
@@ -213,12 +212,12 @@ public class MotorService : IMotorService
 
     #region Stop Motors
     // Stops should clear the program list
-    public void CancelProgram() => _rsm.CANCELLATION_REQUESTED = true;
+    public void RequestCancellationOnRSM() => _rsm.CANCELLATION_REQUESTED = true;
     //public bool IsProgramStopped() => _rsm.IsProgramStopped();
     public void StopMotorAndClearProgramList(string motorNameLower)
     {
         // clear the program list
-        CancelProgram();
+        RequestCancellationOnRSM();
         switch (motorNameLower)
         {
             case "build":
@@ -235,6 +234,12 @@ public class MotorService : IMotorService
                 return;
         }
     }
+    public void StopAllMotors()
+    {
+        buildMotor.Stop();
+        powderMotor.Stop();
+        sweepMotor.Stop();
+    }
     public void StopAllMotorsClearProgramList()
     {
         //PauseProgram(); // TODO: test; may need this
@@ -242,7 +247,7 @@ public class MotorService : IMotorService
         powderMotor.Stop();
         sweepMotor.Stop();
         // clear the program list
-        CancelProgram();
+        RequestCancellationOnRSM();
     }
     public void EmergencyStop() => throw new NotImplementedException();
     #endregion

@@ -16,6 +16,15 @@ public class WaverunnerPageService
 
     private bool _redPointerEnabled { get; set; }
 
+    #region UI Variables
+    public Button? ToggleRedPointerButton { get; set; }
+    public Button StartMarkButton { get; set; }
+    public TextBlock? IsMarkingText { get; set; }
+    private UIControlGroupWrapper _uiControlGroupWrapper { get; set; }
+
+    public UIControlGroupWaverunner? _waverunnerUiControlGroup { get; set; }
+    #endregion
+
     #region Status Enumerators
     /// <summary>
     /// Waverunner Execution statuses
@@ -25,15 +34,6 @@ public class WaverunnerPageService
         Success = 0,
         Failure = -1,
     }
-    #endregion
-
-    #region UI Variables
-    public Button? ToggleRedPointerButton { get; set; }
-    public Button StartMarkButton { get; set; }
-    public TextBlock? IsMarkingText { get; set; }
-    private UIControlGroupWrapper _uiControlGroupWrapper { get; set; }
-
-    public UIControlGroupWaverunner? _waverunnerUiControlGroup { get; set; }
     #endregion
 
     public WaverunnerPageService(Button toggleRedPointerButton, Button startMarkButton, TextBlock isMarkingText)

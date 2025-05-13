@@ -29,7 +29,7 @@ namespace Magneto.Desktop.WinUI.Views;
 public sealed partial class TestPrintPage : Page
 {
     // core
-    private MissionControl _missionControl { get; set; }
+    //private MissionControl _missionControl { get; set; }
     public TestPrintViewModel ViewModel { get; }
     private MotorPageService? _motorPageService;
     private WaverunnerPageService? _waverunnerPageService;
@@ -53,7 +53,7 @@ public sealed partial class TestPrintPage : Page
     private double _supplyAmplifierLower;
     private double _supplyAmplifierUpper;
 
-    private bool KILL_OPERATION; // TODO: may remove later; used in old layer move to check for e-stop
+    //private bool KILL_OPERATION; // TODO: may remove later; used in old layer move to check for e-stop
 
     #region Constructor
     /// <summary>
@@ -63,10 +63,10 @@ public sealed partial class TestPrintPage : Page
     public TestPrintPage()
     {
         ViewModel = App.GetService<TestPrintViewModel>();
-        _missionControl = App.GetService<MissionControl>();
+        //_missionControl = App.GetService<MissionControl>();
         InitializeComponent();
         // set up flags
-        KILL_OPERATION = false;
+        //KILL_OPERATION = false;
         //this.motorService = motorService;
     }
     #endregion
@@ -74,7 +74,7 @@ public sealed partial class TestPrintPage : Page
     #region Page Initialization Methods
     private async void InitPageServices() // combine page services initialization because motor services uses one of the UI groups
     {
-        // UI page groups
+        // initialize UI control groups
         _calibrateMotorUIControlGroup = new UIControlGroupMotors(SelectBuildMotorButton, SelectPowderMotorButton, SelectSweepMotorButton,
                                                                 BuildMotorCurrentPositionTextBox, PowderMotorCurrentPositionTextBox, SweepMotorCurrentPositionTextBox,
                                                                 GetBuildMotorCurrentPositionButton, GetPowderMotorCurrentPositionButton, GetSweepMotorCurrentPositionButton,
@@ -85,22 +85,29 @@ public sealed partial class TestPrintPage : Page
                                                                 StopBuildMotorButton, StopPowderMotorButton, StopSweepMotorButton,
                                                                 HomeAllMotorsButton, EnableMotorsButton, StopMotorsButton);
         _waverunnerUiControlGroup = new UIControlGroupWaverunner(PrintDirectoryInputTextBox,
-                                                            LayerTextBlock, FileNameTextBlock, LayerThicknessTextBlock, LaserPowerTextBlock, ScanSpeedTextBlock, HatchSpacingTextBlock, EnergyDensityTextBlock, SlicesToMarkTextBlock, SupplyAmplifierTextBlock, 
-                                                            LayerTextBox, FileNameTextBox, LayerThicknessTextBox, LaserPowerTextBox, ScanSpeedTextBox, HatchSpacingTextBox, EnergyDensityTextBox, SlicesToMarkTextBox, SupplyAmplifierTextBox,
-                                                            StartWithMarkCheckBox, PlayButton, PauseButton, RemarkLayerButton);
-        // initialize motor page service
+                                                                LayerTextBlock, FileNameTextBlock, LayerThicknessTextBlock, LaserPowerTextBlock, ScanSpeedTextBlock, HatchSpacingTextBlock, EnergyDensityTextBlock,
+                                                                SlicesToMarkTextBlock, SupplyAmplifierTextBlock, 
+                                                                LayerTextBox, FileNameTextBox, LayerThicknessTextBox, LaserPowerTextBox, ScanSpeedTextBox, HatchSpacingTextBox, EnergyDensityTextBox,
+                                                                SlicesToMarkTextBox, SupplyAmplifierTextBox, StartWithMarkCheckBox, 
+                                                                PlayButton, PauseButton, RemarkLayerButton);
+        // initialize page services
         _motorPageService = new MotorPageService(new UIControlGroupWrapper(_calibrateMotorUIControlGroup), ViewModel.GetRoutineStateMachine());
-        // initialize Waverunner page service
-        //_waverunnerPageService = new WaverunnerPageService(PrintDirectoryInputTextBox, PrintLayersButton);
         _waverunnerPageService = new WaverunnerPageService(new UIControlGroupWrapper(_waverunnerUiControlGroup));
+        
         // populate motor positions on page load
         await _motorPageService.HandleGetAllPositionsAsync();
-        // populate changeable pen settings
+        
+        // populate default pen settings
+        // TODO: test if we can get pen settings when waverunner is running
         if (_waverunnerPageService.WaverunnerRunning() != 0)
         {
             // get pen settings
+            var power = _waverunnerPageService.GetLaserPower();
+            var scanSpeed = _waverunnerPageService.GetMarkSpeed();
             LaserPowerTextBox.Text = _waverunnerPageService.GetLaserPower().ToString();
             ScanSpeedTextBox.Text = _waverunnerPageService.GetMarkSpeed().ToString();
+            var msg = $"Got the following pen settings from Waverunner: \n power: {power} \n scan speed: {scanSpeed}";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
         }
         else
         {
@@ -135,6 +142,27 @@ public sealed partial class TestPrintPage : Page
     }
     #endregion
 
+    #region Locking
+    private void UnlockCalibrationPanel()
+    {
+        if (_motorPageService == null)
+        {
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Cannot unlock calibration panel.");
+            return;
+        }
+        _motorPageService.UnlockCalibrationPanel();
+    }
+    private void LockCalibrationPanel()
+    {
+        if (_motorPageService == null)
+        {
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Cannot lock calibration panel.");
+            return;
+        }
+        _motorPageService.LockCalibrationPanel();
+    }
+    #endregion
+
     #region Helpers
     private async Task HomeMotorsHelper()
     {
@@ -146,7 +174,7 @@ public sealed partial class TestPrintPage : Page
             return;
         }
         await _motorPageService.HomeAllMotorsAsync();
-        // WARNING: if you home one at a time, you stay in this call stack;
+        // WARNING: do not home motors one at a time: if you home one at a time, you stay in this call stack;
         // when you resume any motion, the first thing it will do is resume the calls here
         return;
     }
@@ -157,7 +185,7 @@ public sealed partial class TestPrintPage : Page
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to stop motors.");
             return;
         }
-        //_motorPageService.StopAllMotorsClearProgramList();
+        //_motorPageService.StopAllMotorsClearProgramList(); // TODO: test if you can call this now (switched to semaphores in magneto console, so it might work now)
         _motorPageService.StopBuildMotorAndDisableControls();
         _motorPageService.StopPowderMotorAndDisableControls();
         _motorPageService.StopSweepMotorAndDisbleControls();
@@ -391,49 +419,24 @@ public sealed partial class TestPrintPage : Page
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to enable motors.");
             return;
         }
-        //_motorPageService.ResumeProgram();
-
         // Show interactive warning
         var confirmed = await PopupInfo.ShowConfirmationDialog(
             this.Content.XamlRoot,
             "Warning",
             "Found a layer print in the queue. If you enable the calibration panel, the current layer print will be erased. Continue?"
         );
-
         if (!confirmed)
         {
             MagnetoLogger.Log("❌ User canceled enabling motors.", LogFactoryLogLevel.LogLevel.WARN);
             return;
         }
         // Proceed if confirmed
-        // TODO:handle cancellation (clear rsm program list) and get current positions
-        _motorPageService.ClearProgramList(); // TODO: Fix: still completing layer move
+        _motorPageService.ClearProgramList();
         await _motorPageService.HandleGetAllPositionsAsync();
         _motorPageService.EnableAllMotors();
         UnlockCalibrationPanel();
     }
     #endregion
-    #endregion
-
-    #region Locking
-    private void UnlockCalibrationPanel()
-    {
-        if (_motorPageService == null)
-        {
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Cannot unlock calibration panel.");
-            return;
-        }
-        _motorPageService.UnlockCalibrationPanel();
-    }
-    private void LockCalibrationPanel()
-    {
-        if (_motorPageService == null)
-        {
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Cannot lock calibration panel.");
-            return;
-        }
-        _motorPageService.LockCalibrationPanel();
-    }
     #endregion
 
     #region Print Methods
@@ -458,21 +461,21 @@ public sealed partial class TestPrintPage : Page
         var supplyAmplifierInputEntered = (SupplyAmplifierTextBox != null && !string.IsNullOrWhiteSpace(SupplyAmplifierTextBox.Text));
         if (thicknessInputEntered && powerInputEntered && scanSpeedInputEntered)
         {
-            (res, thickness) = ConvertTextBoxTextToDouble(LayerThicknessTextBox);
+            (res, thickness) = ConvertTextBoxTextToDouble(LayerThicknessTextBox!); // the (!) is a null forgiving operator
             if (res == 0)
             {
                 var msg = $"Layer thickness text box input is invalid.";
                 MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
                 return 0;
             }
-            (res, power) = ConvertTextBoxTextToDouble(LaserPowerTextBox);
+            (res, power) = ConvertTextBoxTextToDouble(LaserPowerTextBox!);
             if (res == 0)
             {
                 var msg = $"Power text box input is invalid.";
                 MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
                 return 0;
             }
-            (res, scanSpeed) = ConvertTextBoxTextToDouble(ScanSpeedTextBox);
+            (res, scanSpeed) = ConvertTextBoxTextToDouble(ScanSpeedTextBox!);
             if (res == 0)
             {
                 var msg = $"Scan speed text box input is invalid.";
@@ -483,6 +486,12 @@ public sealed partial class TestPrintPage : Page
             if (res == 0)
             {
                 var msg = $"Hatching text box input is invalid.";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+                return 0;
+            }
+            if (_waverunnerPageService == null)
+            {
+                var msg = $"Waverunner page service is null. Not ready to print.";
                 MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
                 return 0;
             }
@@ -573,7 +582,6 @@ public sealed partial class TestPrintPage : Page
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", msg);
             LaserPowerTextBox.Foreground = new SolidColorBrush(Colors.Red);
-            // TODO: disable marking buttons
             _waverunnerPageService.LockMarking();
         }
         else if (powerIsValid == -1)
@@ -582,7 +590,6 @@ public sealed partial class TestPrintPage : Page
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", msg);
             LaserPowerTextBox.Foreground = new SolidColorBrush(Colors.Red);
-            // TODO: disable marking buttons
             _waverunnerPageService.LockMarking();
         }
         else
@@ -609,7 +616,6 @@ public sealed partial class TestPrintPage : Page
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", msg);
             ScanSpeedTextBox.Foreground = new SolidColorBrush(Colors.Red);
-            // TODO: disable marking buttons
             _waverunnerPageService.LockMarking();
         }
         else if (scanSpeedIsValid == -1)
@@ -618,7 +624,6 @@ public sealed partial class TestPrintPage : Page
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", msg);
             ScanSpeedTextBox.Foreground = new SolidColorBrush(Colors.Red);
-            // TODO: disable marking buttons
             _waverunnerPageService.LockMarking();
         }
         else
@@ -706,44 +711,9 @@ public sealed partial class TestPrintPage : Page
             }
         }
     }
-    private void PauseButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (_waverunnerPageService == null)
-        {
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Lost connection to Waverunner. Cannot pause laser.");
-        }
-        else
-        {
-            // stop mark
-            _waverunnerPageService.StopMark(this.Content.XamlRoot);
-        }
-            
-        if (_motorPageService == null)
-        {
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Lost connection to motors. Cannot pause motors.");
-        }
-        else
-        {
-            // pause motors
-            ViewModel.PausePrint();
-            //_motorPageService.PauseProgram(); // changes rsm state to pause; this is handled by psm when it changes state to pause
-            // TODO: lock calibration panel (force user to re-enable to motors to use those commands; that way we get positions too)
-            LockCalibrationPanel();
-        }
-    }
-    private void CancelButton_Click(object sender, RoutedEventArgs e)
-    {
-        // TODO: implement
-        StopMotorsHelper();
-    }
-    private void RemarkLayerButton_Click(object sender, RoutedEventArgs e)
-    {
-        // TODO: implement remarking
-    }
-    #endregion
     #endregion
 
-    #region Manage Text Population & Clearing
+    #region Update Data and Data View
     private async void UpdatePrintAndSliceDisplayText()
     {
         var print = ViewModel.GetCurrentPrint();
@@ -800,7 +770,7 @@ public sealed partial class TestPrintPage : Page
             return;
         }
     }
-    private void ClearPageText()
+    private void ClearPrintTextHelper()
     {
         PrintDirectoryInputTextBox.Text = "";
         PrintNameTextBlock.Text = "";
@@ -809,24 +779,20 @@ public sealed partial class TestPrintPage : Page
         DurationTextBlock.Text = "";
         SlicesMarkedTextBlock.Text = "";
         TotalSlicesTextBlock.Text = "";
+    }
+    private void ClearPrintDataAndText()
+    {
+        ClearPrintTextHelper();
         ViewModel.ClearData();
     }
-    #endregion
-
-    #region POC Button Methods
-    private async void GetSlices_Click(object sender, RoutedEventArgs e)
+    private async void AbortPrint()
     {
-        await ViewModel.AddPrintToDatabaseAsync(PrintDirectoryInputTextBox.Text);
-        if (ViewModel.GetCurrentSlice() != null)
-        {
-            if (ViewModel.GetCurrentSlice().filePath == null)
-            {
-                Debug.WriteLine("❌ImagePath is null.");
-                return;
-            }
-            UpdatePrintAndSliceDisplayText();
-        }
+        // TODO: mark print as complete (without marking layers)
+        await ViewModel.CompleteCurrentPrintAsync();
+        // clear text and current print and slice models in psm
+        ClearPrintDataAndText();
     }
+    #endregion
 
     #region Text Box Text Converters
     // TODO: Move to helper class for conversions
@@ -860,6 +826,56 @@ public sealed partial class TestPrintPage : Page
     }
     #endregion
 
+    #region Action Buttons
+    private async void BrowseButton_Click(object sender, RoutedEventArgs e)
+    {
+        var folderPicker = new FolderPicker();
+        folderPicker.SuggestedStartLocation = PickerLocationId.Desktop;
+        folderPicker.FileTypeFilter.Add("*");
+
+        var hwnd = WindowNative.GetWindowHandle(App.MainWindow);
+        InitializeWithWindow.Initialize(folderPicker, hwnd);
+
+        var folder = await folderPicker.PickSingleFolderAsync();
+        // folder must contain .sjf files. if it does not contain any, error and return
+        if (folder != null)
+        {
+            // Check for .sjf files in the selected folder
+            var files = Directory.EnumerateFiles(folder.Path, "*.sjf");
+            if (!files.Any())
+            {
+                Debug.WriteLine("❌ No .sjf files found in the selected folder.");
+                ContentDialog dialog = new ContentDialog
+                {
+                    Title = "No Job Files in Folder",
+                    Content = "The selected folder does not contain any .sjf files.",
+                    CloseButtonText = "OK",
+                    XamlRoot = this.Content.XamlRoot
+                };
+                await dialog.ShowAsync();
+                return;
+            }
+            PrintDirectoryInputTextBox.Text = folder.Path;
+            await ViewModel.AddPrintToDatabaseAsync(folder.Path);
+        }
+        UpdatePrintAndSliceDisplayText();
+    }
+    private async void DeletePrintButton_Click(object sender, RoutedEventArgs e)
+    {
+        // TODO: add guards to ask user if they're sure they want to delete this print
+        if (ViewModel.GetCurrentPrint() == null)
+        {
+            Debug.WriteLine("❌Current print is null");
+            return;
+        }
+        else
+        {
+            Debug.WriteLine("✅Deleting print.");
+            await ViewModel.DeleteCurrentPrintAsync();
+            Debug.WriteLine("✅Removing data from display.");
+            ClearPrintDataAndText();
+        }
+    }
     private async void PlayButton_Click(object sender, RoutedEventArgs e)
     {
         int res;
@@ -925,94 +941,71 @@ public sealed partial class TestPrintPage : Page
             return;
         }
         // play button is print-related (not just motor related) so should use print state machine in view model
-        await ViewModel.PrintLayer(startWithMark, thickness, power, scanSpeed, hatchSpacing, amplifier, this.Content.XamlRoot); // checks for pause state; calls resume() if paused; play() in any other state
+        // TODO: need to re-enable printing after pause
+        if (ViewModel.CancellationRequested())
+        {
+            _motorPageService.EnableProgramRunning(); // sets rsm cancellation token to true
+        }
+        // if current psm state is paused, change to idle
+        if (ViewModel.IsPrintPaused())
+        {
+            ViewModel.EnablePrintStateMachinePrinting(); // change psm state to idle
+        }
+
+        await ViewModel.PrintLayer(startWithMark, thickness, power, scanSpeed, hatchSpacing, amplifier, (int)slicesToMark, this.Content.XamlRoot); // checks for pause state; calls resume() if paused; play() in any other state
         await _motorPageService.HandleGetAllPositionsAsync();
         UpdatePrintAndSliceDisplayText();
         _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Done!", "Requested layer(s) printed.");
     }
-    private async void DeletePrintButton_Click(object sender, RoutedEventArgs e)
+    private void PauseButton_Click(object sender, RoutedEventArgs e)
     {
-        // TODO: add guards to ask user if they're sure they want to delete this print
-        if (ViewModel.GetCurrentPrint() == null)
+        if (_waverunnerPageService == null)
         {
-            Debug.WriteLine("❌Current print is null");
-            return;
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Lost connection to Waverunner. Cannot pause laser.");
         }
         else
         {
-            Debug.WriteLine("✅Deleting print.");
-            await ViewModel.DeleteCurrentPrintAsync();
-            Debug.WriteLine("✅Removing data from display.");
-            ClearPageText();
+            // stop mark
+            _waverunnerPageService.StopMark(this.Content.XamlRoot);
         }
-    }
-    private async void BrowseButton_Click(object sender, RoutedEventArgs e)
-    {
-        var folderPicker = new FolderPicker();
-        folderPicker.SuggestedStartLocation = PickerLocationId.Desktop;
-        folderPicker.FileTypeFilter.Add("*");
 
-        var hwnd = WindowNative.GetWindowHandle(App.MainWindow);
-        InitializeWithWindow.Initialize(folderPicker, hwnd);
-
-        var folder = await folderPicker.PickSingleFolderAsync();
-        // folder must contain .sjf files. if it does not contain any, error and return
-        if (folder != null)
+        if (_motorPageService == null)
         {
-            // Check for .sjf files in the selected folder
-            var files = Directory.EnumerateFiles(folder.Path, "*.sjf");
-            if (!files.Any())
-            {
-                Debug.WriteLine("❌ No .sjf files found in the selected folder.");
-                ContentDialog dialog = new ContentDialog
-                {
-                    Title = "No Job Files in Folder",
-                    Content = "The selected folder does not contain any .sjf files.",
-                    CloseButtonText = "OK",
-                    XamlRoot = this.Content.XamlRoot
-                };
-                await dialog.ShowAsync();
-                return;
-            }
-            PrintDirectoryInputTextBox.Text = folder.Path;
-            await ViewModel.AddPrintToDatabaseAsync(folder.Path);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Lost connection to motors. Cannot pause motors.");
         }
-        UpdatePrintAndSliceDisplayText();
+        else
+        {
+            // pause motors
+            ViewModel.PausePrint();
+            LockCalibrationPanel();
+        }
     }
+    private void RemarkLayerButton_Click(object sender, RoutedEventArgs e)
+    {
+        // TODO: implement remarking
+    }
+    private async void AbortButton_Click(object sender, RoutedEventArgs e)
+    {
+        StopMotorsHelper();
+        // Show interactive warning
+        var confirmed = await PopupInfo.ShowConfirmationDialog(
+            this.Content.XamlRoot,
+            "Warning",
+            "This will abort the current print. Progress will be saved, but the print will be removed from view and marked complete in the database (with unmarked layers noted). Continue?"
+        );
+        if (!confirmed)
+        {
+            MagnetoLogger.Log("❌ User canceled aborting this print.", LogFactoryLogLevel.LogLevel.WARN);
+            return;
+        }
+        // Proceed if confirmed
+        AbortPrint();
+    }
+    #endregion
     #endregion
 
     #region Logging Methods
-
-    /// <summary>
-    /// Log and display the same message
-    /// </summary>
-    /// <param name="LogLevel"></param>
-    /// <param name="xamlRoot"></param>
-    /// <param name="msg"></param>
-    private async void LogAndDisplayMessage(LogFactoryLogLevel.LogLevel LogLevel, XamlRoot xamlRoot, string msg)
-    {
-        var PopupMessageType = GetPopupMessageType(LogLevel);
-
-        MagnetoLogger.Log(msg, LogLevel);
-        await PopupInfo.ShowContentDialog(xamlRoot, PopupMessageType, msg);
-    }
-
-    /// <summary>
-    /// Update UI and log
-    /// </summary>
-    /// <param name="uiMessage"></param>
-    /// <param name="logLevel"></param>
-    /// <param name="logMessage"></param>
-    private void LogMessage(string uiMessage, LogFactoryLogLevel.LogLevel logLevel, string logMessage = null)
-    {
-        // Update UI with the message
-        //UpdateUITextHelper.UpdateUIText(IsMarkingText, uiMessage);
-
-        // Use the provided log level for logging
-        MagnetoLogger.Log(logMessage ?? uiMessage, logLevel);
-    }
-
-    private string GetPopupMessageType(LogFactoryLogLevel.LogLevel LogLevel)
+    private string GetPopupMessageTypeHelper(LogFactoryLogLevel.LogLevel LogLevel)
     {
         switch (LogLevel)
         {
@@ -1030,7 +1023,33 @@ public sealed partial class TestPrintPage : Page
                 return "Unknown";
         }
     }
+    /// <summary>
+    /// Update UI and log
+    /// </summary>
+    /// <param name="uiMessage"></param>
+    /// <param name="logLevel"></param>
+    /// <param name="logMessage"></param>
+    private void LogMessage(string uiMessage, LogFactoryLogLevel.LogLevel logLevel, string logMessage = null)
+    {
+        // Update UI with the message
+        //UpdateUITextHelper.UpdateUIText(IsMarkingText, uiMessage);
 
+        // Use the provided log level for logging
+        MagnetoLogger.Log(logMessage ?? uiMessage, logLevel);
+    }
+    /// <summary>
+    /// Log and display the same message
+    /// </summary>
+    /// <param name="LogLevel"></param>
+    /// <param name="xamlRoot"></param>
+    /// <param name="msg"></param>
+    private async void LogAndDisplayMessage(LogFactoryLogLevel.LogLevel LogLevel, XamlRoot xamlRoot, string msg)
+    {
+        var PopupMessageType = GetPopupMessageTypeHelper(LogLevel);
+
+        MagnetoLogger.Log(msg, LogLevel);
+        await PopupInfo.ShowContentDialog(xamlRoot, PopupMessageType, msg);
+    }
     /// <summary>
     /// Log and Display if you want to have a different log and pop up message
     /// </summary>
@@ -1040,15 +1059,15 @@ public sealed partial class TestPrintPage : Page
     /// <param name="PopupMessage"></param>
     private async void LogAndDisplayMessage(LogFactoryLogLevel.LogLevel LogLevel, XamlRoot xamlRoot, string LogMessage, string PopupMessage)
     {
-        var PopupMessageType = GetPopupMessageType(LogLevel);
+        var PopupMessageType = GetPopupMessageTypeHelper(LogLevel);
 
         MagnetoLogger.Log(LogMessage, LogLevel);
         await PopupInfo.ShowContentDialog(xamlRoot, PopupMessageType, PopupMessage);
     }
-
     #endregion
 
     // TODO: Remove after testing
+    #region Testing
     private async void TEST_Click(object sender, RoutedEventArgs e)
     {
         if (_motorPageService == null)
@@ -1064,8 +1083,8 @@ public sealed partial class TestPrintPage : Page
         var scanSpeed = 800;
         var hatchSpacing = 0.12;
         var amplifier = 2;
-        var numberOfLayers = 1; // TODO: figure out how to incorporate number of layers
-        await ViewModel.PrintLayer(startWithMark, thickness, power, scanSpeed, hatchSpacing, amplifier, this.Content.XamlRoot);
+        var numberOfLayers = 1; // TODO: figure out how to incorporate number of layers (should loop somewhere where cancel will cancel entire request--i.e. in process() or AddLayerMoveToProgramList())
+        await ViewModel.PrintLayer(startWithMark, thickness, power, scanSpeed, hatchSpacing, amplifier, numberOfLayers, this.Content.XamlRoot);
     }
     private void StopTEST_Click(object sender, RoutedEventArgs e)
     {
@@ -1074,4 +1093,5 @@ public sealed partial class TestPrintPage : Page
             _motorPageService.StopAllMotorsClearProgramList();
         }
     }
+    #endregion
 }

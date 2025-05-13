@@ -61,6 +61,15 @@ public interface IMotorService
 
     #region Stop Motors
     public void StopMotorAndClearProgramList(string motorNameLower);
+
+    /// <summary>
+    /// Calls stop on each stepper motor.
+    /// </summary>
+    public void StopAllMotors();
+    
+    /// <summary>
+    /// Stops motors and sets routine state machine cancellation request token to true.
+    /// </summary>
     public void StopAllMotorsClearProgramList();
     //public void EmergencyStop();
     //public bool IsProgramStopped();

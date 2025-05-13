@@ -69,13 +69,13 @@ public class ProcessingProgramState : IProgramState
                 if (_rsm.status == RoutineStateMachineStatus.Paused)
                 {
                     MagnetoLogger.Log("⏸ rsm state is paused. Halting execution.", LogFactoryLogLevel.LogLevel.WARN);
-                    Pause();  // handled by current state
+                    Pause();
                     return false;
                 }
                 if (_rsm.CANCELLATION_REQUESTED)
                 {
                     MagnetoLogger.Log($"🛑 Cancellation detected mid-execution on {motorName}.", LogFactoryLogLevel.LogLevel.WARN);
-                    Cancel(); // handled by current state (all clear list)
+                    Cancel(); // clears program list and moves to idle state
                     return false;
                 }
                 await Task.Delay(100); // Throttle polling
@@ -156,9 +156,13 @@ public class ProcessingProgramState : IProgramState
     public async Task<bool> Resume() => throw new NotImplementedException();
      public void Add() => throw new NotImplementedException();
     public void Remove() => throw new NotImplementedException();
+    /// <summary>
+    ///  Clears program list on routine state machine (rsm), places cancellation token on rsm, and changes the rsm current state to idle.
+    /// </summary>
     public void Cancel()
     {
-        MagnetoLogger.Log($"Clearing program list.", LogFactoryLogLevel.LogLevel.ERROR);
+        MagnetoLogger.Log($"Putting cancellation token on rsm and clearing program list.", LogFactoryLogLevel.LogLevel.ERROR);
+        _rsm.CANCELLATION_REQUESTED = true;
         _rsm.programNodes.Clear();
         ChangeStateTo(new IdleProgramState(_rsm));
     }

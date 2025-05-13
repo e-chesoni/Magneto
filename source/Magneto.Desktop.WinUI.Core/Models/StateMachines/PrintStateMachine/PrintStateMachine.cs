@@ -48,6 +48,9 @@ public class PrintStateMachine
     public static class CurrentLayerSettings
     {
         public static double thickness;
+        public static double power;
+        public static double scanSpeed;
+        public static double hatchSpacing;
         public static double amplifier;
         public static double sweep_clearance = 2;
     }
@@ -78,10 +81,12 @@ public class PrintStateMachine
     #endregion
 
     #region Print and Slice Getters
+    public RoutineStateMachineStatus GetRoutineStateMachineStatus() => rsm.status;
+    public bool CancelRequestedOnRoutineStateMachine() => rsm.CANCELLATION_REQUESTED;
     public async Task<PrintModel> GetPrintByDirectory(string directoryPath) => await _printService.GetPrintByDirectory(directoryPath);
-    public PrintModel? GetCurrentPrint() => currentPrint;
-    public SliceModel? GetCurrentSlice() => currentSlice;
-    public async Task<SliceModel?> GetNextSliceAsync()
+    public PrintModel GetCurrentPrint() => currentPrint;
+    public SliceModel GetCurrentSlice() => currentSlice;
+    public async Task<SliceModel> GetNextSliceAsync()
     {
         if (_sliceService == null)
         {
@@ -166,7 +171,7 @@ public class PrintStateMachine
             await _printService.EditPrint(print);
         }
     }
-    public async Task UpdateCurrentSliceAsync(double thickness, double power, double scanSpeed, double hatchSpacing)
+    public async Task UpdateCurrentSliceAsync()
     {
         if (currentSlice == null)
         {
@@ -180,6 +185,10 @@ public class PrintStateMachine
             return;
         }
         MagnetoLogger.Log($"✅ Marking slice {currentSlice.fileName}.", LogFactoryLogLevel.LogLevel.SUCCESS);
+        var thickness = CurrentLayerSettings.thickness;
+        var power = CurrentLayerSettings.power;
+        var scanSpeed = CurrentLayerSettings.scanSpeed;
+        var hatchSpacing = CurrentLayerSettings.hatchSpacing;
         currentSlice.layerThickness = thickness;
         currentSlice.power = power;
         currentSlice.scanSpeed = scanSpeed;
@@ -200,23 +209,58 @@ public class PrintStateMachine
     #endregion
     #endregion
 
+    public bool ShouldAbortLayerMove()
+    {
+        if (GetRoutineStateMachineStatus() == RoutineStateMachineStatus.Paused)
+        {
+            MagnetoLogger.Log("⏸ Print in paused state. Aborting print.", LogFactoryLogLevel.LogLevel.WARN);
+            Pause();
+            return true;
+        }
+        if (CancelRequestedOnRoutineStateMachine())
+        {
+            MagnetoLogger.Log("🛑 Cancel requested. Aborting print.", LogFactoryLogLevel.LogLevel.WARN);
+            Cancel();
+            return true;
+        }
+        return false;
+    }
+
+    public void EnablePrinting()
+    {
+        ChangeStateTo(new IdlePrintState(this));
+        rsm.EnableProcessing();
+    }
+
     #region State Machine Methods
-    public async Task<bool> Play() => await _currentState.Play();
+    public async Task<bool> Play(int numberOfLayers = 1) => await _currentState.Play();
     public async Task<bool> Resume() => await _currentState.Resume();
     public void Pause() => _currentState.Pause();
     public void Redo() => _currentState.Redo();
-    public void Cancel() => _currentState.Cancel();
+    /// <summary>
+    /// Calls stops all motors using motor service. Calls cancel on current print state machine state.
+    /// </summary>
+    public void Cancel()
+    {
+        motorService.StopAllMotors();
+        // cancel print on psm and rsm
+        _currentState.Cancel(); // clears program list and places cancellation token on RSM
+    }
     public void ChangeStateTo(IPrintState state) => _currentState = state;
     #endregion
 
-    #region REMOVE
-    public double SetCurrentLayerThickness(double thickness) => CurrentLayerSettings.thickness = thickness; // TODO: remove
-    public double SetCurrentLayerAmplifier(double amplifier) => CurrentLayerSettings.amplifier = amplifier; // TODO: remove
-    public void SetCurrentPrintSettings(double thickness, double amplifier) // TODO: remove
+    public double SetCurrentLayerThickness(double thickness) => CurrentLayerSettings.thickness = thickness;
+    public double SetCurrentLayerPower(double power) => CurrentLayerSettings.power = power;
+    public double SetCurrentLayerScanSpeed(double scanSpeed) => CurrentLayerSettings.scanSpeed = scanSpeed;
+    public double SetCurrentLayerHatchSpacing(double hatchSpacing) => CurrentLayerSettings.hatchSpacing = hatchSpacing;
+    public double SetCurrentLayerAmplifier(double amplifier) => CurrentLayerSettings.amplifier = amplifier;
+    public void SetCurrentPrintSettings(double thickness, double power, double scanSpeed, double hatchSpacing, double amplifier)
     {
         SetCurrentLayerThickness(thickness);
+        SetCurrentLayerPower(power);
+        SetCurrentLayerScanSpeed(scanSpeed);
+        SetCurrentLayerHatchSpacing(hatchSpacing);
         SetCurrentLayerAmplifier(amplifier);
     }
-    #endregion
 
 }

@@ -23,7 +23,7 @@ public class PausedPrintState : IPrintState
         _psm.status = PrintStateMachine.PrintStateMachineStatus.Paused;
         _psm.rsm.status = RoutineStateMachine.RoutineStateMachineStatus.Paused;
     }
-    public async Task<bool> InitializePlayAsync()
+    public async Task<bool> InitializePlayAsync(int numberOfLayers = 1)
     {
         var newState = new PrintingPrintState(_psm);
         _psm.ChangeStateTo(newState);
@@ -37,7 +37,7 @@ public class PausedPrintState : IPrintState
         return await newState.Resume(); // run Play() logic immediately
     }
 
-    public async Task<bool> Play() => await InitializePlayAsync();
+    public async Task<bool> Play(int numberOfLayers = 1) => await InitializePlayAsync();
     public void Pause()
     {
         // do nothing; already in paused state

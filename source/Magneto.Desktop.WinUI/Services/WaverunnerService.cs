@@ -11,7 +11,7 @@ using Microsoft.UI.Xaml;
 using SAMLIGHT_CLIENT_CTRL_EXLib;
 
 namespace Magneto.Desktop.WinUI.Services;
-public class WaverunerService : IWaverunnerService
+public class WaverunnerService : IWaverunnerService
 {
     private static readonly ScSamlightClientCtrlEx cci = new();
     private double _defaultMarkSpeed = 800; // mm/s
@@ -29,10 +29,10 @@ public class WaverunerService : IWaverunnerService
         OnlyRedPointerEntities = 4,
         OutermostBorder = 5
     }
-    public WaverunerService()
-    {
-            
-    }
+    #region Constructor
+    public WaverunnerService() {}
+    #endregion
+
     #region Connection Checkers
     public int IsRunning()
     {
@@ -195,11 +195,11 @@ public class WaverunerService : IWaverunnerService
         if (cci.ScIsRunning() == 0)
         {
             msg = "SAMLight not found";
-            MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.ERROR);
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             return 0;
         }
         msg = "SAMLight is stopping mark";
-        MagnetoLogger.Log(msg, Core.Contracts.Services.LogFactoryLogLevel.LogLevel.WARN);
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
         cci.ScStopMarking();
         return 1;
     }
