@@ -425,7 +425,7 @@ public sealed partial class TestPrintPage : Page
         {
             var confirmed = await PopupInfo.ShowConfirmationDialog(
                 this.Content.XamlRoot,
-                "Warning",
+                "⚠️Warning",
                 "Found a layer print in the queue. If you enable the calibration panel, the current layer print will be erased. Continue?"
             );
             if (confirmed)
@@ -902,7 +902,6 @@ public sealed partial class TestPrintPage : Page
             var files = Directory.EnumerateFiles(folder.Path, "*.sjf");
             if (!files.Any())
             {
-                // TODO: use magneto logger
                 var msg = "❌No .sjf files found in the selected folder.";
                 MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
                 _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌No Job Files in Folder", "The selected folder does not contain any .sjf files..");
@@ -911,8 +910,22 @@ public sealed partial class TestPrintPage : Page
             PrintDirectoryInputTextBox.Text = folder.Path;
             await ViewModel.AddPrintToDatabaseAsync(folder.Path);
             // if valid folder, unlock print settings
+            if (_waverunnerPageService == null)
+            {
+                var msg = "⚠️Waverunner page service is null";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
+                _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "⚠️Waverunner Page Service Not Connected", "Cannot mark without a connection to the page service.");
+                return;
+            }
             _waverunnerPageService.UnlockMarkSettings();
             _waverunnerPageService.UnlockMarkSettings();
+        }
+        else
+        {
+            var msg = "❌Folder is null.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Folder Does Not Exist", "The selected folder does not exist.");
+            return;
         }
         UpdatePrintAndSliceDisplayText();
     }
@@ -931,10 +944,10 @@ public sealed partial class TestPrintPage : Page
     {
         // ask user to confirm delete
         var confirmed = await PopupInfo.ShowConfirmationDialog(
-                this.Content.XamlRoot,
-                "Warning",
-                "This will permanently delete the current print and all associated progress from the database. Do you want to continue?"
-            );
+            this.Content.XamlRoot,
+            "Warning",
+            "This will permanently delete the current print and all associated progress from the database. Do you want to continue?"
+        );
         if (!confirmed)
         {
             // clear program list if user confirms
@@ -957,10 +970,21 @@ public sealed partial class TestPrintPage : Page
         {
             var msg = $"Cannot print layer. Motor page service is null.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Lost Connection to Motors", "Cannot mark layer.");
             return;
         }
         if (startWithMark)
         {
+            var confirmed = await PopupInfo.ShowConfirmationDialog(
+                this.Content.XamlRoot,
+                "Start with Mark?",
+                "You've selected to begin each layer with a mark. To start with a layer move instead, uncheck the \"Start with mark\" box. Do you want to continue with marking first?"
+            );
+            if (!confirmed)
+            {
+                MagnetoLogger.Log("User aborted start with mark", LogFactoryLogLevel.LogLevel.VERBOSE);
+                return;
+            }
             var msg = $"Start with mark requested.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
         }
@@ -970,6 +994,7 @@ public sealed partial class TestPrintPage : Page
         {
             var msg = $"Layer thickness text box input is invalid.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Layer Thickness is Invalid", "Cannot mark layer.");
             return;
         }
         (res, power) = ConvertTextBoxTextToDouble(LaserPowerTextBox);
@@ -977,6 +1002,7 @@ public sealed partial class TestPrintPage : Page
         {
             var msg = $"Power text box input is invalid.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Laser Power is Invalid", "Cannot mark layer.");
             return;
         }
         (res, scanSpeed) = ConvertTextBoxTextToDouble(ScanSpeedTextBox);
@@ -984,13 +1010,15 @@ public sealed partial class TestPrintPage : Page
         {
             var msg = $"Scan speed text box input is invalid.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Scan Speed is Invalid", "Cannot mark layer.");
             return;
         }
         (res, hatchSpacing) = ConvertTextBoxTextToDouble(HatchSpacingTextBox);
         if (res == 0)
         {
-            var msg = $"Hatching text box input is invalid.";
+            var msg = $"Hatch spacing text box input is invalid.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Hatch Spacing is Invalid", "Cannot mark layer.");
             return;
         }
         (res, amplifier) = ConvertTextBoxTextToDouble(SupplyAmplifierTextBox);
@@ -998,6 +1026,7 @@ public sealed partial class TestPrintPage : Page
         {
             var msg = $"Supply amplifier text box input is invalid.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Supply Amplification is Invalid", "Cannot mark layer.");
             return;
         }
         (res, slicesToMark) = ConvertTextBoxTextInt(SlicesToMarkTextBox);
@@ -1005,6 +1034,7 @@ public sealed partial class TestPrintPage : Page
         {
             var msg = $"Slices to mark text box input is invalid.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Invalid Number of Slices to Mark Entered", "Cannot mark layer.");
             return;
         }
         // play button is print-related (not just motor related) so should use print state machine in view model
@@ -1058,7 +1088,7 @@ public sealed partial class TestPrintPage : Page
     {
         if (_waverunnerPageService == null)
         {
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Lost connection to Waverunner. Cannot pause laser.");
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", "Lost connection to Waverunner. Cannot pause laser.");
         }
         else
         {
@@ -1068,7 +1098,7 @@ public sealed partial class TestPrintPage : Page
 
         if (_motorPageService == null)
         {
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Lost connection to motors. Cannot pause motors.");
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", "Lost connection to motors. Cannot pause motors.");
         }
         else
         {
@@ -1088,12 +1118,12 @@ public sealed partial class TestPrintPage : Page
         // Show interactive warning
         var confirmed = await PopupInfo.ShowConfirmationDialog(
             this.Content.XamlRoot,
-            "Warning",
+            "⚠️Warning",
             "This will abort the current print. Progress will be saved, but the print will be removed from view and marked complete in the database (with unmarked layers noted). Continue?"
         );
         if (!confirmed)
         {
-            MagnetoLogger.Log("❌ User canceled aborting this print.", LogFactoryLogLevel.LogLevel.WARN);
+            MagnetoLogger.Log("❌User canceled aborting this print.", LogFactoryLogLevel.LogLevel.WARN);
             return;
         }
         // Proceed if confirmed
