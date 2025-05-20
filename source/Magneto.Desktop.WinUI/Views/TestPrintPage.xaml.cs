@@ -559,6 +559,14 @@ public sealed partial class TestPrintPage : Page
         var layerThicknessIsValid = TextBoxInputIsValid(LayerThicknessTextBox, _layerThicknessLower, _layerThicknessUpper);
         if (_waverunnerPageService is null)
         {
+            msg = $"❌Cannot validate layer thickness text box. Waverunner is null.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            return;
+        }
+        if (ViewModel.GetCurrentPrint() == null)
+        {
+            msg = $"❌Cannot validate layer thickness text box. Current print is null.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             return;
         }
         if (layerThicknessIsValid == 0)
@@ -593,6 +601,14 @@ public sealed partial class TestPrintPage : Page
         var powerIsValid = TextBoxInputIsValid(LaserPowerTextBox, _laserPowerLower, _laserPowerUpper);
         if (_waverunnerPageService is null)
         {
+            msg = $"❌Cannot validate laser power text box. Waverunner is null.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            return;
+        }
+        if (ViewModel.GetCurrentPrint() == null)
+        {
+            msg = $"❌Cannot validate laser power text box. Current print is null.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             return;
         }
         if (powerIsValid == 0)
@@ -627,6 +643,14 @@ public sealed partial class TestPrintPage : Page
         var scanSpeedIsValid = TextBoxInputIsValid(ScanSpeedTextBox, _scanSpeedLower, _scanSpeedUpper);
         if (_waverunnerPageService is null)
         {
+            msg = $"❌Cannot validate scan speed text box. Waverunner is null.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            return;
+        }
+        if (ViewModel.GetCurrentPrint() == null)
+        {
+            msg = $"❌Cannot validate scan speed text box. Current print is null.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             return;
         }
         if (scanSpeedIsValid == 0)
@@ -668,8 +692,19 @@ public sealed partial class TestPrintPage : Page
         var slicesToMarkValid = TextBoxInputIsValid(SlicesToMarkTextBox, slicesToMarkLower, slicesToMarkUpper);
         if (_waverunnerPageService is null)
         {
-            msg = $"Waverunner page service is null. aborting evaluation of slices to mark text box";
+            msg = $"❌Cannot validate slices to mark text box. Waverunner is null.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            return;
+        }
+        if (ViewModel.GetCurrentPrint() == null)
+        {
+            msg = $"❌Cannot validate slices to mark text box. Current print is null.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            return;
+        }
+
+        if (ViewModel.GetCurrentPrint() == null)
+        {
             return;
         }
         if (slicesToMarkValid == 0)
@@ -767,28 +802,28 @@ public sealed partial class TestPrintPage : Page
                     }
                     else
                     {
-                        MagnetoLogger.Log("❌ Slice image path is null or empty.", LogFactoryLogLevel.LogLevel.ERROR);
+                        MagnetoLogger.Log("❌Slice image path is null or empty.", LogFactoryLogLevel.LogLevel.ERROR);
                         _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", "Cannot find slice.");
                         return;
                     }
                 }
                 else
                 {
-                    MagnetoLogger.Log("❌ Current slice is null.", LogFactoryLogLevel.LogLevel.ERROR);
+                    MagnetoLogger.Log("❌Current slice is null.", LogFactoryLogLevel.LogLevel.ERROR);
                     _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", "Current slice missing.");
                     return;
                 }
             }
             else
             {
-                MagnetoLogger.Log("❌ Directory path is null or empty.", LogFactoryLogLevel.LogLevel.ERROR);
+                MagnetoLogger.Log("❌Directory path is null or empty.", LogFactoryLogLevel.LogLevel.ERROR);
                 _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", "Cannot find directory.");
                 return;
             }
         }
         else
         {
-            MagnetoLogger.Log("❌ Current print is null.", LogFactoryLogLevel.LogLevel.ERROR);
+            MagnetoLogger.Log("❌Current print is null.", LogFactoryLogLevel.LogLevel.ERROR);
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", "Cannot find print.");
             return;
         }
@@ -889,35 +924,12 @@ public sealed partial class TestPrintPage : Page
         // clear print data
         ClearPrintDataAndText();
         // lock mark settings
-        _waverunnerPageService.LockMarkSettings();
+        _waverunnerPageService.LockMarkSettings(); // WARNING: all lost focus methods get called when we handle delete print; had to add checks for current print == null to all these methods
         _waverunnerPageService.LockMarking();
     }
     private async void DeletePrintButton_Click(object sender, RoutedEventArgs e)
     {
-        /*
         // ask user to confirm delete
-        var confirmed = await PopupInfo.ShowConfirmationDialog(
-            this.Content.XamlRoot,
-            "Warning",
-            "This will permanently delete the current print and all associated progress from the database. Do you want to continue?"
-        );
-        if (confirmed)
-        {
-            if (ViewModel.GetCurrentPrint() == null)
-            {
-                MagnetoLogger.Log("❌Could not delete print. Current print is null.", LogFactoryLogLevel.LogLevel.ERROR);
-                _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", "Could not delete print. Unable to find current print in database.");
-                return;
-            }
-            else
-            {
-                await HandleDeletePrint();
-            }
-        }
-        MagnetoLogger.Log("User aborted delete print", LogFactoryLogLevel.LogLevel.VERBOSE);
-        */
-
-        //HandleDeletePrint();
         var confirmed = await PopupInfo.ShowConfirmationDialog(
                 this.Content.XamlRoot,
                 "Warning",
@@ -929,24 +941,7 @@ public sealed partial class TestPrintPage : Page
             MagnetoLogger.Log("User aborted delete print", LogFactoryLogLevel.LogLevel.VERBOSE);
             return;
         }
-
-        // TODO: add guards to ask user if they're sure they want to delete this print
-        if (ViewModel.GetCurrentPrint() == null)
-        {
-            MagnetoLogger.Log("❌Could not delete print. Current print is null.", LogFactoryLogLevel.LogLevel.ERROR);
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", "Could not delete print. Unable to find current print in database.");
-            return;
-        }
-        else
-        {
-            MagnetoLogger.Log("✅Deleting print.", LogFactoryLogLevel.LogLevel.SUCCESS);
-            await ViewModel.DeleteCurrentPrintAsync();
-            MagnetoLogger.Log("✅Removing data from display.", LogFactoryLogLevel.LogLevel.SUCCESS);
-            ClearPrintDataAndText();
-            _waverunnerPageService.LockMarkSettings();
-            //_waverunnerPageService.LockMarking();
-        }
-
+        HandleDeletePrint();
     }
     private async void PlayButton_Click(object sender, RoutedEventArgs e)
     {

@@ -115,8 +115,24 @@ public class PrintStateMachine
             return await _sliceService.GetNextSlice(currentPrint);
         }
     }
-    public async Task<long> GetSlicesMarkedAsync() => await _printService.MarkedSliceCount(currentPrint.id);
-    public async Task<long> GetTotalSlicesAsync() => await _printService.TotalSlicesCount(currentPrint.id);
+    public async Task<long> GetSlicesMarkedAsync()
+    {
+        if (currentPrint == null)
+        {
+            MagnetoLogger.Log("❌Cannot return total slices. Current print is null.", LogFactoryLogLevel.LogLevel.ERROR);
+            return 0;
+        }
+        return await _printService.MarkedSliceCount(currentPrint.id);
+    }
+    public async Task<long> GetTotalSlicesAsync()
+    {
+        if (currentPrint == null)
+        {
+            MagnetoLogger.Log("❌Cannot return total slices. Current print is null.", LogFactoryLogLevel.LogLevel.ERROR);
+            return 0;
+        }
+        return await _printService.TotalSlicesCount(currentPrint.id);
+    }
     public string GetSliceFilePath()
     {
         if (currentSlice == null)
