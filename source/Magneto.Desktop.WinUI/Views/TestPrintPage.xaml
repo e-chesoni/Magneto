@@ -266,9 +266,6 @@
                             <ColumnDefinition Width="10"/>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="10"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="10"/>
-                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <TextBox Grid.Column="0" 
                                  x:Name="PrintDirectoryInputTextBox"
@@ -284,24 +281,15 @@
                                 HorizontalAlignment="Center"
                                 Click="BrowseButton_Click"/>
                         <Button Grid.Column="4"
+                                x:Name="DeletePrintButton"
                                 Content="Delete Print"
-                                Height="40" 
+                                Width="150"
+                                Height="40"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
                                 Margin="2"
+                                Background="Red"
                                 Click="DeletePrintButton_Click"/>
-                        <Button Grid.Column="6"
-                                Content="TEST"
-                                Width="150"
-                                Height="40"
-                                HorizontalAlignment="Center"
-                                Click="TEST_Click"/>
-                        <Button Grid.Column="8"
-                                Content="Stop TEST"
-                                Width="150"
-                                Height="40"
-                                HorizontalAlignment="Center"
-                                Click="StopTEST_Click"/>
                     </Grid>
 
                     <Grid Grid.Row="2">
@@ -318,8 +306,8 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0"
                                        Text="Current Slice: "
-                                           VerticalAlignment="Center"
-                                           HorizontalAlignment="Right"/>
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Right"/>
                         </Grid>
 
                         <Grid Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center">

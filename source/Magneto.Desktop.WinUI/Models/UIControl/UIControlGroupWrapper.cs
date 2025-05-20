@@ -73,7 +73,7 @@ public class UIControlGroupWrapper
         calibrateMotorControlGroup.selectSweepButton.Background = new SolidColorBrush(color);
     }
     #endregion
-
+    
     #region Getters
     public IUIControlGroupMotors GetCalibrationControlGroup() => calibrateMotorControlGroup;
     public IUIControlGroupWaverunner GetWaverunnerControlGroup() => waverunnerControlGroup;

@@ -4,6 +4,7 @@ namespace Magneto.Desktop.WinUI.Models.UIControl;
 public class UIControlGroupWaverunner : IUIControlGroupWaverunner
 {
     public TextBox printDirectoryInputTextBox;
+    public Button deletePrintButton;
 
     public TextBlock layerTextBlock;
     public TextBlock fileNameTextBlock;
@@ -34,7 +35,8 @@ public class UIControlGroupWaverunner : IUIControlGroupWaverunner
     public IEnumerable<object> settingsEnumerable;
     public IEnumerable<object> buttonsEnumerable;
 
-    public UIControlGroupWaverunner(TextBox printDirectoryInputTextBx, TextBlock layerTextBlk, TextBlock fileNameTextBlk, TextBlock layerThicknessTextBlk, 
+    public UIControlGroupWaverunner(TextBox printDirectoryInputTextBx, Button deletePrintBtn,
+                               TextBlock layerTextBlk, TextBlock fileNameTextBlk, TextBlock layerThicknessTextBlk, 
                                TextBlock laserPowerTextBlk, TextBlock scanSpeedTextBlk, TextBlock hatchSpacingTextBlk, 
                                TextBlock energyDensityTextBlk, TextBlock slicesToMarkTextBlk, TextBlock supplyAmplifierTextBlk,
                                TextBox layerTextBx, TextBox fileNameTextBx, TextBox layerThicknessTextBx, TextBox laserPowerTextBx, 
@@ -42,6 +44,7 @@ public class UIControlGroupWaverunner : IUIControlGroupWaverunner
                                TextBox supplyAmplifierTextBx, CheckBox startWithMarkCheckBx, Button PlayBtn, Button PausePrintBtn, Button RemarkLayerBtn)
     {
         printDirectoryInputTextBox = printDirectoryInputTextBx;
+        deletePrintButton = deletePrintBtn;
         layerTextBlock = layerTextBlk;
         fileNameTextBlock = fileNameTextBlk;
         layerThicknessTextBlock = layerThicknessTextBlk;
@@ -69,6 +72,7 @@ public class UIControlGroupWaverunner : IUIControlGroupWaverunner
 
         settingsEnumerable = new List<object>
         {
+            deletePrintButton,
             layerTextBlock,
             fileNameTextBlock,
             layerThicknessTextBlock,

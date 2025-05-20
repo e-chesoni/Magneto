@@ -20,6 +20,7 @@ using static Magneto.Desktop.WinUI.Core.Models.Print.RoutineStateMachine;
 using System.Threading.Tasks;
 using Magneto.Desktop.WinUI.Core.Models.States.PrintStates;
 using static Magneto.Desktop.WinUI.Core.Models.States.PrintStates.PrintStateMachine;
+using Magneto.Desktop.WinUI.Toasts;
 
 namespace Magneto.Desktop.WinUI.Views;
 
@@ -29,7 +30,6 @@ namespace Magneto.Desktop.WinUI.Views;
 public sealed partial class TestPrintPage : Page
 {
     // core
-    //private MissionControl _missionControl { get; set; }
     public TestPrintViewModel ViewModel { get; }
     private MotorPageService? _motorPageService;
     private WaverunnerPageService? _waverunnerPageService;
@@ -53,8 +53,6 @@ public sealed partial class TestPrintPage : Page
     private double _supplyAmplifierLower;
     private double _supplyAmplifierUpper;
 
-    //private bool KILL_OPERATION; // TODO: may remove later; used in old layer move to check for e-stop
-
     #region Constructor
     /// <summary>
     /// Constructor for TestPrintPage. Initializes the ViewModel, sets up UI components, logs the page visit,
@@ -63,11 +61,7 @@ public sealed partial class TestPrintPage : Page
     public TestPrintPage()
     {
         ViewModel = App.GetService<TestPrintViewModel>();
-        //_missionControl = App.GetService<MissionControl>();
         InitializeComponent();
-        // set up flags
-        //KILL_OPERATION = false;
-        //this.motorService = motorService;
     }
     #endregion
 
@@ -84,7 +78,7 @@ public sealed partial class TestPrintPage : Page
                                                                 StepBuildMotorUpButton, StepBuildMotorDownButton, StepPowderMotorUpButton, StepPowderMotorDownButton, StepSweepMotorLeftButton, StepSweepMotorRightButton,
                                                                 StopBuildMotorButton, StopPowderMotorButton, StopSweepMotorButton,
                                                                 HomeAllMotorsButton, EnableMotorsButton, StopMotorsButton);
-        _waverunnerUiControlGroup = new UIControlGroupWaverunner(PrintDirectoryInputTextBox,
+        _waverunnerUiControlGroup = new UIControlGroupWaverunner(PrintDirectoryInputTextBox, DeletePrintButton,
                                                                 LayerTextBlock, FileNameTextBlock, LayerThicknessTextBlock, LaserPowerTextBlock, ScanSpeedTextBlock, HatchSpacingTextBlock, EnergyDensityTextBlock,
                                                                 SlicesToMarkTextBlock, SupplyAmplifierTextBlock, 
                                                                 LayerTextBox, FileNameTextBox, LayerThicknessTextBox, LaserPowerTextBox, ScanSpeedTextBox, HatchSpacingTextBox, EnergyDensityTextBox,
@@ -97,8 +91,7 @@ public sealed partial class TestPrintPage : Page
         // populate motor positions on page load
         await _motorPageService.HandleGetAllPositionsAsync();
         
-        // populate default pen settings
-        // TODO: test if we can get pen settings when waverunner is running => we can! huge.
+        // populate pen settings
         if (_waverunnerPageService.WaverunnerRunning())
         {
             // get pen settings
@@ -108,12 +101,15 @@ public sealed partial class TestPrintPage : Page
             ScanSpeedTextBox.Text = _waverunnerPageService.GetMarkSpeed().ToString();
             var msg = $"Got the following pen settings from Waverunner: \n power: {power} \n scan speed: {scanSpeed}";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+            ToastManager.ShowToast("Connected to Waverunner.", this.XamlRoot, ToastType.Success);
+            ToastManager.ShowToast("Loading default pen settings...", this.XamlRoot);
         }
         else
         {
             // use default power and scan speed
             LaserPowerTextBox.Text = _waverunnerPageService.GetDefaultLaserPower().ToString();
             ScanSpeedTextBox.Text = _waverunnerPageService.GetDefaultMarkSpeed().ToString();
+            ToastManager.ShowToast("Waverunner not detected.", this.XamlRoot, ToastType.Error);
         }
         HatchSpacingTextBox.Text = _waverunnerPageService.GetDefaultHatchSpacing().ToString();
         SupplyAmplifierTextBox.Text = _waverunnerPageService.GetDefaultSupplyAmplifier().ToString();
@@ -127,6 +123,10 @@ public sealed partial class TestPrintPage : Page
         _scanSpeedUpper = 3000;
         _supplyAmplifierLower = 0;
         _supplyAmplifierUpper = 4;
+
+        // Disable print settings and marking until user selects directory (browse button)
+        _waverunnerPageService.LockMarkSettings();
+        _waverunnerPageService.LockMarking();
     }
     #endregion
 
@@ -147,7 +147,7 @@ public sealed partial class TestPrintPage : Page
     {
         if (_motorPageService == null)
         {
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Cannot unlock calibration panel.");
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", "Cannot unlock calibration panel.");
             return;
         }
         _motorPageService.UnlockCalibrationPanel();
@@ -156,7 +156,7 @@ public sealed partial class TestPrintPage : Page
     {
         if (_motorPageService == null)
         {
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Cannot lock calibration panel.");
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", "Cannot lock calibration panel.");
             return;
         }
         _motorPageService.LockCalibrationPanel();
@@ -171,6 +171,7 @@ public sealed partial class TestPrintPage : Page
         {
             msg = "_motorPageService is null. Cannot home motors.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.VERBOSE);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Lost Connection to Motors", "Cannot home motors.");
             return;
         }
         await _motorPageService.HomeAllMotorsAsync();
@@ -182,7 +183,7 @@ public sealed partial class TestPrintPage : Page
     {
         if (_motorPageService == null)
         {
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to stop motors.");
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", "Unable to stop motors.");
             return;
         }
         //_motorPageService.StopAllMotorsClearProgramList(); // TODO: test if you can call this now (switched to semaphores in magneto console, so it might work now)
@@ -199,7 +200,7 @@ public sealed partial class TestPrintPage : Page
     {
         if (_motorPageService == null)
         {
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to select build motor.");
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", "Unable to select build motor.");
             return;
         }
         _motorPageService.SelectBuildMotor();
@@ -208,7 +209,7 @@ public sealed partial class TestPrintPage : Page
     {
         if (_motorPageService == null)
         {
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to select powder motor.");
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", "Unable to select powder motor.");
             return;
         }
         _motorPageService.SelectPowderMotor();
@@ -217,7 +218,7 @@ public sealed partial class TestPrintPage : Page
     {
         if (_motorPageService == null)
         {
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to select sweep motor.");
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", "Unable to select sweep motor.");
             return;
         }
         _motorPageService.SelectSweepMotor();
@@ -229,7 +230,7 @@ public sealed partial class TestPrintPage : Page
     {
         if (_motorPageService == null)
         {
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to get build motor position.");
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", "Unable to get build motor position.");
             return;
         }
         await _motorPageService.HandleGetPosition(buildMotorName, _motorPageService.GetBuildPositionTextBox(), true);
@@ -238,7 +239,7 @@ public sealed partial class TestPrintPage : Page
     {
         if (_motorPageService == null)
         {
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to get powder motor position.");
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", "Unable to get powder motor position.");
             return;
         }
         await _motorPageService.HandleGetPosition(powderMotorName, _motorPageService.GetPowderPositionTextBox(), true);
@@ -247,7 +248,7 @@ public sealed partial class TestPrintPage : Page
     {
         if (_motorPageService == null)
         {
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to get sweep motor position");
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", "Unable to get sweep motor position");
             return;
         }
         await _motorPageService.HandleGetPosition(sweepMotorName, _motorPageService.GetSweepPositionTextBox(), true);
@@ -259,7 +260,7 @@ public sealed partial class TestPrintPage : Page
     {
         if (_motorPageService == null)
         {
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to move build motor.");
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", "Unable to move build motor.");
             return;
         }
         _motorPageService.HandleAbsMove(buildMotorName, _motorPageService.GetBuildAbsMoveTextBox(), this.Content.XamlRoot);
@@ -268,7 +269,7 @@ public sealed partial class TestPrintPage : Page
     {
         if (_motorPageService == null)
         {
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to move powder motor.");
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", "Unable to move powder motor.");
             return;
         }
         _motorPageService.HandleAbsMove(powderMotorName, _motorPageService.GetPowderAbsMoveTextBox(), this.Content.XamlRoot);
@@ -277,7 +278,7 @@ public sealed partial class TestPrintPage : Page
     {
         if (_motorPageService == null)
         {
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to move sweep motor.");
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", "Unable to move sweep motor.");
             return;
         }
         _motorPageService.HandleAbsMove(sweepMotorName, _motorPageService.GetSweepAbsMoveTextBox(), this.Content.XamlRoot);
@@ -289,7 +290,7 @@ public sealed partial class TestPrintPage : Page
     {
         if (_motorPageService == null)
         {
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to build motor up.");
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", "Unable to build motor up.");
             return;
         }
         _motorPageService.HandleRelMove(buildMotorName, _motorPageService.GetBuildStepTextBox(), true, this.Content.XamlRoot);
@@ -298,7 +299,7 @@ public sealed partial class TestPrintPage : Page
     {
         if (_motorPageService == null)
         {
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to move build motor down.");
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", "Unable to move build motor down.");
             return;
         }
         _motorPageService.HandleRelMove(buildMotorName, _motorPageService.GetBuildStepTextBox(), false, this.Content.XamlRoot);
@@ -307,7 +308,7 @@ public sealed partial class TestPrintPage : Page
     {
         if (_motorPageService == null)
         {
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to move powder motor up.");
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", "Unable to move powder motor up.");
             return;
         }
         _motorPageService.HandleRelMove(powderMotorName, _motorPageService.GetPowderStepTextBox(), true, this.Content.XamlRoot);
@@ -316,7 +317,7 @@ public sealed partial class TestPrintPage : Page
     {
         if (_motorPageService == null)
         {
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to move powder motor down.");
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", "Unable to move powder motor down.");
             return;
         }
         _motorPageService.HandleRelMove(powderMotorName, _motorPageService.GetPowderStepTextBox(), false, this.Content.XamlRoot);
@@ -325,7 +326,7 @@ public sealed partial class TestPrintPage : Page
     {
         if(_motorPageService == null)
         {
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to move sweep motor left.");
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", "Unable to move sweep motor left.");
             return;
         }
         _motorPageService.HandleRelMove(sweepMotorName, _motorPageService.GetSweepStepTextBox(), true, this.Content.XamlRoot);
@@ -334,7 +335,7 @@ public sealed partial class TestPrintPage : Page
     {
         if (_motorPageService == null)
         {
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to move sweep motor right.");
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", "Unable to move sweep motor right.");
             return;
         }
         _motorPageService.HandleRelMove(sweepMotorName, _motorPageService.GetSweepStepTextBox(), false, this.Content.XamlRoot);
@@ -353,7 +354,7 @@ public sealed partial class TestPrintPage : Page
     {
         if (_motorPageService == null)
         {
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to stop build motor.");
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", "Unable to stop build motor.");
             return;
         }
         _motorPageService.StopBuildMotorAndDisableControls();
@@ -362,7 +363,7 @@ public sealed partial class TestPrintPage : Page
     {
         if (_motorPageService == null)
         {
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to stop powder motor.");
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", "Unable to stop powder motor.");
             return;
         }
         _motorPageService.StopPowderMotorAndDisableControls();
@@ -371,7 +372,7 @@ public sealed partial class TestPrintPage : Page
     {
         if (_motorPageService == null)
         {
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to stop sweep motor.");
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", "Unable to stop sweep motor.");
             return;
         }
         _motorPageService.StopSweepMotorAndDisbleControls();
@@ -389,7 +390,7 @@ public sealed partial class TestPrintPage : Page
     {
         if (_motorPageService == null)
         {
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Cannot enable build motor.");
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", "Cannot enable build motor.");
             return;
         }
         _motorPageService.EnableBuildMotor();
@@ -398,7 +399,7 @@ public sealed partial class TestPrintPage : Page
     {
         if (_motorPageService == null)
         {
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Cannot enable powder motor.");
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", "Cannot enable powder motor.");
             return;
         }
         _motorPageService.EnablePowderMotor();
@@ -407,7 +408,7 @@ public sealed partial class TestPrintPage : Page
     {
         if (_motorPageService == null)
         {
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Cannot enable sweep motor.");
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", "Cannot enable sweep motor.");
             return;
         }
         _motorPageService.EnableSweepMotor();
@@ -416,22 +417,24 @@ public sealed partial class TestPrintPage : Page
     {
         if (_motorPageService == null)
         {
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Unable to enable motors.");
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", "Unable to enable motors.");
             return;
         }
         // Show interactive warning
-        var confirmed = await PopupInfo.ShowConfirmationDialog(
-            this.Content.XamlRoot,
-            "Warning",
-            "Found a layer print in the queue. If you enable the calibration panel, the current layer print will be erased. Continue?"
-        );
-        if (!confirmed)
+        if (_motorPageService.IsPrintPaused())
         {
+            var confirmed = await PopupInfo.ShowConfirmationDialog(
+                this.Content.XamlRoot,
+                "Warning",
+                "Found a layer print in the queue. If you enable the calibration panel, the current layer print will be erased. Continue?"
+            );
+            if (confirmed)
+            {
+                // clear program list if user confirms
+                _motorPageService.ClearProgramList();
+            }
             MagnetoLogger.Log("❌ User canceled enabling motors.", LogFactoryLogLevel.LogLevel.WARN);
-            return;
         }
-        // Proceed if confirmed
-        _motorPageService.ClearProgramList();
         await _motorPageService.HandleGetAllPositionsAsync();
         _motorPageService.EnableAllMotors();
         UnlockCalibrationPanel();
@@ -560,17 +563,17 @@ public sealed partial class TestPrintPage : Page
         }
         if (layerThicknessIsValid == 0)
         {
-            msg = $"⚠️ Layer thickness out of range (should {_layerThicknessLower}-{_layerThicknessUpper} mm)";
+            msg = $"Layer thickness out of range. (Acceptable range: {_layerThicknessLower}-{_layerThicknessUpper} mm)";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", msg);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", msg);
             LayerThicknessTextBox.Foreground = new SolidColorBrush(Colors.Red);
             _waverunnerPageService.LockMarking();
         }
         else if (layerThicknessIsValid == -1)
         {
-            msg = "⚠️ Invalid number entered for layer thickness.";
+            msg = "Invalid number entered for layer thickness.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", msg);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", msg);
             LayerThicknessTextBox.Foreground = new SolidColorBrush(Colors.Red);
             _waverunnerPageService.LockMarking();
         }
@@ -594,17 +597,17 @@ public sealed partial class TestPrintPage : Page
         }
         if (powerIsValid == 0)
         {
-            msg = $"⚠️ Laser power out of range (should be {_laserPowerLower}–{_laserPowerUpper} W)";
+            msg = $"Laser power out of range (should be {_laserPowerLower}–{_laserPowerUpper} W)";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", msg);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", msg);
             LaserPowerTextBox.Foreground = new SolidColorBrush(Colors.Red);
             _waverunnerPageService.LockMarking();
         }
         else if (powerIsValid == -1)
         {
-            msg = "⚠️ Invalid number entered for laser power.";
+            msg = "Invalid number entered for laser power.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", msg);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", msg);
             LaserPowerTextBox.Foreground = new SolidColorBrush(Colors.Red);
             _waverunnerPageService.LockMarking();
         }
@@ -628,17 +631,17 @@ public sealed partial class TestPrintPage : Page
         }
         if (scanSpeedIsValid == 0)
         {
-            msg = $"⚠️ Scan speed out of range (should be {_scanSpeedLower}-{_scanSpeedUpper} mm/s)";
+            msg = $"Scan speed out of range (should be {_scanSpeedLower}-{_scanSpeedUpper} mm/s)";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", msg);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", msg);
             ScanSpeedTextBox.Foreground = new SolidColorBrush(Colors.Red);
             _waverunnerPageService.LockMarking();
         }
         else if (scanSpeedIsValid == -1)
         {
-            msg = "⚠️ Invalid number entered for scan speed.";
+            msg = "Invalid number entered for scan speed.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", msg);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", msg);
             ScanSpeedTextBox.Foreground = new SolidColorBrush(Colors.Red);
             _waverunnerPageService.LockMarking();
         }
@@ -665,23 +668,23 @@ public sealed partial class TestPrintPage : Page
         var slicesToMarkValid = TextBoxInputIsValid(SlicesToMarkTextBox, slicesToMarkLower, slicesToMarkUpper);
         if (_waverunnerPageService is null)
         {
-            msg = $"⚠️ Waverunner page service is null. aborting evaluation of slices to mark text box";
+            msg = $"Waverunner page service is null. aborting evaluation of slices to mark text box";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             return;
         }
         if (slicesToMarkValid == 0)
         {
-            msg = $"⚠️ Slices to mark out of range (should be {slicesToMarkLower}-{slicesToMarkUpper} slices)";
+            msg = $"Slices to mark out of range (should be {slicesToMarkLower}-{slicesToMarkUpper} slices)";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", msg);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", msg);
             SlicesToMarkTextBox.Foreground = new SolidColorBrush(Colors.Red);
             _waverunnerPageService.LockMarking();
         }
         else if (slicesToMarkValid == -1)
         {
-            msg = "⚠️ Invalid number entered for slices to mark.";
+            msg = "Invalid number entered for slices to mark.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", msg);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", msg);
             SlicesToMarkTextBox.Foreground = new SolidColorBrush(Colors.Red);
             _waverunnerPageService.LockMarking();
         }
@@ -706,18 +709,18 @@ public sealed partial class TestPrintPage : Page
         }
         if (scanSpeedIsValid == 0)
         {
-            msg = $"⚠️ Supply amplifier out of range (should be {_supplyAmplifierLower}-{_supplyAmplifierUpper} mm/s)";
+            msg = $"Supply amplifier out of range (should be {_supplyAmplifierLower}-{_supplyAmplifierUpper} mm/s)";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", msg);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", msg);
             SupplyAmplifierTextBox.Foreground = new SolidColorBrush(Colors.Red);
             // TODO: disable marking buttons
             _waverunnerPageService.LockMarking();
         }
         else if (scanSpeedIsValid == -1)
         {
-            msg = "⚠️ Invalid number entered for supply amplifier.";
+            msg = "Invalid number entered for supply amplifier.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", msg);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", msg);
             SupplyAmplifierTextBox.Foreground = new SolidColorBrush(Colors.Red);
             // TODO: disable marking buttons
             _waverunnerPageService.LockMarking();
@@ -765,28 +768,28 @@ public sealed partial class TestPrintPage : Page
                     else
                     {
                         MagnetoLogger.Log("❌ Slice image path is null or empty.", LogFactoryLogLevel.LogLevel.ERROR);
-                        _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Cannot find slice.");
+                        _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", "Cannot find slice.");
                         return;
                     }
                 }
                 else
                 {
                     MagnetoLogger.Log("❌ Current slice is null.", LogFactoryLogLevel.LogLevel.ERROR);
-                    _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Current slice missing.");
+                    _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", "Current slice missing.");
                     return;
                 }
             }
             else
             {
                 MagnetoLogger.Log("❌ Directory path is null or empty.", LogFactoryLogLevel.LogLevel.ERROR);
-                _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Cannot find directory.");
+                _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", "Cannot find directory.");
                 return;
             }
         }
         else
         {
             MagnetoLogger.Log("❌ Current print is null.", LogFactoryLogLevel.LogLevel.ERROR);
-            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Error", "Cannot find print.");
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", "Cannot find print.");
             return;
         }
     }
@@ -807,7 +810,7 @@ public sealed partial class TestPrintPage : Page
     }
     private async void AbortPrint()
     {
-        // TODO: mark print as complete (without marking layers)
+        // mark print as complete (without marking layers)
         await ViewModel.CompleteCurrentPrintAsync();
         // clear text and current print and slice models in psm
         ClearPrintDataAndText();
@@ -865,37 +868,85 @@ public sealed partial class TestPrintPage : Page
             if (!files.Any())
             {
                 // TODO: use magneto logger
-                Debug.WriteLine("❌ No .sjf files found in the selected folder.");
-                ContentDialog dialog = new ContentDialog
-                {
-                    Title = "No Job Files in Folder",
-                    Content = "The selected folder does not contain any .sjf files.",
-                    CloseButtonText = "OK",
-                    XamlRoot = this.Content.XamlRoot
-                };
-                await dialog.ShowAsync();
+                var msg = "❌No .sjf files found in the selected folder.";
+                MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+                _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌No Job Files in Folder", "The selected folder does not contain any .sjf files..");
                 return;
             }
             PrintDirectoryInputTextBox.Text = folder.Path;
             await ViewModel.AddPrintToDatabaseAsync(folder.Path);
+            // if valid folder, unlock print settings
+            _waverunnerPageService.UnlockMarkSettings();
+            _waverunnerPageService.UnlockMarkSettings();
         }
         UpdatePrintAndSliceDisplayText();
     }
+    private async void HandleDeletePrint()
+    {
+        MagnetoLogger.Log("✅Deleting print.", LogFactoryLogLevel.LogLevel.SUCCESS);
+        await ViewModel.DeleteCurrentPrintAsync();
+        MagnetoLogger.Log("✅Removing data from display.", LogFactoryLogLevel.LogLevel.SUCCESS);
+        // clear print data
+        ClearPrintDataAndText();
+        // lock mark settings
+        _waverunnerPageService.LockMarkSettings();
+        _waverunnerPageService.LockMarking();
+    }
     private async void DeletePrintButton_Click(object sender, RoutedEventArgs e)
     {
+        /*
+        // ask user to confirm delete
+        var confirmed = await PopupInfo.ShowConfirmationDialog(
+            this.Content.XamlRoot,
+            "Warning",
+            "This will permanently delete the current print and all associated progress from the database. Do you want to continue?"
+        );
+        if (confirmed)
+        {
+            if (ViewModel.GetCurrentPrint() == null)
+            {
+                MagnetoLogger.Log("❌Could not delete print. Current print is null.", LogFactoryLogLevel.LogLevel.ERROR);
+                _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", "Could not delete print. Unable to find current print in database.");
+                return;
+            }
+            else
+            {
+                await HandleDeletePrint();
+            }
+        }
+        MagnetoLogger.Log("User aborted delete print", LogFactoryLogLevel.LogLevel.VERBOSE);
+        */
+
+        //HandleDeletePrint();
+        var confirmed = await PopupInfo.ShowConfirmationDialog(
+                this.Content.XamlRoot,
+                "Warning",
+                "This will permanently delete the current print and all associated progress from the database. Do you want to continue?"
+            );
+        if (!confirmed)
+        {
+            // clear program list if user confirms
+            MagnetoLogger.Log("User aborted delete print", LogFactoryLogLevel.LogLevel.VERBOSE);
+            return;
+        }
+
         // TODO: add guards to ask user if they're sure they want to delete this print
         if (ViewModel.GetCurrentPrint() == null)
         {
-            Debug.WriteLine("❌Current print is null");
+            MagnetoLogger.Log("❌Could not delete print. Current print is null.", LogFactoryLogLevel.LogLevel.ERROR);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", "Could not delete print. Unable to find current print in database.");
             return;
         }
         else
         {
-            Debug.WriteLine("✅Deleting print.");
+            MagnetoLogger.Log("✅Deleting print.", LogFactoryLogLevel.LogLevel.SUCCESS);
             await ViewModel.DeleteCurrentPrintAsync();
-            Debug.WriteLine("✅Removing data from display.");
+            MagnetoLogger.Log("✅Removing data from display.", LogFactoryLogLevel.LogLevel.SUCCESS);
             ClearPrintDataAndText();
+            _waverunnerPageService.LockMarkSettings();
+            //_waverunnerPageService.LockMarking();
         }
+
     }
     private async void PlayButton_Click(object sender, RoutedEventArgs e)
     {
@@ -972,15 +1023,41 @@ public sealed partial class TestPrintPage : Page
         {
             ViewModel.EnablePrintStateMachinePrinting(); // change psm state to idle
         }
+        if (_waverunnerPageService == null)
+        {
+            var msg = $"Cannot execute play request. Waverunner page service is null.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Magneto cannot come out to play", "Lost contact with Waverunner.");
+            return;
+        }
+        // lock mark settings
+        _waverunnerPageService.LockMarkSettings();
+        // lock play and re-mark buttons
+        _waverunnerPageService.LockMarking();
         for (var i = 0; i < slicesToMark; i++)
         {
             if (ViewModel.ShouldAbortLayerMove())
+            {
+                MagnetoLogger.Log("Aborting layer move. Print is in paused or canceled state.", LogFactoryLogLevel.LogLevel.ERROR);
+                _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Magneto Remains in the Plastic Prison", "Something went wrong; unable to resume print.");
                 return;
+            }
             await ViewModel.PrintLayer(startWithMark, thickness, power, scanSpeed, hatchSpacing, amplifier, (int)slicesToMark, this.Content.XamlRoot); // checks for pause state; calls resume() if paused; play() in any other state
             await _motorPageService.HandleGetAllPositionsAsync();
             UpdatePrintAndSliceDisplayText();
         }
-        _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Done!", "Requested layer(s) printed.");
+        // unlock mark settings
+        _waverunnerPageService.UnlockMarkSettings();
+        // unlock play and re-mark buttons
+        _waverunnerPageService.UnlockMarking();
+        if (!ViewModel.IsPrintPaused())
+        {
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Done!", "Requested layer(s) printed.");
+        }
+        else
+        {
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Print Paused", "You can resume or cancel the current layer move.");
+        }
     }
     private void PauseButton_Click(object sender, RoutedEventArgs e)
     {
@@ -1008,6 +1085,7 @@ public sealed partial class TestPrintPage : Page
     private void RemarkLayerButton_Click(object sender, RoutedEventArgs e)
     {
         // TODO: implement remarking
+        _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Try Again Later", "This feature is still in development.");
     }
     private async void AbortButton_Click(object sender, RoutedEventArgs e)
     {
@@ -1088,35 +1166,6 @@ public sealed partial class TestPrintPage : Page
 
         MagnetoLogger.Log(LogMessage, LogLevel);
         await PopupInfo.ShowContentDialog(xamlRoot, PopupMessageType, PopupMessage);
-    }
-    #endregion
-
-    // TODO: Remove after testing
-    #region Testing
-    private async void TEST_Click(object sender, RoutedEventArgs e)
-    {
-        if (_motorPageService == null)
-        {
-            return;
-        }
-        // Working!
-        // TODO: think about how to convert this in to a method that writes the entire multi-layer move program,
-        // then processes it
-        var startWithMark = true;
-        var thickness = 1;
-        var power = 300;
-        var scanSpeed = 800;
-        var hatchSpacing = 0.12;
-        var amplifier = 2;
-        var numberOfLayers = 1; // TODO: figure out how to incorporate number of layers (should loop somewhere where cancel will cancel entire request--i.e. in process() or AddLayerMoveToProgramList())
-        await ViewModel.PrintLayer(startWithMark, thickness, power, scanSpeed, hatchSpacing, amplifier, numberOfLayers, this.Content.XamlRoot);
-    }
-    private void StopTEST_Click(object sender, RoutedEventArgs e)
-    {
-        if (_motorPageService != null)
-        {
-            _motorPageService.StopAllMotorsClearProgramList();
-        }
     }
     #endregion
 }

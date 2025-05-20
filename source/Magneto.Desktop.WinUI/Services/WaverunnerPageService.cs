@@ -94,6 +94,14 @@ public class WaverunnerPageService
     {
         _uiControlGroupWrapper.DisableMarkButtons();
     }
+    public void UnlockMarkSettings()
+    {
+        _uiControlGroupWrapper.EnableWaverunnerSettingsControls();
+    }
+    public void LockMarkSettings()
+    {
+        _uiControlGroupWrapper.DisableWaverunnerSettingsControls();
+    }
 
     #region Pen Methods
     public double GetDefaultLaserPower() => _waverunnerService.GetDefaultLaserPower();

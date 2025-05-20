@@ -1,0 +1,135 @@
+﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Animation;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System;
+using Microsoft.UI;
+
+namespace Magneto.Desktop.WinUI.Toasts;
+
+public enum ToastType
+{
+    Info,
+    Success,
+    Error
+}
+public static class ToastManager
+{
+    private static int _activeToastCount = 0;
+    private const int ToastSpacing = 10;
+    private const int ToastEstimatedHeight = 80;
+
+    public static void ShowToast(string message, XamlRoot xamlRoot, ToastType type = ToastType.Info, int durationMs = 3000)
+    {
+        var popup = new Popup
+        {
+            XamlRoot = xamlRoot
+        };
+
+        // Set background color based on toast type
+        SolidColorBrush background = type switch
+        {
+            ToastType.Success => new SolidColorBrush(Colors.ForestGreen),
+            ToastType.Error => new SolidColorBrush(Colors.DarkRed),
+            _ => new SolidColorBrush(Colors.Black),
+        };
+
+        var toastText = new TextBlock
+        {
+            Text = message,
+            Foreground = new SolidColorBrush(Colors.White),
+            Padding = new Thickness(16),
+            MaxWidth = 300,
+            TextWrapping = TextWrapping.Wrap
+        };
+
+        var container = new Border
+        {
+            Background = background,
+            CornerRadius = new CornerRadius(8),
+            Child = toastText,
+            RenderTransform = new TranslateTransform { X = 320 }, // Start offscreen
+            Opacity = 0
+        };
+
+        popup.Child = container;
+
+        // Estimate vertical position based on number of active toasts
+        double baseOffset = 40 + (_activeToastCount * (ToastEstimatedHeight + ToastSpacing));
+        popup.HorizontalOffset = xamlRoot.Size.Width - 320;
+        popup.VerticalOffset = baseOffset;
+        popup.IsOpen = true;
+        _activeToastCount++;
+
+        var transform = (TranslateTransform)container.RenderTransform;
+
+        // Slide in + fade in
+        var fadeInStoryboard = new Storyboard();
+
+        var slideIn = new DoubleAnimation
+        {
+            From = 320,
+            To = 0,
+            Duration = new Duration(TimeSpan.FromMilliseconds(300)),
+            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+        };
+        Storyboard.SetTarget(slideIn, transform);
+        Storyboard.SetTargetProperty(slideIn, "X");
+
+        var fadeIn = new DoubleAnimation
+        {
+            From = 0,
+            To = 1,
+            Duration = new Duration(TimeSpan.FromMilliseconds(300))
+        };
+        Storyboard.SetTarget(fadeIn, container);
+        Storyboard.SetTargetProperty(fadeIn, "Opacity");
+
+        fadeInStoryboard.Children.Add(slideIn);
+        fadeInStoryboard.Children.Add(fadeIn);
+        fadeInStoryboard.Begin();
+
+        // Auto-dismiss after delay
+        Task.Delay(durationMs).ContinueWith(_ =>
+        {
+            container.DispatcherQueue.TryEnqueue(() =>
+            {
+                // Slide out + fade out
+                var fadeOutStoryboard = new Storyboard();
+
+                var slideOut = new DoubleAnimation
+                {
+                    From = 0,
+                    To = 320,
+                    Duration = new Duration(TimeSpan.FromMilliseconds(300)),
+                    EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn }
+                };
+                Storyboard.SetTarget(slideOut, transform);
+                Storyboard.SetTargetProperty(slideOut, "X");
+
+                var fadeOut = new DoubleAnimation
+                {
+                    From = 1,
+                    To = 0,
+                    Duration = new Duration(TimeSpan.FromMilliseconds(300))
+                };
+                Storyboard.SetTarget(fadeOut, container);
+                Storyboard.SetTargetProperty(fadeOut, "Opacity");
+
+                fadeOutStoryboard.Children.Add(slideOut);
+                fadeOutStoryboard.Children.Add(fadeOut);
+
+                fadeOutStoryboard.Completed += (s, e) =>
+                {
+                    popup.IsOpen = false;
+                    _activeToastCount = Math.Max(0, _activeToastCount - 1);
+                };
+
+                fadeOutStoryboard.Begin();
+            });
+        });
+    }
+}
