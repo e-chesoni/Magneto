@@ -225,31 +225,31 @@ public class TestPrintViewModel : ObservableRecipient
 
         if (startWithMark)
         {
-            // mark
-            if (_waverunnerService.IsRunning()) // Guard for at home testing
+            if (!wasPaused)
             {
-                await HandleMarkEntityAsync(); // waits for mark to complete in waverunner service
+                // mark
+                if (_waverunnerService.IsRunning()) // guard for at home testing
+                {
+                    await HandleMarkEntityAsync(); // waits for mark to complete in waverunner service
+                }
             }
             // layer move
             _psm.SetCurrentPrintSettings(thickness, power, scanSpeed, hatchSpacing, amplifier);
-            // TODO: Fix--print is never paused when this is called
-            // (you take print out of paused state before this is called in test print page)
             layerComplete = await ResumeOrStartPrintLayerAsync(wasPaused); // waits for move to complete in rsm.Process()
-            UpdateSliceIfComplete(layerComplete); // TODO: Fix -- seems UI does not update after printing each layer (only after finishing all requested layers)
         }
         else
         {
             // layer move
             _psm.SetCurrentPrintSettings(thickness, power, scanSpeed, hatchSpacing, amplifier);
             layerComplete = await ResumeOrStartPrintLayerAsync(wasPaused);
-
             // mark
+            // TODO: may need to handle differently when mid-mark pausing is implemented
             if (_waverunnerService.IsRunning())
             {
                 await HandleMarkEntityAsync();
             }
-            UpdateSliceIfComplete(layerComplete);
         }
+        UpdateSliceIfComplete(layerComplete);
         return 1;
     }
     #endregion
