@@ -16,6 +16,7 @@ using Magneto.Desktop.WinUI.Core.Models.States.PrintStates;
 using Magneto.Desktop.WinUI.Core.Models.Print;
 using static Magneto.Desktop.WinUI.Core.Models.Print.RoutineStateMachine;
 using static Magneto.Desktop.WinUI.Core.Models.States.PrintStates.PrintStateMachine;
+using Magneto.Desktop.WinUI.Popups;
 
 namespace Magneto.Desktop.WinUI.ViewModels;
 
@@ -169,11 +170,11 @@ public class TestPrintViewModel : ObservableRecipient
         await _waverunnerService.MarkEntityAsync(entity); // technically, this waits for mark to complete. second wait in PrintLayer() may be unecessary
     }
 
-    private async Task<bool> ResumeOrStartPrintLayerAsync()
+    private async Task<bool> ResumeOrStartPrintLayerAsync(bool wasPaused)
     {
         string msg;
         bool layerComplete;
-        if (IsPrintPaused())
+        if (wasPaused)
         {
             msg = $"Print is paused. Calling resume()";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
@@ -202,7 +203,8 @@ public class TestPrintViewModel : ObservableRecipient
         }
     }
     public bool ShouldAbortLayerMove() => _psm.ShouldAbortLayerMove();
-    public async Task<int>PrintLayer(bool startWithMark, double thickness, double power, double scanSpeed, double hatchSpacing, double amplifier, int numberOfLayers, XamlRoot xamlRoot)
+
+    public async Task<int>PrintLayer(bool wasPaused, bool startWithMark, double thickness, double power, double scanSpeed, double hatchSpacing, double amplifier, int numberOfLayers, XamlRoot xamlRoot)
     {
         string msg;
         bool layerComplete;
@@ -218,11 +220,11 @@ public class TestPrintViewModel : ObservableRecipient
         // update pen settings
         //_waverunnerService.SetLaserPower(power);
         //_waverunnerService.SetMarkSpeed(scanSpeed);
+        if (ShouldAbortLayerMove())
+            return 0;
+
         if (startWithMark)
         {
-            if (ShouldAbortLayerMove())
-                return 0;
-
             // mark
             if (_waverunnerService.IsRunning()) // Guard for at home testing
             {
@@ -230,17 +232,16 @@ public class TestPrintViewModel : ObservableRecipient
             }
             // layer move
             _psm.SetCurrentPrintSettings(thickness, power, scanSpeed, hatchSpacing, amplifier);
-            layerComplete = await ResumeOrStartPrintLayerAsync(); // waits for move to complete in rsm.Process()
+            // TODO: Fix--print is never paused when this is called
+            // (you take print out of paused state before this is called in test print page)
+            layerComplete = await ResumeOrStartPrintLayerAsync(wasPaused); // waits for move to complete in rsm.Process()
             UpdateSliceIfComplete(layerComplete); // TODO: Fix -- seems UI does not update after printing each layer (only after finishing all requested layers)
         }
         else
         {
-            if (ShouldAbortLayerMove())
-                return 0;
-
             // layer move
             _psm.SetCurrentPrintSettings(thickness, power, scanSpeed, hatchSpacing, amplifier);
-            layerComplete = await ResumeOrStartPrintLayerAsync();
+            layerComplete = await ResumeOrStartPrintLayerAsync(wasPaused);
 
             // mark
             if (_waverunnerService.IsRunning())

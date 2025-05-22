@@ -28,8 +28,13 @@ public class IdlePrintState : IPrintState
     {
         return await InitializePlayAsync();
     }
-    public void Pause() => throw new NotImplementedException();
-    public Task<bool> Resume() => throw new NotImplementedException();
+    public void Pause() => ChangeStateTo(new PausedPrintState(_psm));
+    public async Task<bool> Resume()
+    {
+        var newState = new PrintingPrintState(_psm);
+        _psm.ChangeStateTo(newState);
+        return await newState.Resume(); // run resume
+    }
     public void Redo() => throw new NotImplementedException();
     public void Cancel() => throw new NotImplementedException();
     public void ChangeStateTo(IPrintState state) => _psm.ChangeStateTo(state);

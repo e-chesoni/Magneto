@@ -37,6 +37,9 @@ public class MotorPageService
     public bool IsPrintPaused() => _rsm.status == RoutineStateMachineStatus.Paused;
     public Task<bool> IsProgramRunningAsync(string motorNameLower) => _motorService.IsProgramRunningAsync();
 
+    // TODO: pause motors (i.e. stop but don't clear list)
+    public void StopAllMotors() => _motorService.StopAllMotors();
+
     #region Locks
     public void UnlockCalibrationPanel()
     {

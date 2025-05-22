@@ -956,6 +956,21 @@ public sealed partial class TestPrintPage : Page
         }
         HandleDeletePrint();
     }
+    private async Task ConfirmStartWithMark()
+    {
+        var confirmed = await PopupInfo.ShowConfirmationDialog(
+                        this.Content.XamlRoot,
+                        "Start with Mark?",
+                        "You've selected to begin each layer with a mark. To start with a layer move instead, uncheck the \"Start with mark\" box. Do you want to continue with marking first?"
+                    );
+        if (!confirmed)
+        {
+            MagnetoLogger.Log("User aborted start with mark", LogFactoryLogLevel.LogLevel.VERBOSE);
+            return;
+        }
+        var msg = $"Start with mark requested.";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
+    }
     private async void PlayButton_Click(object sender, RoutedEventArgs e)
     {
         int res;
@@ -966,6 +981,8 @@ public sealed partial class TestPrintPage : Page
         double amplifier;
         Int64 slicesToMark;
         var startWithMark = StartWithMarkCheckBox.IsChecked == true;
+        var displayMarkFirstConfirmation = true;
+        var wasPaused = false;
         if (_motorPageService == null)
         {
             var msg = $"Cannot print layer. Motor page service is null.";
@@ -973,21 +990,7 @@ public sealed partial class TestPrintPage : Page
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Lost Connection to Motors", "Cannot mark layer.");
             return;
         }
-        if (startWithMark)
-        {
-            var confirmed = await PopupInfo.ShowConfirmationDialog(
-                this.Content.XamlRoot,
-                "Start with Mark?",
-                "You've selected to begin each layer with a mark. To start with a layer move instead, uncheck the \"Start with mark\" box. Do you want to continue with marking first?"
-            );
-            if (!confirmed)
-            {
-                MagnetoLogger.Log("User aborted start with mark", LogFactoryLogLevel.LogLevel.VERBOSE);
-                return;
-            }
-            var msg = $"Start with mark requested.";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
-        }
+        
         // Check for valid data in required text boxes
         (res, thickness) = ConvertTextBoxTextToDouble(LayerThicknessTextBox);
         if (res == 0)
@@ -1041,12 +1044,16 @@ public sealed partial class TestPrintPage : Page
         // TODO: need to re-enable printing after pause
         if (ViewModel.CancellationRequested())
         {
-            _motorPageService.EnableProgramRunning(); // sets rsm cancellation token to true
+            _motorPageService.EnableProgramRunning(); // sets rsm cancellation token to false
+            displayMarkFirstConfirmation = false;
+            wasPaused = true;
         }
         // if current psm state is paused, change to idle
         if (ViewModel.IsPrintPaused())
         {
             ViewModel.EnablePrintStateMachinePrinting(); // change psm state to idle
+            displayMarkFirstConfirmation = false;
+            wasPaused = true;
         }
         if (_waverunnerPageService == null)
         {
@@ -1059,15 +1066,31 @@ public sealed partial class TestPrintPage : Page
         _waverunnerPageService.LockMarkSettings();
         // lock play and re-mark buttons
         _waverunnerPageService.LockMarking();
+
+        if (displayMarkFirstConfirmation)
+        {
+           await ConfirmStartWithMark();
+        }
+
         for (var i = 0; i < slicesToMark; i++)
         {
             if (ViewModel.ShouldAbortLayerMove())
             {
                 MagnetoLogger.Log("Aborting layer move. Print is in paused or canceled state.", LogFactoryLogLevel.LogLevel.ERROR);
-                _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Magneto Remains in the Plastic Prison", "Something went wrong; unable to resume print.");
+                //_ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Magneto Remains in the Plastic Prison", "Something went wrong; unable to resume print.");
+                _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, 
+                                                "Aborting Layer Move",
+                                                "Stopping layer move. You may resume or cancel the print.");
+                // TODO: stop motors if pause has been requested
+                //_motorPageService.StopAllMotors();
+
+                // unlock mark settings
+                _waverunnerPageService.UnlockMarkSettings();
+                // unlock play and re-mark buttons
+                _waverunnerPageService.UnlockMarking();
                 return;
             }
-            await ViewModel.PrintLayer(startWithMark, thickness, power, scanSpeed, hatchSpacing, amplifier, (int)slicesToMark, this.Content.XamlRoot); // checks for pause state; calls resume() if paused; play() in any other state
+            await ViewModel.PrintLayer(wasPaused, startWithMark, thickness, power, scanSpeed, hatchSpacing, amplifier, (int)slicesToMark, this.Content.XamlRoot); // checks for pause state; calls resume() if paused; play() in any other state
             await _motorPageService.HandleGetAllPositionsAsync();
             UpdatePrintAndSliceDisplayText();
         }
@@ -1102,6 +1125,9 @@ public sealed partial class TestPrintPage : Page
         }
         else
         {
+            // TODO: stop motors if pause has been requested
+            _motorPageService.StopAllMotors();
+
             // pause motors
             ViewModel.PausePrint();
             LockCalibrationPanel();
