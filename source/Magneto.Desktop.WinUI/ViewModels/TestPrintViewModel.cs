@@ -208,18 +208,9 @@ public class TestPrintViewModel : ObservableRecipient
     {
         string msg;
         bool layerComplete;
-        // TODO: Uncomment laser methods after testing motor movement
-        /*
-        if (_waverunnerService.IsRunning() == 0)
-        {
-            msg = $"Waverunner is not running";
-            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-            return 0;
-        }
-        */
         // update pen settings
-        //_waverunnerService.SetLaserPower(power);
-        //_waverunnerService.SetMarkSpeed(scanSpeed);
+        _waverunnerService.SetLaserPower(power);
+        _waverunnerService.SetMarkSpeed(scanSpeed);
         if (ShouldAbortLayerMove())
             return 0;
 
