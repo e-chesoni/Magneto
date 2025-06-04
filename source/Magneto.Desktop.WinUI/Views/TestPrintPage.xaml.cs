@@ -1,6 +1,5 @@
 ﻿using Magneto.Desktop.WinUI.Core;
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
-using Magneto.Desktop.WinUI.Core.Models;
 using Magneto.Desktop.WinUI.Models.UIControl;
 using Magneto.Desktop.WinUI.Popups;
 using Magneto.Desktop.WinUI.Services;
@@ -10,16 +9,9 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
-using System.Diagnostics;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
 using MongoDB.Driver;
-using static Magneto.Desktop.WinUI.Core.Models.Constants.MagnetoConstants;
-using Magneto.Desktop.WinUI.Core.Models.Print;
-using static Magneto.Desktop.WinUI.Core.Models.Print.RoutineStateMachine;
-using System.Threading.Tasks;
-using Magneto.Desktop.WinUI.Core.Models.States.PrintStates;
-using static Magneto.Desktop.WinUI.Core.Models.States.PrintStates.PrintStateMachine;
 using Magneto.Desktop.WinUI.Toasts;
 
 namespace Magneto.Desktop.WinUI.Views;
