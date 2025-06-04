@@ -18,6 +18,7 @@ public interface IPrintService
     #region Getters
     public Task<PrintModel> GetFirstPrintAsync();
     Task<PrintModel> GetPrintByDirectory(string DirectoryPath);
+    public Task<PrintModel?> GetMostRecentPrintByDirectory(string directoryPath);
     Task<PrintModel> GetPrintById(string id);
     Task<IEnumerable<SliceModel>> GetSlicesByPrintId(string id);
     Task<IEnumerable<PrintModel>> GetAllPrints();

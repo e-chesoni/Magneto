@@ -66,25 +66,15 @@ public class TestPrintViewModel : ObservableRecipient
     #endregion
 
     #region Access CRUD Methods
-    // TODO: move to print state machine
+    public async Task<bool> WasDirectoryPrinted(string fullPath)
+    {
+        var existingPrint = await _psm.GetMostRecentPrintByDirectory(fullPath);
+        return existingPrint != null;
+    }
+
     public async Task AddPrintToDatabaseAsync(string fullPath)
     {
-        // check if print already exists in db
-        var existingPrint = await _psm.GetPrintByDirectory(fullPath);
-
-        if (existingPrint != null)
-        {
-            MagnetoLogger.Log($"❌Print with this file path {fullPath} already exists in the database. Canceling new print.", LogFactoryLogLevel.LogLevel.ERROR);
-        }
-        else
-        {
-            // seed prints
-            await _seeder.CreatePrintInMongoDb(fullPath);
-        }
-
-        //await SetCurrentPrintAsync(fullPath); // calls update slices
-        // set current print in psm
-        await _psm.SetCurrentPrintAsync(fullPath);
+        await _psm.AddPrintToDatabaseAsync(fullPath);
         return;
     }
     public async Task CompleteCurrentPrintAsync()

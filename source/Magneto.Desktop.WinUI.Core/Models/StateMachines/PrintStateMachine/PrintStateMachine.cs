@@ -74,7 +74,8 @@ public class PrintStateMachine
     #region Print and Slice Setters
     public async Task SetCurrentPrintAsync(string directoryPath)
     {
-        currentPrint = await GetPrintByDirectory(directoryPath);
+        // TODO: use directory and name to get current print
+        currentPrint = await GetMostRecentPrintByDirectory(directoryPath);
         currentSlice = await GetNextSliceAsync();
     }
     public async Task SetCurrentSliceToNextAsync() => currentSlice = await GetNextSliceAsync();
@@ -83,7 +84,8 @@ public class PrintStateMachine
     #region Print and Slice Getters
     public RoutineStateMachineStatus GetRoutineStateMachineStatus() => rsm.status;
     public bool CancelRequestedOnRoutineStateMachine() => rsm.CANCELLATION_REQUESTED;
-    public async Task<PrintModel> GetPrintByDirectory(string directoryPath) => await _printService.GetPrintByDirectory(directoryPath);
+    //public async Task<PrintModel> GetPrintByDirectory(string directoryPath) => await _printService.GetPrintByDirectory(directoryPath);
+    public async Task<PrintModel> GetMostRecentPrintByDirectory(string directoryPath) => await _printService.GetMostRecentPrintByDirectory(directoryPath);
     public PrintModel GetCurrentPrint() => currentPrint;
     public SliceModel GetCurrentSlice() => currentSlice;
     public async Task<SliceModel> GetNextSliceAsync()
@@ -148,22 +150,10 @@ public class PrintStateMachine
     #region Print and Slice CRUD
     public async Task AddPrintToDatabaseAsync(string fullPath)
     {
-        // check if print already exists in db
-        var existingPrint = await _printService.GetPrintByDirectory(fullPath);
-
-        if (existingPrint != null)
-        {
-            MagnetoLogger.Log($"❌Print with this file path {fullPath} already exists in the database. Canceling new print.", LogFactoryLogLevel.LogLevel.ERROR);
-        }
-        else
-        {
-            // seed prints
-            await _seeder.CreatePrintInMongoDb(fullPath);
-        }
-
+        // seed prints
+        await _seeder.CreatePrintInMongoDb(fullPath);
         // set print on view model
         await SetCurrentPrintAsync(fullPath); // calls update slices // TODO: line up with print service
-
         return;
     }
     public async Task DeleteCurrentPrintAsync() => await _printService.DeletePrint(currentPrint); // deletes slices associated with print

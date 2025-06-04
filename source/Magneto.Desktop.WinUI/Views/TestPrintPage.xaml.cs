@@ -782,7 +782,7 @@ public sealed partial class TestPrintPage : Page
     private async void UpdatePrintAndSliceDisplayText()
     {
         var print = ViewModel.GetCurrentPrint();
-        var slice = ViewModel.GetCurrentSlice(); // null
+        var slice = ViewModel.GetCurrentSlice();
         if (print != null)
         {
             if (!string.IsNullOrWhiteSpace(print.directoryPath))
@@ -915,6 +915,20 @@ public sealed partial class TestPrintPage : Page
                 return;
             }
             PrintDirectoryInputTextBox.Text = folder.Path;
+            if (await ViewModel.WasDirectoryPrinted(folder.Path))
+            {
+                // TODO: ask user if they want to continue
+                var confirmed = await PopupInfo.ShowConfirmationDialog(
+                    this.Content.XamlRoot,
+                    "Warning: Print Already Exists",
+                    "This directory has already been printed. Continuing will create a new entry with the same name and a different timestamp. Print again?"
+                );
+                if (!confirmed)
+                {
+                    MagnetoLogger.Log("User aborted print same directory.", LogFactoryLogLevel.LogLevel.VERBOSE);
+                    return;
+                }
+            }
             await ViewModel.AddPrintToDatabaseAsync(folder.Path);
             // if valid folder, unlock print settings
             if (_waverunnerPageService == null)
@@ -963,10 +977,10 @@ public sealed partial class TestPrintPage : Page
         );
         if (!confirmed)
         {
-            // clear program list if user confirms
             MagnetoLogger.Log("User aborted delete print", LogFactoryLogLevel.LogLevel.VERBOSE);
             return;
         }
+        // delete print if user confirms
         HandleDeletePrint();
     }
     private async void MarkButton_Click(object sender, RoutedEventArgs e)

@@ -58,7 +58,12 @@ public class PrintSeeder : IPrintSeeder
         }
 
         // get print directory
-        var printName = Path.GetFileName(directoryPath.TrimEnd(Path.DirectorySeparatorChar));
+        var dirName = Path.GetFileName(directoryPath.TrimEnd(Path.DirectorySeparatorChar));
+        // get truncated timestamp for print name
+        var dateStamp = DateTime.UtcNow.ToString("yyyy-MM-dd_HH:mm:ss");
+
+        // create print name
+        var printName = $"{dirName}_{dateStamp}";
 
         // create a print model and add slice ids to it
         var print = new PrintModel

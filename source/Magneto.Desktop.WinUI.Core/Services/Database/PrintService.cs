@@ -68,6 +68,24 @@ public class PrintService : IPrintService
         }
         return print;
     }
+    public async Task<PrintModel?> GetMostRecentPrintByDirectory(string directoryPath)
+    {
+        MagnetoLogger.Log($"Directory path: {directoryPath}", LogFactoryLogLevel.LogLevel.VERBOSE);
+        var normalizedPath = Path.GetFullPath(directoryPath.Trim()).TrimEnd(Path.DirectorySeparatorChar);
+        var filter = Builders<PrintModel>.Filter.Eq(p => p.directoryPath, normalizedPath);
+        var sort = Builders<PrintModel>.Sort.Descending(p => p.startTime);
+
+        var print = await _prints.Find(filter).Sort(sort).FirstOrDefaultAsync();
+
+        var msg = print != null
+            ? $"✅ Found most recent print. Path: {print.directoryPath}, Time: {print.startTime}"
+            : $"❌ No print found for path: {normalizedPath}";
+
+        MagnetoLogger.Log(msg, print != null ? LogFactoryLogLevel.LogLevel.SUCCESS : LogFactoryLogLevel.LogLevel.ERROR);
+
+        return print;
+    }
+
     public async Task<PrintModel> GetPrintById(string id)
     {
         var filter = Builders<PrintModel>.Filter.Eq(p => p.id, id);
