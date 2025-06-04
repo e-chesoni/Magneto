@@ -24,12 +24,14 @@ public static class ToastManager
 
     public static void ShowToast(string message, XamlRoot xamlRoot, ToastType type = ToastType.Info, int durationMs = 3000)
     {
+        if (xamlRoot == null || !xamlRoot.IsHostVisible) return;
+
         var popup = new Popup
         {
             XamlRoot = xamlRoot
         };
 
-        // Set background color based on toast type
+        // set background color based on toast type
         SolidColorBrush background = type switch
         {
             ToastType.Success => new SolidColorBrush(Colors.ForestGreen),
@@ -51,13 +53,13 @@ public static class ToastManager
             Background = background,
             CornerRadius = new CornerRadius(8),
             Child = toastText,
-            RenderTransform = new TranslateTransform { X = 320 }, // Start offscreen
+            RenderTransform = new TranslateTransform { X = 320 }, // start off screen
             Opacity = 0
         };
 
         popup.Child = container;
 
-        // Estimate vertical position based on number of active toasts
+        // estimate vertical position based on number of active toasts
         double baseOffset = 40 + (_activeToastCount * (ToastEstimatedHeight + ToastSpacing));
         popup.HorizontalOffset = xamlRoot.Size.Width - 320;
         popup.VerticalOffset = baseOffset;
@@ -66,7 +68,7 @@ public static class ToastManager
 
         var transform = (TranslateTransform)container.RenderTransform;
 
-        // Slide in + fade in
+        // slide in + fade in
         var fadeInStoryboard = new Storyboard();
 
         var slideIn = new DoubleAnimation
@@ -92,12 +94,12 @@ public static class ToastManager
         fadeInStoryboard.Children.Add(fadeIn);
         fadeInStoryboard.Begin();
 
-        // Auto-dismiss after delay
+        // auto-dismiss after delay
         Task.Delay(durationMs).ContinueWith(_ =>
         {
             container.DispatcherQueue.TryEnqueue(() =>
             {
-                // Slide out + fade out
+                // slide out + fade out
                 var fadeOutStoryboard = new Storyboard();
 
                 var slideOut = new DoubleAnimation

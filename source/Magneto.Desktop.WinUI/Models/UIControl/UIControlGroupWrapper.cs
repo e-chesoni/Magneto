@@ -149,8 +149,14 @@ public class UIControlGroupWrapper
     }
     public void EnableWaverunnerSettingsControls() => EnableGroupHelper(waverunnerControlGroup.GetSettingsEnuerable());
     public void DisableWaverunnerSettingsControls() => DisableGroupHelper(waverunnerControlGroup.GetSettingsEnuerable());
-    public void EnableMarkButtons() => EnableGroupHelper(waverunnerControlGroup.GetButtonGroupEnuerable());
-    public void DisableMarkButtons() => DisableGroupHelper(waverunnerControlGroup.GetButtonGroupEnuerable());
+    public void EnableLayerMoveButtons() => EnableGroupHelper(waverunnerControlGroup.GetLayerMoveEnumerable());
+    public void DisableLayerMoveButtons() => DisableGroupHelper(waverunnerControlGroup.GetLayerMoveEnumerable());
+    public void EnableMarkOnlyControls() => EnableGroupHelper(waverunnerControlGroup.GetMarkOnlyEnumerable());
+    public void DisableMarkOnlyControls() => DisableGroupHelper(waverunnerControlGroup.GetMarkOnlyEnumerable());
+    public void EnableMarkButton() => waverunnerControlGroup.GetMarkButton().IsEnabled = true;
+    public void DisableMarkButton() => waverunnerControlGroup.GetMarkButton().IsEnabled = false;
+    public void EnableMarkOnlyCheckBox() => waverunnerControlGroup.GetMarkOnlyCheckBox().IsEnabled = true;
+    public void DisableMarkOnlyCheckBox() => waverunnerControlGroup.GetMarkOnlyCheckBox().IsEnabled = false;
 
     #endregion
 

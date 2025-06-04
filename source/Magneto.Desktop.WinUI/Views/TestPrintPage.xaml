@@ -368,9 +368,7 @@
                                     VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="10,2" LostFocus="SlicesToMarkTextBox_LostFocus"/>
                             <TextBox Grid.Row="1" Grid.Column="8" x:Name="SupplyAmplifierTextBox"
                                     VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="10,2" LostFocus="SupplyAmplifierTextBox_LostFocus"/>
-                            <CheckBox Grid.Row="1" Grid.Column="9" x:Name="StartWithMarkCheckBox"
-                                      Content="Start with mark"
-                                      IsChecked="True"/>
+                            <CheckBox Grid.Row="1" Grid.Column="9" x:Name="StartWithMarkCheckBox" Content="Start with mark" IsChecked="True"/>
                         </Grid>
 
                         <Grid Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center">
@@ -382,18 +380,39 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="10"/>
                                 <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <Button Grid.Column="0"
-                                        x:Name="PlayButton"
-                                        Height="40" 
-                                        HorizontalAlignment="Center" 
-                                        VerticalAlignment="Center" 
-                                        Margin="2" 
-                                        IsEnabled="False"
-                                        Click="PlayButton_Click">
-                                        <SymbolIcon Symbol="Play"/>
+                                    x:Name="MarkButton"
+                                    Height="40" 
+                                    HorizontalAlignment="Center" 
+                                    VerticalAlignment="Center" 
+                                    Margin="2" 
+                                    IsEnabled="False"
+                                    Click="MarkButton_Click">
+                                <SymbolIcon Symbol="Edit"/>
                             </Button>
-                            <Button Grid.Column="2"
+                            <CheckBox Grid.Column="2" 
+                                      x:Name="MarkOnlyCheckBox"
+                                      Content="Mark only"
+                                      Checked="MarkOnlyCheckBox_Checked"
+                                      Unchecked="MarkOnlyCheckBox_Unchecked"
+                                      IsEnabled="False"
+                                      IsChecked="False"/>
+                            <Button Grid.Column="4"
+                                    x:Name="PlayButton"
+                                    Height="40" 
+                                    HorizontalAlignment="Center" 
+                                    VerticalAlignment="Center" 
+                                    Margin="2" 
+                                    IsEnabled="False"
+                                    Click="PlayButton_Click">
+                                    <SymbolIcon Symbol="Play"/>
+                            </Button>
+                            <Button Grid.Column="6"
                                     x:Name="RemarkLayerButton"
                                     Height="40" 
                                     HorizontalAlignment="Center"
@@ -405,7 +424,7 @@
                                     ToolTipService.ToolTip="Re-marl the last layer">
                                 <FontIcon Glyph="&#xE72C;" FontFamily="Segoe MDL2 Assets"/>
                             </Button>
-                            <Button Grid.Column="4"
+                            <Button Grid.Column="8"
                                     x:Name="PauseButton"
                                     Height="40" 
                                     HorizontalAlignment="Center"
@@ -415,7 +434,7 @@
                                     Click="PauseButton_Click">
                                     <SymbolIcon Symbol="Pause"/>
                             </Button>
-                            <Button Grid.Column="6"
+                            <Button Grid.Column="10"
                                     x:Name="AbortButton"
                                     Height="40" 
                                     HorizontalAlignment="Center"

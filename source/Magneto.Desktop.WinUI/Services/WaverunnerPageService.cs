@@ -86,22 +86,16 @@ public class WaverunnerPageService
     }
     #endregion
 
-    public void UnlockMarking()
-    {
-        _uiControlGroupWrapper.EnableMarkButtons();
-    }
-    public void LockMarking()
-    {
-        _uiControlGroupWrapper.DisableMarkButtons();
-    }
-    public void UnlockMarkSettings()
-    {
-        _uiControlGroupWrapper.EnableWaverunnerSettingsControls();
-    }
-    public void LockMarkSettings()
-    {
-        _uiControlGroupWrapper.DisableWaverunnerSettingsControls();
-    }
+    public void UnlockLayerMoveButtons() => _uiControlGroupWrapper.EnableLayerMoveButtons();
+    public void LockLayerMoveButtons() => _uiControlGroupWrapper.DisableLayerMoveButtons();
+    public void UnlockLayerMoveSettings() => _uiControlGroupWrapper.EnableWaverunnerSettingsControls();
+    public void LockLayerMoveSettings() => _uiControlGroupWrapper.DisableWaverunnerSettingsControls();
+    public void UnlockMarkOnlyControls() => _uiControlGroupWrapper.EnableMarkOnlyControls();
+    public void LockMarkOnlyControls() => _uiControlGroupWrapper.DisableMarkOnlyControls();
+    public void UnlockMarkButton() => _uiControlGroupWrapper.EnableMarkButton();
+    public void LockMarkButton() => _uiControlGroupWrapper.DisableMarkButton();
+    public void UnlockMarkOnlyCheckBox() => _uiControlGroupWrapper.EnableMarkOnlyCheckBox();
+    public void LockMarkOnlyCheckBox() => _uiControlGroupWrapper.DisableMarkOnlyCheckBox();
 
     #region Pen Methods
     public double GetDefaultLaserPower() => _waverunnerService.GetDefaultLaserPower();

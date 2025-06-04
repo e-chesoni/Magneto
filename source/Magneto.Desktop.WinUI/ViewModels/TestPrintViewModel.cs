@@ -204,13 +204,26 @@ public class TestPrintViewModel : ObservableRecipient
     }
     public bool ShouldAbortLayerMove() => _psm.ShouldAbortLayerMove();
 
+    public async Task<int> MarkOnly(double power, double scanSpeed)
+    {
+        if (_waverunnerService.IsRunning()) // guard for at home testing
+        {
+            _waverunnerService.SetLaserPower(power);
+            _waverunnerService.SetMarkSpeed(scanSpeed);
+            await HandleMarkEntityAsync(); // waits for mark to complete in waverunner service
+            return 1;
+        }
+        else
+        {
+            MagnetoLogger.Log("❌ Waverunner is not running.", LogFactoryLogLevel.LogLevel.ERROR);
+            return 0;
+        }
+    }
     public async Task<int>PrintLayer(bool wasPaused, bool startWithMark, double thickness, double power, double scanSpeed, double hatchSpacing, double amplifier, int numberOfLayers, XamlRoot xamlRoot)
     {
         string msg;
         bool layerComplete;
-        // update pen settings
-        _waverunnerService.SetLaserPower(power);
-        _waverunnerService.SetMarkSpeed(scanSpeed);
+
         if (ShouldAbortLayerMove())
             return 0;
 
@@ -221,7 +234,14 @@ public class TestPrintViewModel : ObservableRecipient
                 // mark
                 if (_waverunnerService.IsRunning()) // guard for at home testing
                 {
+                    // update pen settings
+                    _waverunnerService.SetLaserPower(power);
+                    _waverunnerService.SetMarkSpeed(scanSpeed);
                     await HandleMarkEntityAsync(); // waits for mark to complete in waverunner service
+                }
+                else
+                {
+                    MagnetoLogger.Log("❌ Waverunner is not running; executing layer move only.", LogFactoryLogLevel.LogLevel.ERROR);
                 }
             }
             // layer move
@@ -238,6 +258,10 @@ public class TestPrintViewModel : ObservableRecipient
             if (_waverunnerService.IsRunning())
             {
                 await HandleMarkEntityAsync();
+            }
+            else
+            {
+                MagnetoLogger.Log("❌Waverunner is not running; executing layer move only.", LogFactoryLogLevel.LogLevel.ERROR);
             }
         }
         UpdateSliceIfComplete(layerComplete);

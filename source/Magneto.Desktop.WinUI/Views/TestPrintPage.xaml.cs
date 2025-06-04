@@ -83,7 +83,7 @@ public sealed partial class TestPrintPage : Page
                                                                 SlicesToMarkTextBlock, SupplyAmplifierTextBlock, 
                                                                 LayerTextBox, FileNameTextBox, LayerThicknessTextBox, LaserPowerTextBox, ScanSpeedTextBox, HatchSpacingTextBox, EnergyDensityTextBox,
                                                                 SlicesToMarkTextBox, SupplyAmplifierTextBox, StartWithMarkCheckBox, 
-                                                                PlayButton, PauseButton, RemarkLayerButton);
+                                                                MarkButton, MarkOnlyCheckBox, PlayButton, PauseButton, RemarkLayerButton);
         // initialize page services
         _motorPageService = new MotorPageService(new UIControlGroupWrapper(_calibrateMotorUIControlGroup), ViewModel.GetRoutineStateMachine());
         _waverunnerPageService = new WaverunnerPageService(new UIControlGroupWrapper(_waverunnerUiControlGroup));
@@ -125,8 +125,8 @@ public sealed partial class TestPrintPage : Page
         _supplyAmplifierUpper = 4;
 
         // Disable print settings and marking until user selects directory (browse button)
-        _waverunnerPageService.LockMarkSettings();
-        _waverunnerPageService.LockMarking();
+        _waverunnerPageService.LockLayerMoveSettings();
+        _waverunnerPageService.LockLayerMoveButtons();
     }
     #endregion
 
@@ -575,7 +575,8 @@ public sealed partial class TestPrintPage : Page
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", msg);
             LayerThicknessTextBox.Foreground = new SolidColorBrush(Colors.Red);
-            _waverunnerPageService.LockMarking();
+            _waverunnerPageService.LockLayerMoveButtons();
+            _waverunnerPageService.LockMarkOnlyCheckBox();
         }
         else if (layerThicknessIsValid == -1)
         {
@@ -583,7 +584,8 @@ public sealed partial class TestPrintPage : Page
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", msg);
             LayerThicknessTextBox.Foreground = new SolidColorBrush(Colors.Red);
-            _waverunnerPageService.LockMarking();
+            _waverunnerPageService.LockLayerMoveButtons();
+            _waverunnerPageService.LockMarkOnlyCheckBox();
         }
         else
         {
@@ -591,7 +593,8 @@ public sealed partial class TestPrintPage : Page
             LayerThicknessTextBox.Foreground = new SolidColorBrush(Colors.WhiteSmoke);
             if (ReadyToPrint() == 1)
             {
-                _waverunnerPageService.UnlockMarking();
+                _waverunnerPageService.UnlockLayerMoveButtons();
+                _waverunnerPageService.UnlockMarkOnlyCheckBox();
             }
         }
     }
@@ -617,7 +620,8 @@ public sealed partial class TestPrintPage : Page
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", msg);
             LaserPowerTextBox.Foreground = new SolidColorBrush(Colors.Red);
-            _waverunnerPageService.LockMarking();
+            _waverunnerPageService.LockLayerMoveButtons();
+            _waverunnerPageService.LockMarkOnlyCheckBox();
         }
         else if (powerIsValid == -1)
         {
@@ -625,7 +629,8 @@ public sealed partial class TestPrintPage : Page
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", msg);
             LaserPowerTextBox.Foreground = new SolidColorBrush(Colors.Red);
-            _waverunnerPageService.LockMarking();
+            _waverunnerPageService.LockLayerMoveButtons();
+            _waverunnerPageService.LockMarkOnlyCheckBox();
         }
         else
         {
@@ -633,7 +638,8 @@ public sealed partial class TestPrintPage : Page
             LaserPowerTextBox.Foreground = new SolidColorBrush(Colors.WhiteSmoke);
             if (ReadyToPrint() == 1)
             {
-                _waverunnerPageService.UnlockMarking();
+                _waverunnerPageService.UnlockLayerMoveButtons();
+                _waverunnerPageService.UnlockMarkOnlyCheckBox();
             }
         }
     }
@@ -659,7 +665,8 @@ public sealed partial class TestPrintPage : Page
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", msg);
             ScanSpeedTextBox.Foreground = new SolidColorBrush(Colors.Red);
-            _waverunnerPageService.LockMarking();
+            _waverunnerPageService.LockLayerMoveButtons();
+            _waverunnerPageService.LockMarkOnlyCheckBox();
         }
         else if (scanSpeedIsValid == -1)
         {
@@ -667,14 +674,16 @@ public sealed partial class TestPrintPage : Page
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", msg);
             ScanSpeedTextBox.Foreground = new SolidColorBrush(Colors.Red);
-            _waverunnerPageService.LockMarking();
+            _waverunnerPageService.LockLayerMoveButtons();
+            _waverunnerPageService.LockMarkOnlyCheckBox();
         }
         else
         {
             ScanSpeedTextBox.Foreground = new SolidColorBrush(Colors.WhiteSmoke);
             if (ReadyToPrint() == 1)
             {
-                _waverunnerPageService.UnlockMarking();
+                _waverunnerPageService.UnlockLayerMoveButtons();
+                _waverunnerPageService.UnlockMarkOnlyCheckBox();
             }
         }
     }
@@ -713,7 +722,8 @@ public sealed partial class TestPrintPage : Page
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", msg);
             SlicesToMarkTextBox.Foreground = new SolidColorBrush(Colors.Red);
-            _waverunnerPageService.LockMarking();
+            _waverunnerPageService.LockLayerMoveButtons();
+            _waverunnerPageService.LockMarkOnlyCheckBox();
         }
         else if (slicesToMarkValid == -1)
         {
@@ -721,7 +731,8 @@ public sealed partial class TestPrintPage : Page
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", msg);
             SlicesToMarkTextBox.Foreground = new SolidColorBrush(Colors.Red);
-            _waverunnerPageService.LockMarking();
+            _waverunnerPageService.LockLayerMoveButtons();
+            _waverunnerPageService.LockMarkOnlyCheckBox();
         }
         else
         {
@@ -730,7 +741,8 @@ public sealed partial class TestPrintPage : Page
             {
                 msg = "Slices to mark valid. Ready to print.";
                 MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.SUCCESS);
-                _waverunnerPageService.UnlockMarking();
+                _waverunnerPageService.UnlockLayerMoveButtons();
+                _waverunnerPageService.UnlockMarkOnlyCheckBox();
             }
         }
     }
@@ -749,7 +761,8 @@ public sealed partial class TestPrintPage : Page
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", msg);
             SupplyAmplifierTextBox.Foreground = new SolidColorBrush(Colors.Red);
             // TODO: disable marking buttons
-            _waverunnerPageService.LockMarking();
+            _waverunnerPageService.LockLayerMoveButtons();
+            _waverunnerPageService.LockMarkOnlyCheckBox();
         }
         else if (scanSpeedIsValid == -1)
         {
@@ -758,14 +771,16 @@ public sealed partial class TestPrintPage : Page
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", msg);
             SupplyAmplifierTextBox.Foreground = new SolidColorBrush(Colors.Red);
             // TODO: disable marking buttons
-            _waverunnerPageService.LockMarking();
+            _waverunnerPageService.LockLayerMoveButtons();
+            _waverunnerPageService.LockMarkOnlyCheckBox();
         }
         else
         {
             SupplyAmplifierTextBox.Foreground = new SolidColorBrush(Colors.WhiteSmoke);
             if (ReadyToPrint() == 1)
             {
-                _waverunnerPageService.UnlockMarking();
+                _waverunnerPageService.UnlockLayerMoveButtons();
+                _waverunnerPageService.UnlockMarkOnlyCheckBox();
             }
         }
     }
@@ -917,8 +932,8 @@ public sealed partial class TestPrintPage : Page
                 _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "⚠️Waverunner Page Service Not Connected", "Cannot mark without a connection to the page service.");
                 return;
             }
-            _waverunnerPageService.UnlockMarkSettings();
-            _waverunnerPageService.UnlockMarkSettings();
+            //_waverunnerPageService.UnlockMarkSettings();
+            _waverunnerPageService.UnlockLayerMoveSettings();
         }
         else
         {
@@ -937,8 +952,14 @@ public sealed partial class TestPrintPage : Page
         // clear print data
         ClearPrintDataAndText();
         // lock mark settings
-        _waverunnerPageService.LockMarkSettings(); // WARNING: all lost focus methods get called when we handle delete print; had to add checks for current print == null to all these methods
-        _waverunnerPageService.LockMarking();
+        if (_waverunnerPageService == null)
+        {
+            MagnetoLogger.Log("❌ Waverunner page service is null.", LogFactoryLogLevel.LogLevel.ERROR);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Lost Connection to Waverunner", "Cannot lock layer move settings and buttons. Try restarting the application.");
+            return;
+        }
+        _waverunnerPageService.LockLayerMoveSettings(); // WARNING: all lost focus methods get called when we handle delete print; had to add checks for current print == null to all these methods
+        _waverunnerPageService.LockLayerMoveButtons();
     }
     private async void DeletePrintButton_Click(object sender, RoutedEventArgs e)
     {
@@ -955,6 +976,57 @@ public sealed partial class TestPrintPage : Page
             return;
         }
         HandleDeletePrint();
+    }
+    private async void MarkButton_Click(object sender, RoutedEventArgs e)
+    {
+        int res;
+        double power;
+        double scanSpeed;
+        (res, power) = ConvertTextBoxTextToDouble(LaserPowerTextBox);
+        if (res == 0)
+        {
+            var msg = $"Power text box input is invalid.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Laser Power is Invalid", "Cannot mark layer.");
+            return;
+        }
+        (res, scanSpeed) = ConvertTextBoxTextToDouble(ScanSpeedTextBox);
+        if (res == 0)
+        {
+            var msg = $"Scan speed text box input is invalid.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Scan Speed is Invalid", "Cannot mark layer.");
+            return;
+        }
+        res = await ViewModel.MarkOnly(power, scanSpeed);
+        if (res == 0)
+        {
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Waverunner Not Connected", "Cannot mark. Please check to make sure Waverunner is running.");
+        }
+    }
+    private void MarkOnlyCheckBox_Checked(object sender, RoutedEventArgs e)
+    {
+        if (_waverunnerPageService == null)
+        {
+            MagnetoLogger.Log("❌ Waverunner page service is null.", LogFactoryLogLevel.LogLevel.ERROR);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Lost Connection to Waverunner", "Cannot enable mark only button. Try restarting the application.");
+            return;
+        }
+        _waverunnerPageService.UnlockMarkButton();
+        _waverunnerPageService.LockLayerMoveButtons();
+        _waverunnerPageService.UnlockMarkOnlyCheckBox(); // ensure check box is enabled when interacting with it
+    }
+    private void MarkOnlyCheckBox_Unchecked(object sender, RoutedEventArgs e)
+    {
+        if (_waverunnerPageService == null)
+        {
+            MagnetoLogger.Log("❌ Waverunner page service is null.", LogFactoryLogLevel.LogLevel.ERROR);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Lost Connection to Waverunner", "Cannot disable mark only button. Try restarting the application.");
+            return;
+        }
+        _waverunnerPageService.LockMarkButton();
+        _waverunnerPageService.UnlockLayerMoveButtons();
+        _waverunnerPageService.UnlockMarkOnlyCheckBox(); // ensure check box is enabled when interacting with it
     }
     private async Task ConfirmStartWithMark()
     {
@@ -1063,9 +1135,12 @@ public sealed partial class TestPrintPage : Page
             return;
         }
         // lock mark settings
-        _waverunnerPageService.LockMarkSettings();
+        _waverunnerPageService.LockLayerMoveSettings();
         // lock play and re-mark buttons
-        _waverunnerPageService.LockMarking();
+        _waverunnerPageService.LockLayerMoveButtons();
+        // lock mark only button and check box
+        _waverunnerPageService.LockMarkButton();
+        _waverunnerPageService.LockMarkOnlyCheckBox();
 
         if (displayMarkFirstConfirmation)
         {
@@ -1085,9 +1160,11 @@ public sealed partial class TestPrintPage : Page
                 //_motorPageService.StopAllMotors();
 
                 // unlock mark settings
-                _waverunnerPageService.UnlockMarkSettings();
+                _waverunnerPageService.UnlockLayerMoveSettings();
                 // unlock play and re-mark buttons
-                _waverunnerPageService.UnlockMarking();
+                _waverunnerPageService.UnlockLayerMoveButtons();
+                // unlock mark only check box
+                _waverunnerPageService.UnlockMarkOnlyCheckBox();
                 return;
             }
             await ViewModel.PrintLayer(wasPaused, startWithMark, thickness, power, scanSpeed, hatchSpacing, amplifier, (int)slicesToMark, this.Content.XamlRoot); // checks for pause state; calls resume() if paused; play() in any other state
@@ -1095,9 +1172,9 @@ public sealed partial class TestPrintPage : Page
             UpdatePrintAndSliceDisplayText();
         }
         // unlock mark settings
-        _waverunnerPageService.UnlockMarkSettings();
+        _waverunnerPageService.UnlockLayerMoveSettings();
         // unlock play and re-mark buttons
-        _waverunnerPageService.UnlockMarking();
+        _waverunnerPageService.UnlockLayerMoveButtons();
         if (!ViewModel.IsPrintPaused())
         {
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Done!", "Requested layer(s) printed.");

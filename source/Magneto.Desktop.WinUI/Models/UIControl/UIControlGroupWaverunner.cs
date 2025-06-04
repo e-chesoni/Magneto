@@ -25,15 +25,17 @@ public class UIControlGroupWaverunner : IUIControlGroupWaverunner
     public TextBox energyDensityTextBox;
     public TextBox slicesToMarkTextBox;
     public TextBox supplyAmplifierTextBox;
-
     public CheckBox startWithMarkCheckBox;
 
+    public Button markButton;
+    public CheckBox markOnlyCheckBox;
     public Button playButton;
     public Button pausePrintButton;
     public Button remarkLayerButton;
 
     public IEnumerable<object> settingsEnumerable;
-    public IEnumerable<object> buttonsEnumerable;
+    public IEnumerable<object> layerMoveEnumerable;
+    public IEnumerable<object> markOnlyEnumerable;
 
     public UIControlGroupWaverunner(TextBox printDirectoryInputTextBx, Button deletePrintBtn,
                                TextBlock layerTextBlk, TextBlock fileNameTextBlk, TextBlock layerThicknessTextBlk, 
@@ -41,7 +43,8 @@ public class UIControlGroupWaverunner : IUIControlGroupWaverunner
                                TextBlock energyDensityTextBlk, TextBlock slicesToMarkTextBlk, TextBlock supplyAmplifierTextBlk,
                                TextBox layerTextBx, TextBox fileNameTextBx, TextBox layerThicknessTextBx, TextBox laserPowerTextBx, 
                                TextBox scanSpeedTextBx, TextBox hatchSpacingTextBx, TextBox energyDensityTextBx, TextBox slicesToMarkTextBx, 
-                               TextBox supplyAmplifierTextBx, CheckBox startWithMarkCheckBx, Button PlayBtn, Button PausePrintBtn, Button RemarkLayerBtn)
+                               TextBox supplyAmplifierTextBx, CheckBox startWithMarkCheckBx,
+                               Button MarkButton, CheckBox MarkOnlyCheckBox, Button PlayBtn, Button PausePrintBtn, Button RemarkLayerBtn)
     {
         printDirectoryInputTextBox = printDirectoryInputTextBx;
         deletePrintButton = deletePrintBtn;
@@ -63,9 +66,10 @@ public class UIControlGroupWaverunner : IUIControlGroupWaverunner
         energyDensityTextBox = energyDensityTextBx;
         slicesToMarkTextBox = slicesToMarkTextBx;
         supplyAmplifierTextBox = supplyAmplifierTextBx;
-
         startWithMarkCheckBox = startWithMarkCheckBx;
 
+        markButton = MarkButton;
+        markOnlyCheckBox = MarkOnlyCheckBox;
         playButton = PlayBtn;
         pausePrintButton = PausePrintBtn;
         remarkLayerButton = RemarkLayerBtn;
@@ -94,11 +98,18 @@ public class UIControlGroupWaverunner : IUIControlGroupWaverunner
             startWithMarkCheckBox
         };
         // NOTE: Never add pause/stop buttons to enumerables (they disable buttons)
-        buttonsEnumerable = new List<object>
+        layerMoveEnumerable = new List<object>
         {
             playButton, remarkLayerButton
         };
+        markOnlyEnumerable = new List<object>
+        {
+            markButton, markOnlyCheckBox,
+        };
     }
     public IEnumerable<object> GetSettingsEnuerable() => settingsEnumerable;
-    public IEnumerable<object> GetButtonGroupEnuerable() => buttonsEnumerable;
+    public IEnumerable<object> GetLayerMoveEnumerable() => layerMoveEnumerable;
+    public IEnumerable<object> GetMarkOnlyEnumerable() => markOnlyEnumerable;
+    public Button GetMarkButton() => markButton;
+    public CheckBox GetMarkOnlyCheckBox() => markOnlyCheckBox;
 }
