@@ -338,6 +338,14 @@ public sealed partial class TestPrintPage : Page
     private async void HomeAllMotorsButton_Click(object sender, RoutedEventArgs e)
     {
         await HomeMotorsHelper();
+        if (_motorPageService == null)
+        {
+            var msg = $"❌Motor page service is null.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", "Lost connection to motors. Try refreshing the application.");
+            return;
+        }
+        await _motorPageService.HandleGetAllPositionsAsync();
     }
     #endregion
 
@@ -938,7 +946,6 @@ public sealed partial class TestPrintPage : Page
                 _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "⚠️Waverunner Page Service Not Connected", "Cannot mark without a connection to the page service.");
                 return;
             }
-            //_waverunnerPageService.UnlockMarkSettings();
             _waverunnerPageService.UnlockLayerMoveSettings();
         }
         else
@@ -1119,7 +1126,6 @@ public sealed partial class TestPrintPage : Page
             return;
         }
         // play button is print-related (not just motor related) so should use print state machine in view model
-        // TODO: need to re-enable printing after pause
         if (ViewModel.CancellationRequested())
         {
             _motorPageService.EnableProgramRunning(); // sets rsm cancellation token to false
@@ -1162,9 +1168,6 @@ public sealed partial class TestPrintPage : Page
                 _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, 
                                                 "Aborting Layer Move",
                                                 "Stopping layer move. You may resume or cancel the print.");
-                // TODO: stop motors if pause has been requested
-                //_motorPageService.StopAllMotors();
-
                 // unlock mark settings
                 _waverunnerPageService.UnlockLayerMoveSettings();
                 // unlock play and re-mark buttons

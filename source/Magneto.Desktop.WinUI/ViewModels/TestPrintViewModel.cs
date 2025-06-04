@@ -59,7 +59,6 @@ public class TestPrintViewModel : ObservableRecipient
     public RoutineStateMachine GetRoutineStateMachine() => _psm.rsm;
     public PrintModel? GetCurrentPrint() => _psm.GetCurrentPrint();
     public SliceModel? GetCurrentSlice() => _psm.GetCurrentSlice();
-    private async Task<SliceModel?> GetNextSliceAsync() => await _psm.GetNextSliceAsync();
     public async Task<long> GetSlicesMarkedAsync() => await _psm.GetSlicesMarkedAsync();
     public async Task<long> GetTotalSlicesAsync() => await _psm.GetTotalSlicesAsync();
     public string GetSliceFilePath() => _psm.GetSliceFilePath();
@@ -83,8 +82,7 @@ public class TestPrintViewModel : ObservableRecipient
     }
     public async Task DeleteCurrentPrintAsync()
     {
-        //await _printService.DeletePrint(currentPrint); // deletes slices associated with print
-        await _psm.DeleteCurrentPrintAsync();
+        await _psm.DeleteCurrentPrintAsync(); // deletes slices associated with print
     }
     #endregion
 
@@ -136,7 +134,6 @@ public class TestPrintViewModel : ObservableRecipient
     {
         sliceCollection.Clear();
         await DisplaySliceCollectionAsync();
-        //await _psm.SetCurrentSliceAsync();
     }
     #endregion
 
@@ -155,8 +152,6 @@ public class TestPrintViewModel : ObservableRecipient
             return;
         }
         MagnetoLogger.Log($"✅Marking slice at {entity}.", LogFactoryLogLevel.LogLevel.SUCCESS);
-        // TODO: TEST
-        // mark slice
         await _waverunnerService.MarkEntityAsync(entity); // technically, this waits for mark to complete. second wait in PrintLayer() may be unecessary
     }
 
@@ -183,7 +178,6 @@ public class TestPrintViewModel : ObservableRecipient
     {
         if (layerComplete)
         {
-            //await _psm.UpdateCurrentSliceAsync(thickness, power, scanSpeed, hatchSpacing); // handles backend data
             await _psm.UpdateCurrentSliceAsync();
             await _psm.SetCurrentSliceToNextAsync(); // handles backend data
         }

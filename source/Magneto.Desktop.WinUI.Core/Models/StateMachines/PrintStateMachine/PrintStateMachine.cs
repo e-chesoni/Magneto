@@ -56,8 +56,6 @@ public class PrintStateMachine
     }
     #endregion
 
-    //private double SWEEP_CLEARANCE = 2;
-
     #region Constructor
     public PrintStateMachine(IPrintSeeder seeder, IPrintService printService, ISliceService sliceService, RoutineStateMachine rsm, MotorService motorService)
     {
@@ -74,7 +72,6 @@ public class PrintStateMachine
     #region Print and Slice Setters
     public async Task SetCurrentPrintAsync(string directoryPath)
     {
-        // TODO: use directory and name to get current print
         currentPrint = await GetMostRecentPrintByDirectory(directoryPath);
         currentSlice = await GetNextSliceAsync();
     }
