@@ -12,7 +12,7 @@ namespace Magneto.Desktop.WinUI.Views;
 /// <summary>
 /// Utilities page
 /// </summary>
-public sealed partial class UtilitiesPage : Page
+public sealed partial class TestingPage : Page
 {
     #region Public Variables
 
@@ -24,7 +24,7 @@ public sealed partial class UtilitiesPage : Page
     /// <summary>
     /// Page view model
     /// </summary>
-    public UtilitiesViewModel ViewModel { get; }
+    public TestingViewModel ViewModel { get; }
 
     #endregion
 
@@ -33,9 +33,9 @@ public sealed partial class UtilitiesPage : Page
     /// <summary>
     /// UtilitiesPage constructor
     /// </summary>
-    public UtilitiesPage()
+    public TestingPage()
     {
-        ViewModel = App.GetService<UtilitiesViewModel>();
+        ViewModel = App.GetService<TestingViewModel>();
         _missionControl = App.GetService<MissionControl>();
         InitializeComponent();
         
@@ -57,16 +57,6 @@ public sealed partial class UtilitiesPage : Page
 
         //var msg = string.Format("UtilitiesPage::OnNavigatedTo -- {0}", MissionControl.FriendlyMessage);
         //MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
-    }
-
-    /// <summary>
-    /// Pass Mission Control to Cleaning Page when button is clicked
-    /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="e"></param>
-    private void NavigateToCleaningPage_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-    {
-        Frame.Navigate(typeof(CleaningPage), _missionControl);
     }
 
     /// <summary>

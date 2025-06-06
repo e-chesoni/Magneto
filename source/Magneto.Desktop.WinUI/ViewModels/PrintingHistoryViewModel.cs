@@ -8,13 +8,13 @@ using Magneto.Desktop.WinUI.Core.Models;
 
 namespace Magneto.Desktop.WinUI.ViewModels;
 
-public class CompletedPrintsViewModel : ObservableRecipient, INavigationAware
+public class PrintingHistoryViewModel : ObservableRecipient, INavigationAware
 {
     private readonly ISampleDataService _sampleDataService;
 
     public ObservableCollection<SampleOrder> Source { get; } = new ObservableCollection<SampleOrder>();
 
-    public CompletedPrintsViewModel(ISampleDataService sampleDataService)
+    public PrintingHistoryViewModel(ISampleDataService sampleDataService)
     {
         _sampleDataService = sampleDataService;
     }

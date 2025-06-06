@@ -67,23 +67,23 @@
   <data name="Shell_Main.Content" xml:space="preserve">
     <value>Main</value>
   </data>
-  <data name="Shell_Print.Content" xml:space="preserve">
-    <value>Print</value>
+  <data name="Shell_NewPrint.Content" xml:space="preserve">
+    <value>NewPrint</value>
   </data>
   <data name="Shell_Printing.Content" xml:space="preserve">
     <value>Printing</value>
   </data>
-  <data name="Shell_Utilities.Content" xml:space="preserve">
-    <value>Utilities</value>
+  <data name="Shell_Testing.Content" xml:space="preserve">
+    <value>Testing</value>
   </data>
   <data name="Shell_PrintSettings.Content" xml:space="preserve">
     <value>PrintSettings</value>
   </data>
-  <data name="PrintQueue_NoSelection.Text" xml:space="preserve">
+  <data name="Maintenance_NoSelection.Text" xml:space="preserve">
     <value>Select an item from the list.</value>
   </data>
-  <data name="Shell_PrintQueue.Content" xml:space="preserve">
-    <value>PrintQueue</value>
+  <data name="Shell_Maintenance.Content" xml:space="preserve">
+    <value>Maintenance</value>
   </data>
   <data name="Shell_Cleaning.Content" xml:space="preserve">
     <value>Cleaning</value>
@@ -103,8 +103,8 @@
   <data name="Shell_MaterialsMonitor.Content" xml:space="preserve">
     <value>MaterialsMonitor</value>
   </data>
-  <data name="Shell_CompletedPrints.Content" xml:space="preserve">
-    <value>CompletedPrints</value>
+  <data name="Shell_PrintingHistory.Content" xml:space="preserve">
+    <value>PrintingHistory</value>
   </data>
   <data name="Settings_Personalization.Text" xml:space="preserve">
     <value>Personalization</value>

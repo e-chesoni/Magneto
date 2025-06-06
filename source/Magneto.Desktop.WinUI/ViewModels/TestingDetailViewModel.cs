@@ -6,7 +6,7 @@ using Magneto.Desktop.WinUI.Core.Models;
 
 namespace Magneto.Desktop.WinUI.ViewModels;
 
-public class UtilitiesDetailViewModel : ObservableRecipient, INavigationAware
+public class TestingDetailViewModel : ObservableRecipient, INavigationAware
 {
     private readonly ISampleDataService _sampleDataService;
     private SampleOrder? _item;
@@ -17,7 +17,7 @@ public class UtilitiesDetailViewModel : ObservableRecipient, INavigationAware
         set => SetProperty(ref _item, value);
     }
 
-    public UtilitiesDetailViewModel(ISampleDataService sampleDataService)
+    public TestingDetailViewModel(ISampleDataService sampleDataService)
     {
         _sampleDataService = sampleDataService;
     }

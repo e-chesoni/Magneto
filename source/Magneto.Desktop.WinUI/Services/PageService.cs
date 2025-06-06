@@ -16,12 +16,12 @@ public class PageService : IPageService
     {
         Configure<MainViewModel, MainPage>();
         Configure<MainDetailViewModel, MainDetailPage>();
-        Configure<PrintViewModel, PrintPage>();
+        Configure<NewPrintViewModel, NewPrintPage>();
         Configure<PrintingViewModel, PrintingPage>();
-        Configure<UtilitiesViewModel, UtilitiesPage>();
-        Configure<UtilitiesDetailViewModel, UtilitiesDetailPage>();
+        Configure<TestingViewModel, TestingPage>();
+        Configure<TestingDetailViewModel, TestingDetailPage>();
         Configure<PrintSettingsViewModel, PrintSettingsPage>();
-        Configure<PrintQueueViewModel, PrintQueuePage>();
+        Configure<MaintenanceViewModel, MaintenancePage>();
         Configure<CleaningViewModel, CleaningPage>();
         Configure<TestPrintViewModel, TestPrintPage>();
         Configure<TestMotorsViewModel, TestMotorsPage>();
@@ -30,7 +30,7 @@ public class PageService : IPageService
         Configure<LaserMonitorViewModel, LaserMonitorPage>();
         Configure<ArgonMonitorViewModel, ArgonMonitorPage>();
         Configure<MaterialsMonitorViewModel, MaterialsMonitorPage>();
-        Configure<CompletedPrintsViewModel, CompletedPrintsPage>();
+        Configure<PrintingHistoryViewModel, PrintingHistoryPage>();
         Configure<SettingsViewModel, SettingsPage>();
     }
 

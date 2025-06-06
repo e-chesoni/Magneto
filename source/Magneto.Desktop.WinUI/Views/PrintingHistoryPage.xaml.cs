@@ -11,19 +11,19 @@ namespace Magneto.Desktop.WinUI.Views;
 
 // TODO: Change the grid as appropriate for your app. Adjust the column definitions on DataGridPage.xaml.
 // For more details, see the documentation at https://docs.microsoft.com/windows/communitytoolkit/controls/datagrid.
-public sealed partial class CompletedPrintsPage : Page
+public sealed partial class PrintingHistoryPage : Page
 {
     private MissionControl? _missionControl { get; set; }
-    public CompletedPrintsViewModel ViewModel { get; }
+    public PrintingHistoryViewModel ViewModel { get; }
 
     #region Constructor
 
     /// <summary>
     /// Completed Print Page constructor
     /// </summary>
-    public CompletedPrintsPage()
+    public PrintingHistoryPage()
     {
-        ViewModel = App.GetService<CompletedPrintsViewModel>(); 
+        ViewModel = App.GetService<PrintingHistoryViewModel>(); 
         _missionControl = App.GetService<MissionControl>();
         InitializeComponent();
     }

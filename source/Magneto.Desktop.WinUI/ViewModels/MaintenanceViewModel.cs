@@ -8,7 +8,7 @@ using Magneto.Desktop.WinUI.Core.Models;
 
 namespace Magneto.Desktop.WinUI.ViewModels;
 
-public class PrintQueueViewModel : ObservableRecipient, INavigationAware
+public class MaintenanceViewModel : ObservableRecipient, INavigationAware
 {
     private readonly ISampleDataService _sampleDataService;
     private SampleOrder? _selected;
@@ -31,7 +31,7 @@ public class PrintQueueViewModel : ObservableRecipient, INavigationAware
     public ObservableCollection<SampleOrder> SampleItems { get; private set; } = new ObservableCollection<SampleOrder>();
     public ObservableCollection<SamplePrint> SamplePrints { get; private set; } = new ObservableCollection<SamplePrint>();
 
-    public PrintQueueViewModel(ISamplePrintService samplePrintService)
+    public MaintenanceViewModel(ISamplePrintService samplePrintService)
     {
         //_sampleDataService = sampleDataService;
         _samplePrintService = samplePrintService;

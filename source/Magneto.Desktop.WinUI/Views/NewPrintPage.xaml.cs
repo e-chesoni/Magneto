@@ -8,7 +8,6 @@ using Magneto.Desktop.WinUI.Core.Models.Artifact;
 using Magneto.Desktop.WinUI.Core.Models.Motors;
 using Magneto.Desktop.WinUI.Popups;
 using Magneto.Desktop.WinUI.ViewModels;
-
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using static Magneto.Desktop.WinUI.Core.Models.Motors.StepperMotor;
@@ -16,7 +15,7 @@ using static Magneto.Desktop.WinUI.Core.Models.Print.RoutineStateMachine;
 
 namespace Magneto.Desktop.WinUI.Views;
 
-public sealed partial class PrintPage : Page
+public sealed partial class NewPrintPage : Page
 {
     #region Public Variables
 
@@ -28,7 +27,7 @@ public sealed partial class PrintPage : Page
     /// <summary>
     /// Page view model
     /// </summary>
-    public PrintViewModel ViewModel
+    public NewPrintViewModel ViewModel
     {
         get;
     }
@@ -40,9 +39,9 @@ public sealed partial class PrintPage : Page
     /// <summary>
     /// Print Page constructor
     /// </summary>
-    public PrintPage()
+    public NewPrintPage()
     {
-        ViewModel = App.GetService<PrintViewModel>();
+        ViewModel = App.GetService<NewPrintViewModel>();
         _missionControl = App.GetService<MissionControl>();
         InitializeComponent(); // This is fine...not sure why there are red lines sometimes
 

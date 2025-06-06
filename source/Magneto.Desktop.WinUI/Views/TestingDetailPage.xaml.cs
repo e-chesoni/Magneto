@@ -11,19 +11,19 @@ using Microsoft.UI.Xaml.Navigation;
 
 namespace Magneto.Desktop.WinUI.Views;
 
-public sealed partial class UtilitiesDetailPage : Page
+public sealed partial class TestingDetailPage : Page
 {
     public MissionControl? _missionControl { get; set; }
-    public UtilitiesDetailViewModel ViewModel { get; }
+    public TestingDetailViewModel ViewModel { get; }
 
     #region Constructor
 
     /// <summary>
     /// Utilities Detail Page constructor 
     /// </summary>
-    public UtilitiesDetailPage()
+    public TestingDetailPage()
     {
-        ViewModel = App.GetService<UtilitiesDetailViewModel>();
+        ViewModel = App.GetService<TestingDetailViewModel>();
         _missionControl = App.GetService<MissionControl>();
         InitializeComponent();
     }

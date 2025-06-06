@@ -49,9 +49,14 @@ public sealed partial class MainPage : Page
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="e"></param>
-    private void NavigateToPrintPage_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    private void NavigateToNewPrintPage_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        Frame.Navigate(typeof(PrintPage));
+        Frame.Navigate(typeof(NewPrintPage));
+    }
+
+    private void NavigateToPrintingHistoryPage_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        Frame.Navigate(typeof(PrintingHistoryPage));
     }
 
     /// <summary>
@@ -79,9 +84,9 @@ public sealed partial class MainPage : Page
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="e"></param>
-    private void NavigateToPrintQueuePage_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    private void NavigateToMaintenancePage_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        Frame.Navigate(typeof(PrintQueuePage));
+        Frame.Navigate(typeof(MaintenancePage));
     }
 
     /// <summary>
@@ -89,9 +94,9 @@ public sealed partial class MainPage : Page
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="e"></param>
-    private void NavigateToUtilitiesPage_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    private void NavigateToTestingPage_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        Frame.Navigate(typeof(UtilitiesPage));
+        Frame.Navigate(typeof(TestingPage));
     }
 
     #endregion

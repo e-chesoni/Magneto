@@ -22,14 +22,14 @@
         </Grid.RowDefinitions>
         <StackPanel Grid.Column="1" Grid.Row="1" Orientation="Vertical">
             <StackPanel Margin="20" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <Button Margin="10" Height="200" Width="200" Content="Print" Click="NavigateToPrintPage_Click"/>
-                <Button Margin="10" Height="200" Width="200" Content="Monitor" Click="NavigateToMonitorPage_Click"/>
-                <Button Margin="10" Height="200" Width="200" Content="Settings" Click="NavigateToSettingsPage_Click"/>
+                <Button Margin="10" Height="200" Width="200" Content="New Print" Foreground="Gray" Click="NavigateToNewPrintPage_Click"/>
+                <Button Margin="10" Height="200" Width="200" Content="Printing History" Click="NavigateToPrintingHistoryPage_Click"/>
+                <Button Margin="10" Height="200" Width="200" Content="Testing" Click="NavigateToTestingPage_Click"/>
             </StackPanel>
             <StackPanel Margin="20" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <Button Margin="10" Height="200" Width="200" Content="Print Queue"  Click="NavigateToPrintQueuePage_Click"/>
-                <Button Margin="10" Height="200" Width="200" Content="Utilities"  Click="NavigateToUtilitiesPage_Click"/>
-                <Button Margin="10" Height="200" Width="200"/>
+                <Button Margin="10" Height="200" Width="200" Content="Maintenance" Foreground="Gray" Click="NavigateToMaintenancePage_Click"/>
+                <Button Margin="10" Height="200" Width="200" Content="Monitor" Foreground="Gray" Click="NavigateToMonitorPage_Click"/>
+                <Button Margin="10" Height="200" Width="200" Content="Settings" Click="NavigateToSettingsPage_Click"/>
             </StackPanel>
         </StackPanel>
     </Grid>

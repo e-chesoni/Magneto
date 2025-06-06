@@ -11,7 +11,7 @@ using Magneto.Desktop.WinUI.Core.Models;
 
 namespace Magneto.Desktop.WinUI.ViewModels;
 
-public class UtilitiesViewModel : ObservableRecipient, INavigationAware
+public class TestingViewModel : ObservableRecipient, INavigationAware
 {
     private readonly INavigationService _navigationService;
     private readonly ISampleDataService _sampleDataService;
@@ -23,7 +23,7 @@ public class UtilitiesViewModel : ObservableRecipient, INavigationAware
 
     public ObservableCollection<SampleOrder> Source { get; } = new ObservableCollection<SampleOrder>();
 
-    public UtilitiesViewModel(INavigationService navigationService, ISampleDataService sampleDataService)
+    public TestingViewModel(INavigationService navigationService, ISampleDataService sampleDataService)
     {
         _navigationService = navigationService;
         _sampleDataService = sampleDataService;
@@ -52,7 +52,7 @@ public class UtilitiesViewModel : ObservableRecipient, INavigationAware
         if (clickedItem != null)
         {
             _navigationService.SetListDataItemForNextConnectedAnimation(clickedItem);
-            _navigationService.NavigateTo(typeof(UtilitiesDetailViewModel).FullName!, clickedItem.OrderID);
+            _navigationService.NavigateTo(typeof(TestingDetailViewModel).FullName!, clickedItem.OrderID);
         }
     }
 }

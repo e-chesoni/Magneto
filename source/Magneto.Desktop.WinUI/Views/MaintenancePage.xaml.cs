@@ -8,15 +8,15 @@ using Microsoft.UI.Xaml.Navigation;
 
 namespace Magneto.Desktop.WinUI.Views;
 
-public sealed partial class PrintQueuePage : Page
+public sealed partial class MaintenancePage : Page
 {
     public MissionControl? _missionControl { get; set; }
 
-    public PrintQueueViewModel ViewModel { get; }
+    public MaintenanceViewModel ViewModel { get; }
 
-    public PrintQueuePage()
+    public MaintenancePage()
     {
-        ViewModel = App.GetService<PrintQueueViewModel>();
+        ViewModel = App.GetService<MaintenanceViewModel>();
         _missionControl = App.GetService<MissionControl>();
         InitializeComponent();
     }
@@ -33,5 +33,15 @@ public sealed partial class PrintQueuePage : Page
         {
             ViewModel.EnsureItemSelected();
         }
+    }
+
+    /// <summary>
+    /// Pass Mission Control to Cleaning Page when button is clicked
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void NavigateToCleaningPage_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        Frame.Navigate(typeof(CleaningPage), _missionControl);
     }
 }

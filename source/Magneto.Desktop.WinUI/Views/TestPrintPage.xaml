@@ -9,6 +9,7 @@
     mc:Ignorable="d">
 
     <Grid x:Name="ContentArea">
+        <!-- Change HeaderMode (above) to "Never" to remove title -->
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="6*"/>

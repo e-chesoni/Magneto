@@ -3,11 +3,11 @@ using Magneto.Desktop.WinUI.Core.Models;
 
 namespace Magneto.Desktop.WinUI.ViewModels;
 
-public class PrintViewModel : ObservableRecipient
+public class NewPrintViewModel : ObservableRecipient
 {
     public MissionControl missionControl;
 
-    public PrintViewModel()
+    public NewPrintViewModel()
     {
 
     }
