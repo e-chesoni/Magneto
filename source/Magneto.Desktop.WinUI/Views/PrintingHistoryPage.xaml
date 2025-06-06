@@ -6,35 +6,46 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
+    <StackPanel>
+        <!-- Clear Database Button -->
+        <Button Content="Clear Database"
+                Click="ClearDatabaseButton_Click"
+                Background="DarkRed"
+                Foreground="White"
+                HorizontalAlignment="Center"
+                Margin="10"/>
 
-    <Grid x:Name="ContentArea">
-        <controls:DataGrid
-            AutoGenerateColumns="False"
-            GridLinesVisibility="Horizontal"
-            ItemsSource="{x:Bind ViewModel.Source, Mode=OneWay}">
-            <controls:DataGrid.Resources>
-                <SolidColorBrush x:Key="DataGridColumnHeaderBackgroundColor" Color="Transparent" />
-            </controls:DataGrid.Resources>
-            <controls:DataGrid.Columns>
-                <!-- TODO: Replace column definitions to match real data. Consider adding Header values to Resources.resw. -->
-                <controls:DataGridTextColumn Binding="{Binding OrderID}" Header="OrderID" />
-                <controls:DataGridTextColumn Binding="{Binding OrderDate}" Header="OrderDate" />
-                <controls:DataGridTextColumn Binding="{Binding Company}" Header="Company" />
-                <controls:DataGridTextColumn Binding="{Binding ShipTo}" Header="ShipTo" />
-                <controls:DataGridTextColumn Binding="{Binding OrderTotal}" Header="OrderTotal" />
-                <controls:DataGridTextColumn Binding="{Binding Status}" Header="Status" />
-                <controls:DataGridTemplateColumn Header="Symbol">
-                    <controls:DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <FontIcon
-                                HorizontalAlignment="Left"
-                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                Glyph="{Binding Symbol}"
-                                AutomationProperties.Name="{Binding SymbolName}" />
-                        </DataTemplate>
-                    </controls:DataGridTemplateColumn.CellTemplate>
-                </controls:DataGridTemplateColumn>
-            </controls:DataGrid.Columns>
-        </controls:DataGrid>
-    </Grid>
+        <!-- Data Grid -->
+        <Grid x:Name="ContentArea">
+            <controls:DataGrid
+                AutoGenerateColumns="False"
+                GridLinesVisibility="Horizontal"
+                ItemsSource="{x:Bind ViewModel.printCollection, Mode=OneWay}">
+                <controls:DataGrid.Resources>
+                    <SolidColorBrush x:Key="DataGridColumnHeaderBackgroundColor" Color="Transparent" />
+                </controls:DataGrid.Resources>
+                <controls:DataGrid.Columns>
+                    <controls:DataGridTextColumn Binding="{Binding id}" Header="ID" />
+                    <controls:DataGridTextColumn Binding="{Binding name}" Header="Name" />
+                    <controls:DataGridTextColumn Binding="{Binding directoryPath}" Header="Directory Path" />
+                    <controls:DataGridTextColumn Binding="{Binding totalSlices}" Header="Total Slices" />
+                    <controls:DataGridTextColumn Binding="{Binding startTimeLocal}" Header="Start Time" />
+                    <controls:DataGridTextColumn Binding="{Binding endTimeLocal}" Header="End Time" />
+                    <controls:DataGridTextColumn Binding="{Binding duration}" Header="Total Duration" />
+                    <controls:DataGridTextColumn Binding="{Binding complete}" Header="Complete?" />
+                    <controls:DataGridTemplateColumn Header="Delete">
+                        <controls:DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <!-- Tag binds delete button to row data -->
+                                <Button Content="Delete"
+                                        Click="DeletePrintButton_Click"
+                                        Tag="{Binding id}" 
+                                        Background="red"/>
+                            </DataTemplate>
+                        </controls:DataGridTemplateColumn.CellTemplate>
+                    </controls:DataGridTemplateColumn>
+                </controls:DataGrid.Columns>
+            </controls:DataGrid>
+        </Grid>
+    </StackPanel>
 </Page>

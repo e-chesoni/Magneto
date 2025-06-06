@@ -60,8 +60,8 @@ public class PrintSeeder : IPrintSeeder
         // get print directory
         var dirName = Path.GetFileName(directoryPath.TrimEnd(Path.DirectorySeparatorChar));
         // get truncated timestamp for print name
-        var dateStamp = DateTime.UtcNow.ToString("yyyy-MM-dd_HH:mm:ss");
-
+        var now = DateTime.UtcNow;
+        var dateStamp = now.ToLocalTime().ToString("yyyy-MM-dd_HH:mm:ss");
         // create print name
         var printName = $"{dirName}_{dateStamp}";
 
@@ -71,7 +71,7 @@ public class PrintSeeder : IPrintSeeder
             id = printId,
             name = printName,
             directoryPath = directoryPath, // TODO: You need to get the full path
-            startTime = DateTime.UtcNow,
+            startTime = now,
             sliceIds = sliceIds,
         };
         await _printService.AddPrint(print);

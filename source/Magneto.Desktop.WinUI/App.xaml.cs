@@ -29,6 +29,7 @@ using Magneto.Desktop.WinUI.Core.Factories;
 using Magneto.Desktop.WinUI.Core.Models;
 using Magneto.Desktop.WinUI.Core.Models.Motors;
 using Magneto.Desktop.WinUI.Core.Models.States.PrintStates;
+using Microsoft.UI.Xaml.Documents;
 
 namespace Magneto.Desktop.WinUI;
 
@@ -57,6 +58,7 @@ public partial class App : Application
     }
 
     public static WindowEx MainWindow { get; private set; }
+    private bool CLEAR_DB_ON_STARTUP = false;
 
     public App()
     {
@@ -159,17 +161,21 @@ public partial class App : Application
             services.AddSingleton<IMongoDbSeeder, MongoDbSeeder>();
             services.AddSingleton<IPrintSeeder, PrintSeeder>();
 
-            // Create a scope and call the seeding method to add prints to the db
-            var serviceProvider = services.BuildServiceProvider();
-            var mongoDbSeeder = serviceProvider.GetRequiredService<IMongoDbSeeder>();
-
-            // Seed or clear magnetoDb
-            Task.Run(async () =>
+            
+            if (CLEAR_DB_ON_STARTUP)
             {
-                // WARNING: only run one of these
-                await mongoDbSeeder.ClearDatabaseAsync(true);
-                //await mongoDbSeeder.SeedDatabaseAsync();
-            });
+                // Create a scope and call the seeding method to add prints to the db
+                var serviceProvider = services.BuildServiceProvider();
+                var mongoDbSeeder = serviceProvider.GetRequiredService<IMongoDbSeeder>();
+
+                // Seed or clear magnetoDb
+                Task.Run(async () =>
+                {
+                    // WARNING: only run one of these
+                    await mongoDbSeeder.ClearDatabaseAsync(true);
+                    //await mongoDbSeeder.SeedDatabaseAsync();
+                });
+            }
 
             // Views and ViewModels
             services.AddTransient<SettingsViewModel>();
