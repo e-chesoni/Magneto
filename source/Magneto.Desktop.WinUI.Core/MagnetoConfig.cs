@@ -96,7 +96,7 @@ public static class MagnetoConfig
                 COMPort = GetCOMPortName(GetCOMPort(_sweep_port)),
                 axis = 1,
                 maxPos = 283,
-                minPos = -9, // touching wall is -110 (as of 2024-04-26)
+                minPos = 0, // touching wall is 0 (as of 2025-06-07)
                 homePos = 0,
                 velocity = 25, // mm/s^2
             },

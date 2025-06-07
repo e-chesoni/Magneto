@@ -78,5 +78,7 @@ public interface IMotorService
     public Task MoveMotorAbsoluteProgram(string motorNameLower, double distance);
     public Task MoveMotorRelativeProgram(string motorNameLower, double distance, bool moveUp);
     Task<int> HomeMotorProgram(string motorNameLowerCase);
+    public Task MoveMotorToMaxPositionProgram(string motorNameLower);
+    public Task MoveMotorToMinPositionProgram(string motorNameLower);
     public Task HomeAllMotors();
 }

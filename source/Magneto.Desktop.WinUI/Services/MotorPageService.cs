@@ -167,6 +167,17 @@ public class MotorPageService
             return (res, targetPos);
         }
     }
+
+    public async Task MoveMotorToMaxPosition(string motorNameLower)
+    {
+        await _motorService.MoveMotorToMaxPositionProgram(motorNameLower);
+        await UpdateMotorPositionTextBox(motorNameLower);
+    }
+    public async Task MoveMotorToMinPosition(string motorNameLower)
+    {
+        await _motorService.MoveMotorToMinPositionProgram(motorNameLower);
+        await UpdateMotorPositionTextBox(motorNameLower);
+    }
     #endregion
 
     #region Movement Handlers

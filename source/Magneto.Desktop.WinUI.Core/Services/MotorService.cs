@@ -290,7 +290,45 @@ public class MotorService : IMotorService
                 await MoveSweepMotorAbsoluteProgram(target);
                 break;
             default:
-                MagnetoLogger.Log($"Could not check motor stop flag. Invalid motor name given: {motorNameLower}.", LogFactoryLogLevel.LogLevel.ERROR);
+                MagnetoLogger.Log($"Could not move motor to target:{target}. Invalid motor name given: {motorNameLower}.", LogFactoryLogLevel.LogLevel.ERROR);
+                return;
+        }
+        return;
+    }
+    public async Task MoveMotorToMaxPositionProgram(string motorNameLower)
+    {
+        switch (motorNameLower)
+        {
+            case "build":
+                await MoveBuildMotorAbsoluteProgram(buildMotor.GetMaxPos());
+                break;
+            case "powder":
+                await MovePowderMotorAbsoluteProgram(powderMotor.GetMaxPos());
+                break;
+            case "sweep":
+                await MoveSweepMotorAbsoluteProgram(sweepMotor.GetMaxPos());
+                break;
+            default:
+                MagnetoLogger.Log($"Could not move motor to max position. Invalid motor name given: {motorNameLower}.", LogFactoryLogLevel.LogLevel.ERROR);
+                return;
+        }
+        return;
+    }
+    public async Task MoveMotorToMinPositionProgram(string motorNameLower)
+    {
+        switch (motorNameLower)
+        {
+            case "build":
+                await MoveBuildMotorAbsoluteProgram(buildMotor.GetMinPos());
+                break;
+            case "powder":
+                await MovePowderMotorAbsoluteProgram(powderMotor.GetMinPos());
+                break;
+            case "sweep":
+                await MoveSweepMotorAbsoluteProgram(sweepMotor.GetMinPos());
+                break;
+            default:
+                MagnetoLogger.Log($"Could not move motor to min position. Invalid motor name given: {motorNameLower}.", LogFactoryLogLevel.LogLevel.ERROR);
                 return;
         }
         return;

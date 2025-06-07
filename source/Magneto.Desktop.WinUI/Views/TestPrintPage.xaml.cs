@@ -1306,33 +1306,58 @@ public sealed partial class TestPrintPage : Page
     }
     #endregion
 
-    private void BuildGoToMaxPositionButton_Click(object sender, RoutedEventArgs e)
+    private async void BuildGoToMaxPositionButton_Click(object sender, RoutedEventArgs e)
     {
-
+        if (_motorPageService == null)
+        {
+            MagnetoLogger.Log("❌Cannot move build motor to max position. Build motor is null.", LogFactoryLogLevel.LogLevel.ERROR);
+            return;
+        }
+        await _motorPageService.MoveMotorToMaxPosition(buildMotorName);
     }
-
-    private void BuildGoToMinPositionButton_Click(object sender, RoutedEventArgs e)
+    private async void PowderGoToMaxPositionButton_Click(object sender, RoutedEventArgs e)
     {
-
+        if (_motorPageService == null)
+        {
+            MagnetoLogger.Log("❌Cannot move powder motor to max position. Powder motor is null.", LogFactoryLogLevel.LogLevel.ERROR);
+            return;
+        }
+        await _motorPageService.MoveMotorToMaxPosition(powderMotorName);
     }
-
-    private void PowderGoToMaxPositionButton_Click(object sender, RoutedEventArgs e)
+    private async void SweepLeftButton_Click(object sender, RoutedEventArgs e)
     {
-
+        if (_motorPageService == null)
+        {
+            MagnetoLogger.Log("❌Cannot move sweep motor to max position. Sweep motor is null.", LogFactoryLogLevel.LogLevel.ERROR);
+            return;
+        }
+        await _motorPageService.MoveMotorToMaxPosition(sweepMotorName);
     }
-
-    private void PowderGoToMinPositionButton_Click(object sender, RoutedEventArgs e)
+    private async void BuildGoToMinPositionButton_Click(object sender, RoutedEventArgs e)
     {
-
+        if (_motorPageService == null)
+        {
+            MagnetoLogger.Log("❌Cannot move build motor to min position. Build motor is null.", LogFactoryLogLevel.LogLevel.ERROR);
+            return;
+        }
+        await _motorPageService.MoveMotorToMinPosition(buildMotorName);
     }
-
-    private void SweepLeftButton_Click(object sender, RoutedEventArgs e)
+    private async void PowderGoToMinPositionButton_Click(object sender, RoutedEventArgs e)
     {
-
+        if (_motorPageService == null)
+        {
+            MagnetoLogger.Log("❌Cannot move powder motor to min position. Powder motor is null.", LogFactoryLogLevel.LogLevel.ERROR);
+            return;
+        }
+        await _motorPageService.MoveMotorToMinPosition(powderMotorName);
     }
-
-    private void SweepRightButton_Click(object sender, RoutedEventArgs e)
+    private async void SweepRightButton_Click(object sender, RoutedEventArgs e)
     {
-
+        if (_motorPageService == null)
+        {
+            MagnetoLogger.Log("❌Cannot move sweep motor to min position. Sweep motor is null.", LogFactoryLogLevel.LogLevel.ERROR);
+            return;
+        }
+        await _motorPageService.MoveMotorToMinPosition(sweepMotorName); // NOTE: sweep min changed from -9 to 0 in config
     }
 }
