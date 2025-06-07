@@ -1305,4 +1305,34 @@ public sealed partial class TestPrintPage : Page
         await PopupInfo.ShowContentDialog(xamlRoot, PopupMessageType, PopupMessage);
     }
     #endregion
+
+    private void BuildGoToMaxPositionButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void BuildGoToMinPositionButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void PowderGoToMaxPositionButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void PowderGoToMinPositionButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void SweepLeftButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void SweepRightButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
 }
