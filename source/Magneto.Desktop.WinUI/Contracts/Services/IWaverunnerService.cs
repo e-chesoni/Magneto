@@ -25,4 +25,9 @@ public interface IWaverunnerService
     Task<int> MarkEntityAsync(string filePath);
     int GetMarkStatus();
     int StopMark();
+    bool InSAM3DMode();
+    void ImportStlFile(string entityName, string filePath);
+    string? GenerateSlicedEntity(string inputEntityName, double sliceThickness);
+    void ExportSlicesToDirectory(string slicedEntityName, string outputDirectory);
+
 }

@@ -77,7 +77,7 @@ public static class MagnetoConfig
                 axis = 2,
                 maxPos = 0,
                 minPos = -36,
-                homePos = -33, // NOTE: lowest position motor reached when tested 2024-09-06
+                homePos = -33, // NOTE: for safety; may want to change this in production
                 velocity = 5, // mm/s^2
             },
             new MagnetoMotorConfig()

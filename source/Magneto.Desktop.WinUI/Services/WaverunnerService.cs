@@ -33,6 +33,11 @@ public class WaverunnerService : IWaverunnerService
     public WaverunnerService() {}
     #endregion
 
+    #region Helpers
+    //TODO: move to page service
+    public double CalculateEnergyDensity(double layerThickness, double power, double scanSpeed, double hatchSpacing) => power / (layerThickness * scanSpeed * hatchSpacing);
+    #endregion
+
     #region Connection Checkers
     public bool IsRunning() => cci.ScIsRunning() == 1; // 0 if not running, 1 if running
 
@@ -74,8 +79,6 @@ public class WaverunnerService : IWaverunnerService
     public double GetDefaultHatchSpacing() => _defaultHatchSpacing;
     public double GetDefaultSupplyAmplifier() => _defaultSupplyAmplifier;
     #endregion
-
-    public double CalculateEnergyDensity(double layerThickness, double power, double scanSpeed, double hatchSpacing) => power / (layerThickness * scanSpeed * hatchSpacing);
 
     #region Pen Setters
     //TODO: Figure out how to implement error checking with these void commands
@@ -200,6 +203,74 @@ public class WaverunnerService : IWaverunnerService
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
         cci.ScStopMarking();
         return 1;
+    }
+    #endregion
+
+    #region Slicing Methods
+    // 	Check if SAMLight is running in SAM3D mode
+    public bool InSAM3DMode()
+    {
+        // get current mode (0 = 2D, 1 = 3D)
+        var mode = cci.ScGetLongValue((int)ScComSAMLightClientCtrlValueTypes.scComSAMLightClientCtrlLongValueType3D); // returns an integer
+        return mode == 1;
+    }
+
+    public void ImportStlFile(string entityName, string filePath)
+    {
+        // NOTE: When using this command in SAM3D, 
+        // last two arguments (resolution and flags) must be 0
+        cci.ScImport(entityName, filePath, "stl", 0.0, 0); // returns void
+
+        // TODO: check cci/waverunner for errors importing stl
+    }
+
+    public string? GenerateSlicedEntity(string inputEntityName, double sliceThickness)
+    {
+        // generate entity name
+        var slicedEntityName = $"{inputEntityName}_Sliced";
+
+        cci.ScSlice(
+            inputEntityName,
+            slicedEntityName,
+            sliceThickness,
+            0, // Slice all matching entities
+            0  // Bottom-to-top (additive)
+        ); // returns void
+
+        // TODO: check cci/waverunner for errors generating slice
+
+        //TODO: magneto log ($"Slicing successful: {slicedEntityName}");
+        return slicedEntityName;
+    }
+
+    // export all slices
+    public void ExportSlicesToDirectory(string slicedEntityName, string outputDirectory)
+    {
+        // get total slices so we can itrate through all of them and save later
+        var totalSlices = cci.ScGetLongValue((int)ScComSAMLightClientCtrlValueTypes.scComSAMLightClientCtrlLongValueTypeGetTotalSlices
+        );
+
+        if (totalSlices <= 0)
+        {
+            //TODO: magneto log ("No slices available for export.");
+            return;
+        }
+
+        Directory.CreateDirectory(outputDirectory);
+
+        for (var i = 0; i < totalSlices; i++)
+        {
+            cci.ScSetLongValue((int)ScComSAMLightClientCtrlValueTypes.scComSAMLightClientCtrlLongValueTypeCurrentSliceNum, i); // returns void
+
+            // TODO: check cci/waverunner for errors setting current slice number
+
+            var filename = Path.Combine(outputDirectory, $"slice_{i:D4}.plt");
+            var flags = 0x10 | 0x100; // export poly lines and pen settings
+
+            cci.ScExport(slicedEntityName, filename, "plt", 0.001, flags); // returns void
+        }
+
+        //TODO: magneto log ($"Export complete: {totalSlices} slices saved to {outputDirectory}");
     }
     #endregion
 }

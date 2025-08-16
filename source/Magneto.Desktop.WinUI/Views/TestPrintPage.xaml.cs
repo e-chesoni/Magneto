@@ -114,7 +114,7 @@ public sealed partial class TestPrintPage : Page
         _scanSpeedLower = 50;
         _scanSpeedUpper = 3000;
         _supplyAmplifierLower = 0;
-        _supplyAmplifierUpper = 4;
+        _supplyAmplifierUpper = 5;
 
         // Disable print settings and marking until user selects directory (browse button)
         _waverunnerPageService.LockLayerMoveSettings();

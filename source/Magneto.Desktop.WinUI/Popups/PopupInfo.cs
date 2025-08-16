@@ -60,6 +60,22 @@ namespace Magneto.Desktop.WinUI.Popups
             return result == ContentDialogResult.Primary;
         }
 
+        public static async Task<bool> ShowYesNoDialog(XamlRoot xamlRoot, string title, string message)
+        {
+            var dialog = new ContentDialog
+            {
+                Title = title,
+                Content = message,
+                PrimaryButtonText = "Yes",
+                CloseButtonText = "No",
+                DefaultButton = ContentDialogButton.Close,
+                XamlRoot = xamlRoot
+            };
+
+            var result = await dialog.ShowAsync();
+            return result == ContentDialogResult.Primary;
+        }
+
 
         // Method to hide the dialog
         public static void HideContentDialog()

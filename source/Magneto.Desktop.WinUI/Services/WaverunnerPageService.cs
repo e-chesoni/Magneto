@@ -64,7 +64,6 @@ public class WaverunnerPageService
         this.StartMarkButton = _waverunnerUiControlGroup.playButton;
     }
 
-
     #region Connectivity Test Methods
     public bool WaverunnerRunning() => _waverunnerService.IsRunning();
     /// <summary>
@@ -86,6 +85,7 @@ public class WaverunnerPageService
     }
     #endregion
 
+    #region Lock and Unlock Button Methods
     public void UnlockLayerMoveButtons() => _uiControlGroupWrapper.EnableLayerMoveButtons();
     public void LockLayerMoveButtons() => _uiControlGroupWrapper.DisableLayerMoveButtons();
     public void UnlockLayerMoveSettings() => _uiControlGroupWrapper.EnableWaverunnerSettingsControls();
@@ -96,6 +96,7 @@ public class WaverunnerPageService
     public void LockMarkButton() => _uiControlGroupWrapper.DisableMarkButton();
     public void UnlockMarkOnlyCheckBox() => _uiControlGroupWrapper.EnableMarkOnlyCheckBox();
     public void LockMarkOnlyCheckBox() => _uiControlGroupWrapper.DisableMarkOnlyCheckBox();
+    #endregion
 
     #region Pen Methods
     public double GetDefaultLaserPower() => _waverunnerService.GetDefaultLaserPower();
@@ -227,6 +228,33 @@ public class WaverunnerPageService
             IsMarkingText.Text = "Not marking.";
         }
         return ExecStatus.Success;
+    }
+    #endregion
+
+    #region Slice Methods
+    // TODO: Call me, beep me, if you wanna test me
+    public async void SliceSTL(XamlRoot xamlRoot, string stlPath, double sliceThickness, string inputEntityName = "ImportedEntity")
+    {
+        _waverunnerService.ImportStlFile(inputEntityName, stlPath);
+
+        var slicedEntityName = _waverunnerService.GenerateSlicedEntity(inputEntityName, sliceThickness);
+
+        if (slicedEntityName == null)
+            return;
+
+        // Show interactive warning
+        var yes = await PopupInfo.ShowYesNoDialog(
+            xamlRoot,
+            "Export slices?",
+            "Would you like to save the sliced layers to a directory?"
+        );
+
+        if (yes)
+        {
+            // slice and save
+            var outputDir = @"C:\ExportedSlices";
+            _waverunnerService.ExportSlicesToDirectory(slicedEntityName, outputDir);
+        }
     }
     #endregion
 }
