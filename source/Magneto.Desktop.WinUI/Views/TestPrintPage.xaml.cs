@@ -1362,4 +1362,18 @@ public sealed partial class TestPrintPage : Page
         await PopupInfo.ShowContentDialog(xamlRoot, PopupMessageType, PopupMessage);
     }
     #endregion
+
+    private void SliceModeButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+    private void Repeat2DModeButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void SliceButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
 }
