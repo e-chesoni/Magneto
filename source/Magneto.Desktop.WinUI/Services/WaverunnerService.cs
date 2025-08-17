@@ -243,12 +243,36 @@ public class WaverunnerService : IWaverunnerService
         return slicedEntityName;
     }
 
+    // export one slice
+    // export one slice
+    public int ExportOneSliceToDirectory(string slicedEntityName, string outputDirectory, int sliceToExport) // TODO: update to export a specific slice
+    {
+        Directory.CreateDirectory(outputDirectory);
+
+        // TODO: add guards to make sure user isn't accessing slice that doesn't exist
+        var totalSlices = cci.ScGetLongValue((int)ScComSAMLightClientCtrlValueTypes.scComSAMLightClientCtrlLongValueTypeGetTotalSlices);
+
+        if (sliceToExport < 0 || sliceToExport > totalSlices)
+        {
+            MagnetoLogger.Log("requested export slice is out of index", LogFactoryLogLevel.LogLevel.ERROR);
+            return 0;
+        }
+        // WARNING: not sure if slices start on 0 or 1
+        cci.ScSetLongValue((int)ScComSAMLightClientCtrlValueTypes.scComSAMLightClientCtrlLongValueTypeCurrentSliceNum, sliceToExport);
+    
+        var filename = Path.Combine(outputDirectory, $"slice_{0:D4}.plt"); // TODO: update saved name when you update to single slice too
+
+        var flags = 0x10 | 0x100; // export poly lines and pen settings
+
+        cci.ScExport(slicedEntityName, filename, "plt", 0.001, flags); // returns void
+        return 1;
+    }
+
     // export all slices
     public void ExportSlicesToDirectory(string slicedEntityName, string outputDirectory)
     {
-        // get total slices so we can itrate through all of them and save later
-        var totalSlices = cci.ScGetLongValue((int)ScComSAMLightClientCtrlValueTypes.scComSAMLightClientCtrlLongValueTypeGetTotalSlices
-        );
+        // get total slices so we can iterate through all of them and save later
+        var totalSlices = cci.ScGetLongValue((int)ScComSAMLightClientCtrlValueTypes.scComSAMLightClientCtrlLongValueTypeGetTotalSlices);
 
         if (totalSlices <= 0)
         {
