@@ -21,6 +21,7 @@ public class PrintSeeder : IPrintSeeder
         _printService = printService;
         _sliceService = sliceService;
     }
+
     public async Task CreatePrintInMongoDb(string directoryPath)
     {
         var files = _fileService.GetFiles(directoryPath).ToList();
@@ -38,10 +39,10 @@ public class PrintSeeder : IPrintSeeder
             sliceIds.Add(sliceId);
 
             // get full path to job file
-            var fullPath = files[i];
+            var filePath = files[i];
 
             // extract file name
-            var fileName = Path.GetFileName(fullPath);
+            var fileName = Path.GetFileName(filePath);
 
             // create a slice model
             var slice = new SliceModel
@@ -49,7 +50,7 @@ public class PrintSeeder : IPrintSeeder
                 id = sliceId,
                 printId = printId,
                 layer = i,
-                filePath = fullPath,
+                filePath = filePath,
                 fileName = fileName,
                 marked = false,
             };

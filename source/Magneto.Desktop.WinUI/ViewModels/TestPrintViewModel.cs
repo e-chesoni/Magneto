@@ -63,9 +63,9 @@ public class TestPrintViewModel : ObservableRecipient
         return existingPrint != null;
     }
 
-    public async Task AddPrintToDatabaseAsync(string fullPath)
+    public async Task AddPrintToDatabaseAsync(string fullPath, bool printModeStl)
     {
-        await _psm.AddPrintToDatabaseAsync(fullPath);
+        await _psm.AddPrintToDatabaseAsync(fullPath, printModeStl);
         return;
     }
     public async Task CompleteCurrentPrintAsync()

@@ -145,10 +145,10 @@ public class PrintStateMachine
     #endregion
 
     #region Print and Slice CRUD
-    public async Task AddPrintToDatabaseAsync(string fullPath)
+    public async Task AddPrintToDatabaseAsync(string fullPath, bool printModeStl)
     {
         // seed prints
-        await _seeder.CreatePrintInMongoDb(fullPath);
+        await _seeder.CreatePrintInMongoDb(fullPath, printModeStl);
         // set print on view model
         await SetCurrentPrintAsync(fullPath); // calls update slices // TODO: line up with print service
         return;

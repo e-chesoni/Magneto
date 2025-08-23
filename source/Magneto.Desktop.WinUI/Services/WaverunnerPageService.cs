@@ -232,29 +232,40 @@ public class WaverunnerPageService
     #endregion
 
     #region Slice Methods
+    public bool WaverunnerIn3DMode()
+    {
+        return _waverunnerService.InSAM3DMode();
+    }
     // TODO: Call me, beep me, if you wanna test me
-    public async void SliceSTL(XamlRoot xamlRoot, string stlPath, double sliceThickness, string inputEntityName = "ImportedEntity")
+    public async Task SliceSTL(XamlRoot xamlRoot, string stlPath, double sliceThickness, string inputEntityName = "ImportedEntity")
     {
         _waverunnerService.ImportStlFile(inputEntityName, stlPath);
 
         var slicedEntityName = _waverunnerService.GenerateSlicedEntity(inputEntityName, sliceThickness);
+        if (slicedEntityName == null) return;
 
-        if (slicedEntityName == null)
-            return;
-
-        // Show interactive warning
         var yes = await PopupInfo.ShowYesNoDialog(
             xamlRoot,
             "Export slices?",
             "Would you like to save the sliced layers to a directory?"
         );
 
-        if (yes)
-        {
-            // slice and save
-            var outputDir = @"C:\ExportedSlices";
-            _waverunnerService.ExportSlicesToDirectory(slicedEntityName, outputDir);
-        }
+        if (!yes) return;
+
+        // create a sub-folder for slices
+        var stlDir = Path.GetDirectoryName(stlPath) ?? "";
+        var stlBase = Path.GetFileNameWithoutExtension(stlPath) ?? "slices";
+        var outputDir = Path.Combine(stlDir, $"{stlBase}_slices");
+
+        Directory.CreateDirectory(outputDir); // safe no-op if it exists
+
+        _waverunnerService.ExportSlicesToDirectory(slicedEntityName, outputDir);
+
+        await PopupInfo.ShowYesNoDialog(
+            xamlRoot,
+            "Export Directory",
+            $"Slices have been exported to: {outputDir}"
+        );
     }
     #endregion
 }

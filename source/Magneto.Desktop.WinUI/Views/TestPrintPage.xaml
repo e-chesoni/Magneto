@@ -498,9 +498,9 @@
                                 <ColumnDefinition Width="auto"/>
                                 <ColumnDefinition Width="10"/>
                             </Grid.ColumnDefinitions>
-                            <!-- ENABLE ME when you're ready to implement! -->
                             <RadioButtons x:Name="ModeRadioButtons"
                                           SelectionChanged="ModeRadioButtons_SelectionChanged"
+                                          SelectedIndex="1"
                                           HorizontalAlignment="Center"
                                           VerticalAlignment="Center"
                                           MaxColumns="2">

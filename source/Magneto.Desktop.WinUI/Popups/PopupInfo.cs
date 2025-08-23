@@ -44,6 +44,50 @@ namespace Magneto.Desktop.WinUI.Popups
             await _dialog.ShowAsync();
         }
 
+        public static async Task<double?> ShowThicknessDialogAsync(
+        XamlRoot xamlRoot,
+        double defaultValueMm = 0.05,
+        double minMm = 0.001,
+        double maxMm = 5.0)
+        {
+            var panel = new StackPanel { Spacing = 8, MinWidth = 320 };
+            panel.Children.Add(new TextBlock { Text = "Enter slice thickness (mm):" });
+
+            var nb = new NumberBox
+            {
+                Value = defaultValueMm,
+                Minimum = minMm,
+                Maximum = maxMm,
+                SmallChange = 0.01,
+                LargeChange = 0.1,
+                SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Compact
+            };
+            panel.Children.Add(nb);
+
+            var dialog = new ContentDialog
+            {
+                Title = "Slice Thickness",
+                Content = panel,
+                PrimaryButtonText = "OK",
+                CloseButtonText = "Cancel",
+                DefaultButton = ContentDialogButton.Primary,
+                XamlRoot = xamlRoot
+            };
+
+            // Validate before closing
+            dialog.PrimaryButtonClick += (_, args) =>
+            {
+                if (double.IsNaN(nb.Value) || nb.Value < minMm || nb.Value > maxMm)
+                {
+                    args.Cancel = true; // keep dialog open
+                    nb.Focus(FocusState.Programmatic);
+                }
+            };
+
+            var result = await dialog.ShowAsync();
+            return result == ContentDialogResult.Primary ? nb.Value : (double?)null;
+        }
+
         public static async Task<bool> ShowConfirmationDialog(XamlRoot xamlRoot, string title, string message)
         {
             var dialog = new ContentDialog

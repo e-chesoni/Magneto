@@ -36,7 +36,7 @@ public sealed partial class TestPrintPage : Page
     private static readonly string sweepMotorName = "sweep";
 
     // slicing method
-    private bool sliceStl;
+    private bool printModeStl;
 
     // boundaries for print settings
     private double _layerThicknessLower;
@@ -57,8 +57,8 @@ public sealed partial class TestPrintPage : Page
     {
         ViewModel = App.GetService<TestPrintViewModel>();
         InitializeComponent();
-        // default print method is repeated2D (not slice stl)
-        sliceStl = false;
+        // default print method is repeated2D (not stl)
+        printModeStl = false; // NOTE: repeated 2d is also selected by default in xaml
     }
     #endregion
 
@@ -966,9 +966,14 @@ public sealed partial class TestPrintPage : Page
     private void ModeRadioButtons_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (ModeRadioButtons.SelectedIndex == 0)
-            sliceStl = true;
+        {
+            printModeStl = true;
+        }
         else if (ModeRadioButtons.SelectedIndex == 1)
-            sliceStl = false;
+        {
+            printModeStl = false;
+            SliceButton.IsEnabled = false;
+        }
     }
     private async Task BrowseForFolderHelper()
     {
@@ -1005,9 +1010,8 @@ public sealed partial class TestPrintPage : Page
                     return;
                 }
             }
-            PrintDirectoryInputTextBox.Text = folder.Path;
-            await ViewModel.AddPrintToDatabaseAsync(folder.Path);
-            // if valid folder, unlock print settings
+
+            // check that waverunner is running
             if (_waverunnerPageService == null)
             {
                 var msg = "⚠️Waverunner page service is null";
@@ -1015,6 +1019,14 @@ public sealed partial class TestPrintPage : Page
                 _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "⚠️Waverunner Page Service Not Connected", "Cannot mark without a connection to the page service.");
                 return;
             }
+
+            // update directory text box
+            PrintDirectoryInputTextBox.Text = folder.Path;
+
+            // add print to db
+            await ViewModel.AddPrintToDatabaseAsync(folder.Path);
+
+            // if valid folder, unlock print settings
             _waverunnerPageService.UnlockLayerMoveSettings();
         }
         else
@@ -1025,6 +1037,9 @@ public sealed partial class TestPrintPage : Page
             return;
         }
         UpdatePrintAndSliceDisplayText();
+
+        // we've generated the print, so we can enable deletion here
+        DeletePrintButton.IsEnabled = true;
     }
 
     private async Task BrowseForStlHelper()
@@ -1058,17 +1073,76 @@ public sealed partial class TestPrintPage : Page
             return;
         }
 
-        // Update your UI text box with file path
+        if (_waverunnerPageService == null)
+        {
+            var msg = "⚠️Waverunner page service is null";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "⚠️Waverunner Page Service Not Connected", "Cannot mark without a connection to the page service.");
+            return;
+        }
+
+        // update your UI text box with file path
         PrintDirectoryInputTextBox.Text = file.Path;
+
+        // enable the slicing button
+        SliceButton.IsEnabled = true;
+
+        // unlock print settings
+        _waverunnerPageService.UnlockLayerMoveSettings();
+
+        // make sure delete print button is still disabled for slicing; we need to generate the slices and create the print before we can delete it
+        DeletePrintButton.IsEnabled = false; // TODO: future improve locking/unlocking delete print and slicing buttons
     }
 
     private async void BrowseButton_Click(object sender, RoutedEventArgs e)
     {
-        await (sliceStl ? BrowseForStlHelper() : BrowseForFolderHelper());
+        await (printModeStl ? BrowseForStlHelper() : BrowseForFolderHelper());
     }
-    private void SliceButton_Click(object sender, RoutedEventArgs e)
+    private async void SliceButton_Click(object sender, RoutedEventArgs e)
     {
+        if (_waverunnerPageService == null)
+        {
+            var msg = "⚠️Waverunner page service is null";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "⚠️Waverunner Page Service Not Connected", "Cannot slice file.");
+            return;
+        }
+        // TODO: test in lab
+        /*
+        if (!_waverunnerPageService.WaverunnerRunning())
+        {
+            var msg = "⚠️Waverunner is not running. Cannot slice file.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "⚠️Waverunner Is Not Running", "Cannot slice file. Try opening Waverunner and slicing again.");
+            return;
+        }
 
+        if (!_waverunnerPageService.WaverunnerIn3DMode())
+        {
+            var msg = "⚠️Waverunner not in 3D mode. Cannot slice file.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "⚠️Waverunner Not In 3D Mode", "Cannot slice file. Try opening Waverunner, putting the application in 3D mode, closing and reopening it, then slicing from Magneto again.");
+            return;
+        }
+        */
+        // TODO: show interactive popup asking for slice thickness
+        var thickness = await PopupInfo.ShowThicknessDialogAsync(this.Content.XamlRoot, defaultValueMm: 0.03);
+        if (thickness is null) return; // user canceled
+
+        // update layer thickness text box and disable it
+        LayerThicknessTextBox.Text = thickness.ToString();
+        LayerThicknessTextBox.IsEnabled = false;
+
+        // get the file name without extension
+        var entityName = Path.GetFileNameWithoutExtension(PrintDirectoryInputTextBox.Text);
+
+        // TODO: add print to db using stl file instead of folder
+        //await ViewModel.AddPrintToDatabaseAsync(file.Path);
+
+        // TODO: call slice
+        //_waverunnerPageService.SliceSTL(this.XamlRoot, PrintDirectoryInputTextBox.Text, thickness, entityName);
+
+        DeletePrintButton.IsEnabled = true;
     }
     private async void HandleDeletePrint()
     {
