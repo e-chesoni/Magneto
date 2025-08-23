@@ -499,23 +499,14 @@
                                 <ColumnDefinition Width="10"/>
                             </Grid.ColumnDefinitions>
                             <!-- ENABLE ME when you're ready to implement! -->
-                            <Button Grid.Column="0"
-                                x:Name="SliceModeButton"
-                                Content="Slice STL"
-                                Width="150"
-                                Height="40"
-                                HorizontalAlignment="Center"
-                                IsEnabled="False"
-                                Click="SliceModeButton_Click"/>
-                            <!-- ENABLE ME when you're ready to implement! -->
-                            <Button Grid.Column="2"
-                                x:Name="Repeat2DModeButton"
-                                Content="Repeat 2D Shape"
-                                Width="150"
-                                Height="40"
-                                HorizontalAlignment="Center"
-                                IsEnabled="False"
-                                Click="Repeat2DModeButton_Click"/>
+                            <RadioButtons x:Name="ModeRadioButtons"
+                                          SelectionChanged="ModeRadioButtons_SelectionChanged"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          MaxColumns="2">
+                                <RadioButton Content="Slice STL"/>
+                                <RadioButton Content="Repeat 2D Shape"/>
+                            </RadioButtons>
                         </Grid>
                     </Grid>
                     <Grid Grid.Row="4" VerticalAlignment="Center" HorizontalAlignment="Center">

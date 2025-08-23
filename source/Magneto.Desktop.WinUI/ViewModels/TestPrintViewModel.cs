@@ -23,10 +23,8 @@ namespace Magneto.Desktop.WinUI.ViewModels;
 public class TestPrintViewModel : ObservableRecipient
 {
     #region Private Variables
-    //private readonly IPrintService _printService;
-    //private readonly ISliceService _sliceService;
-    private readonly IPrintSeeder _seeder;
-    private readonly IMotorService _motorService;
+    //private readonly IPrintSeeder _seeder;
+    //private readonly IMotorService _motorService;
     private readonly IWaverunnerService _waverunnerService;
     private readonly PrintStateMachine _psm;
     // TODO: Add motor service
@@ -34,19 +32,13 @@ public class TestPrintViewModel : ObservableRecipient
 
     #region Public Variables
     public ObservableCollection<SliceModel> sliceCollection { get; } = new ObservableCollection<SliceModel>();
-    //public PrintModel? currentPrint = new();
-    //public SliceModel? currentSlice = new();
     #endregion
 
     public TestPrintViewModel(IPrintSeeder seeder, IPrintService printService, ISliceService sliceService, IMotorService motorService, IWaverunnerService waverunnerService)
     {
         _psm = App.GetService<PrintStateMachine>();
-        /*
-        _printService = printService;
-        _sliceService = sliceService;
-        */
-        _seeder = seeder;
-        _motorService = motorService;
+        //_seeder = seeder;
+        //_motorService = motorService;
         _waverunnerService = waverunnerService;
     }
 

@@ -35,6 +35,9 @@ public sealed partial class TestPrintPage : Page
     private static readonly string powderMotorName = "powder";
     private static readonly string sweepMotorName = "sweep";
 
+    // slicing method
+    private bool sliceStl;
+
     // boundaries for print settings
     private double _layerThicknessLower;
     private double _layerThicknessUpper;
@@ -54,6 +57,8 @@ public sealed partial class TestPrintPage : Page
     {
         ViewModel = App.GetService<TestPrintViewModel>();
         InitializeComponent();
+        // default print method is repeated2D (not slice stl)
+        sliceStl = false;
     }
     #endregion
 
@@ -915,6 +920,7 @@ public sealed partial class TestPrintPage : Page
         ClearPrintTextHelper();
         ViewModel.ClearData();
     }
+    // TODO: fix marking after abort
     private async void AbortPrint()
     {
         // mark print as complete (without marking layers)
@@ -957,7 +963,14 @@ public sealed partial class TestPrintPage : Page
     #endregion
 
     #region Action Buttons
-    private async void BrowseButton_Click(object sender, RoutedEventArgs e)
+    private void ModeRadioButtons_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (ModeRadioButtons.SelectedIndex == 0)
+            sliceStl = true;
+        else if (ModeRadioButtons.SelectedIndex == 1)
+            sliceStl = false;
+    }
+    private async Task BrowseForFolderHelper()
     {
         var folderPicker = new FolderPicker();
         folderPicker.SuggestedStartLocation = PickerLocationId.Desktop;
@@ -979,10 +992,8 @@ public sealed partial class TestPrintPage : Page
                 _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌No Job Files in Folder", "The selected folder does not contain any .sjf files..");
                 return;
             }
-            PrintDirectoryInputTextBox.Text = folder.Path;
             if (await ViewModel.WasDirectoryPrinted(folder.Path))
             {
-                // TODO: ask user if they want to continue
                 var confirmed = await PopupInfo.ShowConfirmationDialog(
                     this.Content.XamlRoot,
                     "Warning: Print Already Exists",
@@ -994,6 +1005,7 @@ public sealed partial class TestPrintPage : Page
                     return;
                 }
             }
+            PrintDirectoryInputTextBox.Text = folder.Path;
             await ViewModel.AddPrintToDatabaseAsync(folder.Path);
             // if valid folder, unlock print settings
             if (_waverunnerPageService == null)
@@ -1013,6 +1025,50 @@ public sealed partial class TestPrintPage : Page
             return;
         }
         UpdatePrintAndSliceDisplayText();
+    }
+
+    private async Task BrowseForStlHelper()
+    {
+        var filePicker = new FileOpenPicker
+        {
+            SuggestedStartLocation = PickerLocationId.Desktop
+        };
+        filePicker.FileTypeFilter.Add(".stl");
+
+        // Initialize picker with window handle (WinAppSDK)
+        var hwnd = WindowNative.GetWindowHandle(App.MainWindow);
+        InitializeWithWindow.Initialize(filePicker, hwnd);
+
+        var file = await filePicker.PickSingleFileAsync();
+
+        if (file == null)
+        {
+            var msg = "❌STL file selection was canceled or null.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌No File Selected", "No STL file was selected.");
+            return;
+        }
+
+        // Double-check extension (defensive; FileTypeFilter should already enforce it)
+        if (!string.Equals(file.FileType, ".stl", StringComparison.OrdinalIgnoreCase))
+        {
+            var msg = $"❌Selected file is not an STL: {file.Name}";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
+            _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Invalid File Type", "Please select a .stl file.");
+            return;
+        }
+
+        // Update your UI text box with file path
+        PrintDirectoryInputTextBox.Text = file.Path;
+    }
+
+    private async void BrowseButton_Click(object sender, RoutedEventArgs e)
+    {
+        await (sliceStl ? BrowseForStlHelper() : BrowseForFolderHelper());
+    }
+    private void SliceButton_Click(object sender, RoutedEventArgs e)
+    {
+
     }
     private async void HandleDeletePrint()
     {
@@ -1281,6 +1337,7 @@ public sealed partial class TestPrintPage : Page
         // TODO: implement remarking
         _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "Try Again Later", "This feature is still in development.");
     }
+    // TODO: fix machine marking after print aborted
     private async void AbortButton_Click(object sender, RoutedEventArgs e)
     {
         StopMotorsHelper();
@@ -1362,18 +1419,4 @@ public sealed partial class TestPrintPage : Page
         await PopupInfo.ShowContentDialog(xamlRoot, PopupMessageType, PopupMessage);
     }
     #endregion
-
-    private void SliceModeButton_Click(object sender, RoutedEventArgs e)
-    {
-
-    }
-    private void Repeat2DModeButton_Click(object sender, RoutedEventArgs e)
-    {
-
-    }
-
-    private void SliceButton_Click(object sender, RoutedEventArgs e)
-    {
-
-    }
 }
