@@ -259,8 +259,6 @@ public class WaverunnerPageService
 
         Directory.CreateDirectory(outputDir); // safe no-op if it exists
 
-        //var slicedEntityName = _waverunnerService.GenerateSlicedEntity(inputEntityName, sliceThickness);
-        //if (slicedEntityName == null) return;
         _waverunnerService.ExportAndSaveSlices(slicedEntityName, outputDir);
 
         await PopupInfo.ShowYesNoDialog(
