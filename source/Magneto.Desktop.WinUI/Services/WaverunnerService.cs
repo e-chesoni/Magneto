@@ -9,6 +9,7 @@ using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Popups;
 using Microsoft.UI.Xaml;
 using SAMLIGHT_CLIENT_CTRL_EXLib;
+using SharpCompress.Common;
 
 namespace Magneto.Desktop.WinUI.Services;
 public class WaverunnerService : IWaverunnerService
@@ -244,7 +245,6 @@ public class WaverunnerService : IWaverunnerService
     }
 
     // export one slice
-    // export one slice
     public int ExportOneSliceToDirectory(string slicedEntityName, string outputDirectory, int sliceToExport) // TODO: update to export a specific slice
     {
         Directory.CreateDirectory(outputDirectory);
@@ -269,7 +269,7 @@ public class WaverunnerService : IWaverunnerService
     }
 
     // export all slices
-    public void ExportSlicesToDirectory(string slicedEntityName, string outputDirectory)
+    public void ExportAndSaveSlices(string slicedEntityName, string outputDirectory)
     {
         // get total slices so we can iterate through all of them and save later
         var totalSlices = cci.ScGetLongValue((int)ScComSAMLightClientCtrlValueTypes.scComSAMLightClientCtrlLongValueTypeGetTotalSlices);
@@ -282,16 +282,33 @@ public class WaverunnerService : IWaverunnerService
 
         Directory.CreateDirectory(outputDirectory);
 
-        for (var i = 0; i < totalSlices; i++)
+        for (var i = 1; i <= totalSlices; i++)
         {
-            cci.ScSetLongValue((int)ScComSAMLightClientCtrlValueTypes.scComSAMLightClientCtrlLongValueTypeCurrentSliceNum, i); // returns void
-
-            // TODO: check cci/waverunner for errors setting current slice number
+            cci.ScSetLongValue(
+                (int)ScComSAMLightClientCtrlValueTypes.scComSAMLightClientCtrlLongValueTypeCurrentSliceNum, i);
 
             var filename = Path.Combine(outputDirectory, $"slice_{i:D4}.plt");
-            var flags = 0x10 | 0x100; // export poly lines and pen settings
+            int flags = 0x10 | 0x100;
 
-            cci.ScExport(slicedEntityName, filename, "plt", 0.001, flags); // returns void
+            MagnetoLogger.Log(
+                $"Exporting slice {i}/{totalSlices} of {slicedEntityName} -> {filename}",
+                LogFactoryLogLevel.LogLevel.VERBOSE);
+
+            try
+            {
+                cci.ScExport(slicedEntityName, filename, "plt", 1.0, flags);
+            }
+            catch (System.Runtime.InteropServices.COMException ex)
+            {
+                // If slices are still saved, just log and ignore
+                MagnetoLogger.Log(
+                    $"Non-fatal COMException exporting slice {i}: {ex.Message}",
+                    LogFactoryLogLevel.LogLevel.VERBOSE);
+            }
+
+            // does not work; first arg is suppose to be the entity name you want to use?
+            //var entityName = $"slice_{i:D4}";
+            //cci.ScImport(entityName, filename, "plt", 0.0, 0); // returns void
         }
 
         //TODO: magneto log ($"Export complete: {totalSlices} slices saved to {outputDirectory}");

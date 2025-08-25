@@ -28,6 +28,6 @@ public interface IWaverunnerService
     bool InSAM3DMode();
     void ImportStlFile(string entityName, string filePath);
     string? GenerateSlicedEntity(string inputEntityName, double sliceThickness);
-    void ExportSlicesToDirectory(string slicedEntityName, string outputDirectory);
+    void ExportAndSaveSlices(string slicedEntityName, string outputDirectory);
 
 }

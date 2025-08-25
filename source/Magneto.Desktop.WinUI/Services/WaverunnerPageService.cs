@@ -259,7 +259,9 @@ public class WaverunnerPageService
 
         Directory.CreateDirectory(outputDir); // safe no-op if it exists
 
-        _waverunnerService.ExportSlicesToDirectory(slicedEntityName, outputDir);
+        //var slicedEntityName = _waverunnerService.GenerateSlicedEntity(inputEntityName, sliceThickness);
+        //if (slicedEntityName == null) return;
+        _waverunnerService.ExportAndSaveSlices(slicedEntityName, outputDir);
 
         await PopupInfo.ShowYesNoDialog(
             xamlRoot,

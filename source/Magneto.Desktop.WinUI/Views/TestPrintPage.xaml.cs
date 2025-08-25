@@ -988,13 +988,17 @@ public sealed partial class TestPrintPage : Page
         // folder must contain .sjf files. if it does not contain any, error and return
         if (folder != null)
         {
-            // Check for .sjf files in the selected folder
-            var files = Directory.EnumerateFiles(folder.Path, "*.sjf");
-            if (!files.Any())
+            // check for .sjf or .plt files in the selected folder
+            var sjfFiles = Directory.EnumerateFiles(folder.Path, "*.sjf");
+            var pltFiles = Directory.EnumerateFiles(folder.Path, "*.plt");
+            if (!sjfFiles.Any() && !pltFiles.Any())
             {
-                var msg = "❌No .sjf files found in the selected folder.";
+                var msg = "❌No .sjf or .plt files found in the selected folder.";
                 MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.ERROR);
-                _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌No Job Files in Folder", "The selected folder does not contain any .sjf files..");
+                _ = PopupInfo.ShowContentDialog(
+                    this.Content.XamlRoot,
+                    "❌No Job Files in Folder",
+                    "The selected folder does not contain any .sjf or .plt files.");
                 return;
             }
             if (await ViewModel.WasDirectoryPrinted(folder.Path))
@@ -1108,7 +1112,6 @@ public sealed partial class TestPrintPage : Page
             return;
         }
         // TODO: test in lab
-        /*
         if (!_waverunnerPageService.WaverunnerRunning())
         {
             var msg = "⚠️Waverunner is not running. Cannot slice file.";
@@ -1124,7 +1127,6 @@ public sealed partial class TestPrintPage : Page
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "⚠️Waverunner Not In 3D Mode", "Cannot slice file. Try opening Waverunner, putting the application in 3D mode, closing and reopening it, then slicing from Magneto again.");
             return;
         }
-        */
         // TODO: show interactive popup asking for slice thickness
         var thickness = await PopupInfo.ShowThicknessDialogAsync(this.Content.XamlRoot, defaultValueMm: 0.03);
         if (thickness is null) return; // user canceled
@@ -1136,11 +1138,11 @@ public sealed partial class TestPrintPage : Page
         // get the file name without extension
         var entityName = Path.GetFileNameWithoutExtension(PrintDirectoryInputTextBox.Text);
 
-        // TODO: add print to db using stl file instead of folder
-        //await ViewModel.AddPrintToDatabaseAsync(file.Path);
+        // TODO: modify add print to db using stl file instead of folder
+        //await ViewModel.AddPrintToDatabaseAsync(entityName);
 
         // TODO: call slice
-        //_waverunnerPageService.SliceSTL(this.XamlRoot, PrintDirectoryInputTextBox.Text, thickness, entityName);
+        await _waverunnerPageService.SliceSTL(this.XamlRoot, PrintDirectoryInputTextBox.Text, (double)thickness, entityName);
 
         DeletePrintButton.IsEnabled = true;
     }
