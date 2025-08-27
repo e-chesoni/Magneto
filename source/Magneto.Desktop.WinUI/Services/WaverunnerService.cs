@@ -288,7 +288,8 @@ public class WaverunnerService : IWaverunnerService
                 (int)ScComSAMLightClientCtrlValueTypes.scComSAMLightClientCtrlLongValueTypeCurrentSliceNum, i);
 
             var filename = Path.Combine(outputDirectory, $"slice_{i:D4}.plt");
-            int flags = 0x10 | 0x100;
+            int flags = 0x10;
+            //flags |= 0x100;
 
             MagnetoLogger.Log(
                 $"Exporting slice {i}/{totalSlices} of {slicedEntityName} -> {filename}",
