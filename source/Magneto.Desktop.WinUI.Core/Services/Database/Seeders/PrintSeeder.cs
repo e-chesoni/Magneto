@@ -22,8 +22,10 @@ public class PrintSeeder : IPrintSeeder
         _sliceService = sliceService;
     }
 
-    public async Task CreatePrintInMongoDb(string directoryPath)
+    public async Task CreatePrintInMongoDb(string directoryPath) // TODO: need to pass number of slices here
     {
+        // TODO: add conditional above this line; only need file stuff for 2d repeat
+
         var files = _fileService.GetFiles(directoryPath).ToList();
         if (!files.Any()) return;
 
@@ -50,8 +52,8 @@ public class PrintSeeder : IPrintSeeder
                 id = sliceId,
                 printId = printId,
                 layer = i,
-                filePath = filePath,
-                fileName = fileName,
+                filePath = filePath, // TODO: in 3D slice version, use STL file path
+                fileName = fileName, // TODO: in 3D slice version, generate name like [stl_filename]_slice_[number]
                 marked = false,
             };
             // add slices to slice collection using slice service

@@ -1014,7 +1014,6 @@ public sealed partial class TestPrintPage : Page
                     return;
                 }
             }
-
             // check that waverunner is running
             if (_waverunnerPageService == null)
             {
@@ -1023,13 +1022,10 @@ public sealed partial class TestPrintPage : Page
                 _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "⚠️Waverunner Page Service Not Connected", "Cannot mark without a connection to the page service.");
                 return;
             }
-
             // update directory text box
             PrintDirectoryInputTextBox.Text = folder.Path;
-
             // add print to db
             await ViewModel.AddPrintToDatabaseAsync(folder.Path);
-
             // if valid folder, unlock print settings
             _waverunnerPageService.UnlockLayerMoveSettings();
         }
@@ -1040,8 +1036,8 @@ public sealed partial class TestPrintPage : Page
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Folder Does Not Exist", "The selected folder does not exist.");
             return;
         }
+        // TODO: consider moving this to valid folder check loop
         UpdatePrintAndSliceDisplayText();
-
         // we've generated the print, so we can enable deletion here
         DeletePrintButton.IsEnabled = true;
     }
@@ -1127,7 +1123,7 @@ public sealed partial class TestPrintPage : Page
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "⚠️Waverunner Not In 3D Mode", "Cannot slice file. Try opening Waverunner, putting the application in 3D mode, closing and reopening it, then slicing from Magneto again.");
             return;
         }
-        // TODO: show interactive popup asking for slice thickness
+        // TODO: show interactive pop up asking for slice thickness
         var thickness = await PopupInfo.ShowThicknessDialogAsync(this.Content.XamlRoot, defaultValueMm: 0.03);
         if (thickness is null) return; // user canceled
 
@@ -1141,9 +1137,13 @@ public sealed partial class TestPrintPage : Page
         // TODO: modify add print to db using stl file instead of folder
         //await ViewModel.AddPrintToDatabaseAsync(entityName);
 
-        // TODO: call slice
-        await _waverunnerPageService.SliceSTL(this.XamlRoot, PrintDirectoryInputTextBox.Text, (double)thickness, entityName);
+        // TODO: update slice display after print has been added to db
+        //UpdatePrintAndSliceDisplayText();
 
+        // since slice was valid, we can unlock print settings
+        _waverunnerPageService.UnlockLayerMoveSettings();
+        
+        await _waverunnerPageService.SliceSTL(this.XamlRoot, PrintDirectoryInputTextBox.Text, (double)thickness, entityName);
         DeletePrintButton.IsEnabled = true;
     }
     private async void HandleDeletePrint()
