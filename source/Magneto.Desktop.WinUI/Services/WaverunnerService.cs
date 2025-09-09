@@ -41,7 +41,6 @@ public class WaverunnerService : IWaverunnerService
 
     #region Connection Checkers
     public bool IsRunning() => cci.ScIsRunning() == 1; // 0 if not running, 1 if running
-
     public int TestConnection()
     {
         try
@@ -60,8 +59,7 @@ public class WaverunnerService : IWaverunnerService
     }
     #endregion
 
-    #region Pen Methods
-    #region Pen Getters
+    #region Get Pen/Mark Settings
     public int GetPenNumber(string entityName)
     {
         return cci.ScGetEntityLongData(entityName, (int)ScComSAMLightClientCtrlFlags.scComSAMLightClientCtrlLongDataIdEntityGetPen);
@@ -77,11 +75,10 @@ public class WaverunnerService : IWaverunnerService
     }
     public double GetDefaultMarkSpeed() => _defaultMarkSpeed;
     public double GetDefaultLaserPower() => _defaultLaserPower;
-    public double GetDefaultHatchSpacing() => _defaultHatchSpacing;
     public double GetDefaultSupplyAmplifier() => _defaultSupplyAmplifier;
     #endregion
 
-    #region Pen Setters
+    #region Set Mark Speed/Laser Power
     //TODO: Figure out how to implement error checking with these void commands
     // Set mark speed
     public void SetMarkSpeed(double markSpeed) // mm per second
@@ -94,10 +91,23 @@ public class WaverunnerService : IWaverunnerService
         cci.ScSetDoubleValue((int)ScComSAMLightClientCtrlValueTypes.scComSAMLightClientCtrlDoubleValueTypeLaserPower, power); // returns void
     }
     #endregion
-    #endregion
 
+    #region Hatching Methods
+    public double GetDefaultHatchSpacing() => _defaultHatchSpacing;
+
+    public void SetHatchDistance(string entityName, double hatchDistance)
+    {
+        //TODO: needs entity name
+        cci.ScSetEntityDoubleData(entityName, (int)ScComSAMLightClientCtrlFlags.scComSAMLightClientCtrlDoubleDataIdHatchDistance1, hatchDistance); // returns void
+    }
+
+    public void EnableAndSetHatchStyle(string entityName)
+    {
+        cci.ScSetEntityLongData(entityName, (int)ScComSAMLightClientCtrlFlags.scComSAMLightClientCtrlLongDataIdEnableHatching1, 1);
+    }
+    #endregion
     #region Red Pointer Methods
-    public static int SetRedPointerMode(RedPointerMode mode)
+    public int SetRedPointerMode(RedPointerMode mode)
     {
         // Returns void
         cci.ScSetLongValue((int)ScComSAMLightClientCtrlValueTypes.scComSAMLightClientCtrlLongValueTypeRedpointerMode, (int)mode);
@@ -207,7 +217,7 @@ public class WaverunnerService : IWaverunnerService
     }
     #endregion
 
-    #region Slicing Methods
+    #region 3D Slicing Methods
     // 	Check if SAMLight is running in SAM3D mode
     public bool InSAM3DMode()
     {

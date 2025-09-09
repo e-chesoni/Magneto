@@ -239,10 +239,15 @@ public class WaverunnerPageService
     // TODO: Call me, beep me, if you wanna test me
     public async Task SliceSTL(XamlRoot xamlRoot, string stlPath, double sliceThickness, string inputEntityName = "ImportedEntity")
     {
+        
         _waverunnerService.ImportStlFile(inputEntityName, stlPath);
 
         var slicedEntityName = _waverunnerService.GenerateSlicedEntity(inputEntityName, sliceThickness);
         if (slicedEntityName == null) return;
+
+        // TODO: move later ? maybe belongs here b/c of entity
+        _waverunnerService.SetHatchDistance(slicedEntityName, 0.12); // TODO: remove magic number
+        _waverunnerService.EnableAndSetHatchStyle(slicedEntityName);
 
         var yes = await PopupInfo.ShowYesNoDialog(
             xamlRoot,
