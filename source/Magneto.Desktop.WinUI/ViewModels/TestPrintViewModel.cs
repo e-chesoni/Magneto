@@ -233,6 +233,9 @@ public class TestPrintViewModel : ObservableRecipient
             // TODO: may need to handle differently when mid-mark pausing is implemented
             if (_waverunnerService.IsRunning())
             {
+                // update pen settings
+                _waverunnerService.SetLaserPower(power);
+                _waverunnerService.SetMarkSpeed(scanSpeed);
                 await HandleMarkEntityAsync();
             }
             else
