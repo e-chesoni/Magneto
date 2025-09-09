@@ -8,9 +8,9 @@ using MongoDB.Driver;
 using Microsoft.UI;
 using Magneto.Desktop.WinUI.Models.UIControl;
 using Magneto.Desktop.WinUI.Core.Services;
-using Magneto.Desktop.WinUI.Core.Models.Print;
 using static Magneto.Desktop.WinUI.Core.Models.Constants.MagnetoConstants;
-using static Magneto.Desktop.WinUI.Core.Models.Print.RoutineStateMachine;
+using static Magneto.Desktop.WinUI.Core.Models.StateMachines.ProgramStateMachine.RoutineStateMachine;
+using Magneto.Desktop.WinUI.Core.Models.StateMachines.ProgramStateMachine;
 
 namespace Magneto.Desktop.WinUI;
 public class MotorPageService

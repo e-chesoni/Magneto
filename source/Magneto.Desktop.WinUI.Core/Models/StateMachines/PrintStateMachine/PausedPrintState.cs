@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Magneto.Desktop.WinUI.Core.Models.Print;
 using Magneto.Desktop.WinUI.Core.Models.Artifact;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.States;
 using Magneto.Desktop.WinUI.Core.Models.States.PrintStates;
@@ -11,6 +10,7 @@ using Magneto.Desktop.WinUI.Core.Models.Print.Database;
 using System.Collections.ObjectModel;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.Database.Seeders;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.Database;
+using Magneto.Desktop.WinUI.Core.Models.StateMachines.ProgramStateMachine;
 
 namespace Magneto.Desktop.WinUI.Core.Models.State.PrintStates;
 public class PausedPrintState : IPrintState
@@ -23,7 +23,7 @@ public class PausedPrintState : IPrintState
         _psm.status = PrintStateMachine.PrintStateMachineStatus.Paused;
         _psm.rsm.status = RoutineStateMachine.RoutineStateMachineStatus.Paused;
     }
-    public async Task<bool> InitializePlayAsync(int numberOfLayers = 1)
+    public async Task<bool> InitializePlayAsync()
     {
         var newState = new PrintingPrintState(_psm);
         _psm.ChangeStateTo(newState);
@@ -37,7 +37,7 @@ public class PausedPrintState : IPrintState
         return await newState.Resume(); // run Play() logic immediately
     }
 
-    public async Task<bool> Play(int numberOfLayers = 1) => await InitializePlayAsync();
+    public async Task<bool> Play() => await InitializePlayAsync();
     public void Pause()
     {
         // do nothing; already in paused state

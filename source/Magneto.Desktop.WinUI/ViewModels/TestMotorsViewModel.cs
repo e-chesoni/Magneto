@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Magneto.Desktop.WinUI.Core.Models.Print;
+using Magneto.Desktop.WinUI.Core.Models.StateMachines.ProgramStateMachine;
 using Magneto.Desktop.WinUI.Core.Models.States.PrintStates;
 
 namespace Magneto.Desktop.WinUI.ViewModels;

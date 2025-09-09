@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.States;
 using Magneto.Desktop.WinUI.Core.Models.Motors;
-using Magneto.Desktop.WinUI.Core.Models.Print;
 using Magneto.Desktop.WinUI.Core.Services;
 using static Magneto.Desktop.WinUI.Core.Models.Constants.MagnetoConstants;
-using static Magneto.Desktop.WinUI.Core.Models.Print.RoutineStateMachine;
+using static Magneto.Desktop.WinUI.Core.Models.StateMachines.ProgramStateMachine.RoutineStateMachine;
 
 namespace Magneto.Desktop.WinUI.Core.Models.StateMachines.ProgramStateMachine;
 public class PausedProgramState : IProgramState

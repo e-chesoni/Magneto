@@ -13,10 +13,10 @@ using Microsoft.UI.Xaml.Controls;
 using Magneto.Desktop.WinUI.Core.Models.Motors;
 using Magneto.Desktop.WinUI.Core;
 using Magneto.Desktop.WinUI.Core.Models.States.PrintStates;
-using Magneto.Desktop.WinUI.Core.Models.Print;
-using static Magneto.Desktop.WinUI.Core.Models.Print.RoutineStateMachine;
+using static Magneto.Desktop.WinUI.Core.Models.StateMachines.ProgramStateMachine.RoutineStateMachine;
 using static Magneto.Desktop.WinUI.Core.Models.States.PrintStates.PrintStateMachine;
 using Magneto.Desktop.WinUI.Popups;
+using Magneto.Desktop.WinUI.Core.Models.StateMachines.ProgramStateMachine;
 
 namespace Magneto.Desktop.WinUI.ViewModels;
 

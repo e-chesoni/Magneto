@@ -6,16 +6,16 @@ using System.Threading.Tasks;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.Database.Seeders;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.Database;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.States;
-using Magneto.Desktop.WinUI.Core.Models.Print;
 using Magneto.Desktop.WinUI.Core.Models.State.PrintStates;
 using Magneto.Desktop.WinUI.Core.Models.Print.Database;
 using System.Collections.ObjectModel;
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Services;
 using static Magneto.Desktop.WinUI.Core.Models.Constants.MagnetoConstants;
-using static Magneto.Desktop.WinUI.Core.Models.Print.RoutineStateMachine;
+using static Magneto.Desktop.WinUI.Core.Models.StateMachines.ProgramStateMachine.RoutineStateMachine;
 using Magneto.Desktop.WinUI.Core.Models.Motors;
 using Magneto.Desktop.WinUI.Core.Services.Database;
+using Magneto.Desktop.WinUI.Core.Models.StateMachines.ProgramStateMachine;
 
 namespace Magneto.Desktop.WinUI.Core.Models.States.PrintStates;
 public class PrintStateMachine
@@ -236,7 +236,7 @@ public class PrintStateMachine
     }
 
     #region State Machine Methods
-    public async Task<bool> Play(int numberOfLayers = 1) => await _currentState.Play();
+    public async Task<bool> Play() => await _currentState.Play();
     public async Task<bool> Resume() => await _currentState.Resume();
     public void Pause() => _currentState.Pause();
     public void Redo() => _currentState.Redo();

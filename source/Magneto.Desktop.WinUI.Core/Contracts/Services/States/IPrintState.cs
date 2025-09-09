@@ -14,8 +14,8 @@ namespace Magneto.Desktop.WinUI.Core.Contracts.Services.States;
 /// </summary>
 public interface IPrintState
 {
-    Task<bool> InitializePlayAsync(int numberOfLayers = 1);
-    Task<bool> Play(int numberOfLayers = 1);
+    Task<bool> InitializePlayAsync();
+    Task<bool> Play();
     void Pause();
     Task<bool> Resume();
     void Redo();

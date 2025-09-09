@@ -4,7 +4,6 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Magneto.Desktop.WinUI.Core.Models.Print;
 using Magneto.Desktop.WinUI.Core.Models.Controllers;
 using Magneto.Desktop.WinUI.Core.Models.Artifact;
 using Magneto.Desktop.WinUI.Core.Models.Motors;
@@ -13,6 +12,7 @@ using Magneto.Desktop.WinUI.Core.Models.States.PrintStates;
 using static Magneto.Desktop.WinUI.Core.Models.States.PrintStates.PrintStateMachine;
 using Magneto.Desktop.WinUI.Core.Services;
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
+using Magneto.Desktop.WinUI.Core.Models.StateMachines.ProgramStateMachine;
 
 
 namespace Magneto.Desktop.WinUI.Core.Models.State.PrintStates;
@@ -32,17 +32,17 @@ public class PrintingPrintState : IPrintState
         _rsm.CANCELLATION_REQUESTED = false;
         _rsm.status = RoutineStateMachine.RoutineStateMachineStatus.Processing;
     }
-    public async Task<bool> InitializePlayAsync(int numberOfLayers = 1)
+    public async Task<bool> InitializePlayAsync()
     {
         return await Play();
     }
-    public async Task<bool> Play(int numberOfLayers = 1)
+    public async Task<bool> Play() // number of layers comes from GenerateMultiMoveProgram (see below)
     {
         await GenerateMultiMoveProgram();
         return await _rsm.Process();
     }
     // layer moves are for prints (don't really belong on rsm)
-    public async Task GenerateMultiMoveProgram(int numberOfLayers = 1)
+    public async Task GenerateMultiMoveProgram() // called once for every slice in TestPrintPage (i.e. we only need to do this once
     {
         var buildMotor = _motorService.GetBuildMotor();
         var powderMotor = _motorService.GetPowderMotor();
@@ -70,23 +70,21 @@ public class PrintingPrintState : IPrintState
         // spread powder
         var spreadPowder = _rsm.WriteAbsoluteMoveProgramForSweepMotor(sweepMotor.GetMaxPos()); // then to max position
 
-        for (var i = 0; i < numberOfLayers; i++)
-        {
-            // Add commands to program list
-            // lower clearance
-            _rsm.AddProgramLast(buildMotor.GetMotorName(), lowerBuildClearance);
-            _rsm.AddProgramLast(powderMotor.GetMotorName(), lowerPowderClearance);
-            // home sweep
-            _rsm.AddProgramLast(sweepMotor.GetMotorName(), homeSweep);
-            // raise clearance
-            _rsm.AddProgramLast(buildMotor.GetMotorName(), raiseBuildClearance);
-            _rsm.AddProgramLast(powderMotor.GetMotorName(), raisePowderClearance);
-            // move motors for layer
-            _rsm.AddProgramLast(powderMotor.GetMotorName(), raiseSupplyLayer);
-            _rsm.AddProgramLast(buildMotor.GetMotorName(), lowerBuildLayer);
-            // spread powder
-            _rsm.AddProgramLast(sweepMotor.GetMotorName(), spreadPowder);
-        }
+        // TODO: test! remove loop for number of layers since we this gets called for every layer (from TestPrintPage)
+        // Add commands to program list
+        // lower clearance
+        _rsm.AddProgramLast(buildMotor.GetMotorName(), lowerBuildClearance);
+        _rsm.AddProgramLast(powderMotor.GetMotorName(), lowerPowderClearance);
+        // home sweep
+        _rsm.AddProgramLast(sweepMotor.GetMotorName(), homeSweep);
+        // raise clearance
+        _rsm.AddProgramLast(buildMotor.GetMotorName(), raiseBuildClearance);
+        _rsm.AddProgramLast(powderMotor.GetMotorName(), raisePowderClearance);
+        // move motors for layer
+        _rsm.AddProgramLast(powderMotor.GetMotorName(), raiseSupplyLayer);
+        _rsm.AddProgramLast(buildMotor.GetMotorName(), lowerBuildLayer);
+        // spread powder
+        _rsm.AddProgramLast(sweepMotor.GetMotorName(), spreadPowder);
     }
     public void Pause() => ChangeStateTo(new PausedPrintState(_psm));
     public async Task<bool> Resume() => await _rsm.Resume();

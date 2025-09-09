@@ -16,12 +16,11 @@ using static Magneto.Desktop.WinUI.Core.Models.Motors.StepperMotor;
 using Magneto.Desktop.WinUI.Core.Contracts.Services.States;
 using Magneto.Desktop.WinUI.Core.Contracts;
 using static Magneto.Desktop.WinUI.Core.Models.Constants.MagnetoConstants;
-using static Magneto.Desktop.WinUI.Core.Models.Print.RoutineStateMachine;
+using static Magneto.Desktop.WinUI.Core.Models.StateMachines.ProgramStateMachine.RoutineStateMachine;
 using MongoDB.Driver;
-using Magneto.Desktop.WinUI.Core.Models.StateMachines.ProgramStateMachine;
 using Magneto.Desktop.WinUI.Core.Services;
 
-namespace Magneto.Desktop.WinUI.Core.Models.Print;
+namespace Magneto.Desktop.WinUI.Core.Models.StateMachines.ProgramStateMachine;
 
 /// <summary>
 /// Coordinates printing tasks across components
@@ -39,7 +38,7 @@ public class RoutineStateMachine : ISubsciber
     public LinkedList<ProgramNode> programNodes = new();
     public LastMove lastMove;
 
-    // All controller types are 5 letters long
+    // Note: all controller types are 5 letters long
     public struct ProgramNode
     {
         public string[] program;
@@ -150,7 +149,7 @@ public class RoutineStateMachine : ISubsciber
     #region Add to Front Wrappers
     private void AddProgramFrontHelper(string[] program, Controller controller, int axis)
     {
-        ProgramNode programNode = CreateProgramNode(program, controller, axis);
+        var programNode = CreateProgramNode(program, controller, axis);
         AddProgramToFront(programNode);
     }
     private void AddBuildMotorProgramFront(string[] program)
@@ -187,7 +186,7 @@ public class RoutineStateMachine : ISubsciber
     #region Add Last Wrappers
     private void AddProgramLastHelper(string[] program, Controller controller, int axis)
     {
-        ProgramNode programNode = CreateProgramNode(program, controller, axis);
+        var programNode = CreateProgramNode(program, controller, axis);
         AddProgramToBack(programNode);
     }
     private void AddBuildMotorProgramLast(string[] program)
@@ -285,7 +284,7 @@ public class RoutineStateMachine : ISubsciber
     public (string[] program, Controller controller, int axis) ExtractProgramNodeVariables(ProgramNode programNode)
     {
         var program = programNode.program;
-        Controller controller = programNode.controller;
+        var controller = programNode.controller;
         var axis = programNode.axis;
         return (program, controller, axis);
     }
