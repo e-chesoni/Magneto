@@ -1151,6 +1151,7 @@ public sealed partial class TestPrintPage : Page
         await ViewModel.AddPrintToDatabaseAsync(filePath, printModeStl, totalSlices);
         UpdatePrintAndSliceDisplayText();
         _waverunnerPageService.UnlockLayerMoveSettings();
+        //HatchSpacingTextBox.IsEnabled = false; // TODO: test changing hatch spacing between slices while printing; if you cannot; this needs to be locked for stl sliced prints
         DeletePrintButton.IsEnabled = true;
     }
     private async void HandleDeletePrint()
@@ -1254,10 +1255,6 @@ public sealed partial class TestPrintPage : Page
     }
     private async void PlayButton_Click(object sender, RoutedEventArgs e)
     {
-        // TODO: if marking 3d slice:
-            // don't get hatching (all slices are hatched during slicing)
-            // disable hatching
-
         int res;
         double thickness;
         double power;
