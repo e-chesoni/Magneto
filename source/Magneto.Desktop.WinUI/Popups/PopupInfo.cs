@@ -46,7 +46,7 @@ namespace Magneto.Desktop.WinUI.Popups
 
         public static async Task<double?> ShowThicknessDialogAsync(
         XamlRoot xamlRoot,
-        double defaultValueMm = 0.05,
+        double defaultValueMm = 0.03,
         double minMm = 0.001,
         double maxMm = 5.0)
         {
@@ -87,6 +87,82 @@ namespace Magneto.Desktop.WinUI.Popups
             var result = await dialog.ShowAsync();
             return result == ContentDialogResult.Primary ? nb.Value : (double?)null;
         }
+
+        public static async Task<(double? Thickness, double? HatchSpacing)> ShowSliceDialogAsync(
+        XamlRoot xamlRoot,
+        double defaultThicknessMm = 0.03,
+        double minThicknessMm = 0.001,
+        double maxThicknessMm = 1.0,
+        double defaultHatchSpacingMm = 0.12,
+        double minHatchSpacingMm = 0.001,
+        double maxHatchSpacingMm = 0.5)
+        {
+            var panel = new StackPanel { Spacing = 12, MinWidth = 320 };
+
+            // --- Thickness ---
+            panel.Children.Add(new TextBlock { Text = "Enter slice thickness (mm):" });
+            var thicknessBox = new NumberBox
+            {
+                Value = defaultThicknessMm,
+                Minimum = minThicknessMm,
+                Maximum = maxThicknessMm,
+                SmallChange = 0.01,
+                LargeChange = 0.1,
+                SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Compact
+            };
+            panel.Children.Add(thicknessBox);
+
+            // --- Hatch Spacing ---
+            panel.Children.Add(new TextBlock { Text = "Enter hatch spacing (mm):" });
+            var hatchBox = new NumberBox
+            {
+                Value = defaultHatchSpacingMm,
+                Minimum = minHatchSpacingMm,
+                Maximum = maxHatchSpacingMm,
+                SmallChange = 0.01,
+                LargeChange = 0.1,
+                SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Compact
+            };
+            panel.Children.Add(hatchBox);
+
+            var dialog = new ContentDialog
+            {
+                Title = "Slice Parameters",
+                Content = panel,
+                PrimaryButtonText = "OK",
+                CloseButtonText = "Cancel",
+                DefaultButton = ContentDialogButton.Primary,
+                XamlRoot = xamlRoot
+            };
+
+            // Validate before closing
+            dialog.PrimaryButtonClick += (_, args) =>
+            {
+                if (double.IsNaN(thicknessBox.Value) ||
+                    thicknessBox.Value < minThicknessMm ||
+                    thicknessBox.Value > maxThicknessMm)
+                {
+                    args.Cancel = true;
+                    thicknessBox.Focus(FocusState.Programmatic);
+                    return;
+                }
+
+                if (double.IsNaN(hatchBox.Value) ||
+                    hatchBox.Value < minHatchSpacingMm ||
+                    hatchBox.Value > maxHatchSpacingMm)
+                {
+                    args.Cancel = true;
+                    hatchBox.Focus(FocusState.Programmatic);
+                    return;
+                }
+            };
+
+            var result = await dialog.ShowAsync();
+            return result == ContentDialogResult.Primary
+                ? (thicknessBox.Value, hatchBox.Value)
+                : (null, null);
+        }
+
 
         public static async Task<bool> ShowConfirmationDialog(XamlRoot xamlRoot, string title, string message)
         {

@@ -51,9 +51,10 @@ public interface IWaverunnerService
     #endregion
     
     #region 3D Slicing Methods
-    bool InSAM3DMode();
-    void ImportStlFile(string entityName, string filePath);
-    string? GenerateSlicedEntity(string inputEntityName, double sliceThickness);
+    public bool InSAM3DMode();
+    public void ImportStlFile(string entityName, string filePath);
+    public string? GenerateSlicedEntity(string inputEntityName, double sliceThickness);
+    public int GetStlSliceCount();
     void ExportAndSaveSlices(string slicedEntityName, string outputDirectory);
     #endregion
 }

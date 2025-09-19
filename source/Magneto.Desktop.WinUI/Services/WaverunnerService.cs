@@ -254,6 +254,10 @@ public class WaverunnerService : IWaverunnerService
         return slicedEntityName;
     }
 
+    public int GetStlSliceCount()
+    {
+        return cci.ScGetLongValue((int)ScComSAMLightClientCtrlValueTypes.scComSAMLightClientCtrlLongValueTypeGetTotalSlices);
+    }
     // export one slice
     public int ExportOneSliceToDirectory(string slicedEntityName, string outputDirectory, int sliceToExport) // TODO: update to export a specific slice
     {
@@ -278,7 +282,7 @@ public class WaverunnerService : IWaverunnerService
         return 1;
     }
 
-    // export all slices
+    // export all slices and return number of slices exported
     public void ExportAndSaveSlices(string slicedEntityName, string outputDirectory)
     {
         // get total slices so we can iterate through all of them and save later

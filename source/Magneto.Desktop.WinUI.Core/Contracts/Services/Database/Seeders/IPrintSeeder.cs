@@ -7,5 +7,5 @@ using System.Threading.Tasks;
 namespace Magneto.Desktop.WinUI.Core.Contracts.Services.Database.Seeders;
 public interface IPrintSeeder
 {
-    Task CreatePrintInMongoDb(string fullPath);
+    Task CreatePrintInMongoDb(string fullPath, bool printModeStl, int stlLayers = 1);
 }

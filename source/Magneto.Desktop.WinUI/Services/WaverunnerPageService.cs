@@ -236,6 +236,10 @@ public class WaverunnerPageService
     {
         return _waverunnerService.InSAM3DMode();
     }
+    public int GetStlSliceCount()
+    {
+        return _waverunnerService.GetStlSliceCount();
+    }
     // TODO: Call me, beep me, if you wanna test me
     public async Task SliceSTL(XamlRoot xamlRoot, string stlPath, double sliceThickness, string inputEntityName = "ImportedEntity")
     {
@@ -252,7 +256,7 @@ public class WaverunnerPageService
         var yes = await PopupInfo.ShowYesNoDialog(
             xamlRoot,
             "Export slices?",
-            "Would you like to save the sliced layers to a directory?"
+            "Would you like to save the sliced layers as .plt files and save them to a directory?"
         );
 
         if (!yes) return;

@@ -77,17 +77,17 @@ public sealed partial class TestPrintPage : Page
                                                                 HomeAllMotorsButton, EnableMotorsButton, StopMotorsButton);
         _waverunnerUiControlGroup = new UIControlGroupWaverunner(PrintDirectoryInputTextBox, DeletePrintButton,
                                                                 LayerTextBlock, FileNameTextBlock, LayerThicknessTextBlock, LaserPowerTextBlock, ScanSpeedTextBlock, HatchSpacingTextBlock, EnergyDensityTextBlock,
-                                                                SlicesToMarkTextBlock, SupplyAmplifierTextBlock, 
+                                                                SlicesToMarkTextBlock, SupplyAmplifierTextBlock,
                                                                 LayerTextBox, FileNameTextBox, LayerThicknessTextBox, LaserPowerTextBox, ScanSpeedTextBox, HatchSpacingTextBox, EnergyDensityTextBox,
-                                                                SlicesToMarkTextBox, SupplyAmplifierTextBox, StartWithMarkCheckBox, 
+                                                                SlicesToMarkTextBox, SupplyAmplifierTextBox, StartWithMarkCheckBox,
                                                                 MarkButton, MarkOnlyCheckBox, PlayButton, PauseButton, RemarkLayerButton);
         // initialize page services
         _motorPageService = new MotorPageService(new UIControlGroupWrapper(_calibrateMotorUIControlGroup), ViewModel.GetRoutineStateMachine());
         _waverunnerPageService = new WaverunnerPageService(new UIControlGroupWrapper(_waverunnerUiControlGroup));
-        
+
         // populate motor positions on page load
         await _motorPageService.HandleGetAllPositionsAsync();
-        
+
         // populate pen settings
         if (_waverunnerPageService.WaverunnerRunning())
         {
@@ -378,7 +378,7 @@ public sealed partial class TestPrintPage : Page
     }
     private void StepSweepMotorLeftButton_Click(object sender, RoutedEventArgs e)
     {
-        if(_motorPageService == null)
+        if (_motorPageService == null)
         {
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "❌Error", "Unable to move sweep motor left.");
             return;
@@ -561,7 +561,7 @@ public sealed partial class TestPrintPage : Page
                 return 0;
             }
             // round energy density to 2 decimals
-            EnergyDensityTextBox.Text = Math.Round(_waverunnerPageService.GetEnergyDensity(thickness, power, scanSpeed, hatchSpacing),2).ToString();
+            EnergyDensityTextBox.Text = Math.Round(_waverunnerPageService.GetEnergyDensity(thickness, power, scanSpeed, hatchSpacing), 2).ToString();
         }
         // if all text boxes are not empty, check for validity, else return 0
         if (layerInputEntered && fileNameInputEntered && thicknessInputEntered && powerInputEntered && scanSpeedInputEntered && slicesToMarkInputEntered && supplyAmplifierInputEntered)
@@ -1025,7 +1025,7 @@ public sealed partial class TestPrintPage : Page
             // update directory text box
             PrintDirectoryInputTextBox.Text = folder.Path;
             // add print to db
-            await ViewModel.AddPrintToDatabaseAsync(folder.Path);
+            await ViewModel.AddPrintToDatabaseAsync(folder.Path, printModeStl, 0); // last arg is stl layers; not needed since this adds repeated 2d print to db
             // if valid folder, unlock print settings
             _waverunnerPageService.UnlockLayerMoveSettings();
         }
@@ -1087,9 +1087,6 @@ public sealed partial class TestPrintPage : Page
         // enable the slicing button
         SliceButton.IsEnabled = true;
 
-        // unlock print settings
-        _waverunnerPageService.UnlockLayerMoveSettings();
-
         // make sure delete print button is still disabled for slicing; we need to generate the slices and create the print before we can delete it
         DeletePrintButton.IsEnabled = false; // TODO: future improve locking/unlocking delete print and slicing buttons
     }
@@ -1100,50 +1097,60 @@ public sealed partial class TestPrintPage : Page
     }
     private async void SliceButton_Click(object sender, RoutedEventArgs e)
     {
+        string filePath;
+        string fileName;
+        int totalSlices;
+        double? thickness;
+        double? hatchSpacing;
+        string msg;
         if (_waverunnerPageService == null)
         {
-            var msg = "⚠️Waverunner page service is null";
+            msg = "⚠️Waverunner page service is null";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "⚠️Waverunner Page Service Not Connected", "Cannot slice file.");
             return;
         }
-        // TODO: test in lab
         if (!_waverunnerPageService.WaverunnerRunning())
         {
-            var msg = "⚠️Waverunner is not running. Cannot slice file.";
+            msg = "⚠️Waverunner is not running. Cannot slice file.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "⚠️Waverunner Is Not Running", "Cannot slice file. Try opening Waverunner and slicing again.");
             return;
         }
-
         if (!_waverunnerPageService.WaverunnerIn3DMode())
         {
-            var msg = "⚠️Waverunner not in 3D mode. Cannot slice file.";
+            msg = "⚠️Waverunner not in 3D mode. Cannot slice file.";
             MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
             _ = PopupInfo.ShowContentDialog(this.Content.XamlRoot, "⚠️Waverunner Not In 3D Mode", "Cannot slice file. Try opening Waverunner, putting the application in 3D mode, closing and reopening it, then slicing from Magneto again.");
             return;
         }
-        // TODO: show interactive pop up asking for slice thickness
-        var thickness = await PopupInfo.ShowThicknessDialogAsync(this.Content.XamlRoot, defaultValueMm: 0.03);
-        if (thickness is null) return; // user canceled
-
+        // pop up asking for slice thickness
+        //thickness = await PopupInfo.ShowThicknessDialogAsync(this.Content.XamlRoot, defaultValueMm: 0.03);
+        (thickness, hatchSpacing) = await PopupInfo.ShowSliceDialogAsync(this.XamlRoot);
+        if (!thickness.HasValue || !hatchSpacing.HasValue)
+        {
+            msg = "thickness or hatch spacing value not given (user may have cancelled.";
+            MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
+            return;
+        }
         // update layer thickness text box and disable it
         LayerThicknessTextBox.Text = thickness.ToString();
         LayerThicknessTextBox.IsEnabled = false;
 
-        // get the file name without extension
-        var entityName = Path.GetFileNameWithoutExtension(PrintDirectoryInputTextBox.Text);
+        // prepare to slice
+        filePath = PrintDirectoryInputTextBox.Text;
+        fileName = Path.GetFileNameWithoutExtension(PrintDirectoryInputTextBox.Text);
+        await _waverunnerPageService.SliceSTL(this.XamlRoot, filePath, (double)thickness, fileName); // file name used here will be the entity name
 
-        // TODO: modify add print to db using stl file instead of folder
-        //await ViewModel.AddPrintToDatabaseAsync(entityName);
-
-        // TODO: update slice display after print has been added to db
-        //UpdatePrintAndSliceDisplayText();
-
-        // since slice was valid, we can unlock print settings
-        _waverunnerPageService.UnlockLayerMoveSettings();
+        // get total number of slices
+        totalSlices = _waverunnerPageService.GetStlSliceCount();
+        msg = $"Total number of slices: {totalSlices}.";
+        MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
         
-        await _waverunnerPageService.SliceSTL(this.XamlRoot, PrintDirectoryInputTextBox.Text, (double)thickness, entityName);
+        // add print to db and update display
+        await ViewModel.AddPrintToDatabaseAsync(filePath, printModeStl, totalSlices);
+        UpdatePrintAndSliceDisplayText();
+        _waverunnerPageService.UnlockLayerMoveSettings();
         DeletePrintButton.IsEnabled = true;
     }
     private async void HandleDeletePrint()
