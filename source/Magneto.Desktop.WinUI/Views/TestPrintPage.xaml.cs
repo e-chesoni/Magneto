@@ -36,7 +36,7 @@ public sealed partial class TestPrintPage : Page
     private static readonly string sweepMotorName = "sweep";
 
     // slicing method
-    private bool printModeStl;
+    //private bool printModeStl;
 
     // boundaries for print settings
     private double _layerThicknessLower;
@@ -58,7 +58,9 @@ public sealed partial class TestPrintPage : Page
         ViewModel = App.GetService<TestPrintViewModel>();
         InitializeComponent();
         // default print method is repeated2D (not stl)
-        printModeStl = false; // NOTE: repeated 2d is also selected by default in xaml
+        ViewModel.SetPrintMode2DRepeat();
+        // TODO: Remove once all is replaced with above and the like...
+        //printModeStl = false; // NOTE: repeated 2d is also selected by default in xaml
     }
     #endregion
 
@@ -967,11 +969,13 @@ public sealed partial class TestPrintPage : Page
     {
         if (ModeRadioButtons.SelectedIndex == 0)
         {
-            printModeStl = true;
+            //printModeStl = true;
+            ViewModel.SetPrintMode3DSlice();
         }
         else if (ModeRadioButtons.SelectedIndex == 1)
         {
-            printModeStl = false;
+            //printModeStl = false;
+            ViewModel.SetPrintMode2DRepeat();
             SliceButton.IsEnabled = false;
         }
     }
@@ -1025,7 +1029,7 @@ public sealed partial class TestPrintPage : Page
             // update directory text box
             PrintDirectoryInputTextBox.Text = folder.Path;
             // add print to db
-            await ViewModel.AddPrintToDatabaseAsync(folder.Path, printModeStl, 0); // last arg is stl layers; not needed since this adds repeated 2d print to db
+            await ViewModel.AddPrintToDatabaseAsync(folder.Path, 0); // last arg is stl layers; not needed since this adds repeated 2d print to db
             // if valid folder, unlock print settings
             _waverunnerPageService.UnlockLayerMoveSettings();
         }
@@ -1093,7 +1097,7 @@ public sealed partial class TestPrintPage : Page
 
     private async void BrowseButton_Click(object sender, RoutedEventArgs e)
     {
-        await (printModeStl ? BrowseForStlHelper() : BrowseForFolderHelper());
+        await (ViewModel.PrintMode3dStlSlice() ? BrowseForStlHelper() : BrowseForFolderHelper());
     }
     private async void SliceButton_Click(object sender, RoutedEventArgs e)
     {
@@ -1148,7 +1152,7 @@ public sealed partial class TestPrintPage : Page
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.DEBUG);
         
         // add print to db and update display
-        await ViewModel.AddPrintToDatabaseAsync(filePath, printModeStl, totalSlices);
+        await ViewModel.AddPrintToDatabaseAsync(filePath, totalSlices);
         UpdatePrintAndSliceDisplayText();
         _waverunnerPageService.UnlockLayerMoveSettings();
         //HatchSpacingTextBox.IsEnabled = false; // TODO: test changing hatch spacing between slices while printing; if you cannot; this needs to be locked for stl sliced prints
@@ -1373,7 +1377,10 @@ public sealed partial class TestPrintPage : Page
                 _waverunnerPageService.UnlockMarkOnlyCheckBox();
                 return;
             }
+            // TODO: add print mode to _psm so we don't have to keep passing it around...
             await ViewModel.PrintLayer(wasPaused, startWithMark, thickness, power, scanSpeed, hatchSpacing, amplifier, (int)slicesToMark, this.Content.XamlRoot); // checks for pause state; calls resume() if paused; play() in any other state
+
+
             await _motorPageService.HandleGetAllPositionsAsync();
             UpdatePrintAndSliceDisplayText();
         }

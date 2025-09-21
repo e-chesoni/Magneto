@@ -45,6 +45,10 @@ public class TestPrintViewModel : ObservableRecipient
     public bool IsPrintPaused() => _psm.status == PrintStateMachineStatus.Paused;
     public void EnablePrintStateMachinePrinting() => _psm.EnablePrinting();
     public bool CancellationRequested() => _psm.CancelRequestedOnRoutineStateMachine();
+    public PrintMode GetPrintMode() => _psm._printMode;
+    public void SetPrintMode3DSlice() => _psm._printMode = PrintStateMachine.PrintMode.ThreeDStlSlice;
+    public void SetPrintMode2DRepeat() => _psm._printMode = PrintStateMachine.PrintMode.TwoDRepeat;
+    public bool PrintMode3dStlSlice() => _psm.PrintMode3dStlSlice();
 
     #region Getters
     public PrintStateMachineStatus GetPrintStateMachineStatus() => _psm.status;
@@ -63,9 +67,9 @@ public class TestPrintViewModel : ObservableRecipient
         return existingPrint != null;
     }
 
-    public async Task AddPrintToDatabaseAsync(string fullPath, bool printModeStl, int stlLayers)
+    public async Task AddPrintToDatabaseAsync(string fullPath, int stlLayers)
     {
-        await _psm.AddPrintToDatabaseAsync(fullPath, printModeStl, stlLayers);
+        await _psm.AddPrintToDatabaseAsync(fullPath, stlLayers);
         return;
     }
     public async Task CompleteCurrentPrintAsync()
@@ -143,8 +147,28 @@ public class TestPrintViewModel : ObservableRecipient
             MagnetoLogger.Log("❌Slice full path is null.", LogFactoryLogLevel.LogLevel.ERROR);
             return;
         }
-        MagnetoLogger.Log($"✅Marking slice at {entity}.", LogFactoryLogLevel.LogLevel.SUCCESS);
-        await _waverunnerService.MarkEntityAsync(entity); // technically, this waits for mark to complete. second wait in PrintLayer() may be unecessary
+        if (_psm.currentSlice != null)
+        {
+            MagnetoLogger.Log($"✅Marking slice: {_psm.currentSlice.layer} on entity: {entity}.", LogFactoryLogLevel.LogLevel.SUCCESS);
+        }
+        else
+        {
+            MagnetoLogger.Log("❌current slice is null.", LogFactoryLogLevel.LogLevel.ERROR);
+            return;
+        }
+        // TODO: add check for print mode; if 3d pass slice to mark to mark entity async
+        if (PrintMode3dStlSlice())
+        {
+            // TODO: change slice number to _psm.currentSlice.layer (which increments each a slice is marked)
+            var specifySliceToMark = true;
+            // waverunner is 1-indexed
+            var sliceToMark = _psm.currentSlice.layer + 1;
+            await _waverunnerService.MarkEntityAsync(entity, specifySliceToMark, sliceToMark); // test marking layer 27 for now
+        }
+        else
+        {
+            await _waverunnerService.MarkEntityAsync(entity); // technically, this waits for mark to complete. second wait in PrintLayer() may be unnecessary
+        }
     }
 
     private async Task<bool> ResumeOrStartPrintLayerAsync(bool wasPaused)

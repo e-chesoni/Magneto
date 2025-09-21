@@ -39,7 +39,7 @@ public interface IWaverunnerService
 
     #region Marking Methods
     (int status, double markTIme) GetLastMark();
-    Task<int> MarkEntityAsync(string filePath);
+    Task<int> MarkEntityAsync(string filePath, bool specifySlice = false, int sliceToMark = 0);
     int GetMarkStatus();
     int StopMark();
     #endregion

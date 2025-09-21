@@ -168,7 +168,7 @@ public class WaverunnerService : IWaverunnerService
             return (0, markTime);
         }
     }
-    public async Task<int> MarkEntityAsync(string filePath)
+    public async Task<int> MarkEntityAsync(string filePath, bool specifySlice, int sliceToMark)
     {
         // File exists, proceed with marking
         var msg = $"Starting mark for file: {filePath}";
@@ -181,6 +181,13 @@ public class WaverunnerService : IWaverunnerService
         cci.ScLoadJob(filePath, 1, 1, 0);
         msg = $"Loaded file at path: {filePath} for marking...";
         MagnetoLogger.Log(msg, LogFactoryLogLevel.LogLevel.WARN);
+
+        // If print mode is 3d stl slice, tell waverunner which slice to mark
+        if (specifySlice)
+        {
+            cci.ScSetLongValue((int)ScComSAMLightClientCtrlValueTypes.scComSAMLightClientCtrlLongValueTypeCurrentSliceNum, sliceToMark);
+        }
+
         try
         {
             cci.ScMarkEntityByName("", 0); // 0 returns control to the user immediately; if you use 1, this becomes a blocking function

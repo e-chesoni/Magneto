@@ -28,6 +28,12 @@ public class PrintStateMachine
     #endregion
 
     #region State Machine Variables
+    public PrintMode _printMode { get; set; }
+    public enum PrintMode
+    {
+        ThreeDStlSlice,
+        TwoDRepeat
+    }
     private IPrintState _currentState;
     public RoutineStateMachine rsm { get; set; }
     #endregion
@@ -70,6 +76,7 @@ public class PrintStateMachine
 
     #region Print and Slice Model Methods
     #region Print and Slice Setters
+    public void SetPrintMode(PrintMode printMode) => this._printMode = printMode;
     public async Task SetCurrentPrintAsync(string directoryPath)
     {
         currentPrint = await GetMostRecentPrintByDirectory(directoryPath);
@@ -79,6 +86,8 @@ public class PrintStateMachine
     #endregion
 
     #region Print and Slice Getters
+    public PrintMode GetPrintMode() => _printMode;
+    public bool PrintMode3dStlSlice() => _printMode == PrintMode.ThreeDStlSlice;
     public RoutineStateMachineStatus GetRoutineStateMachineStatus() => rsm.status;
     public bool CancelRequestedOnRoutineStateMachine() => rsm.CANCELLATION_REQUESTED;
     //public async Task<PrintModel> GetPrintByDirectory(string directoryPath) => await _printService.GetPrintByDirectory(directoryPath);
@@ -145,10 +154,10 @@ public class PrintStateMachine
     #endregion
 
     #region Print and Slice CRUD
-    public async Task AddPrintToDatabaseAsync(string fullPath, bool printModeStl, int stlLayers)
+    public async Task AddPrintToDatabaseAsync(string fullPath, int stlLayers)
     {
         // seed prints
-        await _seeder.CreatePrintInMongoDb(fullPath, printModeStl, stlLayers);
+        await _seeder.CreatePrintInMongoDb(fullPath, _printMode, stlLayers);
         // set print on view model
         await SetCurrentPrintAsync(fullPath); // calls update slices // TODO: line up with print service
         return;

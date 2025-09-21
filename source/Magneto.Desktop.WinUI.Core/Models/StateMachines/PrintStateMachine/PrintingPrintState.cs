@@ -21,7 +21,7 @@ public class PrintingPrintState : IPrintState
     private PrintStateMachine _psm;
     private RoutineStateMachine _rsm;
     private IMotorService _motorService;
-    //private double SWEEP_CLEARANCE = 2;
+
     public PrintingPrintState(PrintStateMachine psm)
     {
         _psm = psm;

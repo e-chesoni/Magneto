@@ -8,6 +8,7 @@ using Magneto.Desktop.WinUI.Core.Contracts.Services.Database;
 using Magneto.Desktop.WinUI.Core.Contracts.Services;
 using Magneto.Desktop.WinUI.Core.Models.Print.Database;
 using MongoDB.Bson;
+using Magneto.Desktop.WinUI.Core.Models.States.PrintStates;
 
 namespace Magneto.Desktop.WinUI.Core.Services.Database.Seeders;
 public class PrintSeeder : IPrintSeeder
@@ -22,7 +23,7 @@ public class PrintSeeder : IPrintSeeder
         _sliceService = sliceService;
     }
 
-    public async Task CreatePrintInMongoDb(string sourcePath, bool printModeStl, int stlLayers) // TODO: need to pass number of slices here
+    public async Task CreatePrintInMongoDb(string sourcePath, PrintStateMachine.PrintMode printMode, int stlLayers) // TODO: need to pass number of slices here
     {
         // TODO: add conditional above this line; only need file stuff for 2d repeat
         //var printModeStl = false; // TODO: pass this in
@@ -36,7 +37,7 @@ public class PrintSeeder : IPrintSeeder
         string fileName;
         string sourceFile; // for 3D
 
-        if (printModeStl)
+        if (printMode == PrintStateMachine.PrintMode.ThreeDStlSlice)
         {
             slices = stlLayers;
         }
@@ -53,7 +54,7 @@ public class PrintSeeder : IPrintSeeder
             // add sliceId to sliceId list
             sliceIds.Add(sliceId);
             // get full path to job file
-            if (printModeStl)
+            if (printMode == PrintStateMachine.PrintMode.ThreeDStlSlice)
             {
                 filePath = sourcePath;
                 sourceFile = Path.GetFileNameWithoutExtension(sourcePath);
