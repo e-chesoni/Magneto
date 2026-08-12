@@ -6,15 +6,26 @@ Magneto is a C#/.NET desktop application developed to coordinate the hardware of
 
 The project was developed in the Tertuliano Lab at the University of Pennsylvania as part of an effort to build a flexible experimental LPBF platform for additive-manufacturing research.
 
-## Demo
+## System Overview
 
-### Parameter Sweep Used to Test 316 Stainless Steel Print Quality
+### Hardware
+<img width="1600" height="900" alt="MAGNETO-setup" src="https://github.com/user-attachments/assets/43e64b5a-3514-47a0-ba8d-f21974c24833" />
+
+### Successful Prints
+
+#### Parameter Sweep
 https://github.com/user-attachments/assets/7d73d123-3d96-40a3-ad41-83a312d9d1cc
 
-### Software Print Page
+##### Parameter Sweep Result:
+<img width="1624" height="1624" alt="2025-06-21_MAGNETO-RESULT_parameter-sweep" src="https://github.com/user-attachments/assets/898b6cda-2110-4b1c-9eaa-d3cce77d4bcb" />
+
+#### Gyroid
+<img width="2268" height="4032" alt="2025-09-22_MAGNETO-RESULT_gyroid" src="https://github.com/user-attachments/assets/b50ae960-120b-48d4-a58a-2eda0e801e7c" />
+
+### Control Application: Print Page
 <img width="1500" height="922" alt="2025-06-24_MAGNETO_EXAMPLE_test-print-page" src="https://github.com/user-attachments/assets/88771d2b-e7a7-49ce-bc56-0409844bad31" />
 
-### App Tour Gif
+### Application Tour Gif
 ![Magneto application demo](https://github.com/e-chesoni/Magneto/assets/57457528/e9cbd48a-1dcc-4c30-8323-057cb9715aee)
 
 ## Project Motivation
