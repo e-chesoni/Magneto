@@ -36,6 +36,9 @@ https://github.com/user-attachments/assets/7d73d123-3d96-40a3-ad41-83a312d9d1cc
   <em>Parameter sweep (left) and gyroid print (right).</em>
 </p>
 
+<img width="733" height="648" alt="2025-09-22_MAGNETO-RESULT_gyroid" src="https://github.com/user-attachments/assets/1a1ca163-459b-4f1f-a5e4-9b1160b5c60a" />
+
+
 ### Control Application: Print Page
 <img width="1500" height="922" alt="2025-06-24_MAGNETO_EXAMPLE_test-print-page" src="https://github.com/user-attachments/assets/88771d2b-e7a7-49ce-bc56-0409844bad31" />
 
