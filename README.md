@@ -8,10 +8,14 @@ The project was developed in the Tertuliano Lab at the University of Pennsylvani
 
 ## Demo
 
+### Parameter Sweep Used to Test 316 Stainless Steel Print Quality
+https://github.com/user-attachments/assets/7d73d123-3d96-40a3-ad41-83a312d9d1cc
+
+### Software Print Page
+<img width="1500" height="922" alt="2025-06-24_MAGNETO_EXAMPLE_test-print-page" src="https://github.com/user-attachments/assets/88771d2b-e7a7-49ce-bc56-0409844bad31" />
+
+### App Tour Gif
 ![Magneto application demo](https://github.com/e-chesoni/Magneto/assets/57457528/e9cbd48a-1dcc-4c30-8323-057cb9715aee)
-
-https://github.com/user-attachments/assets/7fc47840-11f7-4fdf-8967-4bf0c45f309f
-
 
 ## Project Motivation
 
