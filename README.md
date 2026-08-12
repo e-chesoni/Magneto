@@ -10,6 +10,9 @@ The project was developed in the Tertuliano Lab at the University of Pennsylvani
 
 ![Magneto application demo](https://github.com/e-chesoni/Magneto/assets/57457528/e9cbd48a-1dcc-4c30-8323-057cb9715aee)
 
+![Magneto demo](https://github.com/user-attachments/assets/7fc47840-11f7-4fdf-8967-4bf0c45f309f)
+
+
 ## Project Motivation
 
 A custom research printer differs from a commercial machine in an important way: its hardware and experimental requirements continue to evolve.
