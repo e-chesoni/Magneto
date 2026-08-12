@@ -16,11 +16,25 @@ The project was developed in the Tertuliano Lab at the University of Pennsylvani
 #### Parameter Sweep
 https://github.com/user-attachments/assets/7d73d123-3d96-40a3-ad41-83a312d9d1cc
 
-##### Parameter Sweep Result:
-<img width="1624" height="1624" alt="2025-06-21_MAGNETO-RESULT_parameter-sweep" src="https://github.com/user-attachments/assets/898b6cda-2110-4b1c-9eaa-d3cce77d4bcb" />
+<h4>Example Prints</h4>
 
-#### Gyroid
-<img width="2268" height="4032" alt="2025-09-22_MAGNETO-RESULT_gyroid" src="https://github.com/user-attachments/assets/b50ae960-120b-48d4-a58a-2eda0e801e7c" />
+<p align="center">
+  <img
+    src="https://github.com/user-attachments/assets/898b6cda-2110-4b1c-9eaa-d3cce77d4bcb"
+    width="42%"
+    alt="Parameter sweep result"
+  />
+  &nbsp;&nbsp;
+  <img
+    src="https://github.com/user-attachments/assets/b50ae960-120b-48d4-a58a-2eda0e801e7c"
+    width="42%"
+    alt="Gyroid print"
+  />
+</p>
+
+<p align="center">
+  <em>Parameter sweep (left) and gyroid print (right).</em>
+</p>
 
 ### Control Application: Print Page
 <img width="1500" height="922" alt="2025-06-24_MAGNETO_EXAMPLE_test-print-page" src="https://github.com/user-attachments/assets/88771d2b-e7a7-49ce-bc56-0409844bad31" />
