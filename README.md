@@ -26,7 +26,8 @@ https://github.com/user-attachments/assets/7d73d123-3d96-40a3-ad41-83a312d9d1cc
 <img width="1500" height="922" alt="2025-06-24_MAGNETO_EXAMPLE_test-print-page" src="https://github.com/user-attachments/assets/88771d2b-e7a7-49ce-bc56-0409844bad31" />
 
 ### Application Tour Gif
-![Magneto application demo](https://github.com/e-chesoni/Magneto/assets/57457528/e9cbd48a-1dcc-4c30-8323-057cb9715aee)
+https://github.com/user-attachments/assets/3cfb920e-972e-41a4-8b10-650aba88c3d4
+
 
 ## Project Motivation
 
