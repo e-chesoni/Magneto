@@ -1,87 +1,168 @@
-<h1 align="center">Welcome to Magneto 🧲 </h1>
+# Magneto 🧲
 
-## TLDR;
-Custom Metal 3D Printer Control Software
+**Control software and system architecture for a custom Laser Powder Bed Fusion (LPBF) research platform.**
 
-<h2 align="left">Demo:</h2>
+Magneto is a C#/.NET desktop application developed to coordinate the hardware of a custom metal additive-manufacturing system, including motion stages, laser control, vacuum and gas-handling equipment, and process monitoring.
 
-![App_Tour](https://github.com/e-chesoni/Magneto/assets/57457528/e9cbd48a-1dcc-4c30-8323-057cb9715aee)
+The project was developed in the Tertuliano Lab at the University of Pennsylvania as part of an effort to build a flexible experimental LPBF platform for additive-manufacturing research.
 
-🔭 This project is currently in progress: [Magneto](https://github.com/e-chesoni/Magneto)
+## Project Motivation
 
-## Project Overview
-This project, developed as part of Tertuliano Lab at the University of Pennsylvania, is dedicated to creating control software for a custom metal 3D printer. Our goal is to explore and expand the possibilities in additive manufacturing, focusing on applications that can benefit biological and space manufacturing.
+A custom research printer differs from a commercial machine in an important way: its hardware and experimental requirements continue to evolve.
 
-### What the Magneto Does
-The software controls motors, a laser, and a gas pump, and monitors various parameters to facilitate additive manufacturing in 3D metal printing.
+Rather than tightly coupling the user interface to individual pieces of hardware, Magneto was designed around modular software components that separate:
 
-### Technologies Used
-- Micronix Motors (Stepper and Linear)
-- InstruTech Vacuum Guage Controller
-- Busy Bee Vacuum Guage
-- Thor Labs Scan Head
-- Thor Labs Laser
-- Hicube 80 Eco Station Gas Pump
+* user interaction,
+* machine state and application logic,
+* hardware communication,
+* device-specific implementations, and
+* system-level coordination.
 
-### Next Steps
-#### Testing the Laser Integration
-Development has been completed on code that interfaces with the Waverunner software, responsible for controlling the laser. The immediate next step involves testing this software to ensure its effectiveness and reliability in laser control.
+This allows individual devices and control strategies to be developed and tested independently while exposing a consistent interface to the rest of the application.
 
-#### Integration and Monitoring of External Components
-Focus will then shift to testing read and write operations with the remaining external components, which include the oxygen monitor, mass flow controller, and vacuum gauge controller and monitor.
-Successful testing will be followed by the integration of code to enable real-time reading and control of these components, ensuring precision and safety in the 3D metal printing process.
+## System Architecture
 
-## Prerequisites
-- Visual Studio Code or any preferred C# IDE
-- .NET Core SDK
-- Git
+The primary application architecture is divided between:
 
-## Getting Started
-These instructions will guide you on how to obtain and run a copy of this project on your local machine for development and testing purposes.
+### `Magneto.Desktop.WinUI`
 
-### Fork the Repository
-1. Visit the GitHub repository URL.
-2. Click on the 'Fork' button at the top right corner to create a fork of the repository.
+The WinUI application provides the operator-facing interface and application-level behavior.
 
-### Clone the Repository
-1. Open your terminal (Command Prompt, PowerShell, or any preferred terminal).
-2. Navigate to the directory where you want to clone the project.
-3. Run the following command:
-   ```
-   git clone https://github.com/e-chesoni/Magneto
-   ```
-4. Navigate into the cloned directory.
+The UI follows an MVVM-style organization, separating **Views** from **ViewModels** so that machine logic is not embedded directly in UI components.
 
-### Open the Project in Your IDE
-1. Open Visual Studio Code or your preferred IDE.
-2. Go to File > Open Folder (or the equivalent in your IDE).
-3. Select the cloned project directory and open it.
+Application functionality includes dedicated interfaces for:
 
-### Install Dependencies
-1. Open the terminal in your IDE.
-2. Run the following command to install the required dependencies:
-   ```
-   dotnet restore
-   ```
+* machine and process monitoring,
+* print configuration and execution,
+* motor testing,
+* laser/Waverunner testing,
+* maintenance and cleaning operations,
+* material and process monitoring, and
+* print history and settings.
 
-### Running the Project
-1. In the terminal, navigate to the project directory.
-2. Run the project using:
-   ```
-   dotnet run
-   ```
+### `Magneto.Desktop.WinUI.Core`
 
-## Contributing
-We welcome contributions from the community. Here’s how you can contribute:
+The Core project contains reusable machine and application logic independent of individual UI views.
 
-1. Fork the project.
-2. Create your feature branch (`git checkout -b feature/YourFeature`).
-3. Commit your changes (`git commit -m 'Add some YourFeature'`).
-4. Push to the branch (`git push origin feature/YourFeature`).
-5. Open a pull request.
+It is organized around several software abstractions:
 
-## License
-This project is licensed under MIT
+**Contracts** define interfaces between components.
 
-<h3 align="left">Languages and Tools:</h3>
-<p align="left"> <a href="https://www.w3schools.com/cs/" target="_blank" rel="noreferrer"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/csharp/csharp-original.svg" alt="csharp" width="40" height="40"/> </a> </p>
+**Services** encapsulate operations such as motor control, file handling, and data access.
+
+**Factories** handle construction of hardware-specific objects while reducing coupling between application code and individual device implementations.
+
+**Models** represent application and machine state.
+
+Separating these components allows the UI to depend primarily on abstractions and services rather than directly controlling physical hardware.
+
+## Hardware Abstraction
+
+One of the central design goals of Magneto was to provide a common software architecture around heterogeneous hardware.
+
+The system was developed to interface with components including:
+
+* Micronix stepper and linear motion stages
+* laser and scan-head hardware
+* vacuum pumps and gauges
+* oxygen monitoring
+* mass-flow control
+* inert-gas handling
+
+Hardware-specific communication can therefore be isolated from higher-level application behavior.
+
+For example, motor creation and motor-control behavior are separated through factory and service abstractions rather than requiring UI components to know how individual motor controllers communicate.
+
+This structure was intended to make it easier to add, replace, or test hardware as the experimental platform evolved.
+
+## Experimental Development
+
+Because Magneto was developed alongside a custom physical machine, the repository also contains several proof-of-concept applications used during development.
+
+Examples include:
+
+* `LaserComsPOC`
+* `MicronixCppPOC`
+* `MotorQueuePOC`
+* `MoveMotorsPOC`
+* `SerialCommunicationPOC`
+
+These projects were used to isolate communication and control problems before integrating functionality into the larger application.
+
+Several desktop application architectures were also explored during development, including WPF and Windows App/WinUI approaches. The later architecture primarily centers on:
+
+```text
+Magneto.Desktop.WinUI
+        │
+        ├── Views / ViewModels
+        │
+        └── Application Services
+                 │
+                 ▼
+Magneto.Desktop.WinUI.Core
+        │
+        ├── Contracts
+        ├── Services
+        ├── Factories
+        └── Models
+                 │
+                 ▼
+        Hardware Interfaces
+                 │
+        ┌────────┼─────────┐
+        ▼        ▼         ▼
+      Motors    Laser    Sensors /
+                         Gas & Vacuum
+```
+
+This development process allowed hardware interfaces to be tested independently before being incorporated into the larger machine-control architecture.
+
+## Design Patterns and Engineering Principles
+
+Several design patterns and architectural principles are used throughout the project:
+
+* **Model–View–ViewModel (MVVM)** to separate UI presentation from application behavior.
+* **Service abstractions** to isolate machine operations from the UI.
+* **Factory pattern** for constructing hardware-dependent objects.
+* **Interface-based contracts** to reduce coupling between components.
+* **Modular hardware abstraction** so device-specific communication can evolve without requiring corresponding changes throughout the application.
+* **Proof-of-concept development** to validate communication with physical hardware before system integration.
+
+The overall goal was to treat the printer not as a collection of independently controlled devices, but as a coordinated mechatronic system whose hardware could evolve while retaining a consistent software architecture.
+
+## Repository Structure
+
+```text
+source/
+├── Magneto.Desktop.WinUI/          # Primary WinUI application
+├── Magneto.Desktop.WinUI.Core/     # Reusable application and machine logic
+├── Magneto.Desktop.WinUI.Tests.MSTest/
+│
+├── LaserComsPOC/                   # Laser communication experiments
+├── MicronixCppPOC/                 # Micronix communication experiments
+├── MotorQueuePOC/                  # Motor command/queue experiments
+├── MoveMotorsPOC/                  # Motion-control experiments
+├── SerialCommunicationPOC/         # Serial communication experiments
+│
+├── Magneto.Desktop.WPF/            # Earlier desktop architecture
+├── Magneto.Desktop.WindowsApp/     # Earlier desktop architecture
+└── MagnetoLibrary/                 # Earlier shared-library implementation
+```
+
+The repository preserves these intermediate implementations because they document the iterative development process used to arrive at the later architecture.
+
+## Technologies
+
+* **C# / .NET**
+* **WinUI**
+* **XAML**
+* **MVVM**
+* Serial/device communication
+* Hardware abstraction and service-oriented application architecture
+
+## Status
+
+Magneto was developed as a research tool for a custom Laser Powder Bed Fusion (LPBF) system. The machine was completed in **June 2025** and successfully used to produce metal test specimens.
+
+The repository represents both the resulting control architecture and the engineering process used to prototype, test, and integrate the subsystems of a custom mechatronic research platform.
+
