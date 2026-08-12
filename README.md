@@ -6,6 +6,10 @@ Magneto is a C#/.NET desktop application developed to coordinate the hardware of
 
 The project was developed in the Tertuliano Lab at the University of Pennsylvania as part of an effort to build a flexible experimental LPBF platform for additive-manufacturing research.
 
+## Demo
+
+https://github.com/e-chesoni/Magneto/assets/57457528/e9cbd48a-1dcc-4c30-8323-057cb9715aee
+
 ## Project Motivation
 
 A custom research printer differs from a commercial machine in an important way: its hardware and experimental requirements continue to evolve.
